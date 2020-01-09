@@ -1,4 +1,4 @@
-© 2019 Palo Alto Networks, Inc.  All rights reserved.
+© 2020 Palo Alto Networks, Inc.  All rights reserved.
 
 SCRIPT SOFTWARE AGREEMENT
 
