@@ -53,16 +53,16 @@ notify its customers or appropriate law enforcement in the event of such illegal
 activity.
 
 6. **Other Use Restrictions and Prohibitions.** You shall ***not***, directly or indirectly:
-  
+
      a. Decompile, disassemble or reverse engineer the Script Software;
-  
+
      b. Modify, unbundle, or create derivative works based on the Script Software,
   except as expressly permitted in Section 1 herein;
-  
+
      c. Copy the Script Software except for archival purposes or as necessary for
   You to install and make use of the Script Software as expressly licensed
   by Palo Alto Networks;
-  
+
      d. Except as expressly permitted in Section 1 herein, detach or separate any
   libraries, files, modules or other components embedded within a Script
   Software product or within a particular software image you have received
@@ -71,7 +71,7 @@ activity.
   from the Script Software product or software image in which it is
   embedded (except to the extent that a documented feature of the Script
   Software product is implemented by doing so);
-  
+
      e. Furnish any copy of the Script Software or other means of access to the
   Script Software to any third party other than to Your contractor(s) solely for
   Your benefit in performing its contract services for You and in that case
@@ -79,12 +79,12 @@ activity.
   Agreement. If You do furnish Script Software or access to Script Software
   to Your contractor(s), You shall remain fully and primarily responsible to
   Palo Alto Networks for compliance with all provisions of this Agreement;
-  
+
      f. Remove (or, if the license includes the right to make copies of the Script
   Software, fail to include in those copies) any readme files notices,
   disclaimers, marks and labels included in the Script Software as delivered
   by Palo Alto Networks; or
-  
+
      g. Use or allow use of the Script Software in violation of any applicable law or
   regulation or to support or facilitate any illegal activity.
 
@@ -106,8 +106,8 @@ Information in confidence, which at a minimum includes restricting access to the
 Confidential Information to Your employees and contractors having a need to use
 the Confidential Information for Your internal business purposes.
 
-6. **Warranty, Disclaimer of Warranty, Limitation of Liability.** 
-  
+6. **Warranty, Disclaimer of Warranty, Limitation of Liability.**
+
      a. THE SCRIPT SOFTWARE IS PROVIDED "AS IS." PALO ALTO
   NETWORKS MAKES NO WARRANTIES OF ANY KIND WHATSOEVER
   WITH RESPECT TO SCRIPT SOFTWARE WHICH MAY CONTAIN
@@ -117,7 +117,7 @@ the Confidential Information for Your internal business purposes.
   WARRANTY OF MERCHANTABILITY OR FITNESS FOR A
   PARTICULAR PURPOSE, ARE HEREBY DISCLAIMED AND
   EXCLUDED TO THE EXTENT ALLOWED BY APPLICABLE LAW.
-  
+
    b. IN NO EVENT WILL PALO ALTO NETWORKS BE LIABLE FOR ANY
   LOST REVENUE, PROFIT OR DATA, OR FOR DIRECT, SPECIAL,
   INDIRECT, CONSEQUENTIAL, INCIDENTAL OR PUNITIVE DAMAGES
