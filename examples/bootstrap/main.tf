@@ -4,8 +4,6 @@ provider "azurerm" {
 }
 
 module "vnet" {
-  existing_rg          = true
-  existing_vnet        = true
   source               = "../../modules/vnet"
   location             = "East US"
   resource_group_name  = "some-rg"
