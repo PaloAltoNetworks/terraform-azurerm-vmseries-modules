@@ -1,4 +1,4 @@
-demo terraform module
+networking terraform module
 ===========
 
 A terraform module for creating all the networking components required for VM series firewalls in Azure.
@@ -9,9 +9,11 @@ Usage
 ```hcl
 module "networks" {
   source         = "PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
-  location       = var.location
-  management_ips = var.management_ips
-  name_prefix    = var.name_prefix
+  location    = "Australia Central"
+  name_prefix = "panostf"
+  management_ips = {
+      "124.171.153.28" : 100,
+    }
 }
 ```
 

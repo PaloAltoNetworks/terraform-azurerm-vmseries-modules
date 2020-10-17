@@ -1,4 +1,4 @@
-demo terraform module
+inbound-load-balancer terraform module
 ===========
 
 A terraform module for creating an Inbound Load Balancer for use with PANOS VM series. Supports both standalone and
@@ -12,9 +12,16 @@ Usage
 module "inbound-lb" { 
   source = "PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/inbound-load-balancer"
 
-  location    = var.location
-  name_prefix = var.name_prefix
-  rules       = var.rules
+  location    = "Australia Central"
+  name_prefix = "panostf"
+  rules       = [{
+                  port = 80
+                  name = "testweb"
+                  },
+                  {
+                    port = 22
+                    name = "testssh"
+                }]
 }
 ```
 
