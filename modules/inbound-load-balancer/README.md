@@ -10,7 +10,7 @@ Usage
 ```hcl
 # Deploy the inbound load balancer for traffic into the azure environment
 module "inbound-lb" { 
-  source = "PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules-inbound-load-balancer"
+  source = "PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/inbound-load-balancer"
 
   location    = var.location
   name_prefix = var.name_prefix
