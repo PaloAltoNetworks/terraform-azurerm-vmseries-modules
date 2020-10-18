@@ -8,7 +8,7 @@ Usage
 
 ```hcl
 module "outbound-lb" {
-  source           = "PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
+  source           = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
   location         = "Australia Central"
   name_prefix      = "panostf"
   backend-subnet   = "subnet-id"
