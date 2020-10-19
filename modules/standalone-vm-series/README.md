@@ -1,7 +1,7 @@
 networking terraform module
 ===========
 
-A terraform module for deploying a working Panorama instance in Azure.
+A terraform module for deploying standalone (non-scale-set) VM series firewalls in Azure.
 
 Usage
 -----

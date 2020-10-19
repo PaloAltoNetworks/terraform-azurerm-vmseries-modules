@@ -58,19 +58,16 @@ variable "vm_series_version" {
 }
 
 variable "inbound_lb_backend_pool_id" {
-  default     = ""
   description = "ID Of inbound load balancer backend pool to associate with the VM series firewall"
 }
 
 variable "outbound_lb_backend_pool_id" {
-  default     = ""
   description = "ID Of outbound load balancer backend pool to associate with the VM series firewall"
-
 }
 
 variable "vm_count" {
   description = "Count of VM-series of each type (inbound/outbound) to deploy. Min 2 required for production."
-  default = 2
+  default     = 2
 }
 
 
