@@ -7,8 +7,8 @@ Usage
 -----
 
 ```hcl
-module "networks" {
-  source      = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
+module "panorama" {
+  source      = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/panorama"
   location    = "Australia Central"
   name_prefix = "panostf"
   password    = "your-password"

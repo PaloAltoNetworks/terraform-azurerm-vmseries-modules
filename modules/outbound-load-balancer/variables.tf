@@ -12,7 +12,7 @@ variable "private-ip" {
 
 
 variable "backend-subnet" {
-    description = "Subnet to provision the load balancer in, must be the same as the private/internal subnet of VM-series."
+  description = "Subnet to provision the load balancer in, must be the same as the private/internal subnet of VM-series."
 }
 
 #  ---   #

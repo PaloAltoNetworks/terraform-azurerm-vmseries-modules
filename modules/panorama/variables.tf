@@ -25,11 +25,11 @@ variable "password" {
 }
 
 variable "panorama_sku" {
-  default = "byol"
+  default     = "byol"
   description = "Panorama SKU - list available with az vm image list --publisher paloaltonetworks --all"
 }
 variable "panorama_version" {
-  default = "9.0.5"
+  default     = "9.0.5"
   description = "Panorama Software version"
 }
 
