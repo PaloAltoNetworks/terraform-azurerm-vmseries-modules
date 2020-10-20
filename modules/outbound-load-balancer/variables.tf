@@ -8,11 +8,12 @@ variable "name_prefix" {
 
 variable "private-ip" {
   description = "Private IP address to assign to the frontend of the loadbalancer"
+  default     = "10.110.0.21"
 }
 
 
 variable "backend-subnet" {
-  description = "Subnet to provision the load balancer in, must be the same as the private/internal subnet of VM-series."
+  description = "ID of Subnet to provision the load balancer in, must be the same as the private/internal subnet of VM-series."
 }
 
 #  ---   #
