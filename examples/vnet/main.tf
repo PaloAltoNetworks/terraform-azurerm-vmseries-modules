@@ -4,9 +4,7 @@ provider "azurerm" {
 }
 
 module "vnet" {
-  existing_rg          = true
-  existing_vnet        = true
-  source               = "../../../modules/azurerm/vnet"
+  source               = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vnet"
   location             = "East US"
   resource_group_name  = "some-rg"
   virtual_network_name = "some-vnet"
@@ -14,7 +12,7 @@ module "vnet" {
     "mgmt" = {
       name             = "mgmt"
       address_prefixes = ["10.0.7.0/24"]
-      existing         = true
+      existing         = false
     }
     "trust" = {
       name             = "trust"
