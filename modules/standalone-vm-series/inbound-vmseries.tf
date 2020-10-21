@@ -3,6 +3,9 @@ resource "azurerm_availability_set" "ib-az" {
   location            = var.location
   name                = "${var.name_prefix}${var.sep}${var.name_ib_az}"
   resource_group_name = var.resource_group.name
+  platform_fault_domain_count = 2
+  managed = false
+
 }
 
 # Create a public IP for management
@@ -91,6 +94,7 @@ resource "azurerm_virtual_machine" "inbound-fw" {
     offer     = "vmseries1"
     sku       = var.vm_series_sku
     version   = var.vm_series_version
+
   }
 
   storage_os_disk {
