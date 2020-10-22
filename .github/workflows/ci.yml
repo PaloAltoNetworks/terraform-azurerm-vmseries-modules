@@ -1,0 +1,61 @@
+
+---
+name: CI/CD
+on:
+  push:
+    branches:
+      - master
+      - develop
+  pull_request:
+  schedule:
+    - cron: '0 0 1 * *'
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v2
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: terraform validate
+        env:
+          AWS_DEFAULT_REGION: us-west-2
+        run: |
+          cd ${GITHUB_WORKSPACE}/modules
+          for dir in $(find . -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1);
+          do
+            cd ${GITHUB_WORKSPACE}/modules/${dir}
+            terraform init -backend=false
+            terraform validate
+          done
+
+      - name: terraform fmt
+        run: |
+          terraform fmt -check -recursive
+
+  release:
+    name: release
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [validate]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Create release and publish
+        id: release
+        uses: cycjimmy/semantic-release-action@v2
+        with:
+          semantic_version: 17.1.1
+          extra_plugins: |
+            conventional-changelog-conventionalcommits@^4.4.0
+            @semantic-release/git@^9.0.0
+            @semantic-release/exec@^5.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
