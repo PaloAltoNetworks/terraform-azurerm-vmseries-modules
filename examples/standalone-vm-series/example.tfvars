@@ -13,10 +13,5 @@ rules = [
   }
 ]
 
-# Admin password, used to login to the firewalls.
-## !!IMPORTANT!! CHANGE ME!
-# You can also pass this on the command line or via stdin to avoid putting it in a file.
-password = "Don'tUseThisPassword,it'sForDemoPurposesOnly"
-
 # The count here defines how many VM-series are deployed PER VM direction (inbound/outbound)
 vm_series_count = 2

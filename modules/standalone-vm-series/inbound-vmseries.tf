@@ -94,7 +94,6 @@ resource "azurerm_virtual_machine" "inbound-fw" {
     offer     = "vmseries1"
     sku       = var.vm_series_sku
     version   = var.vm_series_version
-
   }
 
   storage_os_disk {

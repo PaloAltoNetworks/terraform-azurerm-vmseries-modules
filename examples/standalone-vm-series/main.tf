@@ -5,6 +5,11 @@ provider "azurerm" {
   features {}
 }
 
+resource "random_password" "password" {
+  length = 16
+  special = true
+  override_special = "_%@"
+}
 
 # Setup all the networks required for the topology
 module "networks" {
@@ -30,7 +35,7 @@ module "panorama" {
   name_prefix      = var.name_prefix
   subnet_mgmt      = module.networks.panorama-mgmt-subnet
   username         = var.username
-  password         = var.password
+  password         = coalesce(var.password, random_password.password.result)
   panorama_sku     = var.panorama_sku
   panorama_version = var.panorama_version
 }
@@ -73,7 +78,7 @@ module "inbound-vm-series" {
   location                      = var.location
   name_prefix                   = var.name_prefix
   username                      = var.username
-  password                      = var.password
+  password                      = coalesce(var.password, random_password.password.result)
   subnet-mgmt                   = module.networks.subnet-mgmt
   subnet-private                = module.networks.subnet-private
   subnet-public                 = module.networks.subnet-public
@@ -86,6 +91,3 @@ module "inbound-vm-series" {
   depends_on                    = [module.panorama]
 }
 
-output "PANORAMA-IP" {
-  value = module.panorama.panorama-publicip
-}
