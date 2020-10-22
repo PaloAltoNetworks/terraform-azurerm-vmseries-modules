@@ -22,7 +22,7 @@ resource "azurerm_subnet_network_security_group_association" "panorama-mgmt-sa" 
 }
 resource "azurerm_subnet" "subnet-panorama-mgmt" {
   name                 = "${var.name_prefix}${var.sep}${var.name_panorama_subnet_mgmt}"
-  address_prefixes      = ["${var.management_vnet_prefix}${var.management_subnet}"]
+  address_prefixes     = ["${var.management_vnet_prefix}${var.management_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-panorama-mgmt.name
 }
@@ -37,7 +37,7 @@ resource "azurerm_virtual_network" "vnet-vmseries" {
 # Management for VM-series
 resource "azurerm_subnet" "subnet-mgmt" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_mgmt}"
-  address_prefixes      = ["${var.firewall_vnet_prefix}${var.vm_management_subnet}"]
+  address_prefixes     = ["${var.firewall_vnet_prefix}${var.vm_management_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
 
@@ -55,7 +55,7 @@ resource "azurerm_subnet_network_security_group_association" "mgmt-sa" {
 # private network - don't need NSG here?
 resource "azurerm_subnet" "subnet-inside" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_inside}"
-  address_prefixes       = ["${var.firewall_vnet_prefix}${var.private_subnet}"]
+  address_prefixes     = ["${var.firewall_vnet_prefix}${var.private_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
 }
@@ -68,7 +68,7 @@ resource "azurerm_network_security_group" "sg-allowall" {
 }
 resource "azurerm_subnet" "subnet-outside" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_outside}"
-  address_prefixes      = ["${var.firewall_vnet_prefix}${var.public_subnet}"]
+  address_prefixes     = ["${var.firewall_vnet_prefix}${var.public_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
 }

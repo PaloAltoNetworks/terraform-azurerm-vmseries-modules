@@ -37,5 +37,5 @@ resource "null_resource" "this" {
       --account-key '${azurerm_storage_account.this.primary_access_key}';
     EOT
   }
-  depends_on = [ azurerm_storage_share_directory.dirs ]
+  depends_on = [azurerm_storage_share_directory.dirs]
 }

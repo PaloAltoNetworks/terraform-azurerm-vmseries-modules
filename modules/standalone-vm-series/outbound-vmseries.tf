@@ -1,10 +1,10 @@
 
 resource "azurerm_availability_set" "ob-az" {
-  location            = var.location
-  name                = "${var.name_prefix}${var.sep}${var.name_ob_az}"
-  resource_group_name = var.resource_group.name
+  location                    = var.location
+  name                        = "${var.name_prefix}${var.sep}${var.name_ob_az}"
+  resource_group_name         = var.resource_group.name
   platform_fault_domain_count = 2
-  managed = false
+  managed                     = false
 
 }
 
