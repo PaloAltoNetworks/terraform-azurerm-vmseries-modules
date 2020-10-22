@@ -22,3 +22,4 @@ output "storage-container-name" {
   value       = azurerm_storage_container.vm-sc.name
   description = "Name of storage container available to store VM series disks"
 }
+

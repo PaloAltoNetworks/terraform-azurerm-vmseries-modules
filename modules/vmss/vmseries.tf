@@ -34,8 +34,7 @@ resource "azurerm_virtual_machine_scale_set" "inbound-scale-set" {
       name      = "${var.name_prefix}${var.sep}${var.name_inbound_public_nic_ip}"
       primary   = false
       subnet_id = var.subnet-public.id
-      load_balancer_backend_address_pool_ids = [
-      var.public_backend_pool_id]
+      load_balancer_backend_address_pool_ids = [var.inbound_lb_backend_pool_id]
     }
     ip_forwarding = true
 
@@ -137,7 +136,7 @@ resource "azurerm_virtual_machine_scale_set" "outbound-scale-set" {
       name                                   = "${var.name_prefix}${var.sep}${var.name_outbound_private_nic_ip}"
       primary                                = false
       subnet_id                              = var.subnet-private.id
-      load_balancer_backend_address_pool_ids = [var.private_backend_pool_id]
+      load_balancer_backend_address_pool_ids = [var.outbound_lb_backend_pool_id]
 
     }
     ip_forwarding = true
