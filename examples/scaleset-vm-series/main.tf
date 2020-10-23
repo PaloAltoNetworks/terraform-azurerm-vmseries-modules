@@ -40,14 +40,6 @@ module "panorama" {
   panorama_version = var.panorama_version
 }
 
-# Create the vm-series RG outside of the module and pass it in.
-## All the config required for a single VM series Firewall in Azure
-# Base resource group
-resource "azurerm_resource_group" "vmseries" {
-  location = var.location
-  name     = "${var.name_prefix}-vmseries-rg"
-}
-
 module "inbound-lb" {
   source = "../../modules/inbound-load-balancer"
 
