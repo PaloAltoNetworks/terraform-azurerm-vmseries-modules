@@ -1,5 +1,5 @@
 variable "location" {
-  description = "Region to install vm-series and dependencies."
+  description = "Region to deploy vm-series bootstrap resources."
 }
 
 variable "name_prefix" {

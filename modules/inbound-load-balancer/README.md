@@ -15,12 +15,14 @@ module "inbound-lb" {
   location    = "Australia Central"
   name_prefix = "panostf"
   rules       = [{
-                  port = 80
-                  name = "testweb"
+                  port      = 80
+                  name      = "testweb"
+                  protocol  = "Tcp"
                   },
                   {
-                    port = 22
-                    name = "testssh"
+                    port      = 22
+                    name      = "testssh"
+                    protocol  = "Tcp"
                 }]
 }
 ```
