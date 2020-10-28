@@ -3,12 +3,14 @@ networking terraform module
 
 A terraform module for deploying standalone (non-scale-set) VM series firewalls in Azure.
 
+This module deploys both Inbound and Outbound VM-series firewalls as the one module.
+
 Usage
 -----
 
 ```hcl
 module "vm-series" {
-  source      = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/standalone-vm-series"
+  source      = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-series-combo"
   location    = "Australia Central"
   name_prefix = "panostf"
   password    = "your-password"
