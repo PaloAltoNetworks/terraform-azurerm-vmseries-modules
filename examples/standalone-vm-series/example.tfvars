@@ -10,6 +10,7 @@ rules = [
   {
     port = 22
     name = "testssh"
+    protocol = "Tcp"
   }
 ]
 

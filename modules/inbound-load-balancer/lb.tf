@@ -50,7 +50,7 @@ resource "azurerm_lb_rule" "lb-rules" {
   frontend_port                  = each.value.port
   loadbalancer_id                = azurerm_lb.lb.id
   name                           = "${each.value.name}${var.sep}${var.name_lbrule}"
-  protocol                       = "Tcp"
+  protocol                       = each.value.protocol
   resource_group_name            = azurerm_resource_group.rg-lb.name
   enable_floating_ip             = true
   backend_address_pool_id        = azurerm_lb_backend_address_pool.lb-backend.id

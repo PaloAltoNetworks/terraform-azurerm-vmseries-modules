@@ -11,10 +11,12 @@ variable "rules" {
   type = list(object({
     port = number
     name = string
+    protocol = string
   }))
   default = [{
     port = 80
     name = "default-rule"
+    protocol = "Tcp"
   }]
 }
 
