@@ -9,7 +9,7 @@ resource "azurerm_network_security_rule" "inter-vnet-rule" {
   protocol                    = "*"
   source_port_range           = "*"
   source_address_prefix       = azurerm_subnet.subnet-mgmt.address_prefix
-  destination_address_prefix  = "0.0.0.0/0"
+  destination_address_prefix  = "*"
   destination_port_range      = "*"
 }
 # Permit All outbound traffic in vm-series Management VNET
@@ -97,7 +97,7 @@ resource "azurerm_network_security_rule" "management-rules" {
   protocol                    = "Tcp"
   source_port_range           = "*"
   source_address_prefix       = each.key
-  destination_address_prefix  = "0.0.0.0/0"
+  destination_address_prefix  = "*"
   destination_port_range      = "*"
 }
 
@@ -113,6 +113,6 @@ resource "azurerm_network_security_rule" "vm-management-rules" {
   protocol                    = "Tcp"
   source_port_range           = "*"
   source_address_prefix       = each.key
-  destination_address_prefix  = "0.0.0.0/0"
+  destination_address_prefix  = "*"
   destination_port_range      = "*"
 }
