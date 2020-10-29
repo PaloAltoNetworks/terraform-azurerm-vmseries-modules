@@ -62,8 +62,8 @@ module "bootstrap" {
   name_prefix = var.name_prefix
 }
 
-# Create the inbound VM Series Firewalls
-module "scaleset" {
+# Create the inbound Scaleset
+module "inbound-scaleset" {
   source = "../../modules/vmss"
 
   location                      = var.location
@@ -74,11 +74,28 @@ module "scaleset" {
   subnet-private                = module.networks.subnet-private
   subnet-public                 = module.networks.subnet-public
   bootstrap-storage-account     = module.bootstrap.bootstrap-storage-account
-  inbound-bootstrap-share-name  = module.bootstrap.inbound-bootstrap-share-name
-  outbound-bootstrap-share-name = module.bootstrap.outbound-bootstrap-share-name
+  bootstrap-share-name          = module.bootstrap.inbound-bootstrap-share-name
   vhd-container                 = module.bootstrap.storage-container-name
-  inbound_lb_backend_pool_id    = module.inbound-lb.backend-pool-id
-  outbound_lb_backend_pool_id   = module.outbound-lb.backend-pool-id
+  lb_backend_pool_id            = module.inbound-lb.backend-pool-id
+  vm_count                      = var.vm_series_count
+  depends_on                    = [module.panorama]
+}
+
+# Create the inbound Scaleset
+module "outbound-scaleset" {
+  source = "../../modules/vmss"
+
+  location                      = var.location
+  name_prefix                   = var.name_prefix
+  username                      = var.username
+  password                      = coalesce(var.password, random_password.password.result)
+  subnet-mgmt                   = module.networks.subnet-mgmt
+  subnet-private                = module.networks.subnet-private
+  subnet-public                 = module.networks.subnet-public
+  bootstrap-storage-account     = module.bootstrap.bootstrap-storage-account
+  bootstrap-share-name          = module.bootstrap.outbound-bootstrap-share-name
+  vhd-container                 = module.bootstrap.storage-container-name
+  lb_backend_pool_id            = module.outbound-lb.backend-pool-id
   vm_count                      = var.vm_series_count
   depends_on                    = [module.panorama]
 }

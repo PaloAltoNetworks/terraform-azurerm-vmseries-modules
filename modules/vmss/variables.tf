@@ -27,11 +27,7 @@ variable "bootstrap-storage-account" {
   description = "Storage account setup for bootstrapping"
 }
 
-variable "inbound-bootstrap-share-name" {
-  description = "File share for bootstrap config"
-}
-
-variable "outbound-bootstrap-share-name" {
+variable "bootstrap-share-name" {
   description = "File share for bootstrap config"
 }
 
@@ -63,12 +59,8 @@ variable "vhd-container" {
   description = "Storage container for storing VMSS instance VHDs."
 }
 
-variable "inbound_lb_backend_pool_id" {
+variable "lb_backend_pool_id" {
   description = "ID Of inbound load balancer backend pool to associate with the VM series firewall"
-}
-
-variable "outbound_lb_backend_pool_id" {
-  description = "ID Of outbound load balancer backend pool to associate with the VM series firewall"
 }
 
 #  ---   #
@@ -84,89 +76,41 @@ variable "name_rg" {
   default = "vmseries-rg"
 }
 
-variable "name_inbound_scale_set" {
+variable "name_scale_set" {
   default = "inbound-scaleset"
 }
 
-variable "name_inbound_mgmt_nic_profile" {
+variable "name_mgmt_nic_profile" {
   default = "inbound-nic-fw-mgmt-profile"
 }
 
-variable "name_inbound_mgmt_nic_ip" {
+variable "name_mgmt_nic_ip" {
   default = "inbound-nic-fw-mgmt"
 }
 
-variable "name_inbound_fw_mgmt_pip" {
+variable "name_fw_mgmt_pip" {
   default = "inbound-fw-mgmt-pip"
 }
 
-variable "name_inbound_domain_name_label" {
+variable "name_domain_name_label" {
   default = "inbound-vm-mgmt"
 }
 
-variable "name_inbound_public_nic_profile" {
+variable "name_public_nic_profile" {
   default = "inbound-nic-fw-public-profile"
 }
 
-variable "name_inbound_public_nic_ip" {
+variable "name_public_nic_ip" {
   default = "inbound-nic-fw-public"
 }
 
-variable "name_inbound_private_nic_profile" {
+variable "name_private_nic_profile" {
   default = "inbound-nic-fw-private-profile"
 }
 
-variable "name_inbound_private_nic_ip" {
+variable "name_private_nic_ip" {
   default = "inbound-nic-fw-private"
 }
-variable "name_inbound_fw" {
+variable "name_fw" {
   default = "inbound-fw"
-}
-
-
-variable "name_outbound_fw" {
-  default = "outbound-fw"
-}
-
-variable "name_outbound_scale_set" {
-  default = "outbound-scaleset"
-}
-
-variable "name_outbound_mgmt_nic_profile" {
-  default = "outbound-nic-fw-mgmt-profile"
-}
-
-variable "name_outbound_mgmt_nic_ip" {
-  default = "outbound-nic-fw-mgmt"
-}
-
-variable "name_outbound_fw_mgmt_pip" {
-  default = "outbound-fw-mgmt-pip"
-}
-
-variable "name_outbound_fw_public_pip" {
-  default = "outbound-fw-public-pip"
-}
-
-variable "name_outbound_domain_name_label" {
-  default = "outbound-vm-mgmt"
-}
-variable "name_outbound_public_domain_name_label" {
-  default = "outbound-vm-public"
-}
-
-variable "name_outbound_public_nic_profile" {
-  default = "outbound-nic-fw-public-profile"
-}
-
-variable "name_outbound_public_nic_ip" {
-  default = "outbound-nic-fw-public"
-}
-
-variable "name_outbound_private_nic_profile" {
-  default = "outbound-nic-fw-private-profile"
-}
-
-variable "name_outbound_private_nic_ip" {
-  default = "outbound-nic-fw-private"
 }
