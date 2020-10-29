@@ -24,6 +24,18 @@ module "vm-series" {
 }
 ```
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -60,6 +72,4 @@ module "vm-series" {
 | Name | Description |
 |------|-------------|
 | inbound-fw-pips | Inbound firewall Public IPs |
-
-
 

@@ -1,7 +1,7 @@
 networking terraform module
 ===========
 
-A terraform module for deploying the networking requirements for Panorama in Azure. 
+A terraform module for deploying the networking requirements for Panorama in Azure.
 
 Usage
 -----
@@ -17,11 +17,23 @@ module "networks" {
 }
 ```
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| location | Region to install vm-series and dependencies. | `any` | n/a | yes |
+| location | Region to deploy Panorama Resources | `any` | n/a | yes |
 | management\_ips | External IP addresses or prefixes that will be permitted direct access to the management network. | `map(any)` | n/a | yes |
 | management\_subnet | The private network that terminates all FW and Panorama IP addresses - Joined with management\_vnet\_prefix | `string` | `"0.0/24"` | no |
 | management\_vnet\_prefix | The private prefix used for the management virtual network | `string` | `"10.255."` | no |
@@ -39,5 +51,4 @@ module "networks" {
 | Name | Description |
 |------|-------------|
 | panorama-mgmt-subnet | Panorama Management subnet resource. |
-
 

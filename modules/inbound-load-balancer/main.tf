@@ -1,3 +1,33 @@
+/*
+* inbound-load-balancer terraform module
+* ===========
+* 
+* A terraform module for creating an Inbound Load Balancer for use with PANOS VM series. Supports both standalone and
+* scaleset deployments.
+* 
+* Usage
+* -----
+* 
+* ```hcl
+* # Deploy the inbound load balancer for traffic into the azure environment
+* module "inbound-lb" { 
+*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/inbound-load-balancer"
+* 
+*   location    = "Australia Central"
+*   name_prefix = "panostf"
+*   rules       = [{
+*                   port      = 80
+*                   name      = "testweb"
+*                   protocol  = "Tcp"
+*                   },
+*                   {
+*                     port      = 22
+*                     name      = "testssh"
+*                     protocol  = "Tcp"
+*                 }]
+* }
+* ```
+*/
 # Sets up an Azure LB and associated rules
 # This configures an INBOUND LB with public addressing.
 

@@ -1,3 +1,21 @@
+/*
+* outbound-load-balancer terraform module
+* ===========
+* 
+* A terraform module for creating all the networking components required for VM series firewalls in Azure.
+* 
+* Usage
+* -----
+* 
+* ```hcl
+* module "outbound-lb" {
+*   source           = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
+*   location         = "Australia Central"
+*   name_prefix      = "panostf"
+*   backend-subnet   = "subnet-id"
+* }
+* ```
+*/
 # Sets up an Azure LB and associated rules
 # This sets up an OUTBOUND LB and associated rules
 # It does not have a public IP associated with it.

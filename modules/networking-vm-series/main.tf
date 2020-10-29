@@ -1,30 +1,26 @@
+/*
+* networking terraform module
+* ===========
+* 
+* A terraform module for creating all the networking components required for VM series firewalls in Azure.
+* 
+* Usage
+* -----
+* 
+* ```hcl
+* module "networks" {
+*   source         = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-vm-series"
+*   location    = "Australia Central"
+*   name_prefix = "panostf"
+*   management_ips = {
+*       "124.171.153.28" : 100,
+*     }
+* }
+* ```
+*/
 resource "azurerm_resource_group" "rg" {
   location = var.location
   name     = "${var.name_prefix}${var.sep}${var.name_rg}"
-}
-### Build the Panorama networks first
-# Create the out of band network for panorama
-resource "azurerm_virtual_network" "vnet-panorama-mgmt" {
-  address_space       = ["${var.management_vnet_prefix}0.0/16"]
-  location            = var.location
-  name                = "${var.name_prefix}${var.sep}${var.name_vnet_panorama_mgmt}"
-  resource_group_name = azurerm_resource_group.rg.name
-}
-# Security group for the Panorama MGMT network
-resource "azurerm_network_security_group" "sg-panorama-mgmt" {
-  location            = azurerm_resource_group.rg.location
-  name                = "${var.name_prefix}${var.sep}${var.name_panorama_sg}"
-  resource_group_name = azurerm_resource_group.rg.name
-}
-resource "azurerm_subnet_network_security_group_association" "panorama-mgmt-sa" {
-  network_security_group_id = azurerm_network_security_group.sg-panorama-mgmt.id
-  subnet_id                 = azurerm_subnet.subnet-panorama-mgmt.id
-}
-resource "azurerm_subnet" "subnet-panorama-mgmt" {
-  name                 = "${var.name_prefix}${var.sep}${var.name_panorama_subnet_mgmt}"
-  address_prefixes     = ["${var.management_vnet_prefix}${var.management_subnet}"]
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet-panorama-mgmt.name
 }
 
 ### Now build the main networks
@@ -40,7 +36,6 @@ resource "azurerm_subnet" "subnet-mgmt" {
   address_prefixes     = ["${var.firewall_vnet_prefix}${var.vm_management_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
-
 }
 resource "azurerm_network_security_group" "sg-mgmt" {
   location            = azurerm_resource_group.rg.location
@@ -100,17 +95,4 @@ resource "azurerm_subnet_route_table_association" "rta" {
   subnet_id      = azurerm_subnet.subnet-inside.id
 }
 
-# Peer the VNETs from the vm-series and panorama module
-resource "azurerm_virtual_network_peering" "panorama-fw-peer" {
-  name                      = "${var.name_prefix}${var.sep}${var.name_panorama_fw_peer}"
-  remote_virtual_network_id = azurerm_virtual_network.vnet-panorama-mgmt.id
-  resource_group_name       = azurerm_resource_group.rg.name
-  virtual_network_name      = azurerm_virtual_network.vnet-vmseries.name
-}
-resource "azurerm_virtual_network_peering" "fw-panorama-peer" {
-  name                      = "${var.name_prefix}${var.sep}${var.name_fw_panorama_peer}"
-  remote_virtual_network_id = azurerm_virtual_network.vnet-vmseries.id
-  resource_group_name       = azurerm_resource_group.rg.name
-  virtual_network_name      = azurerm_virtual_network.vnet-panorama-mgmt.name
-}
 

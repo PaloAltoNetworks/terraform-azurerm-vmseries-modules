@@ -24,6 +24,18 @@ module "vmss" {
 }
 ```
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
@@ -76,5 +88,4 @@ module "vmss" {
 |------|-------------|
 | inbound-scale-set-name | Name of inbound scale set |
 | outbound-scale-set-name | Name of outbound scale set |
-
 

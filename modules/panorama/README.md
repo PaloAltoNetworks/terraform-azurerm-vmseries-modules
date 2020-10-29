@@ -15,11 +15,23 @@ module "panorama" {
 }
 ```
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| location | Region to install vm-series and dependencies. | `any` | n/a | yes |
+| location | Region to deploy panorama into. | `any` | n/a | yes |
 | name\_mgmt | n/a | `string` | `"nic-mgmt"` | no |
 | name\_panorama | n/a | `string` | `"panorama"` | no |
 | name\_panorama\_pip\_mgmt | n/a | `string` | `"panorama-pip"` | no |

@@ -1,12 +1,10 @@
-networking terraform module
-===========
+# networking terraform module
 
 A terraform module for deploying standalone (non-scale-set) VM series firewalls in Azure.
 
 This module deploys both Inbound and Outbound VM-series firewalls as the one module.
 
-Usage
------
+# Usage
 
 ```hcl
 module "vm-series" {
@@ -26,13 +24,25 @@ module "vm-series" {
 }
 ```
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | bootstrap-storage-account | Storage account setup for bootstrapping | `any` | n/a | yes |
 | inbound-bootstrap-share-name | Azure File share for bootstrap config | `any` | n/a | yes |
-| inbound\_lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `string` | `""` | no |
+| inbound\_lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
 | location | Region to install vm-series and dependencies. | `any` | n/a | yes |
 | name\_ib\_az | n/a | `string` | `"ib-vm-az"` | no |
 | name\_ib\_fw\_ip\_mgmt | n/a | `string` | `"ib-fw-ip-mgmt"` | no |
@@ -56,7 +66,7 @@ module "vm-series" {
 | name\_outbound\_fw | n/a | `string` | `"ob-fw"` | no |
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
 | outbound-bootstrap-share-name | Azure File share for bootstrap config | `any` | n/a | yes |
-| outbound\_lb\_backend\_pool\_id | ID Of outbound load balancer backend pool to associate with the VM series firewall | `string` | `""` | no |
+| outbound\_lb\_backend\_pool\_id | ID Of outbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
 | password | VM-Series Password | `any` | n/a | yes |
 | resource\_group | The resource group for VM series. | `any` | n/a | yes |
 | sep | Seperator | `string` | `"-"` | no |
@@ -75,5 +85,4 @@ module "vm-series" {
 |------|-------------|
 | inbound-fw-pips | Inbound firewall Public IPs |
 | outbound-fw-pips | outbound firewall Public IPs |
-
 

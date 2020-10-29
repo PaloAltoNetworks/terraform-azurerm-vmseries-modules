@@ -1,3 +1,25 @@
+/*
+* vm-bootstrap terraform module
+* ===========
+* 
+* A terraform module for creating the bootstrap storage account and dependencies required to bootstrap
+* PANOS firewalls in Azure.
+* 
+* Does *not* configure the bootstrap images, licenses, or configurations.
+* 
+* Usage
+* -----
+* 
+* ```hcl
+* module "vm-bootstrap" {
+*   source          = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-bootstrap"
+*   location        = "Australia Central"
+*   name_prefix     = "panostf"
+*   name_bootstrap_share = "bootstrap"
+* }
+* ```
+* 
+*/
 # Base resource group
 resource "azurerm_resource_group" "bootstrap" {
   location = var.location

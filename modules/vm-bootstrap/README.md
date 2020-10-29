@@ -1,7 +1,7 @@
 vm-bootstrap terraform module
 ===========
 
-A terraform module for creating the bootstrap storage account and dependencies required to bootstrap
+A terraform module for creating the bootstrap storage account and dependencies required to bootstrap  
 PANOS firewalls in Azure.
 
 Does *not* configure the bootstrap images, licenses, or configurations.
@@ -18,12 +18,24 @@ module "vm-bootstrap" {
 }
 ```
 
+## Requirements
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | >=2.26.0 |
+
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | bootstrap\_key\_lifetime | Default key lifetime for bootstrap. | `string` | `"8760"` | no |
-| location | Region to install vm-series and dependencies. | `any` | n/a | yes |
+| location | Region to deploy vm-series bootstrap resources. | `any` | n/a | yes |
 | name\_bootstrap\_share | n/a | `string` | `"bootstrap"` | no |
 | name\_inbound\_bootstrap\_storage\_share | n/a | `string` | `"ibbootstrapshare"` | no |
 | name\_outbound-bootstrap-storage-share | n/a | `string` | `"obbootstrapshare"` | no |
@@ -41,3 +53,4 @@ module "vm-bootstrap" {
 | outbound-bootstrap-share-name | Name of storage share, used to store outbound firewall bootstrap configuration |
 | storage-container-name | Name of storage container available to store VM series disks |
 | storage-key | Primary access key associated with the bootstrap storage account |
+
