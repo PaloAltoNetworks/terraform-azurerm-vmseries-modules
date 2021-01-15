@@ -1,0 +1,12 @@
+repos:
+- repo: git://github.com/antonbabenko/pre-commit-terraform
+  rev: v1.43.0 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
+  hooks:
+    - id: terraform_fmt
+    - id: terraform_docs
+    - id: terraform_tflint
+      args: [
+        --args=--only=terraform_deprecated_interpolation,
+        --args=--only=terraform_deprecated_index,
+        --args=--only=terraform_workspace_remote,
+      ]
