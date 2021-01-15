@@ -9,13 +9,13 @@ variable "name_prefix" {
 variable "rules" {
   description = "A list[objects] of ports and names that will be assigned to inbound LB rules. Useful for testing."
   type = list(object({
-    port = number
-    name = string
+    port     = number
+    name     = string
     protocol = string
   }))
   default = [{
-    port = 80
-    name = "default-rule"
+    port     = 80
+    name     = "default-rule"
     protocol = "Tcp"
   }]
 }

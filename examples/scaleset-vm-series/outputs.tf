@@ -10,5 +10,5 @@ output "PASSWORD" {
 
 output "PANORAMA-IP" {
   description = "The Public IP address of Panorama."
-  value = module.panorama.panorama-publicip
+  value       = module.panorama.panorama-publicip
 }

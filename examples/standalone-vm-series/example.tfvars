@@ -8,8 +8,8 @@ management_ips = {
 # These will automatically create a public Azure IP and associate to LB configuration.
 rules = [
   {
-    port = 22
-    name = "testssh"
+    port     = 22
+    name     = "testssh"
     protocol = "Tcp"
   }
 ]
