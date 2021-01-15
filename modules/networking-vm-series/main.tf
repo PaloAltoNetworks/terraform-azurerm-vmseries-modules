@@ -9,7 +9,8 @@
 * 
 * ```hcl
 * module "networks" {
-*   source         = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-vm-series"
+*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-vm-series"
+*
 *   location    = "Australia Central"
 *   name_prefix = "panostf"
 *   management_ips = {

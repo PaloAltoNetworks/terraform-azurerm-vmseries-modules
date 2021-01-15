@@ -10,7 +10,8 @@ Usage
 
 ```hcl
 module "vm-series" {
-  source                        = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-series"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-series"
+
   location                      = "Australia Central"
   name_prefix                   = "panostf"
   password                      = "your-password"

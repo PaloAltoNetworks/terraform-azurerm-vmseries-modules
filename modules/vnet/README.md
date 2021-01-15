@@ -6,7 +6,8 @@ This module creates new environment (Resource Group, Virtual Network and Subnets
 ## Usage
 ```hcl
 module "vnet" {
-  source               = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vnet"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vnet"
+
   location             = "East US"
   resource_group_name  = "some-rg"
   virtual_network_name = "some-vnet"

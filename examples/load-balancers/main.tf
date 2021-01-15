@@ -8,7 +8,8 @@ provider "azurerm" {
 
 
 module "networks" {
-  source      = "../../modules/networking"
+  source = "../../modules/networking"
+
   location    = "Australia Central"
   name_prefix = "panostf"
   management_ips = {

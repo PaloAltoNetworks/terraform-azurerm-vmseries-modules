@@ -14,7 +14,8 @@ resource "random_password" "password" {
 # Setup all the networks required for the topology
 module "networks" {
   source = "../../modules/networking-panorama"
-  location = var.location
+
+  location       = var.location
   management_ips = var.management_ips
-  name_prefix =  var.name_prefix
+  name_prefix    = var.name_prefix
 }
