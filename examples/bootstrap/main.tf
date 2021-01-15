@@ -4,7 +4,8 @@ provider "azurerm" {
 }
 
 module "vnet" {
-  source               = "../../modules/vnet"
+  source = "../../modules/vnet"
+
   location             = "East US"
   resource_group_name  = "some-rg"
   virtual_network_name = "some-vnet"
@@ -12,7 +13,8 @@ module "vnet" {
 }
 
 module "bootstrap" {
-  source               = "../../modules/bootstrap/"
+  source = "../../modules/bootstrap/"
+
   resource_group_name  = module.vnet.resource_group.name
   location             = module.vnet.location
   storage_account_name = "kbtest2020101502"

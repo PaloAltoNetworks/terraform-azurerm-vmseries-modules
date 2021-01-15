@@ -8,7 +8,8 @@ Usage
 
 ```hcl
 module "panorama" {
-  source      = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/panorama"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/panorama"
+
   location    = "Australia Central"
   name_prefix = "panostf"
   password    = "your-password"

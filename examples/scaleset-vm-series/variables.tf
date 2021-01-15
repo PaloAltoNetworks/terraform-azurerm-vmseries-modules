@@ -19,7 +19,7 @@ variable "username" {
 
 variable "password" {
   description = "Admin password to use for all systems"
-  default = null
+  default     = null
 }
 
 #----------------------#

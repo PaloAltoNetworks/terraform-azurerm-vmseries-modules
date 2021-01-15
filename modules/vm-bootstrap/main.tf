@@ -12,7 +12,8 @@
 * 
 * ```hcl
 * module "vm-bootstrap" {
-*   source          = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-bootstrap"
+*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-bootstrap"
+*
 *   location        = "Australia Central"
 *   name_prefix     = "panostf"
 *   name_bootstrap_share = "bootstrap"

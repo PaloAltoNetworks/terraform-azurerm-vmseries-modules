@@ -1,6 +1,9 @@
 #  Local .terraform directories
 **/.terraform/*
 
+# Python Virtualenv for pre-commit installation
+venv
+
 # .tfstate files
 *.tfstate
 *.tfstate.*

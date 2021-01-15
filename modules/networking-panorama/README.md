@@ -8,7 +8,8 @@ Usage
 
 ```hcl
 module "networks" {
-  source         = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-panorama"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-panorama"
+
   location    = "Australia Central"
   name_prefix = "panostf"
   management_ips = {
