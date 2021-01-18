@@ -30,7 +30,7 @@ variable "panorama_sku" {
 }
 
 variable "panorama_version" {
-  default     = "9.0.5"
+  default     = "10.0.3"
   description = "PAN-OS Software version. List published images with `az vm image list --publisher paloaltonetworks --offer panorama --all`"
 }
 
