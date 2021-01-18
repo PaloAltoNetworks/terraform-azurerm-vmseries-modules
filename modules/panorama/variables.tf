@@ -3,34 +3,35 @@ variable "location" {
 }
 
 variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
+  description = "Prefix to add to all the object names here."
 }
 
 variable "panorama_size" {
-  description = "Default size for Panorama"
+  description = "Virtual Machine size."
   default     = "Standard_D5_v2"
 }
 
 variable "subnet_mgmt" {
-  description = "Management subnet."
+  description = "Panorama's management subnet ID."
 }
 
 variable "username" {
-  description = "Panorama Username"
+  description = "Panorama Username."
   default     = "panadmin"
 }
 
 variable "password" {
-  description = "Panorama Password"
+  description = "Panorama Password."
 }
 
 variable "panorama_sku" {
   default     = "byol"
-  description = "Panorama SKU - list available with az vm image list --publisher paloaltonetworks --all"
+  description = "Panorama SKU."
 }
+
 variable "panorama_version" {
   default     = "9.0.5"
-  description = "Panorama Software version"
+  description = "PAN-OS Software version. List published images with `az vm image list --publisher paloaltonetworks --offer panorama --all`"
 }
 
 
@@ -38,9 +39,9 @@ variable "panorama_version" {
 # Naming #
 #  ---   #
 
-# Seperator
 variable "sep" {
-  default = "-"
+  default     = "-"
+  description = "Separator used in the names of the generated resources. May be empty."
 }
 
 variable "name_rg" {
