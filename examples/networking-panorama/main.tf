@@ -1,8 +1,10 @@
-# Configure the Azure provider
-provider "azurerm" {
-  # whilst the `version` attribute is optional, we recommend pinning to a given version of the Provider
-  version = ">=2.24.0"
-  features {}
+# Setup all the networks required for the topology
+module "net_panorama" {
+  source = "../../modules/networking-panorama"
+
+  location       = var.location
+  management_ips = var.management_ips
+  name_prefix    = var.name_prefix
 }
 
 resource "random_password" "password" {
@@ -11,11 +13,19 @@ resource "random_password" "password" {
   override_special = "_%@"
 }
 
-# Setup all the networks required for the topology
-module "networks" {
-  source = "../../modules/networking-panorama"
+module "panorama" {
+  source = "../../modules/panorama"
 
-  location       = var.location
-  management_ips = var.management_ips
-  name_prefix    = var.name_prefix
+  location    = var.location
+  name_prefix = var.name_prefix
+  subnet_mgmt = module.net_panorama.panorama-mgmt-subnet
+  password    = random_password.password.result
+}
+
+output panorama_url {
+  value = "https://${module.panorama.panorama-publicip}"
+}
+
+output panorama_admin_password {
+  value = random_password.password.result
 }
