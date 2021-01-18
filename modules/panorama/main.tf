@@ -1,23 +1,3 @@
-/*
-* networking terraform module
-* ===========
-* 
-* A terraform module for deploying a working Panorama instance in Azure.
-* 
-* Usage
-* -----
-* 
-* ```hcl
-* module "panorama" {
-*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/panorama"
-*
-*   location    = "Australia Central"
-*   name_prefix = "panostf"
-*   password    = "your-password"
-* }
-* ```
-* 
-*/
 # Base resource group
 resource "azurerm_resource_group" "panorama" {
   location = var.location
