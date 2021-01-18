@@ -1,5 +1,5 @@
-networking terraform module
-===========
+Palo Alto Networks Panorama Module for Azure
+============================================
 
 A terraform module for deploying a working Panorama instance in Azure.
 
@@ -16,6 +16,7 @@ module "panorama" {
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -36,15 +37,15 @@ module "panorama" {
 | name\_mgmt | n/a | `string` | `"nic-mgmt"` | no |
 | name\_panorama | n/a | `string` | `"panorama"` | no |
 | name\_panorama\_pip\_mgmt | n/a | `string` | `"panorama-pip"` | no |
-| name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
+| name\_prefix | Prefix to add to all the object names here. | `any` | n/a | yes |
 | name\_rg | n/a | `string` | `"rg-panorama"` | no |
-| panorama\_size | Default size for Panorama | `string` | `"Standard_D5_v2"` | no |
-| panorama\_sku | Panorama SKU - list available with az vm image list --publisher paloaltonetworks --all | `string` | `"byol"` | no |
-| panorama\_version | Panorama Software version | `string` | `"9.0.5"` | no |
-| password | Panorama Password | `any` | n/a | yes |
-| sep | Seperator | `string` | `"-"` | no |
-| subnet\_mgmt | Management subnet. | `any` | n/a | yes |
-| username | Panorama Username | `string` | `"panadmin"` | no |
+| panorama\_size | Virtual Machine size. | `string` | `"Standard_D5_v2"` | no |
+| panorama\_sku | Panorama SKU. | `string` | `"byol"` | no |
+| panorama\_version | PAN-OS Software version. List published images with `az vm image list --publisher paloaltonetworks --offer panorama --all` | `string` | `"9.0.5"` | no |
+| password | Panorama Password. | `any` | n/a | yes |
+| sep | Separator used in the names of the generated resources. May be empty. | `string` | `"-"` | no |
+| subnet\_mgmt | Panorama's management subnet ID. | `any` | n/a | yes |
+| username | Panorama Username. | `string` | `"panadmin"` | no |
 
 ## Outputs
 
@@ -53,3 +54,4 @@ module "panorama" {
 | panorama-publicip | Panorama Public IP address |
 | resource-group | Panorama Resource group resource |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
