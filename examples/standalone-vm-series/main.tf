@@ -55,6 +55,9 @@ module "bootstrap" {
 
   location    = var.location
   name_prefix = var.name_prefix
+  files = {
+    "bootstrap_files/authcodes" = "license/authcodes"
+  }
 }
 
 # Create inbound vm-series

@@ -11,6 +11,12 @@ variable "bootstrap_key_lifetime" {
   default     = "8760"
 }
 
+variable files {
+  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
 #  ---   #
 # Naming #
 #  ---   #
