@@ -13,6 +13,3 @@ rules = [
     protocol = "Tcp"
   }
 ]
-
-# The count here defines how many VM-series are deployed PER VM direction (inbound/outbound)
-vm_series_count = 2
