@@ -86,5 +86,5 @@ module "inbound-vm-series" {
   bootstrap-share-name      = module.bootstrap.inbound-bootstrap-share-name
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
-  depends_on                = [module.panorama]
+  depends_on                = [module.panorama, module.bootstrap]
 }
