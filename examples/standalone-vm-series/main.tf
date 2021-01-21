@@ -88,22 +88,3 @@ module "inbound-vm-series" {
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]
 }
-
-# Create inbound vm-series
-module "outbound-vm-series" {
-  source = "../../modules/vm-series"
-
-  resource_group            = azurerm_resource_group.vmseries
-  location                  = var.location
-  name_prefix               = var.name_prefix
-  username                  = var.username
-  password                  = coalesce(var.password, random_password.password.result)
-  subnet-mgmt               = module.networks.subnet-mgmt
-  subnet-private            = module.networks.subnet-private
-  subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
-  bootstrap-share-name      = module.bootstrap.outbound-bootstrap-share-name
-  lb_backend_pool_id        = module.outbound-lb.backend-pool-id
-  vm_count                  = var.vm_series_count
-  depends_on                = [module.panorama]
-}
