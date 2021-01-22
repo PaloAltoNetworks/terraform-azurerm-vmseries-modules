@@ -28,7 +28,7 @@
 */
 resource "azurerm_availability_set" "az" {
   location                    = var.location
-  name                        = coalesce(var.name_az, "${var.name_fw}-vm-az")
+  name                        = coalesce(var.name_avset, "${var.name_prefix}-avset")
   resource_group_name         = var.resource_group.name
   platform_fault_domain_count = 2
 }
@@ -110,34 +110,44 @@ resource "azurerm_network_interface_backend_address_pool_association" "inbound-p
 resource "azurerm_virtual_machine" "inbound-fw" {
   for_each = var.instances
 
-  location = var.resource_group.location
-  name     = "${var.name_prefix}${each.key}"
+  name                         = "${var.name_prefix}${each.key}"
+  location                     = var.resource_group.location
+  resource_group_name          = var.resource_group.name
+  vm_size                      = var.vm_size
+  availability_set_id          = azurerm_availability_set.az.id
+  primary_network_interface_id = azurerm_network_interface.nic-fw-mgmt[each.key].id
+
   network_interface_ids = [
     azurerm_network_interface.nic-fw-mgmt[each.key].id,
     azurerm_network_interface.nic-fw-public[each.key].id,
     azurerm_network_interface.nic-fw-private[each.key].id
   ]
-  resource_group_name = var.resource_group.name
-  vm_size             = var.vmseries_size
+
   storage_image_reference {
-    publisher = "paloaltonetworks"
-    offer     = "vmseries1"
-    sku       = var.vm_series_sku
-    version   = var.vm_series_version
+    id        = var.custom_image_id
+    publisher = var.custom_image_id == null ? var.vm_series_publisher : null
+    offer     = var.custom_image_id == null ? var.vm_series_offer : null
+    sku       = var.custom_image_id == null ? var.vm_series_sku : null
+    version   = var.custom_image_id == null ? var.vm_series_version : null
+  }
+
+  plan {
+    name      = var.vm_series_sku
+    publisher = var.vm_series_publisher
+    product   = var.vm_series_offer
   }
 
   storage_os_disk {
     create_option     = "FromImage"
     name              = "${var.name_prefix}${each.key}-vhd"
     managed_disk_type = var.managed_disk_type
+    os_type           = "Linux"
     caching           = "ReadWrite"
   }
 
-
-  primary_network_interface_id = azurerm_network_interface.nic-fw-mgmt[each.key].id
   os_profile {
-    admin_username = var.username
     computer_name  = "${var.name_prefix}${each.key}"
+    admin_username = var.username
     admin_password = var.password
     custom_data = join(
       ",",
@@ -149,13 +159,9 @@ resource "azurerm_virtual_machine" "inbound-fw" {
       ]
     )
   }
+
   os_profile_linux_config {
     disable_password_authentication = false
   }
-  plan {
-    name      = var.vm_series_sku
-    publisher = "paloaltonetworks"
-    product   = "vmseries1"
-  }
-  availability_set_id = azurerm_availability_set.az.id
+
 }
