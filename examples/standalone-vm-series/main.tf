@@ -27,19 +27,6 @@ module "networks" {
   vm_management_subnet   = var.vm_management_subnet
 }
 
-# Create a panorama instance
-module "panorama" {
-  source = "../../modules/panorama"
-
-  location         = var.location
-  name_prefix      = var.name_prefix
-  subnet_mgmt      = module.networks.panorama-mgmt-subnet
-  username         = var.username
-  password         = coalesce(var.password, random_password.password.result)
-  panorama_sku     = var.panorama_sku
-  panorama_version = var.panorama_version
-}
-
 # Create the vm-series RG outside of the module and pass it in.
 ## All the config required for a single VM series Firewall in Azure
 # Base resource group
@@ -88,5 +75,5 @@ module "inbound-vm-series" {
   instances = {
     "fw00" = {}
   }
-  depends_on = [module.panorama, module.bootstrap]
+  depends_on = [module.bootstrap]
 }
