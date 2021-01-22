@@ -43,6 +43,12 @@ variable "username" {
   default     = "panadmin"
 }
 
+variable "managed_disk_type" {
+  default     = "StandardSSD_LRS"
+  description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+  type        = string
+}
+
 variable "vmseries_size" {
   description = "Default size for VM series"
   default     = "Standard_D5_v2"
