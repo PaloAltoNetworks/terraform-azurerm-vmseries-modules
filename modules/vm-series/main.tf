@@ -127,10 +127,10 @@ resource "azurerm_virtual_machine" "inbound-fw" {
   }
 
   storage_os_disk {
-    create_option = "FromImage"
-    name          = "${var.name_prefix}${each.key}-vhd"
-    caching       = "ReadWrite"
-    vhd_uri       = "${var.bootstrap-storage-account.primary_blob_endpoint}vhds/${var.name_prefix}${each.key}.vhd"
+    create_option     = "FromImage"
+    name              = "${var.name_prefix}${each.key}-vhd"
+    managed_disk_type = var.managed_disk_type
+    caching           = "ReadWrite"
   }
 
 
