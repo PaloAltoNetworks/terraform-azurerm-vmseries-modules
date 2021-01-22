@@ -66,6 +66,8 @@ module "inbound-vm-series" {
   name_prefix               = var.name_prefix
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
+  vm_series_version         = "9.1.3"
+  vm_series_sku             = "byol"
   subnet-mgmt               = module.networks.subnet-mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
