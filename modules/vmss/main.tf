@@ -73,7 +73,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   }
   sku {
     capacity = 1
-    name     = var.vmseries_size
+    name     = var.vm_size
   }
   storage_profile_os_disk {
     create_option  = "FromImage"

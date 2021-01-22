@@ -6,9 +6,10 @@ variable "name_prefix" {
   description = "Prefix to add to all the object names here"
 }
 
-variable "vmseries_size" {
-  description = "Default size for VM series"
-  default     = "Standard_D5_v2"
+variable "vm_size" {
+  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
+  default     = "Standard_D3_v2"
+  type        = string
 }
 
 variable "subnet-mgmt" {
