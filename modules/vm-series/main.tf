@@ -164,4 +164,10 @@ resource "azurerm_virtual_machine" "inbound-fw" {
     disable_password_authentication = false
   }
 
+  # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
+  # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
+  boot_diagnostics {
+    enabled     = true
+    storage_uri = var.bootstrap-storage-account.primary_blob_endpoint
+  }
 }
