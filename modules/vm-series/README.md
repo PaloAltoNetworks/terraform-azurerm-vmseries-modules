@@ -25,6 +25,8 @@ module "vm-series" {
 }
 ```
 
+The module only supports Azure regions that have more than one fault domain. (As of 2021, the only two regions impacted are SouthCentralUSSTG and CentralUSEUAP. [Instruction to re-check regions](https://docs.microsoft.com/en-us/azure/virtual-machines/manage-availability#use-managed-disks-for-vms-in-an-availability-set) in future.) The reason is that the module uses Availability Sets with Managed Disks.
+
 ## Requirements
 
 | Name | Version |
