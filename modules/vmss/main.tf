@@ -1,31 +1,3 @@
-/*
-* vm-series scale set terraform module
-* ===========
-* 
-* A terraform module for VMSS VM series firewalls in Azure.
-* 
-* Usage
-* -----
-* 
-* ```hcl
-* module "vmss" {
-*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vmss"
-*
-*   location                  = "Australia Central"
-*   name_prefix               = "panostf"
-*   password                  = "your-password"
-*   subnet-mgmt               = azurerm_subnet.subnet-mgmt
-*   subnet-private            = azurerm_subnet.subnet-private
-*   subnet-public             = module.networks.subnet-public
-*   bootstrap-storage-account = module.panorama.bootstrap-storage-account
-*   bootstrap-share-name      = "inboundsharename"
-*   vhd-container             = "vhd-storage-container-name"
-*   lb_backend_pool_id        = "private-backend-pool-id"
-* }
-* ```
-*/
-
-## All the config required for a single VM series Firewall in Azure
 # Base resource group
 resource "azurerm_resource_group" "vmss" {
   location = var.location

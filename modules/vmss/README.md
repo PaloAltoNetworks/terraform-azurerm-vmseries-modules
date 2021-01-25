@@ -1,5 +1,5 @@
-vm-series scale set terraform module
-===========
+Palo Alto Networks VMSS Module for Azure
+========================================
 
 A terraform module for VMSS VM series firewalls in Azure.
 
@@ -8,24 +8,27 @@ Usage
 
 ```hcl
 module "vmss" {
-  source      = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vmss"
-  location    = "Australia Central"
-  name_prefix = "panostf"
-  password    = "your-password"
-  subnet-mgmt    = azurerm_subnet.subnet-mgmt
-  subnet-private = azurerm_subnet.subnet-private
-  subnet-public  = module.networks.subnet-public
-  bootstrap-storage-account     = module.panorama.bootstrap-storage-account
-  bootstrap-share-name  = "inboundsharename"
-  vhd-container           = "vhd-storage-container-name"
-  lb_backend_pool_id = "private-backend-pool-id"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vmss"
+
+  location                  = "Australia Central"
+  name_prefix               = "panostf"
+  password                  = "your-password"
+  subnet-mgmt               = azurerm_subnet.subnet-mgmt
+  subnet-private            = azurerm_subnet.subnet-private
+  subnet-public             = module.networks.subnet-public
+  bootstrap-storage-account = module.panorama.bootstrap-storage-account
+  bootstrap-share-name      = "inboundsharename"
+  vhd-container             = "vhd-storage-container-name"
+  lb_backend_pool_id        = "private-backend-pool-id"
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | >=0.12.29, <0.14 |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -71,4 +74,6 @@ module "vmss" {
 | Name | Description |
 |------|-------------|
 | inbound-scale-set-name | Name of inbound scale set |
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
