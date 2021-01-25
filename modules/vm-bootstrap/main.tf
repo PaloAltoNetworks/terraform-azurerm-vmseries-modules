@@ -1,27 +1,3 @@
-/*
-* vm-bootstrap terraform module
-* ===========
-* 
-* A terraform module for creating the bootstrap storage account and dependencies required to bootstrap
-* PANOS firewalls in Azure.
-* 
-* Does *not* configure the bootstrap images, licenses, or configurations.
-* 
-* Usage
-* -----
-* 
-* ```hcl
-* module "vm-bootstrap" {
-*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-bootstrap"
-*
-*   location        = "Australia Central"
-*   name_prefix     = "panostf"
-*   name_bootstrap_share = "bootstrap"
-* }
-* ```
-* 
-*/
-# Base resource group
 resource "azurerm_resource_group" "bootstrap" {
   location = var.location
   name     = "${var.name_prefix}${var.sep}${var.name_rg}"
@@ -37,8 +13,6 @@ resource "azurerm_storage_account" "bootstrap-storage-account" {
   resource_group_name      = azurerm_resource_group.bootstrap.name
 }
 
-# Create rhe share to house the directories
-### INBOUND ####
 resource "azurerm_storage_share" "inbound-bootstrap-storage-share" {
   name                 = var.name_inbound_bootstrap_storage_share
   storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
@@ -61,9 +35,6 @@ resource "azurerm_storage_share_directory" "inbound-bootstrap-config-directory" 
   name                 = "config"
 }
 
-#
-#### OUTBOUND #####
-#
 resource "azurerm_storage_share" "outbound-bootstrap-storage-share" {
   name                 = var.name_outbound-bootstrap-storage-share
   storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
