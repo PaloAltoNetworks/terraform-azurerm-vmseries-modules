@@ -1,24 +1,23 @@
-vm-bootstrap terraform module
+Palo Alto Networks VM-Bootstrap Module for Azure
 ===========
 
-A terraform module for creating the bootstrap storage account and dependencies required to bootstrap  
-PANOS firewalls in Azure.
+A terraform module for deploying a storage account and the dependencies required to bootstrap a VM-Series firewalls in Azure.
 
-Does *not* configure the bootstrap images, licenses, or configurations.
+The module does *not* configure the bootstrap images, licenses, or configurations.
 
 Usage
 -----
 
 ```hcl
 module "vm-bootstrap" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-bootstrap"
-
-  location        = "Australia Central"
-  name_prefix     = "panostf"
+  source               = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-bootstrap"
+  location             = "Australia Central"
+  name_prefix          = "panostf"
   name_bootstrap_share = "bootstrap"
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
@@ -54,4 +53,6 @@ module "vm-bootstrap" {
 | outbound-bootstrap-share-name | Name of storage share, used to store outbound firewall bootstrap configuration |
 | storage-container-name | Name of storage container available to store VM series disks |
 | storage-key | Primary access key associated with the bootstrap storage account |
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
