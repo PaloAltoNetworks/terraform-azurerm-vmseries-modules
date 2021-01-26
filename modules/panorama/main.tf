@@ -59,8 +59,8 @@ resource "azurerm_virtual_machine" "panorama" {
     disable_password_authentication = false
   }
   plan {
-    name      = "byol"
-    product   = "panorama"
     publisher = "paloaltonetworks"
+    product   = "panorama"
+    name      = var.panorama_sku
   }
 }
