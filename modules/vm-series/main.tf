@@ -1,5 +1,5 @@
 resource "azurerm_availability_set" "this" {
-  name                        = coalesce(var.name_avset, "${var.name_prefix}-avset")
+  name                        = coalesce(var.name_avset, "${var.name_prefix}avset")
   location                    = var.resource_group.location
   resource_group_name         = var.resource_group.name
   platform_fault_domain_count = 2
