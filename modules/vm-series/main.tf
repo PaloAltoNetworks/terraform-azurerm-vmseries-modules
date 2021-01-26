@@ -37,32 +37,33 @@ resource "azurerm_availability_set" "this" {
 resource "azurerm_public_ip" "pip-fw-mgmt" {
   for_each = var.instances
 
-  allocation_method   = "Static"
-  location            = var.resource_group.location
   name                = "${var.name_prefix}${each.key}-fw-pip"
-  sku                 = "standard"
+  location            = var.resource_group.location
   resource_group_name = var.resource_group.name
+  allocation_method   = "Static"
+  sku                 = "standard"
 }
 # Create another PIP for the outside interface so we can talk outbound
 resource "azurerm_public_ip" "pip-fw-public" {
   for_each = var.instances
 
-  allocation_method   = "Static"
-  location            = var.resource_group.location
   name                = "${var.name_prefix}${each.key}-pip-public"
-  sku                 = "standard"
+  location            = var.resource_group.location
   resource_group_name = var.resource_group.name
+  allocation_method   = "Static"
+  sku                 = "standard"
 }
 
 resource "azurerm_network_interface" "nic-fw-mgmt" {
   for_each = var.instances
 
-  location            = var.resource_group.location
   name                = "${var.name_prefix}${each.key}-nic-mgmt"
+  location            = var.resource_group.location
   resource_group_name = var.resource_group.name
+
   ip_configuration {
-    subnet_id                     = var.subnet-mgmt.id
     name                          = "${var.name_prefix}${each.key}-ip-mgmt"
+    subnet_id                     = var.subnet-mgmt.id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = azurerm_public_ip.pip-fw-mgmt[each.key].id
   }
@@ -71,32 +72,32 @@ resource "azurerm_network_interface" "nic-fw-mgmt" {
 resource "azurerm_network_interface" "nic-fw-private" {
   for_each = var.instances
 
-  location            = var.resource_group.location
-  name                = "${var.name_prefix}${each.key}-nic-private"
-  resource_group_name = var.resource_group.name
+  name                 = "${var.name_prefix}${each.key}-nic-private"
+  location             = var.resource_group.location
+  resource_group_name  = var.resource_group.name
+  enable_ip_forwarding = true
+
   ip_configuration {
-    subnet_id                     = var.subnet-private.id
     name                          = "${var.name_prefix}${each.key}-ip-private"
+    subnet_id                     = var.subnet-private.id
     private_ip_address_allocation = "dynamic"
   }
-  enable_ip_forwarding = true
 }
 
 resource "azurerm_network_interface" "nic-fw-public" {
   for_each = var.instances
 
-  location            = var.resource_group.location
-  name                = "${var.name_prefix}${each.key}-nic-public"
-  resource_group_name = var.resource_group.name
-  ip_configuration {
-    subnet_id                     = var.subnet-public.id
-    name                          = "${var.name_prefix}${each.key}-ip-public"
-    private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = azurerm_public_ip.pip-fw-public[each.key].id
-
-  }
+  name                 = "${var.name_prefix}${each.key}-nic-public"
+  location             = var.resource_group.location
+  resource_group_name  = var.resource_group.name
   enable_ip_forwarding = true
 
+  ip_configuration {
+    name                          = "${var.name_prefix}${each.key}-ip-public"
+    subnet_id                     = var.subnet-public.id
+    private_ip_address_allocation = "dynamic"
+    public_ip_address_id          = azurerm_public_ip.pip-fw-public[each.key].id
+  }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
