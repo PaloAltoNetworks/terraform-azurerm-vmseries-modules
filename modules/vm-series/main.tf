@@ -26,9 +26,9 @@
 * }
 * ```
 */
-resource "azurerm_availability_set" "az" {
-  location                    = var.location
+resource "azurerm_availability_set" "this" {
   name                        = coalesce(var.name_avset, "${var.name_prefix}-avset")
+  location                    = var.resource_group.location
   resource_group_name         = var.resource_group.name
   platform_fault_domain_count = 2
 }
@@ -99,7 +99,7 @@ resource "azurerm_network_interface" "nic-fw-public" {
 
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "inbound-pool-assoc" {
+resource "azurerm_network_interface_backend_address_pool_association" "this" {
   for_each = var.instances
 
   backend_address_pool_id = var.lb_backend_pool_id
@@ -107,14 +107,14 @@ resource "azurerm_network_interface_backend_address_pool_association" "inbound-p
   network_interface_id    = azurerm_network_interface.nic-fw-public[each.key].id
 }
 
-resource "azurerm_virtual_machine" "inbound-fw" {
+resource "azurerm_virtual_machine" "this" {
   for_each = var.instances
 
   name                         = "${var.name_prefix}${each.key}"
   location                     = var.resource_group.location
   resource_group_name          = var.resource_group.name
   vm_size                      = var.vm_size
-  availability_set_id          = azurerm_availability_set.az.id
+  availability_set_id          = azurerm_availability_set.this.id
   primary_network_interface_id = azurerm_network_interface.nic-fw-mgmt[each.key].id
 
   network_interface_ids = [
