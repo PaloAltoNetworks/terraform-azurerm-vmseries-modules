@@ -1,9 +1,7 @@
-networking terraform module
+Palo Alto Networks VM-Series Module for Azure
 ===========
 
-A terraform module for deploying standalone (non-scale-set) VM series firewalls in Azure.
-
-This module deploys a single VM-series
+A terraform module for deploying a standalone (non-scale-set) VM-Series firewall in Azure.
 
 Usage
 -----
@@ -25,12 +23,16 @@ module "vm-series" {
 }
 ```
 
-The module only supports Azure regions that have more than one fault domain. (As of 2021, the only two regions impacted are SouthCentralUSSTG and CentralUSEUAP. [Instruction to re-check regions](https://docs.microsoft.com/en-us/azure/virtual-machines/manage-availability#use-managed-disks-for-vms-in-an-availability-set) in future.) The reason is that the module uses Availability Sets with Managed Disks.
+___NOTE:___ The module only supports Azure regions that have more than one fault domain - as of 2021, the only two regions impacted are `SouthCentralUSSTG` and `CentralUSEUAP`. The reason is that the module uses Availability Sets with Managed Disks.
 
+[Instruction to re-check regions](https://docs.microsoft.com/en-us/azure/virtual-machines/manage-availability#use-managed-disks-for-vms-in-an-availability-set).
+
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | >=0.12.29, <0.14 |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -76,3 +78,4 @@ The module only supports Azure regions that have more than one fault domain. (As
 |------|-------------|
 | inbound-fw-pips | Inbound firewall Public IPs |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

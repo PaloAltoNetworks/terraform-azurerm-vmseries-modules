@@ -1,31 +1,3 @@
-/*
-* networking terraform module
-* ===========
-* 
-* A terraform module for deploying standalone (non-scale-set) VM series firewalls in Azure.
-* 
-* This module deploys a single VM-series
-* 
-* Usage
-* -----
-* 
-* ```hcl
-* module "vm-series" {
-*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-series"
-*
-*   location                      = "Australia Central"
-*   name_prefix                   = "panostf"
-*   password                      = "your-password"
-*   subnet-mgmt                   = azurerm_subnet.subnet-mgmt
-*   subnet-private                = azurerm_subnet.subnet-private
-*   subnet-public                 = module.networks.subnet-public
-*   bootstrap-storage-account     = module.panorama.bootstrap-storage-account
-*   bootstrap-share-name          = "sharename"
-*   vhd-container                 = "vhd-storage-container-name"
-*   lb_backend_pool_id            = "private-backend-pool-id"
-* }
-* ```
-*/
 resource "azurerm_availability_set" "az" {
   location                    = var.location
   name                        = "${var.name_prefix}${var.sep}${var.name_az}"
