@@ -1,25 +1,3 @@
-/*
-* networking terraform module
-* ===========
-* 
-* A terraform module for creating all the networking components required for VM series firewalls in Azure.
-* 
-* Usage
-* -----
-* 
-* ```hcl
-* module "networks" {
-*   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
-*
-*   location    = "Australia Central"
-*   name_prefix = "panostf"
-*   management_ips = {
-*       "124.171.153.28" : 100,
-*     }
-* }
-* ```
-* 
-*/
 resource "azurerm_resource_group" "rg" {
   name     = "${var.name_prefix}${var.sep}${var.name_rg}"
   location = var.location

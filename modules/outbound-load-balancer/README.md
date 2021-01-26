@@ -1,7 +1,7 @@
-outbound-load-balancer terraform module
+Palo Alto Networks Outbound-Load-Balancer Module for Azure
 ===========
 
-A terraform module for creating all the networking components required for VM series firewalls in Azure.
+A terraform module for deploying an Outbound-Load-Balancer required for VM-Series firewalls in Azure.
 
 Usage
 -----
@@ -16,10 +16,12 @@ module "outbound-lb" {
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | >=0.12.29, <0.14 |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -51,3 +53,4 @@ module "outbound-lb" {
 | backend-pool-id | ID of outbound load balancer backend address pool. |
 | frontend-ip-configs | IP configuration resources from outbound load balancers. |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

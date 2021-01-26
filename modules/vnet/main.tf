@@ -1,4 +1,3 @@
-# Resource Group
 resource "azurerm_resource_group" "this" {
   count    = var.existing_rg ? 0 : 1
   name     = var.resource_group_name
@@ -10,7 +9,6 @@ data "azurerm_resource_group" "this" {
   depends_on = [azurerm_resource_group.this]
 }
 
-# Virtual Network
 resource "azurerm_virtual_network" "this" {
   count               = var.existing_vnet ? 0 : 1
   name                = var.virtual_network_name
@@ -25,7 +23,6 @@ data "azurerm_virtual_network" "this" {
   depends_on          = [azurerm_virtual_network.this]
 }
 
-# Subnets
 resource "azurerm_subnet" "this" {
   for_each             = { for s in var.subnets : s.name => s if s.existing != true }
   name                 = each.value.name
