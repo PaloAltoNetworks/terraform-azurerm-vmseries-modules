@@ -1,5 +1,5 @@
 Palo Alto Networks VMSS Module for Azure
-========================================
+===========
 
 A terraform module for VMSS VM-Series firewalls in Azure.
 

@@ -1,8 +1,10 @@
-## Palo Alto Networks VNet Module for Azure
+Palo Alto Networks VNet Module for Azure
+===========
 
 A terraform module for deploying a Virtual Network and its components required for the VM-Series firewalls in Azure.
 
-## Usage
+Usage
+-----
 
 ```hcl
 module "vnet" {
