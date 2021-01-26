@@ -30,15 +30,16 @@ resource "azurerm_lb_probe" "probe" {
   resource_group_name = azurerm_resource_group.rg-lb.name
 }
 
-# This LB rule forwards all traffic on all ports to the provided backend servers.
 resource "azurerm_lb_rule" "lb-rules" {
   name                           = "${azurerm_lb.lb.name}${var.sep}${var.name_lb_rule}"
   resource_group_name            = azurerm_resource_group.rg-lb.name
   loadbalancer_id                = azurerm_lb.lb.id
   backend_address_pool_id        = azurerm_lb_backend_address_pool.lb-backend.id
   probe_id                       = azurerm_lb_probe.probe.id
-  backend_port                   = 0
   frontend_ip_configuration_name = "${var.name_prefix}${var.sep}${var.name_lb_fip}"
-  frontend_port                  = 0
-  protocol                       = "All"
+  # Azure docs about port `0`, protocol `All`: "a single rule to load-balance all TCP and UDP flows that
+  #                                           arrive on all ports of an internal Standard Load Balancer."
+  frontend_port = 0
+  backend_port  = 0
+  protocol      = "All"
 }
