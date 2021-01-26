@@ -1,7 +1,7 @@
-networking terraform module
+Palo Alto Networks Networking Module for Azure
 ===========
 
-A terraform module for creating all the networking components required for VM series firewalls in Azure.
+A terraform module for deploying the networking components required for VM-Series firewalls in Azure.
 
 Usage
 -----
@@ -18,10 +18,12 @@ module "networks" {
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | >=0.12.29, <0.14 |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -34,11 +36,11 @@ module "networks" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| firewall\_vnet\_prefix | The private prefix used for all firewall networks | `string` | `"10.110."` | no |
+| firewall\_vnet\_prefix | The private prefix used for all firewall networks. | `string` | `"10.110."` | no |
 | location | Region to deploy all networking resources. | `any` | n/a | yes |
 | management\_ips | External IP addresses or prefixes that will be permitted direct access to the management network. | `map(any)` | n/a | yes |
-| management\_subnet | The private network that terminates all FW and Panorama IP addresses - Joined with management\_vnet\_prefix | `string` | `"0.0/24"` | no |
-| management\_vnet\_prefix | The private prefix used for the management virtual network | `string` | `"10.255."` | no |
+| management\_subnet | The private network that terminates all FW and Panorama IP addresses - Joined with management\_vnet\_prefix. | `string` | `"0.0/24"` | no |
+| management\_vnet\_prefix | The private prefix used for the management virtual network. | `string` | `"10.255."` | no |
 | name\_fw\_panorama\_peer | n/a | `string` | `"fw-panorama-peer"` | no |
 | name\_inter\_vnet\_rule | n/a | `string` | `"inter-vnet-rule"` | no |
 | name\_management\_rules | n/a | `string` | `"panorama-mgmt-sgrule"` | no |
@@ -48,7 +50,7 @@ module "networks" {
 | name\_panorama\_fw\_peer | n/a | `string` | `"panorama-fw-peer"` | no |
 | name\_panorama\_sg | n/a | `string` | `"sg-panorama-mgmt"` | no |
 | name\_panorama\_subnet\_mgmt | n/a | `string` | `"net-panorama-mgmt"` | no |
-| name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
+| name\_prefix | Prefix to add to all the object names here. | `any` | n/a | yes |
 | name\_rg | n/a | `string` | `"networks"` | no |
 | name\_sg\_allowall | n/a | `string` | `"sg-allowall"` | no |
 | name\_sg\_mgmt | n/a | `string` | `"sg-vmmgmt"` | no |
@@ -62,10 +64,10 @@ module "networks" {
 | name\_vnet\_panorama\_mgmt | n/a | `string` | `"vnet-panorama-mgmt"` | no |
 | name\_vnet\_vmseries | n/a | `string` | `"vnet-vmseries"` | no |
 | olb\_private\_ip | The private IP address to assign to the Outgoing Load balancer frontend. This IP MUST fall in the private-subnet network. | `string` | `"10.110.0.21"` | no |
-| private\_subnet | The private network behind or on the internal/private side of the VM series firewalls (eth1/2) | `string` | `"0.0/24"` | no |
-| public\_subnet | The private network that is the external or public side of the VM series firewalls (eth1/1) | `string` | `"129.0/24"` | no |
+| private\_subnet | The private network behind or on the internal/private side of the VM series firewalls (eth1/2). | `string` | `"0.0/24"` | no |
+| public\_subnet | The private network that is the external or public side of the VM series firewalls (eth1/1). | `string` | `"129.0/24"` | no |
 | sep | Separator | `string` | `"-"` | no |
-| vm\_management\_subnet | The subnet used for the management NICs on the vm-series | `string` | `"255.0/24"` | no |
+| vm\_management\_subnet | The subnet used for the management NICs on the vm-series. | `string` | `"255.0/24"` | no |
 
 ## Outputs
 
@@ -78,3 +80,4 @@ module "networks" {
 | subnet-public | Outside/public subnet resource. |
 | vnet | VNET resource. |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
