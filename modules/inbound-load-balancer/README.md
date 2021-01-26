@@ -1,8 +1,7 @@
-inbound-load-balancer terraform module
+Palo Alto Networks Inbound-Load-Balancer Module for Azure
 ===========
 
-A terraform module for creating an Inbound Load Balancer for use with PANOS VM series. Supports both standalone and  
-scaleset deployments.
+A terraform module for deploying an Inbound Load Balancer for VM-Series firewalls. Supports both standalone and scaleset deployments.
 
 Usage
 -----
@@ -27,10 +26,12 @@ module "inbound-lb" {
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | >=0.12.29, <0.14 |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -50,7 +51,7 @@ module "inbound-lb" {
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
 | name\_probe | n/a | `string` | `"lb-probe"` | no |
 | name\_rg | n/a | `string` | `"lb-rg"` | no |
-| rules | A list[objects] of ports and names that will be assigned to inbound LB rules. Useful for testing. | <pre>list(object({<br>    port = number<br>    name = string<br>    protocol = string<br>  }))</pre> | <pre>[<br>  {<br>    "name": "default-rule",<br>    "port": 80,<br>    "protocol": "Tcp"<br>  }<br>]</pre> | no |
+| rules | A list[objects] of ports and names that will be assigned to inbound LB rules. Useful for testing. | <pre>list(object({<br>    port     = number<br>    name     = string<br>    protocol = string<br>  }))</pre> | <pre>[<br>  {<br>    "name": "default-rule",<br>    "port": 80,<br>    "protocol": "Tcp"<br>  }<br>]</pre> | no |
 | sep | Seperator | `string` | `"-"` | no |
 
 ## Outputs
@@ -61,3 +62,4 @@ module "inbound-lb" {
 | frontend-ip-configs | IP config resources of the load balancer. |
 | pip-ips | All PIPs associated with the inbound load balancer. |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
