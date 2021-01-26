@@ -20,17 +20,18 @@
 * ```
 */
 resource "azurerm_resource_group" "rg" {
-  location = var.location
   name     = "${var.name_prefix}${var.sep}${var.name_rg}"
+  location = var.location
 }
 
-### Now build the main networks
+# The main network.
 resource "azurerm_virtual_network" "vnet-vmseries" {
+  name                = "${var.name_prefix}${var.sep}${var.name_vnet_vmseries}"
   address_space       = ["${var.firewall_vnet_prefix}0.0/16"]
   location            = azurerm_resource_group.rg.location
-  name                = "${var.name_prefix}${var.sep}${var.name_vnet_vmseries}"
   resource_group_name = azurerm_resource_group.rg.name
 }
+
 # Management for VM-series
 resource "azurerm_subnet" "subnet-mgmt" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_mgmt}"
@@ -38,17 +39,19 @@ resource "azurerm_subnet" "subnet-mgmt" {
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
 }
+
 resource "azurerm_network_security_group" "sg-mgmt" {
-  location            = azurerm_resource_group.rg.location
   name                = "${var.name_prefix}${var.sep}${var.name_sg_mgmt}"
+  location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 }
+
 resource "azurerm_subnet_network_security_group_association" "mgmt-sa" {
   network_security_group_id = azurerm_network_security_group.sg-mgmt.id
   subnet_id                 = azurerm_subnet.subnet-mgmt.id
 }
 
-# private network - don't need NSG here?
+# Private network - don't need NSG here?
 resource "azurerm_subnet" "subnet-inside" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_inside}"
   address_prefixes     = ["${var.firewall_vnet_prefix}${var.private_subnet}"]
@@ -56,18 +59,20 @@ resource "azurerm_subnet" "subnet-inside" {
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
 }
 
-# Public network
+# Public network.
 resource "azurerm_network_security_group" "sg-allowall" {
-  location            = azurerm_resource_group.rg.location
   name                = "${var.name_prefix}${var.sep}${var.name_sg_allowall}"
+  location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 }
+
 resource "azurerm_subnet" "subnet-outside" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_outside}"
   address_prefixes     = ["${var.firewall_vnet_prefix}${var.public_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet-vmseries.name
 }
+
 resource "azurerm_subnet_network_security_group_association" "sg-outside-associate" {
   network_security_group_id = azurerm_network_security_group.sg-allowall.id
   subnet_id                 = azurerm_subnet.subnet-outside.id
@@ -79,9 +84,10 @@ resource "azurerm_subnet_network_security_group_association" "sg-inside-associat
 }
 
 resource "azurerm_route_table" "udr-inside" {
-  location            = var.location
   name                = "${var.name_prefix}${var.sep}${var.name_udr_inside}"
+  location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
+
   route {
     address_prefix         = "0.0.0.0/0"
     name                   = "default"
@@ -90,10 +96,8 @@ resource "azurerm_route_table" "udr-inside" {
   }
 }
 
-# asssign the route table to the remote/spoke VNET
+# Assign the route table to the remote/spoke VNET.
 resource "azurerm_subnet_route_table_association" "rta" {
   route_table_id = azurerm_route_table.udr-inside.id
   subnet_id      = azurerm_subnet.subnet-inside.id
 }
-
-
