@@ -1,7 +1,7 @@
-networking terraform module
+Palo Alto Networks Networking Module for Azure
 ===========
 
-A terraform module for creating all the networking components required for VM series firewalls in Azure.
+A terraform module for deploying all the networking components required for VM-Series firewalls in Azure.
 
 Usage
 -----
@@ -10,18 +10,20 @@ Usage
 module "networks" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-vm-series"
 
-  location    = "Australia Central"
-  name_prefix = "panostf"
+  location       = "Australia Central"
+  name_prefix    = "panostf"
   management_ips = {
       "124.171.153.28" : 100,
     }
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -73,3 +75,4 @@ module "networks" {
 | subnet-public | Outside/public subnet resource. |
 | vnet | VNET resource. |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
