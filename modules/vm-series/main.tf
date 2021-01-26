@@ -126,7 +126,7 @@ resource "azurerm_virtual_machine" "this" {
     computer_name  = "${var.name_prefix}${each.key}"
     admin_username = var.username
     admin_password = var.password
-    custom_data = join(
+    custom_data = var.bootstrap-share-name == null ? null : join(
       ",",
       [
         "storage-account=${var.bootstrap-storage-account.name}",
