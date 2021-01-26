@@ -1,4 +1,4 @@
-networking terraform module
+Palo Alto Networks Networking-Panorama Module for Azure
 ===========
 
 A terraform module for deploying the networking requirements for Panorama in Azure.
@@ -18,10 +18,12 @@ module "networks" {
 }
 ```
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
+| terraform | >=0.12.29, <0.14 |
 | azurerm | >=2.26.0 |
 
 ## Providers
@@ -53,3 +55,4 @@ module "networks" {
 |------|-------------|
 | panorama-mgmt-subnet | Panorama Management subnet resource. |
 
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
