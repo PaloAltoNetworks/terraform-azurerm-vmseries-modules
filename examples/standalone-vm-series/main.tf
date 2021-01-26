@@ -38,7 +38,7 @@ resource "azurerm_resource_group" "vmseries" {
 module "inbound-lb" {
   source = "../../modules/inbound-load-balancer"
 
-  location    = var.location
+  location    = azurerm_resource_group.vmseries.location
   name_prefix = var.name_prefix
 }
 
