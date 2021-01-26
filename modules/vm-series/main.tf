@@ -147,6 +147,9 @@ resource "azurerm_virtual_machine" "this" {
     caching           = "ReadWrite"
   }
 
+  delete_os_disk_on_termination    = true
+  delete_data_disks_on_termination = true
+
   os_profile {
     computer_name  = "${var.name_prefix}${each.key}"
     admin_username = var.username
