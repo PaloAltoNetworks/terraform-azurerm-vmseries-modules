@@ -89,3 +89,9 @@ variable "name_avset" {
   description = "Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated."
   type        = string
 }
+
+variable "tags" {
+  description = "A map of tags to be associated with the resources created."
+  type        = "map"
+  default     = {}
+}

@@ -114,6 +114,7 @@ resource "azurerm_virtual_machine" "this" {
   name                         = "${var.name_prefix}${each.key}"
   location                     = var.resource_group.location
   resource_group_name          = var.resource_group.name
+  tags                         = var.tags
   vm_size                      = var.vm_size
   availability_set_id          = azurerm_availability_set.this.id
   primary_network_interface_id = azurerm_network_interface.nic-fw-mgmt[each.key].id
