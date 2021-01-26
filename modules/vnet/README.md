@@ -1,9 +1,9 @@
-## VNET module
+## Palo Alto Networks VNet Module for Azure
 
-## Overview
-This module creates new environment (Resource Group, Virtual Network and Subnets) in Azure cloud for greenfield installation.
+A terraform module for deploying a Virtual Network and its components required for the VM-Series firewalls in Azure.
 
 ## Usage
+
 ```hcl
 module "vnet" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vnet"
@@ -20,43 +20,38 @@ module "vnet" {
 }
 ```
 
-## Providers
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Requirements
+
 | Name | Version |
 |------|---------|
-| azurerm | tested with: >=2.26.0 |
+| terraform | >=0.12.29, <0.14 |
 
-## Required resources
-none
+## Providers
+
+| Name | Version |
+|------|---------|
+| azurerm | n/a |
 
 ## Inputs
+
 | Name | Description | Type | Default | Required |
-|------|-------------|------|---------|----------|
-| location | Location (region) where to create new resources | `string` | none | yes |
-| resource_group_name | Name of the Resource Group in which Virtual Network and Subnets will be created | `string` | none | yes |
-| virtual_network_name | Name of the Virtual Network in which new Subnets will be created | `string` | none | yes |
-| address_space | Address space to use inside newly created Virtual Network | `list(string)` | ["10.0.0.0/16"] | no |
-| subnets | Map with definition of subnets to create | `map(map)` | none | yes |
-
-<br>
-
-### "subnets" variable definition
-The `subnets` variable is a map of maps, where each map represents a single subnet.
-There is brownfield support for existing subnet, for this only required to specify `name` and `existing = true`.
-
-The subnet map has the following inputs available (please see examples folder for additional references):
-
-| Name | Description | Type | Default | Required | Brownfield Required
-|------|-------------|------|-------|-------|-------|
-| name | The name of the new / existing subnet | string | - | yes | yes |
-| existing | Flag only if referencing an existing subnet  | bool | - | no | yes |
-| address_prefixes | The CIDR formatted IP ranges | map | - | yes | no |
-
-<br>
+|------|-------------|------|---------|:--------:|
+| address\_space | Address space for VNet. | `list(string)` | <pre>[<br>  "10.0.0.0/16"<br>]</pre> | no |
+| existing\_rg | Enable this option if you have already created Resource Group. | `bool` | `false` | no |
+| existing\_vnet | Enable this option if you have already created Virtual Network. | `bool` | `false` | no |
+| location | Location of the resources that will be deployed. | `string` | n/a | yes |
+| resource\_group\_name | Name of the Resource Group to create. | `string` | n/a | yes |
+| subnets | Definition of subnets to create. | `any` | n/a | yes |
+| virtual\_network\_name | Name of the Virtual Network to create. | `string` | n/a | yes |
 
 ## Outputs
-| Name | Description | Type |
-|------|-------------|------|
-| location | Location (region) where resources were created | string |
-| resource_group | Newly created Resource Group | map |
-| virtual_network | Newly cretaed Virtual Network | map |
-| subnets | Newly created subnets | map of maps |
+
+| Name | Description |
+|------|-------------|
+| location | n/a |
+| resource\_group | n/a |
+| subnets | n/a |
+| virtual\_network | n/a |
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
