@@ -1,15 +1,15 @@
 resource "azurerm_resource_group" "bootstrap" {
-  location = var.location
   name     = "${var.name_prefix}${var.sep}${var.name_rg}"
+  location = var.location
 }
 
 # The storage account is used for the VM Series bootstrap
 # Ref: https://docs.paloaltonetworks.com/vm-series/8-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-the-vm-series-firewall-in-azure.html#idd51f75b8-e579-44d6-a809-2fafcfe4b3b6
 resource "azurerm_storage_account" "bootstrap-storage-account" {
-  location                 = var.location
   name                     = "${var.name_prefix}${var.name_bootstrap_share}"
   account_replication_type = "LRS"
   account_tier             = "Standard"
+  location                 = azurerm_resource_group.bootstrap.location
   resource_group_name      = azurerm_resource_group.bootstrap.name
 }
 

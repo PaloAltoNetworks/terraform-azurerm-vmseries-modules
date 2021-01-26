@@ -1,5 +1,5 @@
 
-output "inbound-fw-pips" {
+output "ip_addresses" {
   description = "Inbound firewall Public IPs"
-  value       = [azurerm_public_ip.pip-fw-mgmt.*.ip_address]
+  value       = { for k, v in var.instances : k => azurerm_public_ip.pip-fw-mgmt[k].ip_address }
 }

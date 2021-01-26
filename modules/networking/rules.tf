@@ -12,6 +12,7 @@ resource "azurerm_network_security_rule" "inter-vnet-rule" {
   destination_address_prefix  = "*"
   destination_port_range      = "*"
 }
+
 # Permit All outbound traffic in vm-series Management VNET
 resource "azurerm_network_security_rule" "vmseries-allowall-outbound" {
   name                        = "${var.name_prefix}${var.sep}${var.name_vmseries_allowall_outbound}"
@@ -26,6 +27,7 @@ resource "azurerm_network_security_rule" "vmseries-allowall-outbound" {
   destination_address_prefix  = "*"
   destination_port_range      = "*"
 }
+
 # Allow all vnets to talk to the VM management network
 resource "azurerm_network_security_rule" "vmseries-mgmt-inbound" {
   name                        = "${var.name_prefix}${var.sep}${var.name_vmseries_mgmt_inbound}"
@@ -71,6 +73,7 @@ resource "azurerm_network_security_rule" "outside-allowall-inbound" {
   destination_address_prefix  = "*"
   destination_port_range      = "*"
 }
+
 resource "azurerm_network_security_rule" "outside-allowall-outbound" {
   name                        = "${var.name_prefix}${var.sep}${var.name_vmseries_allowall_outbound}"
   resource_group_name         = azurerm_resource_group.rg.name

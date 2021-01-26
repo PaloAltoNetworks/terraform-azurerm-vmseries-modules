@@ -1,31 +1,30 @@
 # Base resource group
 resource "azurerm_resource_group" "panorama" {
-  location = var.location
   name     = "${var.name_prefix}${var.sep}${var.name_rg}"
+  location = var.location
 }
-
 
 # Create a public IP for management
 resource "azurerm_public_ip" "panorama-pip-mgmt" {
-  allocation_method   = "Static"
-  location            = azurerm_resource_group.panorama.location
   name                = "${var.name_prefix}${var.sep}${var.name_panorama_pip_mgmt}"
+  location            = azurerm_resource_group.panorama.location
   resource_group_name = azurerm_resource_group.panorama.name
+  allocation_method   = "Static"
 }
 
 # Build the management interface
 resource "azurerm_network_interface" "mgmt" {
-  location            = azurerm_resource_group.panorama.location
   name                = "${var.name_prefix}${var.sep}${var.name_mgmt}"
+  location            = azurerm_resource_group.panorama.location
   resource_group_name = azurerm_resource_group.panorama.name
+
   ip_configuration {
-    subnet_id                     = var.subnet_mgmt.id
     name                          = "${var.name_prefix}-ip-mgmt"
+    subnet_id                     = var.subnet_mgmt.id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = azurerm_public_ip.panorama-pip-mgmt.id
   }
 }
-
 
 # Build the Panorama VM
 resource "azurerm_virtual_machine" "panorama" {
@@ -44,23 +43,27 @@ resource "azurerm_virtual_machine" "panorama" {
     sku       = var.panorama_sku
     version   = var.panorama_version
   }
+
   storage_os_disk {
     name              = "${var.name_prefix}PanoramaDisk"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
+
   os_profile {
     computer_name  = "hostname"
     admin_username = var.username
     admin_password = var.password
   }
+
   os_profile_linux_config {
     disable_password_authentication = false
   }
+
   plan {
-    name      = "byol"
-    product   = "panorama"
     publisher = "paloaltonetworks"
+    product   = "panorama"
+    name      = var.panorama_sku
   }
 }

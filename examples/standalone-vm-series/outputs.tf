@@ -1,14 +1,13 @@
-output "USERNAME" {
+output "username" {
   description = "PAN Device username"
   value       = var.username
 }
 
-output "PASSWORD" {
+output "password" {
   description = "PAN Device password"
-  value       = random_password.password
+  value       = random_password.password.result
 }
 
-output "PANORAMA-IP" {
-  description = "The Public IP address of Panorama."
-  value       = module.panorama.panorama-publicip
+output ip_addresses {
+  value = module.inbound-vm-series.ip_addresses
 }
