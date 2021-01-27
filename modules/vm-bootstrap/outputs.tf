@@ -1,5 +1,5 @@
 output "bootstrap-storage-account" {
-  value       = azurerm_storage_account.bootstrap-storage-account
+  value       = local.storage_account
   description = "Bootstrap storage account resource"
 }
 
@@ -14,6 +14,6 @@ output "outbound-bootstrap-share-name" {
 }
 
 output "storage-key" {
-  value       = azurerm_storage_account.bootstrap-storage-account.primary_access_key
+  value       = local.storage_account.primary_access_key
   description = "Primary access key associated with the bootstrap storage account"
 }
