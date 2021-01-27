@@ -18,7 +18,7 @@ module "vmss" {
   subnet-public             = module.networks.subnet-public
   bootstrap-storage-account = module.panorama.bootstrap-storage-account
   bootstrap-share-name      = "inboundsharename"
-  vhd-container             = "vhd-storage-container-name"
+  vhd-container             = "vhd-storage-container-id"
   lb_backend_pool_id        = "private-backend-pool-id"
 }
 ```
@@ -67,7 +67,7 @@ module "vmss" {
 | vm\_count | Minimum instances per scale set. | `number` | `2` | no |
 | vm\_series\_sku | VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all | `string` | `"bundle2"` | no |
 | vm\_series\_version | VM-series Software version | `string` | `"9.0.4"` | no |
-| vmseries\_size | Default size for VM series | `string` | `"Standard_D5_v2"` | no |
+| vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 
 ## Outputs
 

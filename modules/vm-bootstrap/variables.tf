@@ -41,6 +41,3 @@ variable "name_inbound_bootstrap_storage_share" {
 variable "name_outbound-bootstrap-storage-share" {
   default = "obbootstrapshare"
 }
-variable "name_vm_sc" {
-  default = "vm-container"
-}
