@@ -17,14 +17,14 @@ See the examples/vm-series directory.
 | Name | Version |
 |------|---------|
 | terraform | >=0.12.29, <0.14 |
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.42 |
 | random | ~>3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.42 |
 | random | ~>3.0 |
 
 ## Inputs
