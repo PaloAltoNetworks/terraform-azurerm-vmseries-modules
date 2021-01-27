@@ -38,8 +38,10 @@ variable "storage_account_name" {
   type        = string
 }
 
-variable "name_inbound_bootstrap_storage_share" {
-  default = "ibbootstrapshare"
+variable "storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping."
+  default     = "bootstrapshare"
+  type        = string
 }
 
 variable "name_outbound-bootstrap-storage-share" {

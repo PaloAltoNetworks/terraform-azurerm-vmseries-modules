@@ -65,7 +65,7 @@ module "bootstrap" {
 # Create a storage container for storing VM disks provisioned via VMSS
 resource "azurerm_storage_container" "this" {
   name                 = "${var.name_prefix}vm-container"
-  storage_account_name = module.bootstrap.bootstrap-storage-account.name
+  storage_account_name = module.bootstrap.storage_account.name
 }
 
 # Create the inbound Scaleset
@@ -79,15 +79,24 @@ module "inbound-scaleset" {
   subnet-mgmt               = module.networks.subnet-mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
-  bootstrap-share-name      = module.bootstrap.inbound-bootstrap-share-name
-  vhd-container             = "${module.bootstrap.bootstrap-storage-account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  bootstrap-storage-account = module.bootstrap.storage_account
+  bootstrap-share-name      = module.bootstrap.storage_share_name
+  vhd-container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]
 }
 
-# Create the inbound Scaleset
+# Outbound
+module "outbound_bootstrap" {
+  source = "../../modules/vm-bootstrap"
+
+  create_storage_account   = false
+  existing_storage_account = module.bootstrap.storage_account
+  name_prefix              = "${var.name_prefix}ob-"
+  storage_share_name       = "obbootstrapshare"
+}
+
 module "outbound-scaleset" {
   source = "../../modules/vmss"
 
@@ -98,9 +107,9 @@ module "outbound-scaleset" {
   subnet-mgmt               = module.networks.subnet-mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
-  bootstrap-share-name      = module.bootstrap.outbound-bootstrap-share-name
-  vhd-container             = "${module.bootstrap.bootstrap-storage-account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  bootstrap-storage-account = module.outbound_bootstrap.storage_account
+  bootstrap-share-name      = module.outbound_bootstrap.storage_share_name
+  vhd-container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]
