@@ -3,8 +3,11 @@ resource "azurerm_resource_group" "rg-lb" {
   location = var.location
 }
 
-resource "azurerm_public_ip" "lb-fip-pip" {
-  for_each = { for rule in var.rules : rule.port => rule }
+resource "azurerm_public_ip" "this" {
+  for_each = { for k, rule in var.rules
+    :
+    k => rule if rule.create_public_ip
+  }
 
   name                = "${var.name_prefix}-${each.value.port}"
   location            = azurerm_resource_group.rg-lb.location
@@ -20,10 +23,10 @@ resource "azurerm_lb" "lb" {
   sku                 = "standard"
 
   dynamic "frontend_ip_configuration" {
-    for_each = azurerm_public_ip.lb-fip-pip
+    for_each = var.rules
     content {
-      name                 = "${frontend_ip_configuration.value.name}-fip"
-      public_ip_address_id = frontend_ip_configuration.value.id
+      name                 = frontend_ip_configuration.value.create_public_ip ? "${azurerm_public_ip.this[frontend_ip_configuration.key].name}-fip" : frontend_ip_configuration.value.frontend_ip_configuration_name
+      public_ip_address_id = frontend_ip_configuration.value.create_public_ip ? azurerm_public_ip.this[frontend_ip_configuration.key].id : frontend_ip_configuration.value.public_ip_address_id
     }
   }
 }
@@ -42,9 +45,9 @@ resource "azurerm_lb_probe" "probe" {
 }
 
 resource "azurerm_lb_rule" "lb-rules" {
-  for_each = { for rule in var.rules : rule.port => rule }
+  for_each = var.rules
 
-  name                    = "${each.value.name}${var.sep}${var.name_lbrule}"
+  name                    = each.key
   resource_group_name     = azurerm_resource_group.rg-lb.name
   loadbalancer_id         = azurerm_lb.lb.id
   probe_id                = azurerm_lb_probe.probe.id
@@ -52,7 +55,7 @@ resource "azurerm_lb_rule" "lb-rules" {
 
   protocol                       = each.value.protocol
   backend_port                   = each.value.port
-  frontend_ip_configuration_name = "${var.name_prefix}-${each.value.port}-fip"
+  frontend_ip_configuration_name = each.value.create_public_ip ? "${azurerm_public_ip.this[each.key].name}-fip" : each.value.frontend_ip_configuration_name
   frontend_port                  = each.value.port
   enable_floating_ip             = true
 }

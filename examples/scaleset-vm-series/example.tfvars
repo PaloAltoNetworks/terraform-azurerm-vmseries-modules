@@ -6,13 +6,12 @@ management_ips = {
 
 # Optional Load Balancer (LB) rules
 # These will automatically create a public Azure IP and associate to LB configuration.
-rules = [
-  {
-    port     = 22
-    name     = "testssh"
+rules = {
+  "myssh" = {
     protocol = "Tcp"
+    port     = 22
   }
-]
+}
 
 # The count here defines how many VM-series are deployed PER VM direction (inbound/outbound)
 vm_series_count = 2

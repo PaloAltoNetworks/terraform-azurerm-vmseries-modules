@@ -1,6 +1,6 @@
 output "pip-ips" {
   value = {
-    for pip in azurerm_public_ip.lb-fip-pip :
+    for pip in azurerm_public_ip.this :
     pip.id => pip.ip_address
   }
   description = "All PIPs associated with the inbound load balancer."

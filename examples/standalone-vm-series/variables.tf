@@ -78,12 +78,8 @@ variable "olb_private_ip" {
   default     = "10.110.0.21"
 }
 variable "rules" {
-  description = "Inbound Load balancer rules. Largely used for testing the environment, these are mapped to PIPs and then the inbound LB."
-  type = list(object({
-    port = number
-    name = string
-  }))
-  default = []
+  description = "Map of Inbound Load balancer rules. Largely used for testing the environment, these are mapped to PIPs and then the inbound LB."
+  default     = {}
 }
 
 #----------------------#

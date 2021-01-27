@@ -7,17 +7,13 @@ variable "name_prefix" {
 }
 
 variable "rules" {
-  description = "A list[objects] of ports and names that will be assigned to inbound LB rules. Useful for testing."
-  type = list(object({
-    port     = number
-    name     = string
-    protocol = string
-  }))
-  default = [{
-    port     = 80
-    name     = "default-rule"
-    protocol = "Tcp"
-  }]
+  description = "A map of inbound LB rules. Useful for testing."
+  default = {
+    "default80" = {
+      port     = 80
+      protocol = "Tcp"
+    }
+  }
 }
 
 #  ---   #
@@ -43,8 +39,4 @@ variable "name_backend" {
 
 variable "name_probe" {
   default = "lb-probe"
-}
-
-variable "name_lbrule" {
-  default = "lbrule"
 }
