@@ -56,7 +56,8 @@ module "bootstrap" {
   location    = var.location
   name_prefix = var.name_prefix
   files = {
-    "bootstrap_files/authcodes" = "license/authcodes"
+    "bootstrap_files/authcodes"    = "license/authcodes"
+    "bootstrap_files/init-cfg.txt" = "config/init-cfg.txt"
   }
 }
 
