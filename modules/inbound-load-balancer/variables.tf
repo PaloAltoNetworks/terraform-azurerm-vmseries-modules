@@ -6,14 +6,48 @@ variable "name_prefix" {
   description = "Prefix to add to all the object names here"
 }
 
-variable "rules" {
-  description = "A map of inbound LB rules. Useful for testing."
-  default = {
-    "default80" = {
-      port     = 80
-      protocol = "Tcp"
+variable "frontend_ips" {
+  description = <<-EOF
+  A map of objects describing LB Frontend IP configurations. Keys of the map are the names and values are { create_public_ip, public_ip_address_id, rules }. Example:
+
+  ```
+  {
+    "pip-existing" = {
+      create_public_ip     = false
+      public_ip_address_id = azurerm_public_ip.this.id
+      rules = {
+        "testssh" = {
+          protocol = "Tcp"
+          port     = 22
+        }
+        "testhttp" = {
+          protocol = "Tcp"
+          port     = 80
+        }
+      }
+    }
+    "pip-created" = {
+      create_public_ip = true
+      rules = {
+        "testssh" = {
+          protocol = "Tcp"
+          port     = 22
+        }
+        "testhttp" = {
+          protocol = "Tcp"
+          port     = 80
+        }
+      }
     }
   }
+  ```
+  EOF
+  # default = {
+  #   "default80" = {
+  #     port     = 80
+  #     protocol = "Tcp"
+  #   }
+  # }
 }
 
 #  ---   #

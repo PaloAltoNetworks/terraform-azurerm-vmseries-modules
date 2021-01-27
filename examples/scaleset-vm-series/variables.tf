@@ -71,9 +71,8 @@ variable "olb_private_ip" {
   default     = "10.110.0.21"
 }
 
-variable "rules" {
-  description = "Inbound Load balancer rules. Largely used for testing the environment, these are mapped to PIPs and then the inbound LB."
-  default     = {}
+variable "frontend_ips" {
+  description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
 }
 
 #----------------------#
