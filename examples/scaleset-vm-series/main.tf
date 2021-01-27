@@ -62,6 +62,12 @@ module "bootstrap" {
   name_prefix = var.name_prefix
 }
 
+# Create a storage container for storing VM disks provisioned via VMSS
+resource "azurerm_storage_container" "this" {
+  name                 = "${var.name_prefix}vm-container"
+  storage_account_name = module.bootstrap.bootstrap-storage-account.name
+}
+
 # Create the inbound Scaleset
 module "inbound-scaleset" {
   source = "../../modules/vmss"
@@ -75,7 +81,7 @@ module "inbound-scaleset" {
   subnet-public             = module.networks.subnet-public
   bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
   bootstrap-share-name      = module.bootstrap.inbound-bootstrap-share-name
-  vhd-container             = module.bootstrap.storage-container-name
+  vhd-container             = "${module.bootstrap.bootstrap-storage-account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]
@@ -94,7 +100,7 @@ module "outbound-scaleset" {
   subnet-public             = module.networks.subnet-public
   bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
   bootstrap-share-name      = module.bootstrap.outbound-bootstrap-share-name
-  vhd-container             = module.bootstrap.storage-container-name
+  vhd-container             = "${module.bootstrap.bootstrap-storage-account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]

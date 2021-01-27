@@ -18,7 +18,6 @@ module "vm-series" {
   subnet-public                 = module.networks.subnet-public
   bootstrap-storage-account     = module.panorama.bootstrap-storage-account
   bootstrap-share-name          = "sharename"
-  vhd-container                 = "vhd-storage-container-name"
   lb_backend_pool_id            = "private-backend-pool-id"
 }
 ```

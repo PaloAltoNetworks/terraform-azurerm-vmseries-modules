@@ -85,8 +85,3 @@ resource "azurerm_storage_share_directory" "outbound-bootstrap-config-directory"
   name                 = "config"
 }
 
-# Create a storage container for storing VM disks provisioned via VMSS
-resource "azurerm_storage_container" "vm-sc" {
-  name                 = "${var.name_prefix}${var.sep}${var.name_vm_sc}"
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
-}

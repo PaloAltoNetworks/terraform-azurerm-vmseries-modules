@@ -86,7 +86,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     create_option  = "FromImage"
     name           = "${var.name_prefix}-vhd-profile"
     caching        = "ReadWrite"
-    vhd_containers = ["${var.bootstrap-storage-account.primary_blob_endpoint}${var.vhd-container}"]
+    vhd_containers = [var.vhd-container]
   }
 
   plan {
