@@ -88,6 +88,12 @@ variable "lb_backend_pool_id" {
   type        = string
 }
 
+variable "enable_backend_pool" {
+  description = "If false, ignore `lb_backend_pool_id`."
+  default     = true
+  type        = bool
+}
+
 variable "name_avset" {
   default     = null
   description = "Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated."
