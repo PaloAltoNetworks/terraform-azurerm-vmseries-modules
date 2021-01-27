@@ -9,11 +9,6 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "bootstrap_key_lifetime" {
-  description = "Default key lifetime for bootstrap."
-  default     = "8760"
-}
-
 variable "create_storage_account" {
   description = "If true, create a Storage Account and a Resource Group and ignore `existing_storage_account`."
   default     = true

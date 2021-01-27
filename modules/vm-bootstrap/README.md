@@ -31,7 +31,6 @@ See the examples/vm-series directory.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bootstrap\_key\_lifetime | Default key lifetime for bootstrap. | `string` | `"8760"` | no |
 | create\_storage\_account | If true, create a Storage Account and a Resource Group and ignore `existing_storage_account`. | `bool` | `true` | no |
 | existing\_storage\_account | The existing Storage Account object to use. Ignored when `create_storage_account` is true. | `any` | `null` | no |
 | files | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
