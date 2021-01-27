@@ -60,8 +60,9 @@ resource "azurerm_public_ip" "public" {
 module "inbound-lb" {
   source = "../../modules/inbound-load-balancer"
 
-  location    = azurerm_resource_group.vmseries.location
-  name_prefix = var.name_prefix
+  location     = var.location
+  name_prefix  = var.name_prefix
+  frontend_ips = var.frontend_ips
 }
 
 module "outbound-lb" {
