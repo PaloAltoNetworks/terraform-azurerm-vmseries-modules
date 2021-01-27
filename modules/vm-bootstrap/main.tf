@@ -1,21 +1,29 @@
-resource "azurerm_resource_group" "bootstrap" {
-  name     = "${var.name_prefix}${var.sep}${var.name_rg}"
+resource "azurerm_resource_group" "this" {
+  count = var.create_storage_account ? 1 : 0
+
+  name     = coalesce(var.resource_group_name, "${var.name_prefix}bootstrap")
   location = var.location
 }
 
-# The storage account is used for the VM Series bootstrap
-# Ref: https://docs.paloaltonetworks.com/vm-series/8-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-the-vm-series-firewall-in-azure.html#idd51f75b8-e579-44d6-a809-2fafcfe4b3b6
-resource "azurerm_storage_account" "bootstrap-storage-account" {
-  name                     = "${var.name_prefix}${var.name_bootstrap_share}"
+resource "azurerm_storage_account" "this" {
+  count = var.create_storage_account ? 1 : 0
+
+  name                     = coalesce(var.storage_account_name, "${var.name_prefix}bootstrap")
   account_replication_type = "LRS"
   account_tier             = "Standard"
-  location                 = azurerm_resource_group.bootstrap.location
-  resource_group_name      = azurerm_resource_group.bootstrap.name
+  location                 = azurerm_resource_group.this[0].location
+  resource_group_name      = azurerm_resource_group.this[0].name
 }
+
+locals {
+  storage_account = var.create_storage_account ? azurerm_storage_account.this[0] : var.existing_storage_account
+}
+
+###############################################################################
 
 resource "azurerm_storage_share" "inbound-bootstrap-storage-share" {
   name                 = var.name_inbound_bootstrap_storage_share
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
+  storage_account_name = local.storage_account.name
   quota                = 50
 }
 
@@ -26,12 +34,12 @@ resource "azurerm_storage_share_directory" "bootstrap-storage-directories" {
   "license"])
   name                 = each.key
   share_name           = azurerm_storage_share.inbound-bootstrap-storage-share.name
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
+  storage_account_name = local.storage_account.name
 }
 
 resource "azurerm_storage_share_directory" "inbound-bootstrap-config-directory" {
   share_name           = azurerm_storage_share.inbound-bootstrap-storage-share.name
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
+  storage_account_name = local.storage_account.name
   name                 = "config"
 }
 
@@ -65,7 +73,7 @@ resource "random_id" "file" {
 
 resource "azurerm_storage_share" "outbound-bootstrap-storage-share" {
   name                 = var.name_outbound-bootstrap-storage-share
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
+  storage_account_name = local.storage_account.name
   quota                = 50
 }
 
@@ -76,12 +84,12 @@ resource "azurerm_storage_share_directory" "outbound-bootstrap-storage-directori
   "license"])
   name                 = each.key
   share_name           = azurerm_storage_share.outbound-bootstrap-storage-share.name
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
+  storage_account_name = local.storage_account.name
 }
 
 resource "azurerm_storage_share_directory" "outbound-bootstrap-config-directory" {
   share_name           = azurerm_storage_share.outbound-bootstrap-storage-share.name
-  storage_account_name = azurerm_storage_account.bootstrap-storage-account.name
+  storage_account_name = local.storage_account.name
   name                 = "config"
 }
 

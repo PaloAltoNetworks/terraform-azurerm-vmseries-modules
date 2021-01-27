@@ -1,14 +1,28 @@
 variable "location" {
-  description = "Region to deploy vm-series bootstrap resources."
+  description = "Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`."
+  default     = null
+  type        = string
 }
 
 variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
+  description = "Prefix to add to all the object names here."
+  type        = string
 }
 
 variable "bootstrap_key_lifetime" {
   description = "Default key lifetime for bootstrap."
   default     = "8760"
+}
+
+variable "create_storage_account" {
+  description = "If true, create a Storage Account and a Resource Group and ignore `existing_storage_account`."
+  default     = true
+  type        = bool
+}
+
+variable "existing_storage_account" {
+  description = "The existing Storage Account object to use. Ignored when `create_storage_account` is true."
+  default     = null
 }
 
 variable files {
@@ -17,21 +31,16 @@ variable files {
   type        = map(string)
 }
 
-#  ---   #
-# Naming #
-#  ---   #
-
-# Seperator
-variable "sep" {
-  default = "-"
+variable "resource_group_name" {
+  description = "Name of the resource group, if creating it. Ignored when `existing_storage_account` object is non-null."
+  default     = null
+  type        = string
 }
 
-variable "name_rg" {
-  default = "rg-bootstrap"
-}
-
-variable "name_bootstrap_share" {
-  default = "bootstrap"
+variable "storage_account_name" {
+  description = "Name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null."
+  default     = null
+  type        = string
 }
 
 variable "name_inbound_bootstrap_storage_share" {
