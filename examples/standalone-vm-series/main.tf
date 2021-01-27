@@ -35,6 +35,28 @@ resource "azurerm_resource_group" "vmseries" {
   name     = "${var.name_prefix}-vmseries-rg"
 }
 
+# Create a public IP for management
+resource "azurerm_public_ip" "mgmt" {
+  for_each = var.instances
+
+  name                = "${var.name_prefix}${each.key}-mgmt"
+  location            = azurerm_resource_group.vmseries.location
+  resource_group_name = azurerm_resource_group.vmseries.name
+  allocation_method   = "Static"
+  sku                 = "standard"
+}
+
+# Create another PIP for the outside interface so we can talk outbound
+resource "azurerm_public_ip" "public" {
+  for_each = var.instances
+
+  name                = "${var.name_prefix}${each.key}-public"
+  location            = azurerm_resource_group.vmseries.location
+  resource_group_name = azurerm_resource_group.vmseries.name
+  allocation_method   = "Static"
+  sku                 = "standard"
+}
+
 module "inbound-lb" {
   source = "../../modules/inbound-load-balancer"
 
@@ -78,8 +100,10 @@ module "inbound-vm-series" {
   bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
   bootstrap-share-name      = module.bootstrap.inbound-bootstrap-share-name
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
-  instances = {
-    "fw00" = {}
-  }
+  instances = { for k, v in var.instances : k => {
+    mgmt_public_ip_address_id = azurerm_public_ip.mgmt[k].id
+    nic1_public_ip_address_id = azurerm_public_ip.public[k].id
+  } }
+
   depends_on = [module.bootstrap]
 }

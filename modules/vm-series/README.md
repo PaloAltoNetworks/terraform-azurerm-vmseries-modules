@@ -44,37 +44,32 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bootstrap-share-name | Azure File share for bootstrap config | `any` | n/a | yes |
-| bootstrap-storage-account | Storage account setup for bootstrapping | `any` | n/a | yes |
-| lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
+| bootstrap-share-name | Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap-storage-account is left at null. | `string` | `null` | no |
+| bootstrap-storage-account | Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output. | `any` | n/a | yes |
+| custom\_image\_id | Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `vm_series_version`, `vm_series_publisher`, `vm_series_offer`, `vm_series_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software. | `string` | `null` | no |
+| instances | Map of instances to create. Keys are instance identifiers, values are objects with specific attributes. | `any` | n/a | yes |
+| lb\_backend\_pool\_id | Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls. | `string` | `null` | no |
 | location | Region to install vm-series and dependencies. | `any` | n/a | yes |
-| name\_az | n/a | `string` | `"ib-vm-az"` | no |
-| name\_fw\_ip\_mgmt | n/a | `string` | `"ib-fw-ip-mgmt"` | no |
-| name\_fw\_ip\_private | n/a | `string` | `"ib-fw-ip-private"` | no |
-| name\_fw\_ip\_public | n/a | `string` | `"ib-fw-ip-public"` | no |
-| name\_inbound\_fw | n/a | `string` | `"ib-fw"` | no |
-| name\_nic\_fw\_mgmt | n/a | `string` | `"ib-nic-fw-mgmt"` | no |
-| name\_nic\_fw\_private | n/a | `string` | `"ib-nic-fw-private"` | no |
-| name\_nic\_fw\_public | n/a | `string` | `"ib-nic-fw-public"` | no |
-| name\_pip\_fw\_mgmt | n/a | `string` | `"ib-fw-pip"` | no |
-| name\_pip\_fw\_public | n/a | `string` | `"ib-pip-fw-public"` | no |
+| managed\_disk\_type | Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
+| name\_avset | Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
 | password | VM-Series Password | `any` | n/a | yes |
 | resource\_group | The resource group for VM series. | `any` | n/a | yes |
-| sep | Seperator | `string` | `"-"` | no |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet resource | `any` | n/a | yes |
 | subnet-public | External/public subnet resource | `any` | n/a | yes |
+| tags | A map of tags to be associated with the resources created. | `map` | `{}` | no |
 | username | VM-Series Username | `string` | `"panadmin"` | no |
-| vm\_count | Count of VM-series of each type (inbound/outbound) to deploy. Min 2 required for production. | `number` | `2` | no |
+| vm\_series\_offer | The Azure Offer identifier corresponding to a published image. For `vm_series_version` 9.1.1 or above, use "vmseries-flex"; for 9.1.0 or below use "vmseries1". | `string` | `"vmseries-flex"` | no |
+| vm\_series\_publisher | The Azure Publisher identifier for a image which should be deployed. | `string` | `"paloaltonetworks"` | no |
 | vm\_series\_sku | VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all | `string` | `"bundle2"` | no |
 | vm\_series\_version | VM-series Software version | `string` | `"9.0.4"` | no |
-| vmseries\_size | Default size for VM series | `string` | `"Standard_D5_v2"` | no |
+| vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| inbound-fw-pips | Inbound firewall Public IPs |
+| ip\_addresses | VM-Series management IP addresses. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
