@@ -6,10 +6,9 @@ management_ips = {
 
 # Optional Load Balancer (LB) rules
 # These will automatically create a public Azure IP and associate to LB configuration.
-rules = [
-  {
-    port     = 22
-    name     = "testssh"
+rules = {
+  "myssh" = {
     protocol = "Tcp"
+    port     = 22
   }
-]
+}
