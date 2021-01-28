@@ -105,10 +105,14 @@ resource "azurerm_virtual_machine" "this" {
     version   = var.custom_image_id == null ? var.vm_series_version : null
   }
 
-  plan {
-    name      = var.vm_series_sku
-    publisher = var.vm_series_publisher
-    product   = var.vm_series_offer
+  dynamic "plan" {
+    for_each = var.enable_plan ? ["one"] : []
+
+    content {
+      name      = var.vm_series_sku
+      publisher = var.vm_series_publisher
+      product   = var.vm_series_offer
+    }
   }
 
   storage_os_disk {
