@@ -52,7 +52,7 @@ resource "azurerm_network_interface" "nic-fw-public" {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = var.enable_backend_pool ? {} : var.instances
+  for_each = var.enable_backend_pool ? var.instances : {}
 
   backend_address_pool_id = var.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.nic-fw-public[each.key].ip_configuration[0].name
