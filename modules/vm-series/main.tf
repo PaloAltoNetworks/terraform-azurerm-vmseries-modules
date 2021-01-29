@@ -1,7 +1,7 @@
 resource "azurerm_availability_set" "this" {
   name                        = coalesce(var.name_avset, "${var.name_prefix}avset")
   location                    = var.location
-  resource_group_name         = var.resource_group.name
+  resource_group_name         = var.resource_group_name
   platform_fault_domain_count = 2
 }
 
@@ -10,7 +10,7 @@ resource "azurerm_network_interface" "nic-fw-mgmt" {
 
   name                = "${var.name_prefix}${each.key}-nic-mgmt"
   location            = var.location
-  resource_group_name = var.resource_group.name
+  resource_group_name = var.resource_group_name
 
   ip_configuration {
     name                          = "${var.name_prefix}${each.key}-ip-mgmt"
@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "nic-fw-private" {
 
   name                 = "${var.name_prefix}${each.key}-nic-private"
   location             = var.location
-  resource_group_name  = var.resource_group.name
+  resource_group_name  = var.resource_group_name
   enable_ip_forwarding = true
 
   ip_configuration {
@@ -40,7 +40,7 @@ resource "azurerm_network_interface" "nic-fw-public" {
 
   name                 = "${var.name_prefix}${each.key}-nic-public"
   location             = var.location
-  resource_group_name  = var.resource_group.name
+  resource_group_name  = var.resource_group_name
   enable_ip_forwarding = true
 
   ip_configuration {
@@ -64,7 +64,7 @@ resource "azurerm_virtual_machine" "this" {
 
   name                         = "${var.name_prefix}${each.key}"
   location                     = var.location
-  resource_group_name          = var.resource_group.name
+  resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size
   availability_set_id          = azurerm_availability_set.this.id
