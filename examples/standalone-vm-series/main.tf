@@ -40,7 +40,7 @@ resource "azurerm_public_ip" "mgmt" {
   for_each = var.instances
 
   name                = "${var.name_prefix}${each.key}-mgmt"
-  location            = azurerm_resource_group.vmseries.location
+  location            = var.location
   resource_group_name = azurerm_resource_group.vmseries.name
   allocation_method   = "Static"
   sku                 = "standard"
@@ -51,7 +51,7 @@ resource "azurerm_public_ip" "public" {
   for_each = var.instances
 
   name                = "${var.name_prefix}${each.key}-public"
-  location            = azurerm_resource_group.vmseries.location
+  location            = var.location
   resource_group_name = azurerm_resource_group.vmseries.name
   allocation_method   = "Static"
   sku                 = "standard"
