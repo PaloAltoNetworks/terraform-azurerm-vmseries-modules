@@ -33,7 +33,6 @@ See the examples/vm-series directory.
 | existing\_storage\_account | The existing Storage Account object to use. Ignored when `create_storage_account` is true. | `any` | `null` | no |
 | files | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | location | Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`. | `string` | `null` | no |
-| name\_outbound-bootstrap-storage-share | n/a | `string` | `"obbootstrapshare"` | no |
 | name\_prefix | Prefix to add to all the object names here. | `string` | n/a | yes |
 | resource\_group\_name | Name of the resource group, if creating it. Ignored when `existing_storage_account` object is non-null. | `string` | `null` | no |
 | storage\_account\_name | Name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null. | `string` | `null` | no |

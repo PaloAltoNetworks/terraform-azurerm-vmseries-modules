@@ -20,7 +20,7 @@ variable "existing_storage_account" {
   default     = null
 }
 
-variable files {
+variable "files" {
   description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
   default     = {}
   type        = map(string)
@@ -42,8 +42,4 @@ variable "storage_share_name" {
   description = "Name of storage share to be created that holds `files` for bootstrapping."
   default     = "bootstrapshare"
   type        = string
-}
-
-variable "name_outbound-bootstrap-storage-share" {
-  default = "obbootstrapshare"
 }
