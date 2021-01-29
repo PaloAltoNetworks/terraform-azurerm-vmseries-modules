@@ -130,4 +130,9 @@ resource "azurerm_virtual_machine" "this" {
     enabled     = true
     storage_uri = var.bootstrap-storage-account.primary_blob_endpoint
   }
+
+  identity {
+    type         = var.identity_type
+    identity_ids = var.identity_ids
+  }
 }
