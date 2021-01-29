@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "this" {
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
-  name                     = lower(coalesce(var.storage_account_name, replace("${var.name_prefix}bootstrap", "/[_-]+/", "")))
+  name                     = substr(lower(coalesce(var.storage_account_name, replace("${var.name_prefix}bootstrap", "/[_-]+/", ""))), 0, 23)
   account_replication_type = "LRS"
   account_tier             = "Standard"
   location                 = azurerm_resource_group.this[0].location
