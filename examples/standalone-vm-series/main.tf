@@ -89,7 +89,7 @@ module "bootstrap" {
 module "inbound-vm-series" {
   source = "../../modules/vm-series"
 
-  resource_group            = azurerm_resource_group.vmseries
+  resource_group_name       = azurerm_resource_group.vmseries.name
   location                  = var.location
   name_prefix               = var.name_prefix
   username                  = var.username

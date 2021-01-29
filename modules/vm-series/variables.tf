@@ -11,8 +11,9 @@ variable "instances" {
   description = "Map of instances to create. Keys are instance identifiers, values are objects with specific attributes."
 }
 
-variable "resource_group" {
-  description = "The resource group for VM series. "
+variable "resource_group_name" {
+  description = "The resource group name for VM-Series."
+  type        = string
 }
 
 variable "subnet-mgmt" {
