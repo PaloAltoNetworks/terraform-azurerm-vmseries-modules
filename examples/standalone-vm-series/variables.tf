@@ -2,14 +2,27 @@
 #   Global Variables   #
 #----------------------#
 variable "location" {
-  type        = string
   description = "The Azure region to use."
   default     = "Australia Central"
-}
-variable "name_prefix" {
   type        = string
-  description = "A prefix for all naming conventions - used globally"
+}
+
+variable "create_resource_group_name" {
+  description = "Name for a created resource group. The input is ignored if `existing_resource_group_name` is set. If null, uses an auto-generated name."
+  default     = null
+  type        = string
+}
+
+variable "existing_resource_group_name" {
+  description = "Name for an existing resource group to use. If null, use instead `create_resource_group_name`."
+  default     = null
+  type        = string
+}
+
+variable "name_prefix" {
+  description = "A prefix for all names in this module."
   default     = "pantf"
+  type        = string
 }
 
 variable "username" {
