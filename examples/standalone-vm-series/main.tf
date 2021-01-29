@@ -27,12 +27,16 @@ module "networks" {
   vm_management_subnet   = var.vm_management_subnet
 }
 
-# Create the vm-series RG outside of the module and pass it in.
-## All the config required for a single VM series Firewall in Azure
-# Base resource group
-resource "azurerm_resource_group" "vmseries" {
+# Create the VM-Series RG outside of the module and pass it in.
+resource "azurerm_resource_group" "this" {
+  count = var.existing_resource_group_name == null ? 1 : 0
+
   location = var.location
-  name     = "${var.name_prefix}-vmseries-rg"
+  name     = coalesce(var.create_resource_group_name, "${var.name_prefix}-vmseries-rg")
+}
+
+locals {
+  resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
 }
 
 # Create a public IP for management
@@ -41,7 +45,7 @@ resource "azurerm_public_ip" "mgmt" {
 
   name                = "${var.name_prefix}${each.key}-mgmt"
   location            = var.location
-  resource_group_name = azurerm_resource_group.vmseries.name
+  resource_group_name = local.resource_group_name
   allocation_method   = "Static"
   sku                 = "standard"
 }
@@ -52,7 +56,7 @@ resource "azurerm_public_ip" "public" {
 
   name                = "${var.name_prefix}${each.key}-public"
   location            = var.location
-  resource_group_name = azurerm_resource_group.vmseries.name
+  resource_group_name = local.resource_group_name
   allocation_method   = "Static"
   sku                 = "standard"
 }
@@ -89,7 +93,7 @@ module "bootstrap" {
 module "inbound-vm-series" {
   source = "../../modules/vm-series"
 
-  resource_group_name       = azurerm_resource_group.vmseries.name
+  resource_group_name       = local.resource_group_name
   location                  = var.location
   name_prefix               = var.name_prefix
   username                  = var.username
