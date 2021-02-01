@@ -11,7 +11,7 @@ module "outbound-lb" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
 
   location         = "Australia Central"
-  name_prefix      = "panostf"
+  name_prefix      = "pan"
   backend-subnet   = "subnet-id"
 }
 ```

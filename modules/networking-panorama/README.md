@@ -11,7 +11,7 @@ module "networks" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-panorama"
 
   location    = "Australia Central"
-  name_prefix = "panostf"
+  name_prefix = "pan"
   management_ips = {
       "124.171.153.28" : 100,
     }
