@@ -42,12 +42,6 @@ variable "frontend_ips" {
   }
   ```
   EOF
-  # default = {
-  #   "default80" = {
-  #     port     = 80
-  #     protocol = "Tcp"
-  #   }
-  # }
 }
 
 #  ---   #

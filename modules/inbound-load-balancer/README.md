@@ -12,9 +12,14 @@ module "inbound-lb" {
   location    = "Australia Central"
   name_prefix = "pan"
   rules       = {
-                  "myssh" = {
-                    protocol = "Tcp"
-                    port     = 22
+                  "frontend01" = {
+                    create_public_ip = true
+                    rules = {
+                      "testssh" = {
+                        protocol = "Tcp"
+                        port     = 22
+                      }
+                    }
                   }
                 }
 }
