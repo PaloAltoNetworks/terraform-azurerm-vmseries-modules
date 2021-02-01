@@ -63,6 +63,12 @@ variable "custom_image_id" {
   type        = string
 }
 
+variable "enable_plan" {
+  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
+  default     = true
+  type        = bool
+}
+
 variable "vm_series_publisher" {
   description = "The Azure Publisher identifier for a image which should be deployed."
   default     = "paloaltonetworks"

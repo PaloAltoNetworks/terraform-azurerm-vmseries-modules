@@ -75,8 +75,9 @@ module "outbound-lb" {
 module "bootstrap" {
   source = "../../modules/vm-bootstrap"
 
-  location    = var.location
-  name_prefix = var.name_prefix
+  location           = var.location
+  storage_share_name = "ibbootstrapshare"
+  name_prefix        = var.name_prefix
   files = {
     "bootstrap_files/authcodes"    = "license/authcodes"
     "bootstrap_files/init-cfg.txt" = "config/init-cfg.txt"
@@ -97,8 +98,8 @@ module "inbound-vm-series" {
   subnet-mgmt               = module.networks.subnet-mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.bootstrap.bootstrap-storage-account
-  bootstrap-share-name      = module.bootstrap.inbound-bootstrap-share-name
+  bootstrap-storage-account = module.bootstrap.storage_account
+  bootstrap-share-name      = module.bootstrap.storage_share_name
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   instances = { for k, v in var.instances : k => {
     mgmt_public_ip_address_id = azurerm_public_ip.mgmt[k].id

@@ -8,7 +8,7 @@ resource "azurerm_resource_group" "this" {
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
-  name                     = coalesce(var.storage_account_name, "${var.name_prefix}bootstrap")
+  name                     = substr(lower(coalesce(var.storage_account_name, replace("${var.name_prefix}bootstrap", "/[_-]+/", ""))), 0, 23)
   account_replication_type = "LRS"
   account_tier             = "Standard"
   location                 = azurerm_resource_group.this[0].location
@@ -21,24 +21,24 @@ locals {
 
 ###############################################################################
 
-resource "azurerm_storage_share" "inbound-bootstrap-storage-share" {
-  name                 = var.name_inbound_bootstrap_storage_share
+resource "azurerm_storage_share" "this" {
+  name                 = var.storage_share_name
   storage_account_name = local.storage_account.name
   quota                = 50
 }
 
-resource "azurerm_storage_share_directory" "bootstrap-storage-directories" {
+resource "azurerm_storage_share_directory" "nonconfig" {
   for_each = toset([
     "content",
     "software",
   "license"])
   name                 = each.key
-  share_name           = azurerm_storage_share.inbound-bootstrap-storage-share.name
+  share_name           = azurerm_storage_share.this.name
   storage_account_name = local.storage_account.name
 }
 
-resource "azurerm_storage_share_directory" "inbound-bootstrap-config-directory" {
-  share_name           = azurerm_storage_share.inbound-bootstrap-storage-share.name
+resource "azurerm_storage_share_directory" "config" {
+  share_name           = azurerm_storage_share.this.name
   storage_account_name = local.storage_account.name
   name                 = "config"
 }
@@ -48,7 +48,7 @@ resource "azurerm_storage_share_file" "this" {
 
   name             = regex("[^/]*$", each.value)
   path             = replace(each.value, "/[/]*[^/]*$/", "")
-  storage_share_id = azurerm_storage_share.inbound-bootstrap-storage-share.id
+  storage_share_id = azurerm_storage_share.this.id
   source           = replace(each.key, "/CalculateMe[X]${random_id.file[each.key].id}/", "CalculateMeX${random_id.file[each.key].id}")
   # Live above is equivalent to:   `source = each.key`  but it re-creates the file every time the content changes.
   # The replace() is not actually doing anything, except tricking Terraform to destroy a resource.
@@ -56,8 +56,8 @@ resource "azurerm_storage_share_file" "this" {
   # When content_md5 is changed, the re-upload seemingly succeeds, result being however a totally empty file (size zero).
   # Workaround: use random_id above to cause the full destroy/create of a file.
   depends_on = [
-    azurerm_storage_share_directory.inbound-bootstrap-config-directory,
-    azurerm_storage_share_directory.bootstrap-storage-directories,
+    azurerm_storage_share_directory.config,
+    azurerm_storage_share_directory.nonconfig,
   ]
 }
 
@@ -70,26 +70,3 @@ resource "random_id" "file" {
   }
   byte_length = 8
 }
-
-resource "azurerm_storage_share" "outbound-bootstrap-storage-share" {
-  name                 = var.name_outbound-bootstrap-storage-share
-  storage_account_name = local.storage_account.name
-  quota                = 50
-}
-
-resource "azurerm_storage_share_directory" "outbound-bootstrap-storage-directories" {
-  for_each = toset([
-    "content",
-    "software",
-  "license"])
-  name                 = each.key
-  share_name           = azurerm_storage_share.outbound-bootstrap-storage-share.name
-  storage_account_name = local.storage_account.name
-}
-
-resource "azurerm_storage_share_directory" "outbound-bootstrap-config-directory" {
-  share_name           = azurerm_storage_share.outbound-bootstrap-storage-share.name
-  storage_account_name = local.storage_account.name
-  name                 = "config"
-}
-
