@@ -15,7 +15,7 @@ module "inbound-lb" {
                   "frontend01" = {
                     create_public_ip = true
                     rules = {
-                      "testssh" = {
+                      "balancessh" = {
                         protocol = "Tcp"
                         port     = 22
                       }
@@ -43,7 +43,7 @@ module "inbound-lb" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| frontend\_ips | A map of objects describing LB Frontend IP configurations. Keys of the map are the names and values are { create\_public\_ip, public\_ip\_address\_id, rules }. Example:<pre>{<br>  "pip-existing" = {<br>    create_public_ip     = false<br>    public_ip_address_id = azurerm_public_ip.this.id<br>    rules = {<br>      "testssh" = {<br>        protocol = "Tcp"<br>        port     = 22<br>      }<br>      "testhttp" = {<br>        protocol = "Tcp"<br>        port     = 80<br>      }<br>    }<br>  }<br>  "pip-created" = {<br>    create_public_ip = true<br>    rules = {<br>      "testssh" = {<br>        protocol = "Tcp"<br>        port     = 22<br>      }<br>      "testhttp" = {<br>        protocol = "Tcp"<br>        port     = 80<br>      }<br>    }<br>  }<br>}</pre> | `any` | n/a | yes |
+| frontend\_ips | A map of objects describing LB Frontend IP configurations. Keys of the map are the names and values are { create\_public\_ip, public\_ip\_address\_id, rules }. Example:<pre>{<br>  "pip-existing" = {<br>    create_public_ip     = false<br>    public_ip_address_id = azurerm_public_ip.this.id<br>    rules = {<br>      "balancessh" = {<br>        protocol = "Tcp"<br>        port     = 22<br>      }<br>      "balancehttp" = {<br>        protocol = "Tcp"<br>        port     = 80<br>      }<br>    }<br>  }<br>  "pip-created" = {<br>    create_public_ip = true<br>    rules = {<br>      "balancessh" = {<br>        protocol = "Tcp"<br>        port     = 22<br>      }<br>      "balancehttp" = {<br>        protocol = "Tcp"<br>        port     = 80<br>      }<br>    }<br>  }<br>}</pre> | `any` | n/a | yes |
 | location | Region to deploy load balancer and dependencies. | `any` | n/a | yes |
 | name\_backend | n/a | `string` | `"lb-backend"` | no |
 | name\_lb | n/a | `string` | `"lb"` | no |

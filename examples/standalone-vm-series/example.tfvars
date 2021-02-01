@@ -10,7 +10,7 @@ frontend_ips = {
   "frontend01" = {
     create_public_ip = true
     rules = {
-      "testssh" = {
+      "balancessh" = {
         protocol = "Tcp"
         port     = 22
       }

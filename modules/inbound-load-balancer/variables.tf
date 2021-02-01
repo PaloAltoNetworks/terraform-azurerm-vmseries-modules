@@ -16,11 +16,11 @@ variable "frontend_ips" {
       create_public_ip     = false
       public_ip_address_id = azurerm_public_ip.this.id
       rules = {
-        "testssh" = {
+        "balancessh" = {
           protocol = "Tcp"
           port     = 22
         }
-        "testhttp" = {
+        "balancehttp" = {
           protocol = "Tcp"
           port     = 80
         }
@@ -29,11 +29,11 @@ variable "frontend_ips" {
     "pip-created" = {
       create_public_ip = true
       rules = {
-        "testssh" = {
+        "balancessh" = {
           protocol = "Tcp"
           port     = 22
         }
-        "testhttp" = {
+        "balancehttp" = {
           protocol = "Tcp"
           port     = 80
         }
