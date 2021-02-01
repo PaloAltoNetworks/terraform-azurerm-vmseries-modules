@@ -1,5 +1,5 @@
 
 output "ip_addresses" {
-  description = "Inbound firewall Public IPs"
-  value       = { for k, v in var.instances : k => azurerm_public_ip.pip-fw-mgmt[k].ip_address }
+  description = "VM-Series management IP addresses."
+  value       = { for k, v in var.instances : k => azurerm_network_interface.nic-fw-mgmt[k].ip_configuration[0].private_ip_address }
 }

@@ -27,11 +27,13 @@ variable "subnet-private" {
 }
 
 variable "bootstrap-storage-account" {
-  description = "Storage account setup for bootstrapping"
+  description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
 }
 
 variable "bootstrap-share-name" {
-  description = "Azure File share for bootstrap config"
+  description = "Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap-storage-account is left at null."
+  default     = null
+  type        = string
 }
 
 variable "password" {
@@ -87,7 +89,15 @@ variable "vm_series_version" {
 }
 
 variable "lb_backend_pool_id" {
-  description = "ID Of inbound load balancer backend pool to associate with the VM series firewall"
+  description = "Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls."
+  default     = null
+  type        = string
+}
+
+variable "enable_backend_pool" {
+  description = "If false, ignore `lb_backend_pool_id`."
+  default     = true
+  type        = bool
 }
 
 variable "name_avset" {
@@ -98,6 +108,6 @@ variable "name_avset" {
 
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
-  type        = "map"
   default     = {}
+  type        = map
 }

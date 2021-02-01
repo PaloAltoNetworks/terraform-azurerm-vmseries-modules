@@ -1,29 +1,8 @@
 resource "azurerm_availability_set" "this" {
-  name                        = coalesce(var.name_avset, "${var.name_prefix}-avset")
+  name                        = coalesce(var.name_avset, "${var.name_prefix}avset")
   location                    = var.resource_group.location
   resource_group_name         = var.resource_group.name
   platform_fault_domain_count = 2
-}
-
-# Create a public IP for management
-resource "azurerm_public_ip" "pip-fw-mgmt" {
-  for_each = var.instances
-
-  name                = "${var.name_prefix}${each.key}-fw-pip"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
-  allocation_method   = "Static"
-  sku                 = "standard"
-}
-# Create another PIP for the outside interface so we can talk outbound
-resource "azurerm_public_ip" "pip-fw-public" {
-  for_each = var.instances
-
-  name                = "${var.name_prefix}${each.key}-pip-public"
-  location            = var.resource_group.location
-  resource_group_name = var.resource_group.name
-  allocation_method   = "Static"
-  sku                 = "standard"
 }
 
 resource "azurerm_network_interface" "nic-fw-mgmt" {
@@ -37,7 +16,7 @@ resource "azurerm_network_interface" "nic-fw-mgmt" {
     name                          = "${var.name_prefix}${each.key}-ip-mgmt"
     subnet_id                     = var.subnet-mgmt.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = azurerm_public_ip.pip-fw-mgmt[each.key].id
+    public_ip_address_id          = try(each.value.mgmt_public_ip_address_id, null)
   }
 }
 
@@ -68,12 +47,12 @@ resource "azurerm_network_interface" "nic-fw-public" {
     name                          = "${var.name_prefix}${each.key}-ip-public"
     subnet_id                     = var.subnet-public.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = azurerm_public_ip.pip-fw-public[each.key].id
+    public_ip_address_id          = try(each.value.nic1_public_ip_address_id, null)
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = var.instances
+  for_each = var.enable_backend_pool ? var.instances : {}
 
   backend_address_pool_id = var.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.nic-fw-public[each.key].ip_configuration[0].name
@@ -130,7 +109,7 @@ resource "azurerm_virtual_machine" "this" {
     computer_name  = "${var.name_prefix}${each.key}"
     admin_username = var.username
     admin_password = var.password
-    custom_data = join(
+    custom_data = var.bootstrap-share-name == null ? null : join(
       ",",
       [
         "storage-account=${var.bootstrap-storage-account.name}",

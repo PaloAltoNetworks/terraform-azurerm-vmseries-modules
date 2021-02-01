@@ -22,6 +22,13 @@ variable "password" {
   default     = null
 }
 
+variable "instances" {
+  description = "Map of VM-Series firewall instances to deploy. The keys are the firewall hostnames."
+  default = {
+    "fw00" = {}
+  }
+}
+
 #----------------------#
 #      Networking      #
 #----------------------#
