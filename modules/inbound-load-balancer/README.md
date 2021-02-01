@@ -10,7 +10,7 @@ module "inbound-lb" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/inbound-load-balancer"
 
   location    = "Australia Central"
-  name_prefix = "panostf"
+  name_prefix = "pan"
   rules       = {
                   "myssh" = {
                     protocol = "Tcp"

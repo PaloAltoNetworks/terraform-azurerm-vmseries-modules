@@ -11,7 +11,7 @@ module "vmss" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vmss"
 
   location                  = "Australia Central"
-  name_prefix               = "panostf"
+  name_prefix               = "pan"
   password                  = "your-password"
   subnet-mgmt               = azurerm_subnet.subnet-mgmt
   subnet-private            = azurerm_subnet.subnet-private

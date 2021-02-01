@@ -11,7 +11,7 @@ module "panorama" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/panorama"
 
   location    = "Australia Central"
-  name_prefix = "panostf"
+  name_prefix = "pan"
   password    = "your-password"
 }
 ```
