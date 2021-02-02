@@ -42,7 +42,7 @@ module "panorama" {
 | name\_rg | n/a | `string` | `"rg-panorama"` | no |
 | panorama\_size | Virtual Machine size. | `string` | `"Standard_D5_v2"` | no |
 | panorama\_sku | Panorama SKU. | `string` | `"byol"` | no |
-| panorama\_version | PAN-OS Software version. List published images with `az vm image list --publisher paloaltonetworks --offer panorama --all` | `string` | `"10.0.3"` | no |
+| panorama\_version | PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama` | `string` | `"10.0.3"` | no |
 | password | Panorama Password. | `any` | n/a | yes |
 | sep | Separator used in the names of the generated resources. May be empty. | `string` | `"-"` | no |
 | subnet\_mgmt | Panorama's management subnet ID. | `any` | n/a | yes |

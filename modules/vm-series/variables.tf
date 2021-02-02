@@ -82,12 +82,15 @@ variable "vm_series_offer" {
 }
 
 variable "vm_series_sku" {
-  description = "VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all"
+  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
+  type        = string
 }
+
 variable "vm_series_version" {
-  description = "VM-series Software version"
+  description = "VM-series PAN-OS version - list available for a default `vm_series_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
   default     = "9.0.4"
+  type        = string
 }
 
 variable "lb_backend_pool_id" {

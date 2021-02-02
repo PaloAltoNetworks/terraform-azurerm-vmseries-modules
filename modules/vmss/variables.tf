@@ -44,12 +44,15 @@ variable "password" {
 }
 
 variable "vm_series_sku" {
-  description = "VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all"
+  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
+  type        = string
 }
+
 variable "vm_series_version" {
-  description = "VM-series Software version"
+  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "9.0.4"
+  type        = string
 }
 
 variable "vm_count" {

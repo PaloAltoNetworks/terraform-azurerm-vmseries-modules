@@ -27,14 +27,17 @@ variable "password" {
 }
 
 variable "panorama_sku" {
-  default     = "byol"
   description = "Panorama SKU."
+  default     = "byol"
+  type        = string
 }
 
 variable "panorama_version" {
+  description = "Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama`"
   default     = "10.0.3"
-  description = "PAN-OS Software version. List published images with `az vm image list --publisher paloaltonetworks --offer panorama --all`"
+  type        = string
 }
+
 
 
 #  ---   #
