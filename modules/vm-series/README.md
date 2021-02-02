@@ -44,28 +44,28 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-
 | bootstrap-share-name | Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap-storage-account is left at null. | `string` | `null` | no |
 | bootstrap-storage-account | Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output. | `any` | n/a | yes |
 | custom\_image\_id | Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `vm_series_version`, `vm_series_publisher`, `vm_series_offer`, `vm_series_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software. | `string` | `null` | no |
 | enable\_backend\_pool | If false, ignore `lb_backend_pool_id`. | `bool` | `true` | no |
+| enable\_plan | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
 | instances | Map of instances to create. Keys are instance identifiers, values are objects with specific attributes. | `any` | n/a | yes |
 | lb\_backend\_pool\_id | Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls. | `string` | `null` | no |
 | location | Region to install vm-series and dependencies. | `any` | n/a | yes |
 | managed\_disk\_type | Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
 | name\_avset | Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
-| password | VM-Series Password | `any` | n/a | yes |
+| password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
 | resource\_group | The resource group for VM series. | `any` | n/a | yes |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet resource | `any` | n/a | yes |
 | subnet-public | External/public subnet resource | `any` | n/a | yes |
 | tags | A map of tags to be associated with the resources created. | `map` | `{}` | no |
-| username | VM-Series Username | `string` | `"panadmin"` | no |
+| username | Initial administrative username to use for VM-Series. | `string` | `"panadmin"` | no |
 | vm\_series\_offer | The Azure Offer identifier corresponding to a published image. For `vm_series_version` 9.1.1 or above, use "vmseries-flex"; for 9.1.0 or below use "vmseries1". | `string` | `"vmseries-flex"` | no |
 | vm\_series\_publisher | The Azure Publisher identifier for a image which should be deployed. | `string` | `"paloaltonetworks"` | no |
-| vm\_series\_sku | VM-series SKU - list available with az vm image list -o table --all --publisher paloaltonetworks | `string` | `"bundle2"` | no |
-| vm\_series\_version | VM-series Software version | `string` | `"9.0.4"` | no |
+| vm\_series\_sku | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
+| vm\_series\_version | VM-series PAN-OS version - list available for a default `vm_series_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all` | `string` | `"9.0.4"` | no |
 | vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 
 ## Outputs
@@ -73,6 +73,5 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | Name | Description |
 |------|-------------|
 | ip\_addresses | VM-Series management IP addresses. |
-
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

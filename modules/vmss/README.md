@@ -57,16 +57,16 @@ module "vmss" {
 | name\_public\_nic\_profile | n/a | `string` | `"inbound-nic-fw-public-profile"` | no |
 | name\_rg | n/a | `string` | `"vmseries-rg"` | no |
 | name\_scale\_set | n/a | `string` | `"inbound-scaleset"` | no |
-| password | Password for VM Series firewalls | `any` | n/a | yes |
+| password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
 | sep | Seperator | `string` | `"-"` | no |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet | `any` | n/a | yes |
 | subnet-public | External/public subnet | `any` | n/a | yes |
-| username | Username | `string` | `"panadmin"` | no |
+| username | Initial administrative username to use for VM-Series. | `string` | `"panadmin"` | no |
 | vhd-container | Storage container for storing VMSS instance VHDs. | `any` | n/a | yes |
 | vm\_count | Minimum instances per scale set. | `number` | `2` | no |
-| vm\_series\_sku | VM-series SKU - list available with az vm image list -o table --all --publisher paloaltonetworks | `string` | `"bundle2"` | no |
-| vm\_series\_version | VM-series Software version | `string` | `"9.0.4"` | no |
+| vm\_series\_sku | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
+| vm\_series\_version | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.0.4"` | no |
 | vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 
 ## Outputs
