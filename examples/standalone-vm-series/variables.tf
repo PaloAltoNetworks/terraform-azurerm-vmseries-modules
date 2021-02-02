@@ -13,13 +13,15 @@ variable "name_prefix" {
 }
 
 variable "username" {
+  description = "Initial administrative username to use for all systems."
   default     = "panadmin"
-  description = "Username to use for all systems"
+  type        = string
 }
 
 variable "password" {
-  description = "Admin password to use for all systems"
+  description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
   default     = null
+  type        = string
 }
 
 variable "instances" {
@@ -33,8 +35,8 @@ variable "instances" {
 #      Networking      #
 #----------------------#
 variable "management_ips" {
-  type        = map(any)
-  description = "A list of IP addresses and/or subnets that are permitted to access the out of band Management network."
+  description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
+  type        = map(number)
 }
 
 # Subnet definitions

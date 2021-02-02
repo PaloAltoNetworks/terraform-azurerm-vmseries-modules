@@ -33,14 +33,15 @@ variable "bootstrap-share-name" {
 }
 
 variable "username" {
-  description = "Username"
+  description = "Initial administrative username to use for VM-Series."
   default     = "panadmin"
+  type        = string
 }
 
 variable "password" {
-  description = "Password for VM Series firewalls"
+  description = "Initial administrative password to use for VM-Series."
+  type        = string
 }
-
 
 variable "vm_series_sku" {
   description = "VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all"
