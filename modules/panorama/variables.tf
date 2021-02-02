@@ -16,12 +16,14 @@ variable "subnet_mgmt" {
 }
 
 variable "username" {
-  description = "Panorama Username."
+  description = "Initial administrative username to use for Panorama."
   default     = "panadmin"
+  type        = string
 }
 
 variable "password" {
-  description = "Panorama Password."
+  description = "Initial administrative password to use for Panorama."
+  type        = string
 }
 
 variable "panorama_sku" {

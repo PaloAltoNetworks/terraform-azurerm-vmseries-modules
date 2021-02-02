@@ -36,13 +36,15 @@ variable "bootstrap-share-name" {
   type        = string
 }
 
-variable "password" {
-  description = "VM-Series Password"
+variable "username" {
+  description = "Initial administrative username to use for VM-Series."
+  default     = "panadmin"
+  type        = string
 }
 
-variable "username" {
-  description = "VM-Series Username"
-  default     = "panadmin"
+variable "password" {
+  description = "Initial administrative password to use for VM-Series."
+  type        = string
 }
 
 variable "managed_disk_type" {
