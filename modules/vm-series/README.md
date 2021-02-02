@@ -64,7 +64,7 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | username | VM-Series Username | `string` | `"panadmin"` | no |
 | vm\_series\_offer | The Azure Offer identifier corresponding to a published image. For `vm_series_version` 9.1.1 or above, use "vmseries-flex"; for 9.1.0 or below use "vmseries1". | `string` | `"vmseries-flex"` | no |
 | vm\_series\_publisher | The Azure Publisher identifier for a image which should be deployed. | `string` | `"paloaltonetworks"` | no |
-| vm\_series\_sku | VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all | `string` | `"bundle2"` | no |
+| vm\_series\_sku | VM-series SKU - list available with az vm image list -o table --all --publisher paloaltonetworks | `string` | `"bundle2"` | no |
 | vm\_series\_version | VM-series Software version | `string` | `"9.0.4"` | no |
 | vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 

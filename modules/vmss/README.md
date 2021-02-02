@@ -65,7 +65,7 @@ module "vmss" {
 | username | Username | `string` | `"panadmin"` | no |
 | vhd-container | Storage container for storing VMSS instance VHDs. | `any` | n/a | yes |
 | vm\_count | Minimum instances per scale set. | `number` | `2` | no |
-| vm\_series\_sku | VM-series SKU - list available with az vm image list --publisher paloaltonetworks --all | `string` | `"bundle2"` | no |
+| vm\_series\_sku | VM-series SKU - list available with az vm image list -o table --all --publisher paloaltonetworks | `string` | `"bundle2"` | no |
 | vm\_series\_version | VM-series Software version | `string` | `"9.0.4"` | no |
 | vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 

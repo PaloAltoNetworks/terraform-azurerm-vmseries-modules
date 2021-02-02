@@ -80,21 +80,32 @@ variable "frontend_ips" {
 #----------------------#
 #      VM Options      #
 #----------------------#
-# Total number of VM series per direction (inbound/outbound) to deploy
+
 variable "vm_series_count" {
-  default = 1
+  description = "Total number of VM series to deploy per direction (inbound/outbound)."
+  default     = 1
 }
 
 variable "panorama_sku" {
-  default = "byol"
+  description = "Panorama SKU."
+  default     = "byol"
+  type        = string
 }
+
 variable "panorama_version" {
-  default = "9.0.5"
+  description = "Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama`"
+  default     = "9.0.5"
+  type        = string
 }
 
 variable "vm_series_sku" {
-  default = "bundle2"
+  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  default     = "bundle2"
+  type        = string
 }
+
 variable "vm_series_version" {
-  default = "9.0.4"
+  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  default     = "9.0.4"
+  type        = string
 }
