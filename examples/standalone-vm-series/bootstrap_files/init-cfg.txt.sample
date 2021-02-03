@@ -1,5 +1,4 @@
 type=dhcp-client
-op-command-modes=mgmt-interface-swap
 vm-auth-key=123456789012345
 panorama-server=10.1.2.3
 panorama-server-2=10.1.2.4
