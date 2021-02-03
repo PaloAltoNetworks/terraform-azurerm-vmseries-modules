@@ -73,5 +73,6 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | Name | Description |
 |------|-------------|
 | ip\_addresses | VM-Series management IP addresses. |
+| principal\_id | A map of Azure Service Principals for each of the created VM-Series. Map's key is the same as virtual machine key, the value is an oid of a Service Principal. Usable only if `identity_type` contains SystemAssigned. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
