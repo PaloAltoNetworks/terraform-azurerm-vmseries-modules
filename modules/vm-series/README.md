@@ -1,10 +1,9 @@
-Palo Alto Networks VM-Series Module for Azure
-===========
+# Palo Alto Networks VM-Series Module for Azure
+
 
 A terraform module for deploying a standalone (non-scale-set) VM-Series firewall in Azure.
 
-Usage
------
+## Usage
 
 ```hcl
 module "vm-series" {
@@ -55,6 +54,7 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | lb\_backend\_pool\_id | Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls. | `string` | `null` | no |
 | location | Region where to deploy VM-Series and dependencies. | `string` | n/a | yes |
 | managed\_disk\_type | Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
+| metrics\_retention\_in\_days | Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether. | `number` | `null` | no |
 | name\_avset | Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
@@ -75,6 +75,18 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | Name | Description |
 |------|-------------|
 | ip\_addresses | VM-Series management IP addresses. |
+| metrics\_instrumentation\_key | The Instrumentation Key of the created instance of Azure Application Insights. The instance is unused by default, but is ready to receive custom PAN-OS metrics from the firewalls. To use it, paste this Instrumentation Key into PAN-OS -> Device -> VM-Series -> Azure. |
 | principal\_id | A map of Azure Service Principals for each of the created VM-Series. Map's key is the same as virtual machine key, the value is an oid of a Service Principal. Usable only if `identity_type` contains SystemAssigned. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+## Custom Metrics
+
+**(Optional)** Firewalls can publish custom metrics (for example `panSessionUtilization`) to Azure Application Insights.
+This however requires a manual initialization: copy the output `metrics_instrumentation_key` and paste it into your
+PAN-OS webUI -> Device -> VM-Series -> Azure. The module automatically completes the Step 1 of the
+[official procedure](https://docs.paloaltonetworks.com/vm-series/10-0/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall.html).
+
+The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split to obtain
+back a result for solely a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report
+their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.

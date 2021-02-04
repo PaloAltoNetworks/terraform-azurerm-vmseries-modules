@@ -130,3 +130,9 @@ variable "identity_ids" {
   default     = null
   type        = list(string)
 }
+
+variable "metrics_retention_in_days" {
+  description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether."
+  default     = null
+  type        = number
+}

@@ -136,3 +136,13 @@ resource "azurerm_virtual_machine" "this" {
     identity_ids = var.identity_ids
   }
 }
+
+resource "azurerm_application_insights" "this" {
+  count = var.metrics_retention_in_days != 0 ? 1 : 0
+
+  name                = var.name_prefix
+  location            = var.location
+  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  application_type    = "other"
+  retention_in_days   = var.metrics_retention_in_days
+}
