@@ -16,7 +16,7 @@ module "vmss" {
   subnet-mgmt               = azurerm_subnet.subnet-mgmt
   subnet-private            = azurerm_subnet.subnet-private
   subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.panorama.bootstrap-storage-account
+  bootstrap_storage_account = module.panorama.bootstrap_storage_account
   bootstrap-share-name      = "inboundsharename"
   vhd-container             = "vhd-storage-container-id"
   lb_backend_pool_id        = "private-backend-pool-id"
@@ -42,7 +42,7 @@ module "vmss" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | bootstrap-share-name | File share for bootstrap config | `any` | n/a | yes |
-| bootstrap-storage-account | Storage account setup for bootstrapping | `any` | n/a | yes |
+| bootstrap\_storage\_account | Storage account setup for bootstrapping | `any` | n/a | yes |
 | lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
 | location | Region to install VM Series Scale sets and dependencies. | `any` | n/a | yes |
 | name\_domain\_name\_label | n/a | `string` | `"inbound-vm-mgmt"` | no |

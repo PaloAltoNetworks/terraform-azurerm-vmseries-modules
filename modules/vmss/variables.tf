@@ -24,7 +24,7 @@ variable "subnet-private" {
   description = "internal/private subnet"
 }
 
-variable "bootstrap-storage-account" {
+variable "bootstrap_storage_account" {
   description = "Storage account setup for bootstrapping"
 }
 

@@ -103,7 +103,7 @@ module "inbound-vm-series" {
   subnet-mgmt               = module.networks.subnet-mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.bootstrap.storage_account
+  bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap-share-name      = module.bootstrap.storage_share_name
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   instances = { for k, v in var.instances : k => {
