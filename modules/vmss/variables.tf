@@ -28,7 +28,7 @@ variable "bootstrap_storage_account" {
   description = "Storage account setup for bootstrapping"
 }
 
-variable "bootstrap-share-name" {
+variable "bootstrap_share_name" {
   description = "File share for bootstrap config"
 }
 

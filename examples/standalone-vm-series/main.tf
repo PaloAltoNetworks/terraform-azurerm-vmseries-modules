@@ -104,7 +104,7 @@ module "inbound-vm-series" {
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
   bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap-share-name      = module.bootstrap.storage_share_name
+  bootstrap_share_name      = module.bootstrap.storage_share_name
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   instances = { for k, v in var.instances : k => {
     mgmt_public_ip_address_id = azurerm_public_ip.mgmt[k].id
