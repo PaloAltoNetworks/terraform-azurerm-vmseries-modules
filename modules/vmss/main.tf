@@ -19,7 +19,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     ip_configuration {
       name      = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_ip}"
       primary   = true
-      subnet_id = var.subnet-mgmt.id
+      subnet_id = var.subnet_mgmt.id
 
       public_ip_address_configuration {
         idle_timeout      = 4

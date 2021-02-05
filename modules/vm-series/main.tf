@@ -5,61 +5,74 @@ resource "azurerm_availability_set" "this" {
   platform_fault_domain_count = 2
 }
 
-resource "azurerm_network_interface" "nic-fw-mgmt" {
+resource "azurerm_network_interface" "mgmt" {
   for_each = var.instances
 
-  name                          = "${var.name_prefix}${each.key}-nic-mgmt"
+  name                          = "${var.name_prefix}${each.key}-mgmt"
   location                      = var.location
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = false # unsupported by PAN-OS
 
   ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-ip-mgmt"
-    subnet_id                     = var.subnet-mgmt.id
+    name                          = "${var.name_prefix}${each.key}-mgmt"
+    subnet_id                     = var.subnet_mgmt.id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = try(each.value.mgmt_public_ip_address_id, null)
   }
 }
 
-resource "azurerm_network_interface" "nic-fw-private" {
-  for_each = var.instances
+locals {
+  # Terraform for_each unfortunately requires a single-dimensional map, but we have
+  # a two-dimensional inputs. We need two steps for conversion.
 
-  name                          = "${var.name_prefix}${each.key}-nic-private"
-  location                      = var.location
-  resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = var.accelerated_networking
-  enable_ip_forwarding          = true
+  # Firstly, flatten() ensures that this local value is a flat list of objects, rather
+  # than a list of lists of objects.
+  input_flat_subnets_data = flatten([
+    for vmkey, vm in var.instances : [
+      for subnetkey, subnet in var.subnets_data : {
+        vmkey               = vmkey
+        vm                  = vm
+        subnetkey           = subnetkey
+        subnet              = subnet
+        lb_backend_pool_id  = var.lb_backend_pool_ids[subnetkey]
+        enable_backend_pool = var.enable_backend_pools[subnetkey]
+      }
+    ]
+  ])
 
-  ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-ip-private"
-    subnet_id                     = var.subnet-private.id
-    private_ip_address_allocation = "dynamic"
-  }
+  # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
+  input_subnets_data = { for v in local.input_flat_subnets_data : "${v.vmkey}-${v.subnetkey}" => v }
 }
 
-resource "azurerm_network_interface" "nic-fw-public" {
-  for_each = var.instances
+variable "lb_backend_pool_ids" { # FIXME move it 
+}
 
-  name                          = "${var.name_prefix}${each.key}-nic-public"
+variable "enable_backend_pools" { # FIXME move it 
+}
+
+resource "azurerm_network_interface" "data" {
+  for_each = local.input_subnets_data
+
+  name                          = "${var.name_prefix}${each.key}"
   location                      = var.location
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = var.accelerated_networking
   enable_ip_forwarding          = true
 
   ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-ip-public"
-    subnet_id                     = var.subnet-public.id
+    name                          = each.key
+    subnet_id                     = each.value.subnet.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = try(each.value.nic1_public_ip_address_id, null)
+    public_ip_address_id          = each.value.subnetkey == 0 ? try(each.value.vm.nic1_public_ip_address_id, null) : null
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = var.enable_backend_pool ? var.instances : {}
+  for_each = { for k, v in local.input_subnets_data : k => v if v.enable_backend_pool }
 
-  backend_address_pool_id = var.lb_backend_pool_id
-  ip_configuration_name   = azurerm_network_interface.nic-fw-public[each.key].ip_configuration[0].name
-  network_interface_id    = azurerm_network_interface.nic-fw-public[each.key].id
+  backend_address_pool_id = each.value.lb_backend_pool_id
+  ip_configuration_name   = azurerm_network_interface.data[each.key].ip_configuration[0].name
+  network_interface_id    = azurerm_network_interface.data[each.key].id
 }
 
 resource "azurerm_virtual_machine" "this" {
@@ -71,13 +84,12 @@ resource "azurerm_virtual_machine" "this" {
   tags                         = var.tags
   vm_size                      = var.vm_size
   availability_set_id          = azurerm_availability_set.this.id
-  primary_network_interface_id = azurerm_network_interface.nic-fw-mgmt[each.key].id
+  primary_network_interface_id = azurerm_network_interface.mgmt[each.key].id
 
-  network_interface_ids = [
-    azurerm_network_interface.nic-fw-mgmt[each.key].id,
-    azurerm_network_interface.nic-fw-public[each.key].id,
-    azurerm_network_interface.nic-fw-private[each.key].id
-  ]
+  network_interface_ids = concat(
+    [azurerm_network_interface.mgmt[each.key].id],
+    [for k, v in local.input_subnets_data : azurerm_network_interface.data[k].id if v.vmkey == each.key]
+  )
 
   storage_image_reference {
     id        = var.custom_image_id

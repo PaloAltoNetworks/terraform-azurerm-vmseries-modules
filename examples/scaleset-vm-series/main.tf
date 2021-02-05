@@ -77,7 +77,7 @@ module "inbound-scaleset" {
   name_prefix               = var.name_prefix
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
-  subnet-mgmt               = module.networks.subnet-mgmt
+  subnet_mgmt               = module.networks.subnet_mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
   bootstrap_storage_account = module.bootstrap.storage_account
@@ -105,7 +105,7 @@ module "outbound-scaleset" {
   name_prefix               = var.name_prefix
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
-  subnet-mgmt               = module.networks.subnet-mgmt
+  subnet_mgmt               = module.networks.subnet_mgmt
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
   bootstrap_storage_account = module.outbound_bootstrap.storage_account

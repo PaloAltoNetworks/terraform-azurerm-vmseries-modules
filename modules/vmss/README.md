@@ -59,9 +59,9 @@ module "vmss" {
 | name\_scale\_set | n/a | `string` | `"inbound-scaleset"` | no |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
 | sep | Seperator | `string` | `"-"` | no |
-| subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet | `any` | n/a | yes |
 | subnet-public | External/public subnet | `any` | n/a | yes |
+| subnet\_mgmt | Management subnet. | `any` | n/a | yes |
 | username | Initial administrative username to use for VM-Series. | `string` | `"panadmin"` | no |
 | vhd-container | Storage container for storing VMSS instance VHDs. | `any` | n/a | yes |
 | vm\_count | Minimum instances per scale set. | `number` | `2` | no |

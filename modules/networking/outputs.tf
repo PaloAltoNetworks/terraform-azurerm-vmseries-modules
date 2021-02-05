@@ -1,5 +1,5 @@
-output "subnet-mgmt" {
-  value       = azurerm_subnet.subnet-mgmt
+output "subnet_mgmt" {
+  value       = azurerm_subnet.subnet_mgmt
   description = "Management subnet resource."
 }
 output "subnet-public" {
