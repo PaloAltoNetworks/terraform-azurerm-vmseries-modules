@@ -8,9 +8,10 @@ resource "azurerm_availability_set" "this" {
 resource "azurerm_network_interface" "nic-fw-mgmt" {
   for_each = var.instances
 
-  name                = "${var.name_prefix}${each.key}-nic-mgmt"
-  location            = var.location
-  resource_group_name = var.resource_group_name
+  name                          = "${var.name_prefix}${each.key}-nic-mgmt"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = false # unsupported by PAN-OS
 
   ip_configuration {
     name                          = "${var.name_prefix}${each.key}-ip-mgmt"
@@ -23,10 +24,11 @@ resource "azurerm_network_interface" "nic-fw-mgmt" {
 resource "azurerm_network_interface" "nic-fw-private" {
   for_each = var.instances
 
-  name                 = "${var.name_prefix}${each.key}-nic-private"
-  location             = var.location
-  resource_group_name  = var.resource_group_name
-  enable_ip_forwarding = true
+  name                          = "${var.name_prefix}${each.key}-nic-private"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = var.accelerated_networking
+  enable_ip_forwarding          = true
 
   ip_configuration {
     name                          = "${var.name_prefix}${each.key}-ip-private"
@@ -38,10 +40,11 @@ resource "azurerm_network_interface" "nic-fw-private" {
 resource "azurerm_network_interface" "nic-fw-public" {
   for_each = var.instances
 
-  name                 = "${var.name_prefix}${each.key}-nic-public"
-  location             = var.location
-  resource_group_name  = var.resource_group_name
-  enable_ip_forwarding = true
+  name                          = "${var.name_prefix}${each.key}-nic-public"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = var.accelerated_networking
+  enable_ip_forwarding          = true
 
   ip_configuration {
     name                          = "${var.name_prefix}${each.key}-ip-public"
