@@ -41,7 +41,7 @@ module "vmss" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bootstrap-share-name | File share for bootstrap config | `any` | n/a | yes |
+| bootstrap\_share\_name | File share for bootstrap config | `any` | n/a | yes |
 | bootstrap\_storage\_account | Storage account setup for bootstrapping | `any` | n/a | yes |
 | lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
 | location | Region to install VM Series Scale sets and dependencies. | `any` | n/a | yes |

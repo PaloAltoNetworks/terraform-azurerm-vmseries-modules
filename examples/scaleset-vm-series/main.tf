@@ -81,7 +81,7 @@ module "inbound-scaleset" {
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
   bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap-share-name      = module.bootstrap.storage_share_name
+  bootstrap_share_name      = module.bootstrap.storage_share_name
   vhd-container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
@@ -109,7 +109,7 @@ module "outbound-scaleset" {
   subnet-private            = module.networks.subnet-private
   subnet-public             = module.networks.subnet-public
   bootstrap_storage_account = module.outbound_bootstrap.storage_account
-  bootstrap-share-name      = module.outbound_bootstrap.storage_share_name
+  bootstrap_share_name      = module.outbound_bootstrap.storage_share_name
   vhd-container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count

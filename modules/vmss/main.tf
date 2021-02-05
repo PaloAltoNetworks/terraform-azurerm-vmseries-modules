@@ -64,7 +64,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
       [
         "storage-account=${var.bootstrap_storage_account.name}",
         "access-key=${var.bootstrap_storage_account.primary_access_key}",
-        "file-share=${var.bootstrap-share-name}",
+        "file-share=${var.bootstrap_share_name}",
         "share-directory=None"
       ]
     )
