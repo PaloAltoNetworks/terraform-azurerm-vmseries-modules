@@ -12,9 +12,10 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   upgrade_policy_mode = "Manual"
 
   network_profile {
-    name          = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_profile}"
-    primary       = true
-    ip_forwarding = true
+    name                   = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_profile}"
+    primary                = true
+    ip_forwarding          = true
+    accelerated_networking = false # unsupported by PAN-OS
 
     ip_configuration {
       name      = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_ip}"
@@ -30,9 +31,10 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   }
 
   network_profile {
-    name          = "${var.name_prefix}${var.sep}${var.name_public_nic_profile}"
-    primary       = false
-    ip_forwarding = true
+    name                   = "${var.name_prefix}${var.sep}${var.name_public_nic_profile}"
+    primary                = false
+    ip_forwarding          = true
+    accelerated_networking = var.accelerated_networking
 
     ip_configuration {
       name                                   = "${var.name_prefix}${var.sep}${var.name_public_nic_ip}"
@@ -43,9 +45,10 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   }
 
   network_profile {
-    name          = "${var.name_prefix}${var.sep}${var.name_private_nic_profile}"
-    primary       = false
-    ip_forwarding = true
+    name                   = "${var.name_prefix}${var.sep}${var.name_private_nic_profile}"
+    primary                = false
+    ip_forwarding          = true
+    accelerated_networking = var.accelerated_networking
 
     ip_configuration {
       name      = "${var.name_prefix}${var.sep}${var.name_private_nic_ip}"

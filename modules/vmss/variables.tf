@@ -68,6 +68,12 @@ variable "lb_backend_pool_id" {
   description = "ID Of inbound load balancer backend pool to associate with the VM series firewall"
 }
 
+variable "accelerated_networking" {
+  description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces except the primary one (it is the PAN-OS management interface, which [does not support](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) acceleration)."
+  default     = true
+  type        = bool
+}
+
 #  ---   #
 # Naming #
 #  ---   #
