@@ -115,8 +115,8 @@ resource "azurerm_virtual_machine" "this" {
     custom_data = var.bootstrap-share-name == null ? null : join(
       ",",
       [
-        "storage-account=${var.bootstrap-storage-account.name}",
-        "access-key=${var.bootstrap-storage-account.primary_access_key}",
+        "storage-account=${var.bootstrap_storage_account.name}",
+        "access-key=${var.bootstrap_storage_account.primary_access_key}",
         "file-share=${var.bootstrap-share-name}",
         "share-directory=None"
       ]
@@ -131,7 +131,7 @@ resource "azurerm_virtual_machine" "this" {
   # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
   boot_diagnostics {
     enabled     = true
-    storage_uri = var.bootstrap-storage-account.primary_blob_endpoint
+    storage_uri = var.bootstrap_storage_account.primary_blob_endpoint
   }
 
   identity {

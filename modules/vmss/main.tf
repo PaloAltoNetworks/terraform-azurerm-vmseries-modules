@@ -62,8 +62,8 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     custom_data = join(
       ",",
       [
-        "storage-account=${var.bootstrap-storage-account.name}",
-        "access-key=${var.bootstrap-storage-account.primary_access_key}",
+        "storage-account=${var.bootstrap_storage_account.name}",
+        "access-key=${var.bootstrap_storage_account.primary_access_key}",
         "file-share=${var.bootstrap-share-name}",
         "share-directory=None"
       ]

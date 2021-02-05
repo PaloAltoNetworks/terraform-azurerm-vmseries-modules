@@ -28,12 +28,12 @@ variable "subnet-private" {
   description = "internal/private subnet resource"
 }
 
-variable "bootstrap-storage-account" {
+variable "bootstrap_storage_account" {
   description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
 }
 
 variable "bootstrap-share-name" {
-  description = "Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap-storage-account is left at null."
+  description = "Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap_storage_account is left at null."
   default     = null
   type        = string
 }

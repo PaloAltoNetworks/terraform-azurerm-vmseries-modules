@@ -15,7 +15,7 @@ module "vm-series" {
   subnet-mgmt                   = azurerm_subnet.subnet-mgmt
   subnet-private                = azurerm_subnet.subnet-private
   subnet-public                 = module.networks.subnet-public
-  bootstrap-storage-account     = module.panorama.bootstrap-storage-account
+  bootstrap_storage_account     = module.panorama.bootstrap_storage_account
   bootstrap-share-name          = "sharename"
   lb_backend_pool_id            = "private-backend-pool-id"
 }
@@ -44,8 +44,8 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | accelerated\_networking | Enable Azure accelerated networking (SR-IOV) for all network interfaces except the primary one (it is the PAN-OS management interface, which [does not support](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) acceleration). | `bool` | `true` | no |
-| bootstrap-share-name | Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap-storage-account is left at null. | `string` | `null` | no |
-| bootstrap-storage-account | Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output. | `any` | n/a | yes |
+| bootstrap-share-name | Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap\_storage\_account is left at null. | `string` | `null` | no |
+| bootstrap\_storage\_account | Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output. | `any` | n/a | yes |
 | custom\_image\_id | Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `vm_series_version`, `vm_series_publisher`, `vm_series_offer`, `vm_series_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software. | `string` | `null` | no |
 | enable\_backend\_pool | If false, ignore `lb_backend_pool_id`. | `bool` | `true` | no |
 | enable\_plan | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
