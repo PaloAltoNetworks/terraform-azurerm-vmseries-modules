@@ -12,7 +12,7 @@ variable "vm_size" {
   type        = string
 }
 
-variable "subnet-mgmt" {
+variable "subnet_mgmt" {
   description = "Management subnet."
 }
 

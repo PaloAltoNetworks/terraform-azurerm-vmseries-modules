@@ -8,7 +8,7 @@ resource "azurerm_network_security_rule" "inter-vnet-rule" {
   priority                    = 200
   protocol                    = "*"
   source_port_range           = "*"
-  source_address_prefix       = azurerm_subnet.subnet-mgmt.address_prefix
+  source_address_prefix       = azurerm_subnet.subnet_mgmt.address_prefix
   destination_address_prefix  = "*"
   destination_port_range      = "*"
 }

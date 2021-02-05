@@ -12,7 +12,7 @@ resource "azurerm_virtual_network" "vnet-vmseries" {
 }
 
 # Management for VM-series
-resource "azurerm_subnet" "subnet-mgmt" {
+resource "azurerm_subnet" "subnet_mgmt" {
   name                 = "${var.name_prefix}${var.sep}${var.name_subnet_mgmt}"
   address_prefixes     = ["${var.firewall_vnet_prefix}${var.vm_management_subnet}"]
   resource_group_name  = azurerm_resource_group.rg.name
@@ -27,7 +27,7 @@ resource "azurerm_network_security_group" "sg-mgmt" {
 
 resource "azurerm_subnet_network_security_group_association" "mgmt-sa" {
   network_security_group_id = azurerm_network_security_group.sg-mgmt.id
-  subnet_id                 = azurerm_subnet.subnet-mgmt.id
+  subnet_id                 = azurerm_subnet.subnet_mgmt.id
 }
 
 # Private network - don't need NSG here?

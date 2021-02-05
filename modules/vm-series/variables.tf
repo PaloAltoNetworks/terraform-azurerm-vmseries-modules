@@ -16,16 +16,12 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "subnet-mgmt" {
-  description = "Management subnet."
+variable "subnet_mgmt" {
+  description = "Management subnet object."
 }
 
-variable "subnet-public" {
-  description = "External/public subnet resource"
-}
-
-variable "subnet-private" {
-  description = "internal/private subnet resource"
+variable "subnets_data" {
+  description = "List of all the subnet objects. Except the Management network interface (which gets `subnet_mgmt`), all the network interfaces are assigned to subnets in the same order as in the list."
 }
 
 variable "bootstrap_storage_account" {

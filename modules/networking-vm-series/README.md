@@ -70,9 +70,9 @@ module "networks" {
 | Name | Description |
 |------|-------------|
 | outbound-route-table | ID of UDR - can be used to direct traffic from a Spoke VNET to the Transit OLB. |
-| subnet-mgmt | Management subnet resource. |
 | subnet-private | Inside/private subnet resource. |
 | subnet-public | Outside/public subnet resource. |
+| subnet\_mgmt | Management subnet resource. |
 | vnet | VNET resource. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
