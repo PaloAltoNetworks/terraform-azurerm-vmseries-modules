@@ -74,7 +74,7 @@ module "outbound-lb" {
 
   location       = var.location
   name_prefix    = var.name_prefix
-  backend-subnet = module.networks.subnet-private.id
+  backend-subnet = module.networks.subnet_private.id
 }
 
 module "bootstrap" {
@@ -101,8 +101,8 @@ module "inbound-vm-series" {
   vm_series_version         = "9.1.3"
   vm_series_sku             = "byol"
   subnet_mgmt               = module.networks.subnet_mgmt
-  subnet-private            = module.networks.subnet-private
-  subnet-public             = module.networks.subnet-public
+  subnet_private            = module.networks.subnet_private
+  subnet_public             = module.networks.subnet_public
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share_name
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id

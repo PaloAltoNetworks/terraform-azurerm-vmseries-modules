@@ -12,10 +12,7 @@ module "vm-series" {
   location                      = "Australia Central"
   name_prefix                   = "panostf"
   password                      = "your-password"
-  subnet-mgmt                   = azurerm_subnet.subnet-mgmt
-  subnet-private                = azurerm_subnet.subnet-private
-  subnet-public                 = module.networks.subnet-public
-  bootstrap_storage_account     = module.panorama.bootstrap_storage_account
+  bootstrap_storage_account     = module.vm-bootstrap.bootstrap_storage_account
   bootstrap_share_name          = "sharename"
 }
 ```
