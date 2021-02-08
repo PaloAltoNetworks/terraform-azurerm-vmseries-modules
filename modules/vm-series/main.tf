@@ -27,31 +27,23 @@ locals {
 
   # Firstly, flatten() ensures that this local value is a flat list of objects, rather
   # than a list of lists of objects.
-  input_flat_subnets_data = flatten([
+  input_flat_data_nics = flatten([
     for vmkey, vm in var.instances : [
-      for subnetkey, subnet in var.subnets_data : {
-        vmkey               = vmkey
-        vm                  = vm
-        subnetkey           = subnetkey
-        subnet              = subnet
-        lb_backend_pool_id  = var.lb_backend_pool_ids[subnetkey]
-        enable_backend_pool = var.enable_backend_pools[subnetkey]
+      for nickey, nic in var.data_nics : {
+        vmkey  = vmkey
+        vm     = vm
+        nickey = nickey
+        nic    = nic
       }
     ]
   ])
 
   # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
-  input_subnets_data = { for v in local.input_flat_subnets_data : "${v.vmkey}-${v.subnetkey}" => v }
-}
-
-variable "lb_backend_pool_ids" { # FIXME move it 
-}
-
-variable "enable_backend_pools" { # FIXME move it 
+  input_data_nics = { for v in local.input_flat_data_nics : "${v.vmkey}-${v.nickey}" => v }
 }
 
 resource "azurerm_network_interface" "data" {
-  for_each = local.input_subnets_data
+  for_each = local.input_data_nics
 
   name                          = "${var.name_prefix}${each.key}"
   location                      = var.location
@@ -61,16 +53,16 @@ resource "azurerm_network_interface" "data" {
 
   ip_configuration {
     name                          = "primary"
-    subnet_id                     = each.value.subnet.id
+    subnet_id                     = each.value.nic.subnet.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = each.value.subnetkey == 0 ? try(each.value.vm.nic1_public_ip_address_id, null) : null
+    public_ip_address_id          = each.value.nickey == 0 ? try(each.value.vm.nic1_public_ip_address_id, null) : null
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = { for k, v in local.input_subnets_data : k => v if v.enable_backend_pool }
+  for_each = { for k, v in local.input_data_nics : k => v if try(v.nic.enable_backend_pool, false) }
 
-  backend_address_pool_id = each.value.lb_backend_pool_id
+  backend_address_pool_id = each.value.nic.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.data[each.key].ip_configuration[0].name
   network_interface_id    = azurerm_network_interface.data[each.key].id
 }
@@ -88,7 +80,7 @@ resource "azurerm_virtual_machine" "this" {
 
   network_interface_ids = concat(
     [azurerm_network_interface.mgmt[each.key].id],
-    [for k, v in local.input_subnets_data : azurerm_network_interface.data[k].id if v.vmkey == each.key]
+    [for k, v in local.input_data_nics : azurerm_network_interface.data[k].id if v.vmkey == each.key]
   )
 
   storage_image_reference {
