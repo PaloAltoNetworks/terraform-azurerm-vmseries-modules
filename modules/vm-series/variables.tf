@@ -20,8 +20,34 @@ variable "subnet_mgmt" {
   description = "Management subnet object."
 }
 
-variable "subnets_data" {
-  description = "List of all the subnet objects. Except the Management network interface (which gets `subnet_mgmt`), all the network interfaces are assigned to subnets in the same order as in the list."
+variable "data_nics" {
+  description = <<-EOF
+  List of the network interface specifications shared between all the VM-Series instances.
+  Except the Management network interface (which gets `subnet_mgmt`), all the network interfaces are assigned
+  to subnets in the same order as in the list.
+
+  - `subnet`: Subnet object to use.
+  - `lb_backend_pool_id`: Identifier of the backend pool of the load balancer to associate.
+  - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default it false.
+
+  Example:
+
+  ```
+  [
+    {
+      subnet              = { id = var.vmseries_subnet_id_public }
+      lb_backend_pool_id  = module.inbound_lb.backend-pool-id
+      enable_backend_pool = true
+    },
+    {
+      subnet              = { id = var.vmseries_subnet_id_private }
+      lb_backend_pool_id  = module.outbound_lb.backend-pool-id
+      enable_backend_pool = true
+    },
+  ]
+  ```
+
+  EOF
 }
 
 variable "bootstrap_storage_account" {
@@ -89,18 +115,6 @@ variable "vm_series_version" {
   description = "VM-series PAN-OS version - list available for a default `vm_series_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
   default     = "9.0.4"
   type        = string
-}
-
-variable "lb_backend_pool_id" {
-  description = "Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls."
-  default     = null
-  type        = string
-}
-
-variable "enable_backend_pool" {
-  description = "If false, ignore `lb_backend_pool_id`."
-  default     = true
-  type        = bool
 }
 
 variable "name_avset" {
