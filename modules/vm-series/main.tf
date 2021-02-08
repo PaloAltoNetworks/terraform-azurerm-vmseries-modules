@@ -14,7 +14,7 @@ resource "azurerm_network_interface" "mgmt" {
   enable_accelerated_networking = false # unsupported by PAN-OS
 
   ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-mgmt"
+    name                          = "primary"
     subnet_id                     = var.subnet_mgmt.id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = try(each.value.mgmt_public_ip_address_id, null)
@@ -60,7 +60,7 @@ resource "azurerm_network_interface" "data" {
   enable_ip_forwarding          = true
 
   ip_configuration {
-    name                          = each.key
+    name                          = "primary"
     subnet_id                     = each.value.subnet.id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = each.value.subnetkey == 0 ? try(each.value.vm.nic1_public_ip_address_id, null) : null
