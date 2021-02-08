@@ -120,13 +120,13 @@ variable "tags" {
 }
 
 variable "identity_type" {
-  description = "See [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine)"
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_type)."
   default     = "SystemAssigned"
   type        = string
 }
 
 variable "identity_ids" {
-  description = "See [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine)"
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids)."
   default     = null
   type        = list(string)
 }
