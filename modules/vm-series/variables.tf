@@ -116,5 +116,5 @@ variable "name_avset" {
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
-  type        = map
+  type        = map(any)
 }

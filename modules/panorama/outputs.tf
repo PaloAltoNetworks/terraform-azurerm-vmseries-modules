@@ -1,7 +1,9 @@
 
 output "panorama-publicip" {
-  value       = azurerm_public_ip.panorama-pip-mgmt.ip_address
-  description = "Panorama Public IP address"
+  value = { for idx, pip in azurerm_public_ip.panorama-pip-mgmt[*].ip_address :
+    "${var.name_prefix}${var.sep}${var.name_panorama}-${element(var.panorama_ha_suffix_map, idx)}" => pip
+  }
+  description = "Panorama Public IP addresses"
 }
 
 output "resource-group" {

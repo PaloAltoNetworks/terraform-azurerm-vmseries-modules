@@ -64,3 +64,32 @@ variable "name_mgmt" {
 variable "name_panorama" {
   default = "panorama"
 }
+
+variable "enable_logging_disk" {
+  description = "Enable / Disable attaching a managed disk for Panorama logging"
+  type        = bool
+  default     = false
+}
+
+variable "logging_disk_size" {
+  description = "Panorama logging disk size in GB"
+  type        = string
+  default     = "2000"
+}
+
+variable "Logical_unit_number" {
+  description = "The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine. Changing this forces a new resource to be created."
+  type        = string
+  default     = "10"
+}
+
+variable "panorama_ha" {
+  description = "Enable / Disable Panorama HA"
+  type        = bool
+  default     = false
+}
+
+variable "panorama_ha_suffix_map" {
+  type    = list(string)
+  default = ["a", "b"]
+}

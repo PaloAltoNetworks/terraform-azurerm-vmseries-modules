@@ -22,10 +22,10 @@ module "panorama" {
   password    = random_password.password.result
 }
 
-output panorama_url {
+output "panorama_url" {
   value = "https://${module.panorama.panorama-publicip}"
 }
 
-output panorama_admin_password {
+output "panorama_admin_password" {
   value = random_password.password.result
 }

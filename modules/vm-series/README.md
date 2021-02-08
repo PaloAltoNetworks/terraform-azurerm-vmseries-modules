@@ -51,16 +51,16 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | enable\_plan | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
 | instances | Map of instances to create. Keys are instance identifiers, values are objects with specific attributes. | `any` | n/a | yes |
 | lb\_backend\_pool\_id | Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls. | `string` | `null` | no |
-| location | Region to install vm-series and dependencies. | `any` | n/a | yes |
+| location | Region where to deploy VM-Series and dependencies. | `string` | n/a | yes |
 | managed\_disk\_type | Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
 | name\_avset | Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
-| resource\_group | The resource group for VM series. | `any` | n/a | yes |
+| resource\_group\_name | The resource group name for VM-Series. | `string` | n/a | yes |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet resource | `any` | n/a | yes |
 | subnet-public | External/public subnet resource | `any` | n/a | yes |
-| tags | A map of tags to be associated with the resources created. | `map` | `{}` | no |
+| tags | A map of tags to be associated with the resources created. | `map(any)` | `{}` | no |
 | username | Initial administrative username to use for VM-Series. | `string` | `"panadmin"` | no |
 | vm\_series\_offer | The Azure Offer identifier corresponding to a published image. For `vm_series_version` 9.1.1 or above, use "vmseries-flex"; for 9.1.0 or below use "vmseries1". | `string` | `"vmseries-flex"` | no |
 | vm\_series\_publisher | The Azure Publisher identifier for a image which should be deployed. | `string` | `"paloaltonetworks"` | no |
