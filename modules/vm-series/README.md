@@ -49,14 +49,16 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | custom\_image\_id | Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `vm_series_version`, `vm_series_publisher`, `vm_series_offer`, `vm_series_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software. | `string` | `null` | no |
 | enable\_backend\_pool | If false, ignore `lb_backend_pool_id`. | `bool` | `true` | no |
 | enable\_plan | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
+| identity\_ids | See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids). | `list(string)` | `null` | no |
+| identity\_type | See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_type). | `string` | `"SystemAssigned"` | no |
 | instances | Map of instances to create. Keys are instance identifiers, values are objects with specific attributes. | `any` | n/a | yes |
 | lb\_backend\_pool\_id | Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls. | `string` | `null` | no |
-| location | Region to install vm-series and dependencies. | `any` | n/a | yes |
+| location | Region where to deploy VM-Series and dependencies. | `string` | n/a | yes |
 | managed\_disk\_type | Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
 | name\_avset | Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
 | name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
-| resource\_group | The resource group for VM series. | `any` | n/a | yes |
+| resource\_group\_name | The resource group name for VM-Series. | `string` | n/a | yes |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet resource | `any` | n/a | yes |
 | subnet-public | External/public subnet resource | `any` | n/a | yes |
