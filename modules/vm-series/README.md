@@ -14,6 +14,20 @@ module "vm-series" {
   password                      = "your-password"
   bootstrap_storage_account     = module.vm-bootstrap.bootstrap_storage_account
   bootstrap_share_name          = "sharename"
+  subnet_mgmt                   = module.networks.subnet_mgmt
+  data_nics = [
+    {
+      subnet              = module.networks.subnet_public
+      enable_backend_pool = false
+    },
+    {
+      subnet              = module.networks.subnet_private
+      enable_backend_pool = false
+    },
+  ]
+  instances = {
+    "my-firewall" = {}
+  }
 }
 ```
 
