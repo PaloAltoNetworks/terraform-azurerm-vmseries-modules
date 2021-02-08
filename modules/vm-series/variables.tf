@@ -8,7 +8,42 @@ variable "name_prefix" {
 }
 
 variable "instances" {
-  description = "Map of instances to create. Keys are instance identifiers, values are objects with specific attributes."
+  description = <<-EOF
+  Map of virtual machine instances to create. Keys are instance identifiers, values
+  are the per-vm objects containing the attributes unique to specific virtual machines:
+
+  - `mgmt_public_ip_address_id`: the Public IP identifier to assign to the nic0 interface (the management interface which listens on ssh/https).
+  - `nic1_public_ip_address_id`: the Public IP identifier to assign to the first data interface (nic1). Assigning to remaining data interfaces is unsupported.
+  - `zone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
+
+  Basic:
+  ```
+  {
+    "fw00" = {
+      mgmt_public_ip_address_id = azurerm_public_ip.this.id
+    }
+    "fw01" = { 
+      mgmt_public_ip_address_id = azurerm_public_ip.that.id
+    }
+  }
+  ```
+
+  Full example:
+  ```
+  {
+    "fw00" = {
+      mgmt_public_ip_address_id = azurerm_public_ip.m0.id
+      nic1_public_ip_address_id = azurerm_public_ip.d0.id
+      zone                      = "1"
+    }
+    "fw01" = { 
+      mgmt_public_ip_address_id = azurerm_public_ip.m1.id
+      nic1_public_ip_address_id = azurerm_public_ip.d1.id
+      zone                      = "2"
+    }
+  }
+  ```
+  EOF
 }
 
 variable "resource_group_name" {
