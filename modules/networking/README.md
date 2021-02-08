@@ -73,11 +73,11 @@ module "networks" {
 
 | Name | Description |
 |------|-------------|
-| outbound-route-table | ID of UDR - can be used to direct traffic from a Spoke VNET to the Transit OLB. |
-| panorama-mgmt-subnet | Panorama Management subnet resource. |
-| subnet-private | Inside/private subnet resource. |
-| subnet-public | Outside/public subnet resource. |
+| outbound\_route\_table | ID of UDR - can be used to direct traffic from a Spoke VNET to the Transit OLB. |
+| panorama\_mgmt\_subnet | Panorama Management subnet resource. |
 | subnet\_mgmt | Management subnet resource. |
+| subnet\_private | Inside/private subnet resource. |
+| subnet\_public | Outside/public subnet resource. |
 | vnet | VNET resource. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

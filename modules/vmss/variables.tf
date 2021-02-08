@@ -16,11 +16,11 @@ variable "subnet_mgmt" {
   description = "Management subnet."
 }
 
-variable "subnet-public" {
+variable "subnet_public" {
   description = "External/public subnet"
 }
 
-variable "subnet-private" {
+variable "subnet_private" {
   description = "internal/private subnet"
 }
 
@@ -60,7 +60,7 @@ variable "vm_count" {
   default     = 2
 }
 
-variable "vhd-container" {
+variable "vhd_container" {
   description = "Storage container for storing VMSS instance VHDs."
 }
 

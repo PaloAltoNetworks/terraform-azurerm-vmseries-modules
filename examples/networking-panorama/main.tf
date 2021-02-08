@@ -18,7 +18,7 @@ module "panorama" {
 
   location    = var.location
   name_prefix = var.name_prefix
-  subnet_mgmt = module.net_panorama.panorama-mgmt-subnet
+  subnet_mgmt = module.net_panorama.panorama_mgmt_subnet
   password    = random_password.password.result
 }
 

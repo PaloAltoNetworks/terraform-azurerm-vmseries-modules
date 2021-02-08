@@ -53,6 +53,6 @@ module "networks" {
 
 | Name | Description |
 |------|-------------|
-| panorama-mgmt-subnet | Panorama Management subnet resource. |
+| panorama\_mgmt\_subnet | Panorama Management subnet resource. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
