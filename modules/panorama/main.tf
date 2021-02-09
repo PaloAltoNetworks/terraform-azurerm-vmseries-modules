@@ -12,7 +12,7 @@ resource "azurerm_public_ip" "panorama-pip-mgmt" {
   resource_group_name = azurerm_resource_group.panorama.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = ["${count.index + 1}"]
+  zones               = [count.index + 1]
 }
 
 # Build the management interface
@@ -38,7 +38,7 @@ resource "azurerm_virtual_machine" "panorama" {
   resource_group_name   = azurerm_resource_group.panorama.name
   network_interface_ids = [azurerm_network_interface.mgmt[count.index].id]
   vm_size               = var.panorama_size
-  zones                 = ["${count.index + 1}"]
+  zones                 = [count.index + 1]
 
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
@@ -51,7 +51,7 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = "${var.name_prefix}PanoramaDisk"
+    name              = "${var.name_prefix}PanoramaDisk-${element(var.panorama_ha_suffix_map, count.index)}"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
@@ -74,11 +74,6 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 }
 
-
-locals {
-
-}
-
 # Panorama managed disk
 resource "azurerm_managed_disk" "this" {
   count                = var.panorama_ha && var.enable_logging_disk ? 2 : var.enable_logging_disk ? 1 : 0
@@ -88,12 +83,12 @@ resource "azurerm_managed_disk" "this" {
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = var.logging_disk_size
-  zones                = ["${count.index + 1}"]
+  zones                = [count.index + 1]
 }
 
 # Attach logging disk to Panorama VM
 resource "azurerm_virtual_machine_data_disk_attachment" "this" {
-  count              = var.panorama_ha ? 2 : 1
+  count              = var.panorama_ha && var.enable_logging_disk ? 2 : var.enable_logging_disk ? 1 : 0
   managed_disk_id    = azurerm_managed_disk.this[count.index].id
   virtual_machine_id = azurerm_virtual_machine.panorama[count.index].id
   lun                = var.Logical_unit_number
