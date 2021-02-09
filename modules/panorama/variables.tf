@@ -84,7 +84,7 @@ variable "logical_unit_number" {
 }
 
 variable "panorama_ha" {
-  description = "Enable / Disable Panorama HA"
+  description = "Enable Panorama HA. Creates two Panorama virtual machines instead of one. Requires `location` to be one of the Azure regions that support Availability Zones."
   type        = bool
   default     = false
 }
