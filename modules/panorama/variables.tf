@@ -77,7 +77,7 @@ variable "logging_disk_size" {
   default     = "2000"
 }
 
-variable "Logical_unit_number" {
+variable "logical_unit_number" {
   description = "The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine. Changing this forces a new resource to be created."
   type        = string
   default     = "10"
