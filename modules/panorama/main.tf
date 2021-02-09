@@ -91,6 +91,6 @@ resource "azurerm_virtual_machine_data_disk_attachment" "this" {
   count              = var.panorama_ha && var.enable_logging_disk ? 2 : var.enable_logging_disk ? 1 : 0
   managed_disk_id    = azurerm_managed_disk.this[count.index].id
   virtual_machine_id = azurerm_virtual_machine.panorama[count.index].id
-  lun                = var.Logical_unit_number
+  lun                = var.logical_unit_number
   caching            = "ReadWrite"
 }
