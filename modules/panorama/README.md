@@ -34,16 +34,16 @@ module "panorama" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| Logical\_unit\_number | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine. Changing this forces a new resource to be created. | `string` | `"10"` | no |
 | enable\_logging\_disk | Enable / Disable attaching a managed disk for Panorama logging | `bool` | `false` | no |
 | location | Region to deploy panorama into. | `any` | n/a | yes |
 | logging\_disk\_size | Panorama logging disk size in GB | `string` | `"2000"` | no |
+| logical\_unit\_number | The Logical Unit Number of the Data Disk, which needs to be unique within the Virtual Machine. Changing this forces a new resource to be created. | `string` | `"10"` | no |
 | name\_mgmt | n/a | `string` | `"nic-mgmt"` | no |
 | name\_panorama | n/a | `string` | `"panorama"` | no |
 | name\_panorama\_pip\_mgmt | n/a | `string` | `"panorama-pip"` | no |
 | name\_prefix | Prefix to add to all the object names here. | `any` | n/a | yes |
 | name\_rg | n/a | `string` | `"rg-panorama"` | no |
-| panorama\_ha | Enable / Disable Panorama HA | `bool` | `false` | no |
+| panorama\_ha | Enable Panorama HA. Creates two Panorama virtual machines instead of one. Requires `location` to be one of the Azure regions that support Availability Zones. | `bool` | `false` | no |
 | panorama\_ha\_suffix\_map | n/a | `list(string)` | <pre>[<br>  "a",<br>  "b"<br>]</pre> | no |
 | panorama\_size | Virtual Machine size. | `string` | `"Standard_D5_v2"` | no |
 | panorama\_sku | Panorama SKU. | `string` | `"byol"` | no |
