@@ -36,7 +36,7 @@ module "networks" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| location | Region to deploy Panorama Resources | `any` | n/a | yes |
+| location | Region to deploy Panorama Resources | `string` | n/a | yes |
 | management\_ips | External IP addresses or prefixes that will be permitted direct access to the management network. | `map(any)` | n/a | yes |
 | management\_subnet | The private network that terminates all FW and Panorama IP addresses - Joined with management\_vnet\_prefix | `string` | `"0.0/24"` | no |
 | management\_vnet\_prefix | The private prefix used for the management virtual network | `string` | `"10.255."` | no |
@@ -44,9 +44,9 @@ module "networks" {
 | name\_panorama\_allowall\_outbound | n/a | `string` | `"panorama-allowall-outbound"` | no |
 | name\_panorama\_sg | n/a | `string` | `"sg-panorama-mgmt"` | no |
 | name\_panorama\_subnet\_mgmt | n/a | `string` | `"net-panorama-mgmt"` | no |
-| name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
-| name\_rg | n/a | `string` | `"rg-panorama-networks"` | no |
+| name\_prefix | Prefix to add to all the object names here | `string` | n/a | yes |
 | name\_vnet\_panorama\_mgmt | n/a | `string` | `"vnet-panorama-mgmt"` | no |
+| resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 | sep | Separator | `string` | `"-"` | no |
 
 ## Outputs
