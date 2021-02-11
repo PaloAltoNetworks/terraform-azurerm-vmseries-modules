@@ -1,7 +1,12 @@
+data "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
+  location = var.location
+}
+
 resource "azurerm_availability_set" "this" {
   name                        = coalesce(var.name_avset, "${var.name_prefix}avset")
-  location                    = var.location
-  resource_group_name         = var.resource_group_name
+  location                    = data.azurerm_resource_group.location
+  resource_group_name         = data.azurerm_resource_group.name
   platform_fault_domain_count = 2
 }
 
@@ -9,8 +14,8 @@ resource "azurerm_network_interface" "nic-fw-mgmt" {
   for_each = var.instances
 
   name                = "${var.name_prefix}${each.key}-nic-mgmt"
-  location            = var.location
-  resource_group_name = var.resource_group_name
+  location            = data.azurerm_resource_group.location
+  resource_group_name = data.azurerm_resource_group.name
 
   ip_configuration {
     name                          = "${var.name_prefix}${each.key}-ip-mgmt"
@@ -24,8 +29,8 @@ resource "azurerm_network_interface" "nic-fw-private" {
   for_each = var.instances
 
   name                 = "${var.name_prefix}${each.key}-nic-private"
-  location             = var.location
-  resource_group_name  = var.resource_group_name
+  location             = data.azurerm_resource_group.location
+  resource_group_name  = data.azurerm_resource_group.name
   enable_ip_forwarding = true
 
   ip_configuration {
@@ -39,8 +44,8 @@ resource "azurerm_network_interface" "nic-fw-public" {
   for_each = var.instances
 
   name                 = "${var.name_prefix}${each.key}-nic-public"
-  location             = var.location
-  resource_group_name  = var.resource_group_name
+  location             = data.azurerm_resource_group.location
+  resource_group_name  = data.azurerm_resource_group.name
   enable_ip_forwarding = true
 
   ip_configuration {
@@ -63,8 +68,8 @@ resource "azurerm_virtual_machine" "this" {
   for_each = var.instances
 
   name                         = "${var.name_prefix}${each.key}"
-  location                     = var.location
-  resource_group_name          = var.resource_group_name
+  location                     = data.azurerm_resource_group.location
+  resource_group_name          = data.azurerm_resource_group.name
   tags                         = var.tags
   vm_size                      = var.vm_size
   availability_set_id          = azurerm_availability_set.this.id
@@ -141,8 +146,8 @@ resource "azurerm_application_insights" "this" {
   count = var.metrics_retention_in_days != 0 ? 1 : 0
 
   name                = var.name_prefix
-  location            = var.location
-  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  location            = data.azurerm_resource_group.location
+  resource_group_name = data.azurerm_resource_group.name # same RG, so no RBAC modification is needed
   application_type    = "other"
   retention_in_days   = var.metrics_retention_in_days
 }

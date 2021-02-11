@@ -10,6 +10,7 @@ module "vm-series" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-series"
 
   location                      = "Australia Central"
+  resource_group_name           = "some-rg"
   name_prefix                   = "pan"
   password                      = "your-password"
   subnet-mgmt                   = azurerm_subnet.subnet-mgmt
