@@ -1,48 +1,64 @@
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
+}
+
 variable "location" {
   description = "Region to deploy all networking resources."
+  type        = string
 }
 
 variable "name_prefix" {
   description = "Prefix to add to all the object names here."
+  type        = string
 }
+
 variable "management_ips" {
-  type        = map(any)
   description = "External IP addresses or prefixes that will be permitted direct access to the management network."
+  type        = map(any)
 }
+
 variable "management_vnet_prefix" {
-  default     = "10.255."
   description = "The private prefix used for the management virtual network."
+  default     = "10.255."
+  type        = string
 }
 
 variable "management_subnet" {
-  default     = "0.0/24"
   description = "The private network that terminates all FW and Panorama IP addresses - Joined with management_vnet_prefix."
+  default     = "0.0/24"
+  type        = string
 }
 
 variable "firewall_vnet_prefix" {
-  default     = "10.110."
   description = "The private prefix used for all firewall networks."
+  default     = "10.110."
+  type        = string
 }
 
 variable "public_subnet" {
-  default     = "129.0/24"
   description = "The private network that is the external or public side of the VM series firewalls (eth1/1)."
+  default     = "129.0/24"
+  type        = string
 }
 
 variable "private_subnet" {
-  default     = "0.0/24"
   description = "The private network behind or on the internal/private side of the VM series firewalls (eth1/2)."
+  default     = "0.0/24"
+  type        = string
 }
 
 variable "vm_management_subnet" {
-  default     = "255.0/24"
   description = "The subnet used for the management NICs on the vm-series."
+  default     = "255.0/24"
+  type        = string
 }
 
 variable "olb_private_ip" {
   # This IP MUST fall in the private-subnet network.
   description = "The private IP address to assign to the Outgoing Load balancer frontend. This IP MUST fall in the private-subnet network."
   default     = "10.110.0.21"
+  type        = string
 }
 
 
@@ -57,10 +73,6 @@ variable "sep" {
 
 variable "name_vnet_panorama_mgmt" {
   default = "vnet-panorama-mgmt"
-}
-
-variable "name_rg" {
-  default = "networks"
 }
 
 variable "name_panorama_sg" {

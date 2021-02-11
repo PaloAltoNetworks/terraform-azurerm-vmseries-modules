@@ -37,7 +37,7 @@ module "networks" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | firewall\_vnet\_prefix | The private prefix used for all firewall networks. | `string` | `"10.110."` | no |
-| location | Region to deploy all networking resources. | `any` | n/a | yes |
+| location | Region to deploy all networking resources. | `string` | n/a | yes |
 | management\_ips | External IP addresses or prefixes that will be permitted direct access to the management network. | `map(any)` | n/a | yes |
 | management\_subnet | The private network that terminates all FW and Panorama IP addresses - Joined with management\_vnet\_prefix. | `string` | `"0.0/24"` | no |
 | management\_vnet\_prefix | The private prefix used for the management virtual network. | `string` | `"10.255."` | no |
@@ -50,8 +50,7 @@ module "networks" {
 | name\_panorama\_fw\_peer | n/a | `string` | `"panorama-fw-peer"` | no |
 | name\_panorama\_sg | n/a | `string` | `"sg-panorama-mgmt"` | no |
 | name\_panorama\_subnet\_mgmt | n/a | `string` | `"net-panorama-mgmt"` | no |
-| name\_prefix | Prefix to add to all the object names here. | `any` | n/a | yes |
-| name\_rg | n/a | `string` | `"networks"` | no |
+| name\_prefix | Prefix to add to all the object names here. | `string` | n/a | yes |
 | name\_sg\_allowall | n/a | `string` | `"sg-allowall"` | no |
 | name\_sg\_mgmt | n/a | `string` | `"sg-vmmgmt"` | no |
 | name\_subnet\_inside | n/a | `string` | `"net-inside"` | no |
@@ -66,6 +65,7 @@ module "networks" {
 | olb\_private\_ip | The private IP address to assign to the Outgoing Load balancer frontend. This IP MUST fall in the private-subnet network. | `string` | `"10.110.0.21"` | no |
 | private\_subnet | The private network behind or on the internal/private side of the VM series firewalls (eth1/2). | `string` | `"0.0/24"` | no |
 | public\_subnet | The private network that is the external or public side of the VM series firewalls (eth1/1). | `string` | `"129.0/24"` | no |
+| resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 | sep | Separator | `string` | `"-"` | no |
 | vm\_management\_subnet | The subnet used for the management NICs on the vm-series. | `string` | `"255.0/24"` | no |
 
