@@ -1,9 +1,16 @@
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
+}
+
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
+  type        = string
 }
 
 variable "name_prefix" {
   description = "Prefix to add to all the object names here"
+  type        = string
 }
 
 variable "frontend_ips" {
@@ -51,10 +58,6 @@ variable "frontend_ips" {
 # Seperator
 variable "sep" {
   default = "-"
-}
-
-variable "name_rg" {
-  default = "lb-rg"
 }
 
 variable "name_lb" {
