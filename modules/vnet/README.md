@@ -40,7 +40,6 @@ module "vnet" {
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | address\_space | Address space for VNet. | `list(string)` | <pre>[<br>  "10.0.0.0/16"<br>]</pre> | no |
-| existing\_rg | Enable this option if you have already created Resource Group. | `bool` | `false` | no |
 | existing\_vnet | Enable this option if you have already created Virtual Network. | `bool` | `false` | no |
 | location | Location of the resources that will be deployed. | `string` | n/a | yes |
 | resource\_group\_name | Name of the Resource Group to create. | `string` | n/a | yes |

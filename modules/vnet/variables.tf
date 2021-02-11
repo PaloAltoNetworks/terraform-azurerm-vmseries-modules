@@ -1,9 +1,3 @@
-variable "existing_rg" {
-  description = "Enable this option if you have already created Resource Group."
-  type        = bool
-  default     = false
-}
-
 variable "existing_vnet" {
   description = "Enable this option if you have already created Virtual Network."
   type        = bool
