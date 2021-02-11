@@ -11,6 +11,7 @@ module "vmss" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vmss"
 
   location                  = "Australia Central"
+  resource_group_name       = "some-rg"
   name_prefix               = "pan"
   password                  = "your-password"
   subnet-mgmt               = azurerm_subnet.subnet-mgmt
@@ -44,20 +45,20 @@ module "vmss" {
 | bootstrap-share-name | File share for bootstrap config | `any` | n/a | yes |
 | bootstrap-storage-account | Storage account setup for bootstrapping | `any` | n/a | yes |
 | lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
-| location | Region to install VM Series Scale sets and dependencies. | `any` | n/a | yes |
+| location | Region to install VM Series Scale sets and dependencies. | `string` | n/a | yes |
 | name\_domain\_name\_label | n/a | `string` | `"inbound-vm-mgmt"` | no |
 | name\_fw | n/a | `string` | `"inbound-fw"` | no |
 | name\_fw\_mgmt\_pip | n/a | `string` | `"inbound-fw-mgmt-pip"` | no |
 | name\_mgmt\_nic\_ip | n/a | `string` | `"inbound-nic-fw-mgmt"` | no |
 | name\_mgmt\_nic\_profile | n/a | `string` | `"inbound-nic-fw-mgmt-profile"` | no |
-| name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
+| name\_prefix | Prefix to add to all the object names here | `string` | n/a | yes |
 | name\_private\_nic\_ip | n/a | `string` | `"inbound-nic-fw-private"` | no |
 | name\_private\_nic\_profile | n/a | `string` | `"inbound-nic-fw-private-profile"` | no |
 | name\_public\_nic\_ip | n/a | `string` | `"inbound-nic-fw-public"` | no |
 | name\_public\_nic\_profile | n/a | `string` | `"inbound-nic-fw-public-profile"` | no |
-| name\_rg | n/a | `string` | `"vmseries-rg"` | no |
 | name\_scale\_set | n/a | `string` | `"inbound-scaleset"` | no |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
+| resource\_group\_name | Name of the Resource Group to create. | `string` | n/a | yes |
 | sep | Seperator | `string` | `"-"` | no |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet | `any` | n/a | yes |

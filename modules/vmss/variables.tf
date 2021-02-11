@@ -1,9 +1,16 @@
+variable "resource_group_name" {
+  description = "Name of the Resource Group to create."
+  type        = string
+}
+
 variable "location" {
   description = "Region to install VM Series Scale sets and dependencies."
+  type        = string
 }
 
 variable "name_prefix" {
   description = "Prefix to add to all the object names here"
+  type        = string
 }
 
 variable "vm_size" {
@@ -75,10 +82,6 @@ variable "lb_backend_pool_id" {
 # Seperator
 variable "sep" {
   default = "-"
-}
-
-variable "name_rg" {
-  default = "vmseries-rg"
 }
 
 variable "name_scale_set" {

@@ -1,14 +1,13 @@
-# Base resource group
-resource "azurerm_resource_group" "vmss" {
-  name     = "${var.name_prefix}${var.sep}${var.name_rg}"
+data "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
   location = var.location
 }
 
 # inbound
 resource "azurerm_virtual_machine_scale_set" "this" {
   name                = "${var.name_prefix}${var.sep}${var.name_scale_set}"
-  location            = azurerm_resource_group.vmss.location
-  resource_group_name = azurerm_resource_group.vmss.name
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
   upgrade_policy_mode = "Manual"
 
   network_profile {
