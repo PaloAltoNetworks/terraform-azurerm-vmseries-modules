@@ -57,9 +57,9 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | managed\_disk\_type | Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
 | metrics\_retention\_in\_days | Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether. | `number` | `null` | no |
 | name\_avset | Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
-| name\_prefix | Prefix to add to all the object names here | `any` | n/a | yes |
+| name\_prefix | Prefix to add to all the object names here | `string` | n/a | yes |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
-| resource\_group\_name | The resource group name for VM-Series. | `string` | n/a | yes |
+| resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet resource | `any` | n/a | yes |
 | subnet-public | External/public subnet resource | `any` | n/a | yes |

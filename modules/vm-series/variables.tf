@@ -1,3 +1,8 @@
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
+}
+
 variable "location" {
   description = "Region where to deploy VM-Series and dependencies."
   type        = string
@@ -5,15 +10,11 @@ variable "location" {
 
 variable "name_prefix" {
   description = "Prefix to add to all the object names here"
+  type        = string
 }
 
 variable "instances" {
   description = "Map of instances to create. Keys are instance identifiers, values are objects with specific attributes."
-}
-
-variable "resource_group_name" {
-  description = "The resource group name for VM-Series."
-  type        = string
 }
 
 variable "subnet-mgmt" {

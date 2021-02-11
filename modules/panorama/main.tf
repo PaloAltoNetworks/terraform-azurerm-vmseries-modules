@@ -1,22 +1,21 @@
-# Base resource group
-resource "azurerm_resource_group" "panorama" {
-  name     = "${var.name_prefix}${var.sep}${var.name_rg}"
+data "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
   location = var.location
 }
 
 # Create a public IP for management
 resource "azurerm_public_ip" "panorama-pip-mgmt" {
   name                = "${var.name_prefix}${var.sep}${var.name_panorama_pip_mgmt}"
-  location            = azurerm_resource_group.panorama.location
-  resource_group_name = azurerm_resource_group.panorama.name
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
 }
 
 # Build the management interface
 resource "azurerm_network_interface" "mgmt" {
   name                = "${var.name_prefix}${var.sep}${var.name_mgmt}"
-  location            = azurerm_resource_group.panorama.location
-  resource_group_name = azurerm_resource_group.panorama.name
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
 
   ip_configuration {
     name                          = "${var.name_prefix}-ip-mgmt"
@@ -29,8 +28,8 @@ resource "azurerm_network_interface" "mgmt" {
 # Build the Panorama VM
 resource "azurerm_virtual_machine" "panorama" {
   name                  = "${var.name_prefix}${var.sep}${var.name_panorama}"
-  location              = azurerm_resource_group.panorama.location
-  resource_group_name   = azurerm_resource_group.panorama.name
+  location              = data.azurerm_resource_group.this.location
+  resource_group_name   = data.azurerm_resource_group.this.name
   network_interface_ids = [azurerm_network_interface.mgmt.id]
   vm_size               = var.panorama_size
 

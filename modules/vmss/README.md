@@ -58,7 +58,7 @@ module "vmss" {
 | name\_public\_nic\_profile | n/a | `string` | `"inbound-nic-fw-public-profile"` | no |
 | name\_scale\_set | n/a | `string` | `"inbound-scaleset"` | no |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
-| resource\_group\_name | Name of the Resource Group to create. | `string` | n/a | yes |
+| resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 | sep | Seperator | `string` | `"-"` | no |
 | subnet-mgmt | Management subnet. | `any` | n/a | yes |
 | subnet-private | internal/private subnet | `any` | n/a | yes |
