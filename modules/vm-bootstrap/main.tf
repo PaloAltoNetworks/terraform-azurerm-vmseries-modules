@@ -1,7 +1,5 @@
-resource "azurerm_resource_group" "this" {
-  count = var.create_storage_account ? 1 : 0
-
-  name     = coalesce(var.resource_group_name, "${var.name_prefix}bootstrap")
+data "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
   location = var.location
 }
 
@@ -9,10 +7,10 @@ resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
   name                     = substr(lower(coalesce(var.storage_account_name, replace("${var.name_prefix}bootstrap", "/[_-]+/", ""))), 0, 23)
+  location                 = data.azurerm_resource_group.this.location
+  resource_group_name      = data.azurerm_resource_group.this.name
   account_replication_type = "LRS"
   account_tier             = "Standard"
-  location                 = azurerm_resource_group.this[0].location
-  resource_group_name      = azurerm_resource_group.this[0].name
 }
 
 locals {
