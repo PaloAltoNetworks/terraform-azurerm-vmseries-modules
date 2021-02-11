@@ -1,14 +1,16 @@
-variable storage_account_name {
-  type = string
-}
-
 variable resource_group_name {
-  description = "Name of the Resource Group where bootstrap resources will be deployed"
+  description = "Name of the Resource Group where bootstrap resources will be deployed."
   type        = string
 }
 
-variable location {
-  type = string
+variable "location" {
+  description = "Location of the resources that will be deployed."
+  type        = string
+}
+
+variable storage_account_name {
+  description = "Name of the Storage Account to create."
+  type        = string
 }
 
 variable storage_account_replication_type {
