@@ -1,14 +1,22 @@
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
+}
+
 variable "location" {
   description = "Region to deploy all load balancer resources."
+  type        = string
 }
 
 variable "name_prefix" {
   description = "Prefix to add to all the object names here"
+  type        = string
 }
 
 variable "private-ip" {
   description = "Private IP address to assign to the frontend of the loadbalancer"
   default     = "10.110.0.21"
+  type        = string
 }
 
 
@@ -23,10 +31,6 @@ variable "backend-subnet" {
 # Separator
 variable "sep" {
   default = "-"
-}
-
-variable "name_rg" {
-  default = "olb-rg"
 }
 
 variable "name_lb" {
