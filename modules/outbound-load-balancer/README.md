@@ -10,9 +10,10 @@ Usage
 module "outbound-lb" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking"
 
-  location         = "Australia Central"
-  name_prefix      = "pan"
-  backend-subnet   = "subnet-id"
+  location             = "East US"
+  resource_group_name  = "some-rg"
+  name_prefix          = "pan"
+  backend-subnet       = "subnet-id"
 }
 ```
 

@@ -10,9 +10,10 @@ Usage
 module "networks" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/networking-vm-series"
 
-  location       = "Australia Central"
-  name_prefix    = "pan"
-  management_ips = {
+  location             = "East US"
+  resource_group_name  = "some-rg"
+  name_prefix          = "pan"
+  management_ips       = {
       "124.171.153.28" : 100,
     }
 }

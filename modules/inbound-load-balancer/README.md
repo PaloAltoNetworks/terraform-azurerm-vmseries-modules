@@ -9,19 +9,20 @@ A terraform module for deploying an Inbound Load Balancer for VM-Series firewall
 module "inbound-lb" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/inbound-load-balancer"
 
-  location     = "Australia Central"
-  name_prefix  = "pan"
+  location            = "Australia Central"
+  resource_group_name = "some-rg"
+  name_prefix         = "pan"
   frontend_ips = {
-                  "frontend01" = {
-                    create_public_ip = true
-                    rules = {
-                      "balancessh" = {
-                        protocol = "Tcp"
-                        port     = 22
-                      }
-                    }
-                  }
-                }
+    "frontend01" = {
+      create_public_ip = true
+      rules = {
+        "balancessh" = {
+          protocol = "Tcp"
+          port     = 22
+        }
+      }
+    }
+  }
 }
 ```
 
