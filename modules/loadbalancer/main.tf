@@ -1,39 +1,31 @@
+data "azurerm_resource_group" "this" {
+  name = var.resource_group_name
+}
+
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
   name                = "${var.name_prefix}-${each.key}"
-  location            = var.location
-  resource_group_name = var.name_rg
+  location            = data.azurerm_resource_group.this.location
+  resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "standard"
 }
 
 resource "azurerm_lb" "lb" {
   name                = "${var.name_prefix}${var.sep}${var.name_lb}"
-  resource_group_name = var.name_rg
-  location            = var.location
+  resource_group_name = data.azurerm_resource_group.this.name
+  location            = data.azurerm_resource_group.this.location
   sku                 = "standard"
 
   dynamic "frontend_ip_configuration" {
-    for_each = {
-      for k, value in local.frontend_ips : k => value
-      if lookup(value, "public_ip_address_id", null) != null ? true : false
-    }
-    content {
-      name                 = frontend_ip_configuration.value.name
-      public_ip_address_id = frontend_ip_configuration.value.public_ip_address_id
-    }
-  }
-  dynamic "frontend_ip_configuration" {
-    for_each = {
-      for k, value in local.frontend_ips : k => value
-      if lookup(value, "subnet_id", null) != null ? true : false
-    }
+    for_each = local.frontend_ips
     content {
       name                          = frontend_ip_configuration.value.name
-      subnet_id                     = frontend_ip_configuration.value.subnet_id
-      private_ip_address_allocation = lookup(frontend_ip_configuration.value, "private_ip_address_allocation", "Dynamic")
-      private_ip_address            = lookup(frontend_ip_configuration.value, "private_ip_address_allocation", "dynamic") == "Static" ? frontend_ip_configuration.value.private_ip_address : null
+      public_ip_address_id          = lookup(frontend_ip_configuration.value, "public_ip_address_id", null)
+      subnet_id                     = lookup(frontend_ip_configuration.value, "subnet_id", null)
+      private_ip_address_allocation = lookup(frontend_ip_configuration.value, "private_ip_address_allocation", null)
+      private_ip_address            = lookup(frontend_ip_configuration.value, "private_ip_address_allocation", null) == "Static" ? frontend_ip_configuration.value.private_ip_address : null
     }
   }
 }
@@ -74,24 +66,22 @@ locals {
 resource "azurerm_lb_backend_address_pool" "lb-backend" {
   for_each = local.input_rules
 
-  loadbalancer_id     = azurerm_lb.lb.id
-  name                = "${var.name_prefix}${var.sep}${each.value.rule.backend_name}"
-  resource_group_name = var.name_rg
-
+  loadbalancer_id = azurerm_lb.lb.id
+  name            = "${var.name_prefix}${var.sep}${each.value.rule.backend_name}"
 }
 
 resource "azurerm_lb_probe" "probe" {
   loadbalancer_id     = azurerm_lb.lb.id
   name                = "${var.name_prefix}${var.sep}${var.name_probe}"
-  port                = 80
-  resource_group_name = var.name_rg
+  port                = var.probe_port
+  resource_group_name = data.azurerm_resource_group.this.name
 }
 
 resource "azurerm_lb_rule" "lb-rules" {
   for_each = local.input_rules
 
   name                    = each.key
-  resource_group_name     = var.name_rg
+  resource_group_name     = data.azurerm_resource_group.this.name
   loadbalancer_id         = azurerm_lb.lb.id
   probe_id                = azurerm_lb_probe.probe.id
   backend_address_pool_id = azurerm_lb_backend_address_pool.lb-backend[each.key].id

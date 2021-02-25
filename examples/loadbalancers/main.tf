@@ -2,11 +2,6 @@ provider "azurerm" {
   features {}
 }
 
-resource "azurerm_resource_group" "this" {
-  name     = var.name_rg
-  location = var.location
-}
-
 # Pubic LB
 module "public_lb" {
   source = "../../modules/loadbalancer"
@@ -14,8 +9,7 @@ module "public_lb" {
   name_prefix = var.name_prefix
   name_lb     = "LB-public"
 
-  name_rg  = var.name_rg
-  location = var.location
+  resource_group_name = var.name_rg
 
   frontend_ips = {
     # Map of maps (each object has one frontend to many backend relationship) 
@@ -30,7 +24,7 @@ module "public_lb" {
         }
       }
     }
-    pip-create = {
+    pip-create2 = {
       create_public_ip = true
       rules = {
         HTTPS = {
@@ -45,8 +39,8 @@ module "public_lb" {
         }
       }
     }
+
   }
-  depends_on = [azurerm_resource_group.this]
 }
 
 #  Private LB
@@ -56,14 +50,14 @@ module "private_lb" {
   name_prefix = var.name_prefix
   name_lb     = "LB-private"
 
-  name_rg  = var.name_rg
-  location = var.location
+  resource_group_name = var.name_rg
 
   frontend_ips = {
     internal_fe = {
+      frontend_name                 = "fe4"
       subnet_id                     = ""
       private_ip_address_allocation = "Static" // Dynamic or Static
-      private_ip_address = "10.0.1.6" 
+      private_ip_address            = "10.0.1.6"
       rules = {
         HA_PORTS = {
           port         = 0
@@ -73,5 +67,4 @@ module "private_lb" {
       }
     }
   }
-  depends_on = [azurerm_resource_group.this]
 }

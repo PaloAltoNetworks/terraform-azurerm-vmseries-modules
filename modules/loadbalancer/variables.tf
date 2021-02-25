@@ -1,7 +1,3 @@
-variable "location" {
-  description = "Region to deploy load balancer and dependencies."
-}
-
 variable "name_prefix" {
   description = "Prefix to add to all the object names here"
 }
@@ -68,7 +64,7 @@ variable "sep" {
   default = "-"
 }
 
-variable "name_rg" {
+variable "resource_group_name" {
   default = "lb-rg"
 }
 
@@ -82,4 +78,8 @@ variable "name_backend" {
 
 variable "name_probe" {
   default = "lb-probe"
+}
+
+variable "probe_port" {
+  default = "80"
 }
