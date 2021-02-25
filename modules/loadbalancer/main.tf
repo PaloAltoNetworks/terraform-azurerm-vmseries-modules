@@ -6,7 +6,7 @@ resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
   name                = "${var.name_prefix}-${each.key}"
-  location            = data.azurerm_resource_group.this.location
+  location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "standard"
@@ -15,7 +15,7 @@ resource "azurerm_public_ip" "this" {
 resource "azurerm_lb" "lb" {
   name                = "${var.name_prefix}${var.sep}${var.name_lb}"
   resource_group_name = data.azurerm_resource_group.this.name
-  location            = data.azurerm_resource_group.this.location
+  location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   sku                 = "standard"
 
   dynamic "frontend_ip_configuration" {

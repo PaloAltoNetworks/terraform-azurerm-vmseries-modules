@@ -1,14 +1,15 @@
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
-}
-
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
+  default     = ""
 }
 
 #  ---   #
 # Naming #
 #  ---   #
+
+variable "name_prefix" {
+  description = "Prefix to add to all the object names here"
+}
 
 # Seperator
 variable "sep" {

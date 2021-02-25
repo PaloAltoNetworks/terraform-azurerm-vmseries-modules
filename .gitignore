@@ -8,3 +8,9 @@ venv
 *.tfstate
 *.tfstate.*
 .idea/*
+
+# Testing variables
+*terraform.tfvars*
+
+# Planfile 
+*planfile*

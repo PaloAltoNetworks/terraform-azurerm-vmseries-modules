@@ -1,7 +1,3 @@
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
-}
-
 variable "frontend_ips" {
   description = <<-EOF
   A map of objects describing LB Frontend IP configurations. Keys of the map are the names and values are { create_public_ip, public_ip_address_id, rules }. Example:
@@ -59,6 +55,10 @@ variable "frontend_ips" {
 # Naming #
 #  ---   #
 
+variable "name_prefix" {
+  description = "Prefix to add to all the object names here"
+}
+
 # Seperator
 variable "sep" {
   default = "-"
@@ -66,6 +66,11 @@ variable "sep" {
 
 variable "resource_group_name" {
   default = "lb-rg"
+}
+
+variable "location" {
+  description = "Region to deploy load balancer and dependencies."
+  default     = ""
 }
 
 variable "name_lb" {

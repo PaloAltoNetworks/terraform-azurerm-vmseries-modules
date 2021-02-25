@@ -6,9 +6,9 @@ provider "azurerm" {
 module "public_lb" {
   source = "../../modules/loadbalancer"
 
-  name_prefix = var.name_prefix
-  name_lb     = "LB-public"
-
+  name_prefix         = var.name_prefix
+  name_lb             = "LB-public"
+  location            = var.location
   resource_group_name = var.name_rg
 
   frontend_ips = {
@@ -47,14 +47,13 @@ module "public_lb" {
 module "private_lb" {
   source = "../../modules/loadbalancer"
 
-  name_prefix = var.name_prefix
-  name_lb     = "LB-private"
-
+  name_prefix         = var.name_prefix
+  name_lb             = "LB-private"
+  location            = var.location
   resource_group_name = var.name_rg
 
   frontend_ips = {
     internal_fe = {
-      frontend_name                 = "fe4"
       subnet_id                     = ""
       private_ip_address_allocation = "Static" // Dynamic or Static
       private_ip_address            = "10.0.1.6"
