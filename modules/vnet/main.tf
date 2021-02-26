@@ -63,3 +63,28 @@ resource "azurerm_route" "this" {
 
   depends_on = [azurerm_route_table.this]
 }
+
+locals {
+  subnet_id = {
+    for subnet in azurerm_subnet.this : subnet.name => subnet.id
+  }
+  nsg_id = {
+    for nsg in azurerm_network_security_group.this : nsg.name => nsg.id
+  }
+  rt_id = {
+    for rt in azurerm_route_table.this : rt.name => rt.id
+  }
+}
+
+resource "azurerm_subnet_network_security_group_association" "this" {
+  for_each                  = var.nsg_ids
+  subnet_id                 = local.subnet_id[each.key]
+  network_security_group_id = local.nsg_id[each.value]
+}
+
+resource "azurerm_subnet_route_table_association" "this" {
+  for_each = var.rt_ids
+
+  subnet_id      = local.subnet_id[each.key]
+  route_table_id = local.rt_id[each.value]
+}

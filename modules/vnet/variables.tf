@@ -155,3 +155,6 @@ variable "routes" {
   ```
   EOF
 }
+
+variable "nsg_ids" {}
+variable "rt_ids" {}

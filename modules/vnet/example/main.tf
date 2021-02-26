@@ -67,5 +67,17 @@ module "vnet" {
       next_hop_type    = "vnetlocal"
     },
   }
+
+  nsg_ids = {
+    "mgmt"    = "nsg_1"
+    "private" = "nsg_2"
+    "public"  = "nsg_3"
+  }
+
+  rt_ids = {
+    "mgmt"    = "rt1"
+    "private" = "rt1"
+    "public"  = "rt2"
+  }
   depends_on = [azurerm_resource_group.this]
 }
