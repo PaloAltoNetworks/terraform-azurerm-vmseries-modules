@@ -33,7 +33,7 @@ module "panorama" {
 
   location         = var.location
   name_prefix      = var.name_prefix
-  subnet_mgmt      = module.networks.panorama-mgmt-subnet
+  subnet_mgmt      = module.networks.panorama_mgmt_subnet
   username         = var.username
   password         = coalesce(var.password, random_password.password.result)
   panorama_sku     = var.panorama_sku
@@ -53,7 +53,7 @@ module "outbound-lb" {
 
   location       = var.location
   name_prefix    = var.name_prefix
-  backend-subnet = module.networks.subnet-private.id
+  backend-subnet = module.networks.subnet_private.id
 }
 
 module "bootstrap" {
@@ -77,12 +77,12 @@ module "inbound-scaleset" {
   name_prefix               = var.name_prefix
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
-  subnet-mgmt               = module.networks.subnet-mgmt
-  subnet-private            = module.networks.subnet-private
-  subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.bootstrap.storage_account
-  bootstrap-share-name      = module.bootstrap.storage_share_name
-  vhd-container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  subnet_mgmt               = module.networks.subnet_mgmt
+  subnet_private            = module.networks.subnet_private
+  subnet_public             = module.networks.subnet_public
+  bootstrap_storage_account = module.bootstrap.storage_account
+  bootstrap_share_name      = module.bootstrap.storage_share_name
+  vhd_container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]
@@ -105,12 +105,12 @@ module "outbound-scaleset" {
   name_prefix               = var.name_prefix
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
-  subnet-mgmt               = module.networks.subnet-mgmt
-  subnet-private            = module.networks.subnet-private
-  subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.outbound_bootstrap.storage_account
-  bootstrap-share-name      = module.outbound_bootstrap.storage_share_name
-  vhd-container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  subnet_mgmt               = module.networks.subnet_mgmt
+  subnet_private            = module.networks.subnet_private
+  subnet_public             = module.networks.subnet_public
+  bootstrap_storage_account = module.outbound_bootstrap.storage_account
+  bootstrap_share_name      = module.outbound_bootstrap.storage_share_name
+  vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
   depends_on                = [module.panorama]

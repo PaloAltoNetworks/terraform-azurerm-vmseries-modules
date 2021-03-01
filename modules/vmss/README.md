@@ -1,10 +1,8 @@
-Palo Alto Networks VMSS Module for Azure
-===========
+# Palo Alto Networks VMSS Module for Azure
 
 A terraform module for VMSS VM-Series firewalls in Azure.
 
-Usage
------
+## Usage
 
 ```hcl
 module "vmss" {
@@ -13,12 +11,12 @@ module "vmss" {
   location                  = "Australia Central"
   name_prefix               = "pan"
   password                  = "your-password"
-  subnet-mgmt               = azurerm_subnet.subnet-mgmt
-  subnet-private            = azurerm_subnet.subnet-private
-  subnet-public             = module.networks.subnet-public
-  bootstrap-storage-account = module.panorama.bootstrap-storage-account
-  bootstrap-share-name      = "inboundsharename"
-  vhd-container             = "vhd-storage-container-id"
+  subnet_mgmt               = azurerm_subnet.subnet_mgmt
+  subnet_private            = azurerm_subnet.subnet_private
+  subnet_public             = module.networks.subnet_public
+  bootstrap_storage_account = module.panorama.bootstrap_storage_account
+  bootstrap_share_name      = "inboundsharename"
+  vhd_container             = "vhd-storage-container-id"
   lb_backend_pool_id        = "private-backend-pool-id"
 }
 ```
@@ -41,8 +39,8 @@ module "vmss" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| bootstrap-share-name | File share for bootstrap config | `any` | n/a | yes |
-| bootstrap-storage-account | Storage account setup for bootstrapping | `any` | n/a | yes |
+| bootstrap\_share\_name | File share for bootstrap config | `any` | n/a | yes |
+| bootstrap\_storage\_account | Storage account setup for bootstrapping | `any` | n/a | yes |
 | lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
 | location | Region to install VM Series Scale sets and dependencies. | `any` | n/a | yes |
 | name\_domain\_name\_label | n/a | `string` | `"inbound-vm-mgmt"` | no |
@@ -59,11 +57,11 @@ module "vmss" {
 | name\_scale\_set | n/a | `string` | `"inbound-scaleset"` | no |
 | password | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
 | sep | Seperator | `string` | `"-"` | no |
-| subnet-mgmt | Management subnet. | `any` | n/a | yes |
-| subnet-private | internal/private subnet | `any` | n/a | yes |
-| subnet-public | External/public subnet | `any` | n/a | yes |
+| subnet\_mgmt | Management subnet. | `any` | n/a | yes |
+| subnet\_private | internal/private subnet | `any` | n/a | yes |
+| subnet\_public | External/public subnet | `any` | n/a | yes |
 | username | Initial administrative username to use for VM-Series. | `string` | `"panadmin"` | no |
-| vhd-container | Storage container for storing VMSS instance VHDs. | `any` | n/a | yes |
+| vhd\_container | Storage container for storing VMSS instance VHDs. | `any` | n/a | yes |
 | vm\_count | Minimum instances per scale set. | `number` | `2` | no |
 | vm\_series\_sku | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
 | vm\_series\_version | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.0.4"` | no |

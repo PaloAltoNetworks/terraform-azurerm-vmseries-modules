@@ -12,23 +12,23 @@ variable "vm_size" {
   type        = string
 }
 
-variable "subnet-mgmt" {
+variable "subnet_mgmt" {
   description = "Management subnet."
 }
 
-variable "subnet-public" {
+variable "subnet_public" {
   description = "External/public subnet"
 }
 
-variable "subnet-private" {
+variable "subnet_private" {
   description = "internal/private subnet"
 }
 
-variable "bootstrap-storage-account" {
+variable "bootstrap_storage_account" {
   description = "Storage account setup for bootstrapping"
 }
 
-variable "bootstrap-share-name" {
+variable "bootstrap_share_name" {
   description = "File share for bootstrap config"
 }
 
@@ -60,7 +60,7 @@ variable "vm_count" {
   default     = 2
 }
 
-variable "vhd-container" {
+variable "vhd_container" {
   description = "Storage container for storing VMSS instance VHDs."
 }
 

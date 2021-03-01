@@ -16,24 +16,46 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "subnet-mgmt" {
-  description = "Management subnet."
+variable "subnet_mgmt" {
+  description = "Management subnet object."
 }
 
-variable "subnet-public" {
-  description = "External/public subnet resource"
+variable "data_nics" {
+  description = <<-EOF
+  List of the network interface specifications shared between all the VM-Series instances.
+  Except the Management network interface (which gets `subnet_mgmt`), all the network interfaces are assigned
+  to subnets in the same order as in the list.
+
+  - `subnet`: Subnet object to use.
+  - `lb_backend_pool_id`: Identifier of the backend pool of the load balancer to associate.
+  - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default it false.
+
+  Example:
+
+  ```
+  [
+    {
+      subnet              = { id = var.vmseries_subnet_id_public }
+      lb_backend_pool_id  = module.inbound_lb.backend-pool-id
+      enable_backend_pool = true
+    },
+    {
+      subnet              = { id = var.vmseries_subnet_id_private }
+      lb_backend_pool_id  = module.outbound_lb.backend-pool-id
+      enable_backend_pool = true
+    },
+  ]
+  ```
+
+  EOF
 }
 
-variable "subnet-private" {
-  description = "internal/private subnet resource"
-}
-
-variable "bootstrap-storage-account" {
+variable "bootstrap_storage_account" {
   description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
 }
 
-variable "bootstrap-share-name" {
-  description = "Azure File Share holding the bootstrap data. Should reside on boostrap-storage-account. Bootstrapping is omitted if bootstrap-storage-account is left at null."
+variable "bootstrap_share_name" {
+  description = "Azure File Share holding the bootstrap data. Should reside on `bootstrap_storage_account`. Bootstrapping is omitted if `bootstrap_share_name` is left at null."
   default     = null
   type        = string
 }
@@ -95,18 +117,6 @@ variable "vm_series_version" {
   type        = string
 }
 
-variable "lb_backend_pool_id" {
-  description = "Identifier of the backend pool of the load balancer to associate with the VM-Series firewalls."
-  default     = null
-  type        = string
-}
-
-variable "enable_backend_pool" {
-  description = "If false, ignore `lb_backend_pool_id`."
-  default     = true
-  type        = bool
-}
-
 variable "name_avset" {
   default     = null
   description = "Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated."
@@ -117,4 +127,28 @@ variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
   type        = map(any)
+}
+
+variable "identity_type" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_type)."
+  default     = "SystemAssigned"
+  type        = string
+}
+
+variable "identity_ids" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids)."
+  default     = null
+  type        = list(string)
+}
+
+variable "metrics_retention_in_days" {
+  description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether."
+  default     = null
+  type        = number
+}
+
+variable "accelerated_networking" {
+  description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces except the primary one (it is the PAN-OS management interface, which [does not support](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) acceleration)."
+  default     = true
+  type        = bool
 }

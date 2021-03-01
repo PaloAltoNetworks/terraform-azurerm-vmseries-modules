@@ -5,58 +5,66 @@ resource "azurerm_availability_set" "this" {
   platform_fault_domain_count = 2
 }
 
-resource "azurerm_network_interface" "nic-fw-mgmt" {
+resource "azurerm_network_interface" "mgmt" {
   for_each = var.instances
 
-  name                = "${var.name_prefix}${each.key}-nic-mgmt"
-  location            = var.location
-  resource_group_name = var.resource_group_name
+  name                          = "${var.name_prefix}${each.key}-mgmt"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = false # unsupported by PAN-OS
 
   ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-ip-mgmt"
-    subnet_id                     = var.subnet-mgmt.id
+    name                          = "primary"
+    subnet_id                     = var.subnet_mgmt.id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = try(each.value.mgmt_public_ip_address_id, null)
   }
 }
 
-resource "azurerm_network_interface" "nic-fw-private" {
-  for_each = var.instances
+locals {
+  # Terraform for_each unfortunately requires a single-dimensional map, but we have
+  # a two-dimensional inputs. We need two steps for conversion.
 
-  name                 = "${var.name_prefix}${each.key}-nic-private"
-  location             = var.location
-  resource_group_name  = var.resource_group_name
-  enable_ip_forwarding = true
+  # Firstly, flatten() ensures that this local value is a flat list of objects, rather
+  # than a list of lists of objects.
+  input_flat_data_nics = flatten([
+    for vmkey, vm in var.instances : [
+      for nickey, nic in var.data_nics : {
+        vmkey  = vmkey
+        vm     = vm
+        nickey = nickey
+        nic    = nic
+      }
+    ]
+  ])
 
-  ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-ip-private"
-    subnet_id                     = var.subnet-private.id
-    private_ip_address_allocation = "dynamic"
-  }
+  # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
+  input_data_nics = { for v in local.input_flat_data_nics : "${v.vmkey}-${v.nickey}" => v }
 }
 
-resource "azurerm_network_interface" "nic-fw-public" {
-  for_each = var.instances
+resource "azurerm_network_interface" "data" {
+  for_each = local.input_data_nics
 
-  name                 = "${var.name_prefix}${each.key}-nic-public"
-  location             = var.location
-  resource_group_name  = var.resource_group_name
-  enable_ip_forwarding = true
+  name                          = "${var.name_prefix}${each.key}"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = var.accelerated_networking
+  enable_ip_forwarding          = true
 
   ip_configuration {
-    name                          = "${var.name_prefix}${each.key}-ip-public"
-    subnet_id                     = var.subnet-public.id
+    name                          = "primary"
+    subnet_id                     = each.value.nic.subnet.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = try(each.value.nic1_public_ip_address_id, null)
+    public_ip_address_id          = each.value.nickey == 0 ? try(each.value.vm.nic1_public_ip_address_id, null) : null
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = var.enable_backend_pool ? var.instances : {}
+  for_each = { for k, v in local.input_data_nics : k => v if try(v.nic.enable_backend_pool, false) }
 
-  backend_address_pool_id = var.lb_backend_pool_id
-  ip_configuration_name   = azurerm_network_interface.nic-fw-public[each.key].ip_configuration[0].name
-  network_interface_id    = azurerm_network_interface.nic-fw-public[each.key].id
+  backend_address_pool_id = each.value.nic.lb_backend_pool_id
+  ip_configuration_name   = azurerm_network_interface.data[each.key].ip_configuration[0].name
+  network_interface_id    = azurerm_network_interface.data[each.key].id
 }
 
 resource "azurerm_virtual_machine" "this" {
@@ -68,13 +76,12 @@ resource "azurerm_virtual_machine" "this" {
   tags                         = var.tags
   vm_size                      = var.vm_size
   availability_set_id          = azurerm_availability_set.this.id
-  primary_network_interface_id = azurerm_network_interface.nic-fw-mgmt[each.key].id
+  primary_network_interface_id = azurerm_network_interface.mgmt[each.key].id
 
-  network_interface_ids = [
-    azurerm_network_interface.nic-fw-mgmt[each.key].id,
-    azurerm_network_interface.nic-fw-public[each.key].id,
-    azurerm_network_interface.nic-fw-private[each.key].id
-  ]
+  network_interface_ids = concat(
+    [azurerm_network_interface.mgmt[each.key].id],
+    [for k, v in local.input_data_nics : azurerm_network_interface.data[k].id if v.vmkey == each.key]
+  )
 
   storage_image_reference {
     id        = var.custom_image_id
@@ -109,12 +116,12 @@ resource "azurerm_virtual_machine" "this" {
     computer_name  = "${var.name_prefix}${each.key}"
     admin_username = var.username
     admin_password = var.password
-    custom_data = var.bootstrap-share-name == null ? null : join(
+    custom_data = var.bootstrap_share_name == null ? null : join(
       ",",
       [
-        "storage-account=${var.bootstrap-storage-account.name}",
-        "access-key=${var.bootstrap-storage-account.primary_access_key}",
-        "file-share=${var.bootstrap-share-name}",
+        "storage-account=${var.bootstrap_storage_account.name}",
+        "access-key=${var.bootstrap_storage_account.primary_access_key}",
+        "file-share=${var.bootstrap_share_name}",
         "share-directory=None"
       ]
     )
@@ -128,6 +135,21 @@ resource "azurerm_virtual_machine" "this" {
   # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
   boot_diagnostics {
     enabled     = true
-    storage_uri = var.bootstrap-storage-account.primary_blob_endpoint
+    storage_uri = var.bootstrap_storage_account.primary_blob_endpoint
   }
+
+  identity {
+    type         = var.identity_type
+    identity_ids = var.identity_ids
+  }
+}
+
+resource "azurerm_application_insights" "this" {
+  count = var.metrics_retention_in_days != 0 ? 1 : 0
+
+  name                = var.name_prefix
+  location            = var.location
+  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  application_type    = "other"
+  retention_in_days   = var.metrics_retention_in_days
 }

@@ -19,7 +19,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     ip_configuration {
       name      = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_ip}"
       primary   = true
-      subnet_id = var.subnet-mgmt.id
+      subnet_id = var.subnet_mgmt.id
 
       public_ip_address_configuration {
         idle_timeout      = 4
@@ -37,7 +37,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     ip_configuration {
       name                                   = "${var.name_prefix}${var.sep}${var.name_public_nic_ip}"
       primary                                = false
-      subnet_id                              = var.subnet-public.id
+      subnet_id                              = var.subnet_public.id
       load_balancer_backend_address_pool_ids = [var.lb_backend_pool_id]
     }
   }
@@ -50,7 +50,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     ip_configuration {
       name      = "${var.name_prefix}${var.sep}${var.name_private_nic_ip}"
       primary   = false
-      subnet_id = var.subnet-private.id
+      subnet_id = var.subnet_private.id
     }
   }
 
@@ -62,9 +62,9 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     custom_data = join(
       ",",
       [
-        "storage-account=${var.bootstrap-storage-account.name}",
-        "access-key=${var.bootstrap-storage-account.primary_access_key}",
-        "file-share=${var.bootstrap-share-name}",
+        "storage-account=${var.bootstrap_storage_account.name}",
+        "access-key=${var.bootstrap_storage_account.primary_access_key}",
+        "file-share=${var.bootstrap_share_name}",
         "share-directory=None"
       ]
     )
@@ -86,7 +86,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     create_option  = "FromImage"
     name           = "${var.name_prefix}-vhd-profile"
     caching        = "ReadWrite"
-    vhd_containers = [var.vhd-container]
+    vhd_containers = [var.vhd_container]
   }
 
   plan {
