@@ -4,7 +4,7 @@ data "azurerm_resource_group" "this" {
 
 resource "azurerm_virtual_network" "this" {
   name                = var.virtual_network_name
-  location            = data.azurerm_resource_group.this.location
+  location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   address_space       = var.address_space
 }
@@ -16,13 +16,15 @@ resource "azurerm_subnet" "this" {
   resource_group_name  = data.azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = each.value.address_prefixes
+
+  depends_on = [azurerm_network_security_group.this]
 }
 
 resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
   name                = each.key
-  location            = data.azurerm_resource_group.this.location
+  location            = try(each.value.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
@@ -48,7 +50,7 @@ resource "azurerm_route_table" "this" {
   for_each = var.route_tables
 
   name                = each.key
-  location            = data.azurerm_resource_group.this.location
+  location            = try(each.value.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
@@ -77,14 +79,15 @@ locals {
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
-  for_each                  = var.nsg_ids
+  for_each = var.subnets
+
   subnet_id                 = local.subnet_id[each.key]
-  network_security_group_id = local.nsg_id[each.value]
+  network_security_group_id = local.nsg_id[each.value.network_security_group_id]
 }
 
 resource "azurerm_subnet_route_table_association" "this" {
-  for_each = var.rt_ids
+  for_each = var.subnets
 
   subnet_id      = local.subnet_id[each.key]
-  route_table_id = local.rt_id[each.value]
+  route_table_id = local.rt_id[each.value.route_table_id]
 }

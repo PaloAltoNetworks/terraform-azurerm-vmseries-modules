@@ -19,32 +19,6 @@ variable "address_space" {
   type        = list(string)
 }
 
-variable "subnets" {
-  description = <<-EOF
-  A map of subnet objects to create within a Virtual Network. The object `key` acts as the subnet name.
-  List of arguments available to define a subnet:
-  - `address_prefixes` : The address prefix to use for the subnet.
-  - `tags` : (Optional) A mapping of tags to assign to the resource.
-  
-  Example:
-  ```
-  {
-    "management" = {
-      address_prefixes     = "10.100.0.0/24"
-      tags                 = { "foo" = "bar" }
-    },
-    "private" = {
-      address_prefixes     = "10.100.1.0/24"
-      tags                 = { "foo" = "bar" }
-    },
-    "public" = {
-      address_prefixes     = "10.100.2.0/24"
-    }
-  }
-  ```
-  EOF
-}
-
 variable "network_security_groups" {
   description = <<-EOF
   A map of network security groups objects to create. The object `key` acts as the network security group name.
@@ -59,7 +33,7 @@ variable "network_security_groups" {
   ```
   {
     "network_security_group_1" = {},
-    "network_security_group_2" = {tags = { "foo" = "bar" }}
+    "network_security_group_2" = { tags = { "foo" = "bar" } }
   }
   ```
   EOF
@@ -87,9 +61,8 @@ variable "network_security_rules" {
   Example:
   ```
   {
-    "rule_1" = {
-      name                        = "AllOutbound"
-      network_security_group_name = "some_nsg"
+    "AllOutbound" = {
+      network_security_group_name = "network_security_group_1"
       priority                    = 100
       direction                   = "Outbound"
       access                      = "Allow"
@@ -106,8 +79,7 @@ variable "network_security_rules" {
 
 variable "route_tables" {
   description = <<-EOF
-  A map of objects describing a route table.
-  The object `key` acts as the route table name.
+  A map of objects describing a route table. The object `key` acts as the route table name.
   List of arguments available to define a route table:
   - `location` : Specifies the supported Azure location where to deploy the resource,
   by default uses the location from the Resource Group Data Source.
@@ -118,9 +90,9 @@ variable "route_tables" {
   Example:
   ```
   {
-    "rt1" = {},
-    "rt2" = {tags = { "foo" = "bar" }},
-    "rt3" ={tags = { "bar" = "foo" }},
+    "route_table_1" = {},
+    "route_table_2" = { tags = { "foo" = "bar" } },
+    "route_table_3" = { tags = { "bar" = "foo" } },
   }
   ```
   EOF
@@ -128,8 +100,7 @@ variable "route_tables" {
 
 variable "routes" {
   description = <<-EOF
-  A map of objects describing routes within a route table..
-  The object `key` acts as the route name.
+  A map of objects describing routes within a route table. The object `key` acts as the route name.
   List of arguments available to define a route table:
   - `resource_group_name` : Name of an existing resource group in which to create the route table,
   by default uses the Resource Group name from the Resource Group Data Source.
@@ -142,12 +113,12 @@ variable "routes" {
   ```
   {
     "route_1" = {
-      route_table_name = "rt1"
+      route_table_name = "route_table_1"
       address_prefix   = "10.1.0.0/16"
       next_hop_type    = "vnetlocal"
     },
     "route_2" = {
-      route_table_name = "rt1"
+      route_table_name = "route_table_2"
       address_prefix   = "10.2.0.0/16"
       next_hop_type    = "vnetlocal"
     },
@@ -156,5 +127,36 @@ variable "routes" {
   EOF
 }
 
-variable "nsg_ids" {}
-variable "rt_ids" {}
+variable "subnets" {
+  description = <<-EOF
+  A map of subnet objects to create within a Virtual Network. The object `key` acts as the subnet name.
+  List of arguments available to define a subnet:
+  - `address_prefixes` : The address prefix to use for the subnet.
+  - `network_security_group_id` : The Network Security Group ID which should be associated with the subnet.
+  - `route_table_id` : The Route Table ID which should be associated with the subnet.
+  - `tags` : (Optional) A mapping of tags to assign to the resource.
+  
+  Example:
+  ```
+  {
+    "management" = {
+      address_prefixes          = ["10.100.0.0/24"]
+      network_security_group_id = "network_security_group_1"
+      route_table_id            = "route_table_1"
+      tags                      = { "foo" = "bar" }
+    },
+    "private" = {
+      address_prefixes          = ["10.100.1.0/24"]
+      network_security_group_id = "network_security_group_3"
+      route_table_id            = "route_table_3"
+      tags                      = { "foo" = "bar" }
+    },
+    "public" = {
+      address_prefixes          = ["10.100.2.0/24"]
+      network_security_group_id = "network_security_group_2"
+      route_table_id            = "route_table_2"
+    },
+  }
+  ```
+  EOF
+}
