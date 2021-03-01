@@ -51,7 +51,7 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = "${var.name_prefix}PanoramaDisk-${element(var.panorama_ha_suffix_map, count.index)}"
+    name              = "${var.name_prefix}"${var.name_prefix}${var.sep}osdisk${var.sep}${element(var.panorama_ha_suffix_map, count.index)}"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
