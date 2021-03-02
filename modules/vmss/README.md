@@ -39,6 +39,7 @@ module "vmss" {
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| accelerated\_networking | If true, enable Azure accelerated networking (SR-IOV) for all dataplane network interfaces. [Requires](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) PAN-OS 9.0 or higher. The PAN-OS management interface (nic0) is never accelerated, whether this variable is true or false. | `bool` | `true` | no |
 | bootstrap\_share\_name | File share for bootstrap config | `any` | n/a | yes |
 | bootstrap\_storage\_account | Storage account setup for bootstrapping | `any` | n/a | yes |
 | lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
