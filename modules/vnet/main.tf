@@ -50,6 +50,7 @@ resource "azurerm_route_table" "this" {
   name                = each.key
   location            = try(each.value.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
+  tags                = var.tags
 }
 
 resource "azurerm_route" "this" {
@@ -57,23 +58,21 @@ resource "azurerm_route" "this" {
 
   name                = each.key
   resource_group_name = data.azurerm_resource_group.this.name
-  route_table_name    = each.value.route_table_name # fixme
+  route_table_name    = azurerm_route_table.this[each.value.route_table_name].name
   address_prefix      = each.value.address_prefix
   next_hop_type       = each.value.next_hop_type
-
-  depends_on = [azurerm_route_table.this] # remove?
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
   for_each = var.subnets
 
   subnet_id                 = azurerm_subnet.this[each.key].id
-  network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group_id].id
+  network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group].id
 }
 
 resource "azurerm_subnet_route_table_association" "this" {
   for_each = var.subnets
 
   subnet_id      = azurerm_subnet.this[each.key].id
-  route_table_id = azurerm_route_table.this[each.value.route_table_id].id
+  route_table_id = azurerm_route_table.this[each.value.route_table].id
 }

@@ -11,11 +11,14 @@ resource "azurerm_resource_group" "this" {
 }
 
 module "vnet" {
-  source = "../"
+  source = "../../modules/vnet"
 
   virtual_network_name = "example-vnet"
   resource_group_name  = azurerm_resource_group.this.name
   address_space        = ["10.100.0.0/16"]
+  tags = {
+    env = "Test"
+  }
 
   network_security_groups = {
     "network_security_group_1" = {},
@@ -54,25 +57,28 @@ module "vnet" {
       address_prefix   = "10.2.0.0/16"
       next_hop_type    = "vnetlocal"
     },
+    "route_3" = {
+      route_table_name = "route_table_3"
+      address_prefix   = "10.2.0.0/16"
+      next_hop_type    = "vnetlocal"
+    },
   }
 
   subnets = {
     "management" = {
-      address_prefixes          = ["10.100.0.0/24"]
-      network_security_group_id = "network_security_group_1"
-      route_table_id            = "route_table_1"
-      tags                      = { "foo" = "bar" }
+      address_prefixes       = ["10.100.0.0/24"]
+      network_security_group = "network_security_group_1"
+      route_table            = "route_table_1"
     },
     "private" = {
-      address_prefixes          = ["10.100.1.0/24"]
-      network_security_group_id = "network_security_group_3"
-      route_table_id            = "route_table_3"
-      tags                      = { "foo" = "bar" }
+      address_prefixes       = ["10.100.1.0/24"]
+      network_security_group = "network_security_group_2"
+      route_table            = "route_table_2"
     },
     "public" = {
-      address_prefixes          = ["10.100.2.0/24"]
-      network_security_group_id = "network_security_group_2"
-      route_table_id            = "route_table_2"
+      address_prefixes       = ["10.100.2.0/24"]
+      network_security_group = "network_security_group_3"
+      route_table            = "route_table_3"
     },
   }
 

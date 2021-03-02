@@ -1,5 +1,5 @@
 variable "virtual_network_name" {
-  description = "The name of the virtual network to create."
+  description = "The name of the VNet to create."
   type        = string
 }
 
@@ -10,8 +10,8 @@ variable "location" {
 }
 
 variable tags {
-  description = "Map of tags to attach to all created resources"
-  type        = map
+  description = "A mapping of tags to assign to all of the created resources."
+  type        = map(any)
   default     = {}
 }
 
@@ -33,13 +33,14 @@ variable "network_security_groups" {
   by default uses the location from the Resource Group Data Source.
   - `resource_group_name` : Name of an existing resource group in which to create the network security group,
   by default uses the Resource Group name from the Resource Group Data Source.
-  - `tags` : (Optional) A mapping of tags to assign to the resource.
 
   Example:
   ```
   {
-    "network_security_group_1" = {},
-    "network_security_group_2" = { tags = { "foo" = "bar" } }
+    "network_security_group_1" = {
+      location = "Australia Central"
+    },
+    "network_security_group_2" = {}
   }
   ```
   EOF
@@ -91,14 +92,15 @@ variable "route_tables" {
   by default uses the location from the Resource Group Data Source.
   - `resource_group_name` : Name of an existing resource group in which to create the route table,
   by default uses the Resource Group name from the Resource Group Data Source.
-  - `tags` : (Optional) A mapping of tags to assign to the resource.
 
   Example:
   ```
   {
-    "route_table_1" = {},
-    "route_table_2" = { tags = { "foo" = "bar" } },
-    "route_table_3" = { tags = { "bar" = "foo" } },
+    "route_table_1" = {
+      location = "East US"
+    },
+    "route_table_2" = {},
+    "route_table_3" = {},
   }
   ```
   EOF
@@ -146,21 +148,19 @@ variable "subnets" {
   ```
   {
     "management" = {
-      address_prefixes          = ["10.100.0.0/24"]
-      network_security_group_id = "network_security_group_1"
-      route_table_id            = "route_table_1"
-      tags                      = { "foo" = "bar" }
+      address_prefixes       = ["10.100.0.0/24"]
+      network_security_group = "network_security_group_1"
+      route_table            = "route_table_1"
     },
     "private" = {
-      address_prefixes          = ["10.100.1.0/24"]
-      network_security_group_id = "network_security_group_3"
-      route_table_id            = "route_table_3"
-      tags                      = { "foo" = "bar" }
+      address_prefixes       = ["10.100.1.0/24"]
+      network_security_group = "network_security_group_2"
+      route_table            = "route_table_2"
     },
     "public" = {
-      address_prefixes          = ["10.100.2.0/24"]
-      network_security_group_id = "network_security_group_2"
-      route_table_id            = "route_table_2"
+      address_prefixes       = ["10.100.2.0/24"]
+      network_security_group = "network_security_group_3"
+      route_table            = "route_table_3"
     },
   }
   ```
