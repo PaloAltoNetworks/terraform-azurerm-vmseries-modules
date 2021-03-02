@@ -9,6 +9,12 @@ variable "location" {
   default     = ""
 }
 
+variable tags {
+  description = "Map of tags to attach to all created resources"
+  type        = map
+  default     = {}
+}
+
 variable "resource_group_name" {
   description = "Name of the Resource Group to use."
   type        = string

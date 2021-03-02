@@ -16,6 +16,7 @@ module "vnet" {
   virtual_network_name = "example-vnet"
   resource_group_name  = azurerm_resource_group.this.name
   address_space        = ["10.100.0.0/16"]
+  tags                 = { "foo" = "bar" }
 
   network_security_groups = {
     "network_security_group_1" = {},
@@ -61,13 +62,13 @@ module "vnet" {
       address_prefixes          = ["10.100.0.0/24"]
       network_security_group_id = "network_security_group_1"
       route_table_id            = "route_table_1"
-      tags                      = { "foo" = "bar" }
+      # tags                      = { "foo" = "bar" }
     },
     "private" = {
       address_prefixes          = ["10.100.1.0/24"]
       network_security_group_id = "network_security_group_3"
       route_table_id            = "route_table_3"
-      tags                      = { "foo" = "bar" }
+      # tags                      = { "foo" = "bar" }
     },
     "public" = {
       address_prefixes          = ["10.100.2.0/24"]

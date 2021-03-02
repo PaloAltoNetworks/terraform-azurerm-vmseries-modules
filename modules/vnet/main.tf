@@ -7,6 +7,7 @@ resource "azurerm_virtual_network" "this" {
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   address_space       = var.address_space
+  tags                = var.tags
 }
 
 resource "azurerm_subnet" "this" {
@@ -16,8 +17,6 @@ resource "azurerm_subnet" "this" {
   resource_group_name  = data.azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
   address_prefixes     = each.value.address_prefixes
-
-  depends_on = [azurerm_network_security_group.this]
 }
 
 resource "azurerm_network_security_group" "this" {
@@ -26,6 +25,7 @@ resource "azurerm_network_security_group" "this" {
   name                = each.key
   location            = try(each.value.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
+  tags                = var.tags
 }
 
 resource "azurerm_network_security_rule" "this" {
@@ -33,7 +33,7 @@ resource "azurerm_network_security_rule" "this" {
 
   name                        = each.key
   resource_group_name         = data.azurerm_resource_group.this.name
-  network_security_group_name = each.value.network_security_group_name
+  network_security_group_name = azurerm_network_security_group.this[each.value.network_security_group_name].name
   priority                    = each.value.priority
   direction                   = each.value.direction
   access                      = each.value.access
@@ -42,8 +42,6 @@ resource "azurerm_network_security_rule" "this" {
   destination_port_range      = each.value.destination_port_range
   source_address_prefix       = each.value.source_address_prefix
   destination_address_prefix  = each.value.destination_address_prefix
-
-  depends_on = [azurerm_network_security_group.this]
 }
 
 resource "azurerm_route_table" "this" {
@@ -59,35 +57,23 @@ resource "azurerm_route" "this" {
 
   name                = each.key
   resource_group_name = data.azurerm_resource_group.this.name
-  route_table_name    = each.value.route_table_name
+  route_table_name    = each.value.route_table_name # fixme
   address_prefix      = each.value.address_prefix
   next_hop_type       = each.value.next_hop_type
 
-  depends_on = [azurerm_route_table.this]
-}
-
-locals {
-  subnet_id = {
-    for subnet in azurerm_subnet.this : subnet.name => subnet.id
-  }
-  nsg_id = {
-    for nsg in azurerm_network_security_group.this : nsg.name => nsg.id
-  }
-  rt_id = {
-    for rt in azurerm_route_table.this : rt.name => rt.id
-  }
+  depends_on = [azurerm_route_table.this] # remove?
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
   for_each = var.subnets
 
-  subnet_id                 = local.subnet_id[each.key]
-  network_security_group_id = local.nsg_id[each.value.network_security_group_id]
+  subnet_id                 = azurerm_subnet.this[each.key].id
+  network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group_id].id
 }
 
 resource "azurerm_subnet_route_table_association" "this" {
   for_each = var.subnets
 
-  subnet_id      = local.subnet_id[each.key]
-  route_table_id = local.rt_id[each.value.route_table_id]
+  subnet_id      = azurerm_subnet.this[each.key].id
+  route_table_id = azurerm_route_table.this[each.value.route_table_id].id
 }
