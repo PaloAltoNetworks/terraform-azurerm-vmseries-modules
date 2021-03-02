@@ -1,4 +1,6 @@
 resource "azurerm_availability_set" "this" {
+  count = contains([for k, v in var.instances : try(v.zone, null) != null], true) ? 0 : 1
+
   name                        = coalesce(var.name_avset, "${var.name_prefix}avset")
   location                    = var.location
   resource_group_name         = var.resource_group_name
@@ -75,7 +77,8 @@ resource "azurerm_virtual_machine" "this" {
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size
-  availability_set_id          = azurerm_availability_set.this.id
+  zones                        = try(each.value.zone, null) != null ? [each.value.zone] : null
+  availability_set_id          = try(each.value.zone, null) != null ? null : azurerm_availability_set.this[0].id
   primary_network_interface_id = azurerm_network_interface.mgmt[each.key].id
 
   network_interface_ids = concat(
