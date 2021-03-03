@@ -11,7 +11,7 @@ resource "azurerm_resource_group" "this" {
 }
 
 module "vnet" {
-  source = "../../modules/vnet"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vnet"
 
   virtual_network_name = "example-vnet"
   resource_group_name  = azurerm_resource_group.this.name
