@@ -71,16 +71,17 @@ module "panorama" {
 
   interfaces = {
     public = {
-      subnet_id : module.vnet.vnet_subnets[0]
-      private_ip_address : "10.0.0.6" // Optional: If not set, use dynamic allocation
-      public_ip : "true"              // (optional|bool, default: "false")
-      enable_ip_forwarding : "false"  // (optional|bool, default: "false")
+      subnet_id            = module.vnet.vnet_subnets[0]
+      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
+      public_ip            = "true"     // (optional|bool, default: "false")
+      enable_ip_forwarding = "false"    // (optional|bool, default: "false")
+      primary_interface    = "true"
     }
     mgmt = {
-      subnet_id : module.vnet.vnet_subnets[1]
-      private_ip_address : "10.0.1.6" // Optional: If not set, use dynamic allocation
-      public_ip : "false"             // (optional|bool, default: "false")
-      enable_ip_forwarding : "false"  // (optional|bool, default: "false")
+      subnet_id            = module.vnet.vnet_subnets[1]
+      private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation
+      public_ip            = "false"    // (optional|bool, default: "false")
+      enable_ip_forwarding = "false"    // (optional|bool, default: "false")
     }
   }
 
@@ -103,8 +104,6 @@ module "panorama" {
   password         = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
   panorama_sku     = var.panorama_sku
   panorama_version = var.panorama_version
-
-  primary_interface = var.primary_interface
 
   tags = var.tags
 

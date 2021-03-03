@@ -25,11 +25,6 @@ variable "management_ips" {
   type        = map(number)
 }
 
-variable "primary_interface" {
-  description = "The key name from interfaces variable indicates primary interface."
-  default     = "mgmt"
-}
-
 ##########
 # Naming #
 ##########
@@ -79,14 +74,18 @@ variable "subnet_prefixes" {
   default = ["10.0.0.0/24", "10.0.1.0/24"]
 }
 
-variable "vnet_name" {}
+variable "vnet_name" {
+  type = string
+}
 
 variable "address_space" {
   type    = list
   default = ["10.0.0.0/16"]
 }
 
-variable "tags" {}
+variable "tags" {
+  type = map(any)
+}
 
 variable "firewall_mgmt_prefixes" {
   type    = list
@@ -99,5 +98,6 @@ variable "security_group_name" {
 }
 
 variable "avzone" {
+  type    = string
   default = null
 }
