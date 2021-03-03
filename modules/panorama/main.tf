@@ -30,10 +30,13 @@ resource "azurerm_network_interface" "this" {
     private_ip_address_allocation = lookup(each.value, "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(each.value, "private_ip_address", null) != null ? each.value.private_ip_address : null
     public_ip_address_id          = lookup(each.value, "public_ip", "false") != "false" ? try(azurerm_public_ip.this[each.key].id) : null
-    primary                       = lookup(each.value, "primary", "false")
   }
 
   tags = var.tags
+}
+
+locals {
+  primary_interface = [for k, v in var.interfaces : k if lookup(v, "primary_interface", false) == "true"][0]
 }
 
 # Build the Panorama VM
@@ -42,7 +45,7 @@ resource "azurerm_virtual_machine" "panorama" {
   location                     = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name          = data.azurerm_resource_group.this.name
   network_interface_ids        = [for k, v in azurerm_network_interface.this : azurerm_network_interface.this[k].id]
-  primary_network_interface_id = azurerm_network_interface.this[var.primary_interface].id
+  primary_network_interface_id = azurerm_network_interface.this[local.primary_interface].id
   vm_size                      = var.panorama_size
 
   delete_os_disk_on_termination    = true

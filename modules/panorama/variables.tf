@@ -22,11 +22,6 @@ variable "panorama_size" {
   default     = "Standard_D5_v2"
 }
 
-variable "primary_interface" {
-  description = "The key name from interfaces variable indicates primary interface."
-  default     = "mgmt"
-}
-
 variable "username" {
   description = "Initial administrative username to use for Panorama."
   default     = "panadmin"
@@ -75,16 +70,17 @@ variable "interfaces" {
   ```
   {
     public = {
-      subnet_id: module.vnet.vnet_subnets[0]
-      private_ip_address: "10.0.0.6" // Optional: If not set, use dynamic allocation.
-      public_ip: true // (optional|bool, default: "false")
-      enable_ip_forwarding: "false" // (optional|bool, default: "false")
+      subnet_id            = module.vnet.vnet_subnets[0]
+      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
+      public_ip            = "true"    // (optional|bool, default: "false")
+      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
+      primary_interface    = "true"
     }
     mgmt = {
-      subnet_id: module.vnet.vnet_subnets[1]
-      private_ip_address: "10.0.1.6" // Optional: If not set, use dynamic allocation.
-      public_ip: false // (optional|bool, default: "false")
-      enable_ip_forwarding: "false" // (optional|bool, default: "false")
+      subnet_id            = module.vnet.vnet_subnets[1]
+      private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation
+      public_ip            = "false"   // (optional|bool, default: "false")
+      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
     }
   }
   ```
