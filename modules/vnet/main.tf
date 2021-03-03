@@ -28,9 +28,7 @@ resource "azurerm_network_security_group" "this" {
   tags                = var.tags
 }
 
-
 locals {
-
   nsg_rules = { for v in
     flatten([
       for nsg_name, nsg in var.network_security_groups : [
@@ -42,7 +40,6 @@ locals {
       ]
     ]) : "${v.nsg_name}-${v.name}" => v
   }
-
 }
 
 resource "azurerm_network_security_rule" "this" {
@@ -70,14 +67,28 @@ resource "azurerm_route_table" "this" {
   tags                = var.tags
 }
 
-resource "azurerm_route" "this" {
-  for_each = var.routes
+locals {
+  route = flatten([
+    for route_table_name, route_table in var.route_tables : [
+      for route_name, route in route_table.routes : {
+        route_table_name = route_table_name
+        name             = route_name
+        route            = route
+      }
+    ]
+  ])
+}
 
-  name                = each.key
+resource "azurerm_route" "this" {
+  for_each = {
+    for route in local.route : "${route.route_table_name}-${route.name}" => route
+  }
+
+  name                = each.value.name
   resource_group_name = data.azurerm_resource_group.this.name
   route_table_name    = azurerm_route_table.this[each.value.route_table_name].name
-  address_prefix      = each.value.address_prefix
-  next_hop_type       = each.value.next_hop_type
+  address_prefix      = each.value.route.address_prefix
+  next_hop_type       = each.value.route.next_hop_type
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {

@@ -43,9 +43,8 @@ module "vnet" {
           destination_port_range     = "22"
           source_address_prefix      = "*"
           destination_address_prefix = "*"
-        }
+        },
       }
-
     },
     "network_security_group_2" = {
       rules = {}
@@ -61,33 +60,34 @@ module "vnet" {
           destination_port_range     = "*"
           source_address_prefix      = "*"
           destination_address_prefix = "*"
-
-        }
+        },
       }
     },
   }
 
   route_tables = {
-    "route_table_1" = {},
-    "route_table_2" = {},
-    "route_table_3" = {},
-  }
-
-  routes = {
-    "route_1" = {
-      route_table_name = "route_table_1"
-      address_prefix   = "10.1.0.0/16"
-      next_hop_type    = "vnetlocal"
+    "route_table_1" = {
+      routes = {
+        "route_1" = {
+          address_prefix = "10.1.0.0/16"
+          next_hop_type  = "vnetlocal"
+        },
+        "route_2" = {
+          address_prefix = "10.2.0.0/16"
+          next_hop_type  = "vnetlocal"
+        },
+      }
     },
-    "route_2" = {
-      route_table_name = "route_table_2"
-      address_prefix   = "10.2.0.0/16"
-      next_hop_type    = "vnetlocal"
+    "route_table_2" = {
+      routes = {},
     },
-    "route_3" = {
-      route_table_name = "route_table_3"
-      address_prefix   = "10.2.0.0/16"
-      next_hop_type    = "vnetlocal"
+    "route_table_3" = {
+      routes = {
+        "route_3" = {
+          address_prefix = "10.2.0.0/16"
+          next_hop_type  = "vnetlocal"
+        },
+      }
     },
   }
 
