@@ -21,22 +21,49 @@ module "vnet" {
   }
 
   network_security_groups = {
-    "network_security_group_1" = {},
-    "network_security_group_2" = {},
-    "network_security_group_3" = {},
-  }
+    "network_security_group_1" = {
+      location = "East US"
+      rules = {
+        "AllOutbound" = {
+          priority                   = 100
+          direction                  = "Outbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_port_range          = "*"
+          destination_port_range     = "*"
+          source_address_prefix      = "*"
+          destination_address_prefix = "*"
+        },
+        "AllowSSH" = {
+          priority                   = 200
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_port_range          = "*"
+          destination_port_range     = "22"
+          source_address_prefix      = "*"
+          destination_address_prefix = "*"
+        }
+      }
 
-  network_security_rules = {
-    "AllOutbound" = {
-      network_security_group_name = "network_security_group_1"
-      priority                    = 100
-      direction                   = "Outbound"
-      access                      = "Allow"
-      protocol                    = "Tcp"
-      source_port_range           = "*"
-      destination_port_range      = "*"
-      source_address_prefix       = "*"
-      destination_address_prefix  = "*"
+    },
+    "network_security_group_2" = {
+      rules = {}
+    },
+    "network_security_group_3" = {
+      rules = {
+        "AllOutbound" = {
+          priority                   = 100
+          direction                  = "Outbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_port_range          = "*"
+          destination_port_range     = "*"
+          source_address_prefix      = "*"
+          destination_address_prefix = "*"
+
+        }
+      }
     },
   }
 

@@ -28,20 +28,37 @@ resource "azurerm_network_security_group" "this" {
   tags                = var.tags
 }
 
-resource "azurerm_network_security_rule" "this" {
-  for_each = var.network_security_rules
 
-  name                        = each.key
+locals {
+
+  nsg_rules = { for v in
+    flatten([
+      for nsg_name, nsg in var.network_security_groups : [
+        for rule_name, rule in nsg.rules : {
+          nsg_name = nsg_name
+          name     = rule_name
+          rule     = rule
+        }
+      ]
+    ]) : "${v.nsg_name}-${v.name}" => v
+  }
+
+}
+
+resource "azurerm_network_security_rule" "this" {
+  for_each = local.nsg_rules
+
+  name                        = each.value.name
   resource_group_name         = data.azurerm_resource_group.this.name
-  network_security_group_name = azurerm_network_security_group.this[each.value.network_security_group_name].name
-  priority                    = each.value.priority
-  direction                   = each.value.direction
-  access                      = each.value.access
-  protocol                    = each.value.protocol
-  source_port_range           = each.value.source_port_range
-  destination_port_range      = each.value.destination_port_range
-  source_address_prefix       = each.value.source_address_prefix
-  destination_address_prefix  = each.value.destination_address_prefix
+  network_security_group_name = azurerm_network_security_group.this[each.value.nsg_name].name
+  priority                    = each.value.rule.priority
+  direction                   = each.value.rule.direction
+  access                      = each.value.rule.access
+  protocol                    = each.value.rule.protocol
+  source_port_range           = each.value.rule.source_port_range
+  destination_port_range      = each.value.rule.destination_port_range
+  source_address_prefix       = each.value.rule.source_address_prefix
+  destination_address_prefix  = each.value.rule.destination_address_prefix
 }
 
 resource "azurerm_route_table" "this" {

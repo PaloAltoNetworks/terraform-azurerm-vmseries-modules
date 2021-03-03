@@ -33,51 +33,53 @@ variable "network_security_groups" {
   by default uses the location from the Resource Group Data Source.
   - `resource_group_name` : Name of an existing resource group in which to create the network security group,
   by default uses the Resource Group name from the Resource Group Data Source.
+  - `rules`: A map of network security rules to attach
+      List of arguments available to define network security rules:
+      - `name`: The name of the security rule. This needs to be unique across all Rules in the Network Security Group. 
+      - `resource_group_name` : Name of an existing resource group in which to create the network security rules,
+      by default uses the Resource Group name from the Resource Group Data Source.
+      - `network_security_group_name` : The name of the Network Security Group that we want to attach the rule to.
+      - `priority` : Specifies the priority of the rule. The value can be between 100 and 4096. The priority number must be unique for each rule in the collection. 
+      The lower the priority number, the higher the priority of the rule.
+      - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
+      - `access` : Specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
+      - `protocol` : Network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all).
+      - `source_port_range` : List of source ports or port ranges.
+      - `destination_port_range` : Destination Port or Range. Integer or range between `0` and `65535` or `*` to match any.
+      - `source_address_prefix` : List of source address prefixes. Tags may not be used.
+      - `destination_address_prefix` : CIDR or destination IP range or * to match any IP.
+
 
   Example:
   ```
   {
     "network_security_group_1" = {
       location = "Australia Central"
+      rules = {
+        "AllOutbound" = {
+          priority                   = 100
+          direction                  = "Outbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_port_range          = "*"
+          destination_port_range     = "*"
+          source_address_prefix      = "*"
+          destination_address_prefix = "*"
+        },
+        "AllowSSH" = {
+          priority                   = 200
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_port_range          = "*"
+          destination_port_range     = "22"
+          source_address_prefix      = "*"
+          destination_address_prefix = "*"
+        }
+      }
     },
-    "network_security_group_2" = {}
-  }
-  ```
-  EOF
-}
-
-variable "network_security_rules" {
-  description = <<-EOF
-  A map of network security rules objects to create.
-  List of arguments available to define network security rules:
-  - `name`: The name of the security rule. This needs to be unique across all Rules in the Network Security Group. 
-  - `resource_group_name` : Name of an existing resource group in which to create the network security rules,
-  by default uses the Resource Group name from the Resource Group Data Source.
-  - `network_security_group_name` : The name of the Network Security Group that we want to attach the rule to.
-  - `priority` : Specifies the priority of the rule. The value can be between 100 and 4096. The priority number must be unique for each rule in the collection. 
-  The lower the priority number, the higher the priority of the rule.
-  - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
-  - `access` : Specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-  - `protocol` : Network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all).
-  - `source_port_range` : List of source ports or port ranges.
-  - `destination_port_range` : Destination Port or Range. Integer or range between `0` and `65535` or `*` to match any.
-  - `source_address_prefix` : List of source address prefixes. Tags may not be used.
-  - `destination_address_prefix` : CIDR or destination IP range or * to match any IP. 
-  Tags such as ‘VirtualNetwork’, ‘AzureLoadBalancer’ and ‘Internet’ can also be used.
-  
-  Example:
-  ```
-  {
-    "AllOutbound" = {
-      network_security_group_name = "network_security_group_1"
-      priority                    = 100
-      direction                   = "Outbound"
-      access                      = "Allow"
-      protocol                    = "Tcp"
-      source_port_range           = "*"
-      destination_port_range      = "*"
-      source_address_prefix       = "*"
-      destination_address_prefix  = "*"
+    "network_security_group_2" = {
+      rules = {}
     }
   }
   ```
