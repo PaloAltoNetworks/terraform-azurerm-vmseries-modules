@@ -60,6 +60,19 @@ resource "random_password" "password" {
   override_special = "_%@"
 }
 
+module "bootstrap" {
+  source = "../../modules/vm-bootstrap"
+
+  location    = var.location
+  name_prefix = var.name_prefix
+}
+
+# Create a storage container for storing VM disks provisioned via VMSS
+resource "azurerm_storage_container" "this" {
+  name                 = "${var.name_prefix}vm-container"
+  storage_account_name = module.bootstrap.storage_account.name
+}
+
 module "panorama" {
   source = "../../modules/panorama"
 
@@ -104,6 +117,8 @@ module "panorama" {
   password         = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
   panorama_sku     = var.panorama_sku
   panorama_version = var.panorama_version
+  bootstrap_storage_account = module.bootstrap.storage_account
+  bootstrap_share_name      = module.bootstrap.storage_share_name
 
   tags = var.tags
 
