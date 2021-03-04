@@ -23,12 +23,12 @@ output "subnets_ids" {
   value       = module.vnet.subnets_ids
 }
 
-output "network_security_groups_ids" {
+output "network_security_group_ids" {
   description = "The IDs of the created Network Security Groups."
   value       = module.vnet.network_security_groups_ids
 }
 
-output "route_tables_ids" {
+output "route_tables_id" {
   description = "The IDs of the created Route Tables."
   value       = module.vnet.route_tables_ids
 }
