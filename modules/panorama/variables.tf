@@ -91,7 +91,8 @@ variable "logging_disks" {
   type        = map(any)
   default     = {}
   description = <<-EOF
-  A map of objects describing the additional disks configuration. Keys of the map are the names and values are { size, zones, lun }. Example:
+   A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zones, lun }. 
+   The size value is provided in GB. The recommended size for additional(optional) disks should be at least 2TB (2048 GB). Example:
   ```
   {
     disk_name_1 = {
@@ -114,14 +115,9 @@ variable "custom_image_id" {
   default = null
 }
 
-variable "bootstrap_storage_account" {
-  description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
-}
-
-variable "bootstrap_share_name" {
-  description = "Azure File Share holding the bootstrap data. Should reside on `bootstrap_storage_account`. Bootstrapping is omitted if `bootstrap_share_name` is left at null."
-  default     = null
-  type        = string
+variable "boot_diagnostic_storage_uri" {
+  description = "Existing diagnostic storage uri"
+  default = null
 }
 
 #  ---   #

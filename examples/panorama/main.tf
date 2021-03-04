@@ -117,15 +117,14 @@ module "panorama" {
   password         = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
   panorama_sku     = var.panorama_sku
   panorama_version = var.panorama_version
-  bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap_share_name      = module.bootstrap.storage_share_name
-
+  boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
+  
   tags = var.tags
 
 }
 
 output panorama_url {
-  value = "https://${module.panorama.panorama-publicip[0]}"
+  value = "https://${module.panorama.panorama-publicips[0]}"
 }
 
 output panorama_admin_password {

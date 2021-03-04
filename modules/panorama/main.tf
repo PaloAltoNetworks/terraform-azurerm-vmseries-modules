@@ -15,7 +15,7 @@ resource "azurerm_public_ip" "this" {
   tags = var.tags
 }
 
-# Build the management interface
+# Build Panorama interfaces
 resource "azurerm_network_interface" "this" {
   for_each = var.interfaces
 
@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "this" {
   enable_ip_forwarding = lookup(each.value, "enable_ip_forwarding", "false")
 
   ip_configuration {
-    name                          = "${var.name_prefix}${each.key}"
+    name                          = "${var.name_prefix}${var.sep}${each.key}"
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = lookup(each.value, "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(each.value, "private_ip_address", null) != null ? each.value.private_ip_address : null
@@ -60,32 +60,21 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = "${var.name_prefix}PanoramaDisk"
+    name              = "${var.panorama_name}-os-disk"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
   }
 
   os_profile {
-    computer_name  = "hostname"
+    computer_name  = var.panorama_name
     admin_username = var.username
     admin_password = var.password
-    custom_data = var.bootstrap_share_name == null ? null : join(
-      ",",
-      [
-        "storage-account=${var.bootstrap_storage_account.name}",
-        "access-key=${var.bootstrap_storage_account.primary_access_key}",
-        "file-share=${var.bootstrap_share_name}",
-        "share-directory=None"
-      ]
-    )
   }
 
-  # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
-  # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
   boot_diagnostics {
-    enabled     = true
-    storage_uri = var.bootstrap_storage_account.primary_blob_endpoint
+    enabled     = var.boot_diagnostic_storage_uri != null ? true : false
+    storage_uri = var.boot_diagnostic_storage_uri
   }
 
   os_profile_linux_config {
@@ -113,7 +102,7 @@ resource "azurerm_managed_disk" "this" {
   resource_group_name  = data.azurerm_resource_group.this.name
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
-  disk_size_gb         = lookup(each.value, "size", "100")
+  disk_size_gb         = lookup(each.value, "size", "2048")
   zones                = [lookup(each.value, "zone", "")]
 
   tags = var.tags
