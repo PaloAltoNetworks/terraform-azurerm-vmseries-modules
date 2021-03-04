@@ -40,7 +40,7 @@ locals {
     subnet_id                     = try(v.subnet_id, false) != false ? v.subnet_id : null
     private_ip_address_allocation = try(v.private_ip_address_allocation, false) != false ? v.private_ip_address_allocation : null
     private_ip_address            = try(v.private_ip_address, false) != false ? v.private_ip_address : null
-    rules                         = v.rules
+    rules                         = lookup(v, "rules", {})
   } }
 
   # Terraform for_each unfortunately requires a single-dimensional map, but we have

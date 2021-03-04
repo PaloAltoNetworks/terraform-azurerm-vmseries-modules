@@ -5,7 +5,7 @@ variable "frontend_ips" {
   ```
   //public
   {
-    pip-existing = {
+    fe1-pip-existing = {
       create_public_ip     = false
       public_ip_address_id = azurerm_public_ip.this.id
       rules = {
@@ -16,7 +16,7 @@ variable "frontend_ips" {
         }
       }
     }
-    pip-create = {
+    fe1-pip-create  = {
       create_public_ip = true
       rules = {
         HTTPS = {
@@ -75,10 +75,6 @@ variable "location" {
 
 variable "name_lb" {
   default = "lb"
-}
-
-variable "name_backend" {
-  default = "lb-backend"
 }
 
 variable "name_probe" {

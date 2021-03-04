@@ -13,7 +13,7 @@ module "public_lb" {
 
   frontend_ips = {
     # Map of maps (each object has one frontend to many backend relationship) 
-    pip-existing = {
+    fe1-pip-existing = {
       create_public_ip     = false
       public_ip_address_id = ""
       rules = {
@@ -24,7 +24,7 @@ module "public_lb" {
         }
       }
     }
-    pip-create2 = {
+    fe1-pip-create = {
       create_public_ip = true
       rules = {
         HTTPS = {

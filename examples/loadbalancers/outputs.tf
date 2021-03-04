@@ -1,10 +1,10 @@
-output "private-backend-pools-id" {
-  value       = module.private_lb.backend-pools-id
+output "private-backend-pool-ids" {
+  value       = module.private_lb.backend-pool-ids
   description = "The ID of the private backend pools."
 }
 
-output "public-backend-pools-id" {
-  value       = module.public_lb.backend-pools-id
+output "public-backend-pool-ids" {
+  value       = module.public_lb.backend-pool-ids
   description = "The ID of the backend public pools."
 }
 
