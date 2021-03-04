@@ -117,7 +117,7 @@ variable "custom_image_id" {
 
 variable "boot_diagnostic_storage_uri" {
   description = "Existing diagnostic storage uri"
-  default = null
+  default     = null
 }
 
 #  ---   #

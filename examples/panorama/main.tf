@@ -111,14 +111,14 @@ module "panorama" {
     }
   }
 
-  panorama_size    = var.panorama_size
-  custom_image_id  = var.custom_image_id             // optional
-  username         = var.username                    // no default - this can't be admin anymore (add this in documentation)
-  password         = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
-  panorama_sku     = var.panorama_sku
-  panorama_version = var.panorama_version
+  panorama_size               = var.panorama_size
+  custom_image_id             = var.custom_image_id             // optional
+  username                    = var.username                    // no default - this can't be admin anymore (add this in documentation)
+  password                    = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
+  panorama_sku                = var.panorama_sku
+  panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
-  
+
   tags = var.tags
 
 }

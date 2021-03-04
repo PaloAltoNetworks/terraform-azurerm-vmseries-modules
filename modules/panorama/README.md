@@ -64,24 +64,26 @@ module "panorama" {
 | Name | Version |
 |------|---------|
 | terraform | >=0.13, <0.14 |
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.42 |
+| random | ~>3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.42 |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | avzone | Optional Availability Zone number. | `any` | `null` | no |
+| boot\_diagnostic\_storage\_uri | Existing diagnostic storage uri | `any` | `null` | no |
 | custom\_image\_id | n/a | `string` | `null` | no |
 | enable\_plan | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
 | interfaces | A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet\_id, private\_ip\_address, public\_ip, enable\_ip\_forwarding }. Example:<pre>{<br>  public = {<br>    subnet_id            = module.vnet.vnet_subnets[0]<br>    private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation<br>    public_ip            = "true"    // (optional|bool, default: "false")<br>    enable_ip_forwarding = "false"  // (optional|bool, default: "false")<br>    primary_interface    = "true"<br>  }<br>  mgmt = {<br>    subnet_id            = module.vnet.vnet_subnets[1]<br>    private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation<br>    public_ip            = "false"   // (optional|bool, default: "false")<br>    enable_ip_forwarding = "false"  // (optional|bool, default: "false")<br>  }<br>}</pre> | `map(any)` | n/a | yes |
 | location | Region to deploy panorama into. | `string` | `""` | no |
-| logging\_disks | A map of objects describing the additional disks configuration. Keys of the map are the names and values are { size, zones, lun }. Example:<pre>{<br>  disk_name_1 = {<br>    size: "50"<br>    zone: "1"<br>    lun: "1"<br>  }<br>  disk_name_2 = {<br>    size: "50"<br>    zone: "2"<br>    lun: "2"<br>  }<br>}</pre> | `map(any)` | `{}` | no |
+| logging\_disks | A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zones, lun }. <br> The size value is provided in GB. The recommended size for additional(optional) disks should be at least 2TB (2048 GB). Example:<pre>{<br>  disk_name_1 = {<br>    size: "50"<br>    zone: "1"<br>    lun: "1"<br>  }<br>  disk_name_2 = {<br>    size: "50"<br>    zone: "2"<br>    lun: "2"<br>  }<br>}</pre> | `map(any)` | `{}` | no |
 | name\_panorama\_pip | The name for public ip allows distinguish from other type of public ips. | `string` | `"panorama-pip"` | no |
 | name\_prefix | Prefix to add to all the object names here. | `any` | n/a | yes |
 | panorama\_name | The Panorama common name. | `string` | `"panorama"` | no |
@@ -100,6 +102,6 @@ module "panorama" {
 
 | Name | Description |
 |------|-------------|
-| panorama-publicip | Panorama Public IP address |
+| panorama-publicips | Panorama Public IP addresses |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
