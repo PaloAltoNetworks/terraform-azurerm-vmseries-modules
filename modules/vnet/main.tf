@@ -29,21 +29,21 @@ resource "azurerm_network_security_group" "this" {
 }
 
 locals {
-  nsg_rules = { for v in
-    flatten([
-      for nsg_name, nsg in var.network_security_groups : [
-        for rule_name, rule in nsg.rules : {
-          nsg_name = nsg_name
-          name     = rule_name
-          rule     = rule
-        }
-      ]
-    ]) : "${v.nsg_name}-${v.name}" => v
-  }
+  nsg_rules = flatten([
+    for nsg_name, nsg in var.network_security_groups : [
+      for rule_name, rule in nsg.rules : {
+        nsg_name = nsg_name
+        name     = rule_name
+        rule     = rule
+      }
+    ]
+  ])
 }
 
 resource "azurerm_network_security_rule" "this" {
-  for_each = local.nsg_rules
+  for_each = {
+    for nsg in local.nsg_rules : "${nsg.nsg_name}-${nsg.name}" => nsg
+  }
 
   name                        = each.value.name
   resource_group_name         = data.azurerm_resource_group.this.name

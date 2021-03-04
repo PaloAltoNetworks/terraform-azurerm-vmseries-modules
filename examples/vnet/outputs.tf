@@ -1,3 +1,8 @@
+output "resource_group_name" {
+  description = "The name of the Resource Group."
+  value       = azurerm_resource_group.this.name
+}
+
 output "resource_group_id" {
   description = "The ID of the Resource Group."
   value       = azurerm_resource_group.this.id
@@ -13,7 +18,17 @@ output "virtual_network_id" {
   value       = module.vnet.virtual_network_id
 }
 
-output "subnet_id" {
-  description = "The ID of the created Subnet."
-  value       = module.vnet.subnet_id
+output "subnets_ids" {
+  description = "The IDs of the created Subnets."
+  value       = module.vnet.subnets_ids
+}
+
+output "network_security_groups_ids" {
+  description = "The IDs of the created Network Security Groups."
+  value       = module.vnet.network_security_groups_ids
+}
+
+output "route_tables_ids" {
+  description = "The IDs of the created Route Tables."
+  value       = module.vnet.route_tables_ids
 }
