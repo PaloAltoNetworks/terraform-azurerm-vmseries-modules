@@ -6,10 +6,10 @@ provider "azurerm" {
 module "public_lb" {
   source = "../../modules/loadbalancer"
 
-  name_prefix         = var.name_prefix
   name_lb             = "LB-public"
+  name_probe          = "Probe-public"
   location            = var.location
-  resource_group_name = var.name_rg
+  resource_group_name = var.resource_group_name
 
   frontend_ips = {
     # Map of maps (each object has one frontend to many backend relationship) 
@@ -47,10 +47,10 @@ module "public_lb" {
 module "private_lb" {
   source = "../../modules/loadbalancer"
 
-  name_prefix         = var.name_prefix
   name_lb             = "LB-private"
+  name_probe          = "Probe-private"
   location            = var.location
-  resource_group_name = var.name_rg
+  resource_group_name = var.resource_group_name
 
   frontend_ips = {
     internal_fe = {

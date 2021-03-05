@@ -5,7 +5,7 @@ data "azurerm_resource_group" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
-  name                = "${var.name_prefix}-${each.key}"
+  name                = "${each.key}-pip"
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -13,7 +13,7 @@ resource "azurerm_public_ip" "this" {
 }
 
 resource "azurerm_lb" "lb" {
-  name                = "${var.name_prefix}${var.sep}${var.name_lb}"
+  name                = var.name_lb
   resource_group_name = data.azurerm_resource_group.this.name
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   sku                 = "standard"
@@ -67,12 +67,12 @@ resource "azurerm_lb_backend_address_pool" "lb-backend" {
   for_each = local.input_rules
 
   loadbalancer_id = azurerm_lb.lb.id
-  name            = "${var.name_prefix}${var.sep}${each.value.rule.backend_name}"
+  name            = each.value.rule.backend_name
 }
 
 resource "azurerm_lb_probe" "probe" {
   loadbalancer_id     = azurerm_lb.lb.id
-  name                = "${var.name_prefix}${var.sep}${var.name_probe}"
+  name                = var.name_probe
   port                = var.probe_port
   resource_group_name = data.azurerm_resource_group.this.name
 }

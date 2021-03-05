@@ -1,33 +1,19 @@
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
+}
+
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
   default     = ""
 }
 
-#  ---   #
-# Naming #
-#  ---   #
-
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
-}
-
-# Seperator
-variable "sep" {
-  default = "-"
-}
-
-variable "name_rg" {
-  default = "lb-rg"
-}
-
 variable "name_lb" {
-  default = "lb"
-}
-
-variable "name_backend" {
-  default = "lb-backend"
+  description = "The loadbalancer name."
+  type        = string
 }
 
 variable "name_probe" {
-  default = "lb-probe"
+  description = "The loadbalancer probe name."
+  type        = string
 }

@@ -3,46 +3,49 @@ variable "frontend_ips" {
   A map of objects describing LB Frontend IP configurations. Keys of the map are the names and values are { create_public_ip, public_ip_address_id, rules }. Example:
 
   ```
-  //public
-  {
-    fe1-pip-existing = {
-      create_public_ip     = false
-      public_ip_address_id = azurerm_public_ip.this.id
-      rules = {
-        HTTP = {
-          port         = 80
-          protocol     = "Tcp"
-          backend_name = "backend1_name"
-        }
-      }
-    }
-    fe1-pip-create  = {
-      create_public_ip = true
-      rules = {
-        HTTPS = {
-          port         = 8080
-          protocol     = "Tcp"
-          backend_name = "backend2_name"
-        }
-        SSH = {
-          port         = 22
-          protocol     = "Tcp"
-          backend_name = "backend3_name"
+  # Deploy the inbound load balancer for traffic into the azure environment
+  module "inbound-lb" {
+    source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
+
+    resource_group_name = ""
+    location            = ""
+    name_probe          = ""
+    name_lb             = ""
+    frontend_ips = {
+      # Map of maps (each object has one frontend to many backend relationship) 
+      pip-existing = {
+        create_public_ip     = false
+        public_ip_address_id = ""
+        rules = {
+          HTTP = {
+            port         = 80
+            protocol     = "Tcp"
+            backend_name = "backend1_name"
+          }
         }
       }
     }
   }
-  //private
-  {
-    internal_fe = {
-      subnet_id                     = subnet.id
-      private_ip_address_allocation = "Dynamic" // Dynamic or Static
-      #private_ip_address = "10.0.1.6" 
-      rules = {
-        HA_PORTS = {
-          port         = 0
-          protocol     = "All"
-          backend_name = "backend1_name"
+
+  # Deploy the outbound load balancer for traffic into the azure environment
+  module "outbound-lb" {
+    source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
+
+    resource_group_name = ""
+    location            = ""
+    name_probe          = ""
+    name_lb             = ""
+    frontend_ips = {
+      internal_fe = {
+        subnet_id                     = ""
+        private_ip_address_allocation = "Static" // Dynamic or Static
+        private_ip_address = "" 
+        rules = {
+          HA_PORTS = {
+            port         = 0
+            protocol     = "All"
+            backend_name = "backend3_name"
+          }
         }
       }
     }
@@ -55,17 +58,9 @@ variable "frontend_ips" {
 # Naming #
 #  ---   #
 
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
-}
-
-# Seperator
-variable "sep" {
-  default = "-"
-}
-
 variable "resource_group_name" {
-  default = "lb-rg"
+  description = "Name of the Resource Group to use."
+  type        = string
 }
 
 variable "location" {
@@ -74,13 +69,16 @@ variable "location" {
 }
 
 variable "name_lb" {
-  default = "lb"
+  description = "The loadbalancer name."
+  type        = string
 }
 
 variable "name_probe" {
-  default = "lb-probe"
+  description = "The loadbalancer probe name."
+  type        = string
 }
 
 variable "probe_port" {
-  default = "80"
+  description = "Health check port definition."
+  default     = "80"
 }
