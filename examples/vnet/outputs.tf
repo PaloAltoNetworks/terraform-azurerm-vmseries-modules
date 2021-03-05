@@ -20,15 +20,15 @@ output "virtual_network_id" {
 
 output "subnets_ids" {
   description = "The IDs of the created Subnets."
-  value       = module.vnet.subnets_ids
+  value       = module.vnet.subnet_ids
 }
 
 output "network_security_group_ids" {
   description = "The IDs of the created Network Security Groups."
-  value       = module.vnet.network_security_groups_ids
+  value       = module.vnet.network_security_group_ids
 }
 
 output "route_tables_id" {
   description = "The IDs of the created Route Tables."
-  value       = module.vnet.route_tables_ids
+  value       = module.vnet.route_table_ids
 }

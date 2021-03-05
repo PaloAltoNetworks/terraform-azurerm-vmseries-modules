@@ -13,11 +13,13 @@ The following resources will be deployed when using the provided example:
 
 ## Quick Start
 
+__NOTE:__ Terraform automatically loads all files in the current directory with the exact name `terraform.tfvars` or matching `*.auto.tfvars`. In our example, Terraform will use the `example.auto.tfvars` file to populate the configuration with the example variable values. If you wish to use different variable values, you can either modify the `example.auto.tfvars` file, or delete it and use a newly created custom file using the `-var-file` flag to specify it by name.
+
 1. Install [Terraform](https://www.terraform.io/). The Terraform version required to run this module can be checked [here](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/develop/modules/vnet/versions.tf).
 1. `git clone` this repository to your computer, navigate into:
 
     >/terraform-azurerm-vmseries-modules/examples/vnet
 
-1. Run `terraform init`  to initialize the working directory.
+1. Run `terraform init` to initialize the working directory.
 1. Run `terraform plan` and verify the execution plan.
 1. Run `terraform apply` to apply the changes required to reach the desired state of the configuration specified for this example.
