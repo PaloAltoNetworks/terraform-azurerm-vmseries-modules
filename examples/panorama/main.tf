@@ -6,7 +6,7 @@ module "vnet" {
   source = "Azure/vnet/azurerm"
 
   resource_group_name = data.azurerm_resource_group.this.name
-  vnet_name           = "${var.name_prefix}${var.sep}${var.vnet_name}"
+  vnet_name           = var.vnet_name
   address_space       = var.address_space
   subnet_prefixes     = var.subnet_prefixes
   subnet_names        = var.subnet_names
@@ -19,7 +19,7 @@ module "nsg" {
 
   resource_group_name     = data.azurerm_resource_group.this.name
   location                = coalesce(var.location, data.azurerm_resource_group.this.location)
-  security_group_name     = "${var.name_prefix}${var.sep}${var.security_group_name}"
+  security_group_name     = var.security_group_name
   source_address_prefixes = keys(var.management_ips)
   predefined_rules = [
     { name = "SSH" },
@@ -67,17 +67,10 @@ module "bootstrap" {
   name_prefix = var.name_prefix
 }
 
-# Create a storage container for storing VM disks provisioned via VMSS
-resource "azurerm_storage_container" "this" {
-  name                 = "${var.name_prefix}vm-container"
-  storage_account_name = module.bootstrap.storage_account.name
-}
-
 module "panorama" {
   source = "../../modules/panorama"
 
   panorama_name       = var.panorama_name
-  name_prefix         = var.name_prefix
   resource_group_name = var.resource_group_name
   location            = var.location //Optional; if not provided, will use Resource Group location
   avzone              = var.avzone   // Optional Availability Zone number
@@ -87,6 +80,7 @@ module "panorama" {
       subnet_id            = module.vnet.vnet_subnets[0]
       private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
       public_ip            = "true"     // (optional|bool, default: "false")
+      public_ip_name       = ""         // (optional|string, default: "")
       enable_ip_forwarding = "false"    // (optional|bool, default: "false")
       primary_interface    = "true"
     }
@@ -118,9 +112,7 @@ module "panorama" {
   panorama_sku                = var.panorama_sku
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
-
-  tags = var.tags
-
+  tags                        = var.tags
 }
 
 output panorama_url {

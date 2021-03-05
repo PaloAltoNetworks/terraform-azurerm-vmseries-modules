@@ -13,10 +13,6 @@ variable "avzone" {
   description = "Optional Availability Zone number."
 }
 
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here."
-}
-
 variable "panorama_size" {
   description = "Virtual Machine size."
   default     = "Standard_D5_v2"
@@ -73,6 +69,7 @@ variable "interfaces" {
       subnet_id            = module.vnet.vnet_subnets[0]
       private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
       public_ip            = "true"    // (optional|bool, default: "false")
+      public_ip_name       = ""        // (optional|bool, default: "")
       enable_ip_forwarding = "false"  // (optional|bool, default: "false")
       primary_interface    = "true"
     }
@@ -123,11 +120,6 @@ variable "boot_diagnostic_storage_uri" {
 #  ---   #
 # Naming #
 #  ---   #
-
-variable "sep" {
-  default     = "-"
-  description = "Separator used in the names of the generated resources. May be empty."
-}
 
 variable "name_panorama_pip" {
   description = "The name for public ip allows distinguish from other type of public ips."

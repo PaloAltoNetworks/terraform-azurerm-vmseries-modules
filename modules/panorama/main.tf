@@ -7,7 +7,7 @@ data "azurerm_resource_group" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.interfaces : k => v if v.public_ip == "true" }
 
-  name                = "${var.name_prefix}${var.sep}${var.name_panorama_pip}${var.sep}${each.key}"
+  name                = coalesce(try(each.value.public_ip_name, ""), "${each.key}-pip")
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -19,13 +19,13 @@ resource "azurerm_public_ip" "this" {
 resource "azurerm_network_interface" "this" {
   for_each = var.interfaces
 
-  name                 = "${var.name_prefix}${var.sep}${each.key}"
+  name                 = each.key
   location             = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name  = data.azurerm_resource_group.this.name
   enable_ip_forwarding = lookup(each.value, "enable_ip_forwarding", "false")
 
   ip_configuration {
-    name                          = "${var.name_prefix}${var.sep}${each.key}"
+    name                          = "${each.key}-ipconfig"
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = lookup(each.value, "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(each.value, "private_ip_address", null) != null ? each.value.private_ip_address : null
@@ -41,7 +41,7 @@ locals {
 
 # Build the Panorama VM
 resource "azurerm_virtual_machine" "panorama" {
-  name                         = "${var.name_prefix}${var.sep}${var.panorama_name}"
+  name                         = var.panorama_name
   location                     = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name          = data.azurerm_resource_group.this.name
   network_interface_ids        = [for k, v in azurerm_network_interface.this : azurerm_network_interface.this[k].id]
@@ -97,7 +97,7 @@ resource "azurerm_virtual_machine" "panorama" {
 # Panorama managed disk
 resource "azurerm_managed_disk" "this" {
   for_each             = var.logging_disks
-  name                 = "${var.name_prefix}${var.sep}${var.panorama_name}-disk-${each.key}"
+  name                 = "${var.panorama_name}-disk-${each.key}"
   location             = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name  = data.azurerm_resource_group.this.name
   storage_account_type = "Standard_LRS"

@@ -3,7 +3,7 @@ management_ips = {
 }
 
 resource_group_name = ""
-name_prefix         = ""
+name_prefix         = "" //only for bootstrap module
 location            = ""
 tags                = {}
 vnet_name           = ""

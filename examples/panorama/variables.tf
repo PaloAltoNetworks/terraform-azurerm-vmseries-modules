@@ -6,9 +6,10 @@ variable "location" {
   description = "The Azure region to use."
   default     = "Australia Central"
 }
+
 variable "name_prefix" {
   type        = string
-  description = "A prefix for all naming conventions - used globally"
+  description = "A prefix_name for bootstrap module."
   default     = "pantf"
 }
 
@@ -28,11 +29,6 @@ variable "management_ips" {
 ##########
 # Naming #
 ##########
-
-variable "sep" {
-  default     = "-"
-  description = "Separator used in the names of the generated resources. May be empty."
-}
 
 variable "panorama_name" {
   type    = string
