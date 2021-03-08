@@ -1,11 +1,11 @@
 variable "location" {
-  description = "Region to deploy panorama into."
+  description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
   default     = ""
 }
 
 variable "resource_group_name" {
   type        = string
-  description = "The resource group name created for Panorama."
+  description = "The existing resource group name for Panorama."
 }
 
 variable "avzone" {
@@ -93,12 +93,12 @@ variable "logging_disks" {
   ```
   {
     disk_name_1 = {
-      size: "50"
+      size: "2048"
       zone: "1"
       lun: "1"
     }
     disk_name_2 = {
-      size: "50"
+      size: "2048"
       zone: "2"
       lun: "2"
     }
@@ -129,6 +129,24 @@ variable "name_panorama_pip" {
 variable "panorama_name" {
   description = "The Panorama common name."
   default     = "panorama"
+}
+
+variable "os-disk-suffix" {
+  description = "The suffix for disk name."
+  default     = "os-disk"
+  type        = string
+}
+
+variable "ipconfig_suffix" {
+  description = "The suffix for ip_configuration naming."
+  default     = "ipconfig"
+  type        = string
+}
+
+variable "pip_suffix" {
+  description = "The suffix for new public ip naming."
+  default     = "pip"
+  type        = string
 }
 
 variable "tags" {

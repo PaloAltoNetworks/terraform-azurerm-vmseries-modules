@@ -3,8 +3,8 @@
 #----------------------#
 variable "location" {
   type        = string
-  description = "The Azure region to use."
-  default     = "Australia Central"
+  description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
+  default     = ""
 }
 
 variable "name_prefix" {
@@ -15,7 +15,7 @@ variable "name_prefix" {
 
 variable "resource_group_name" {
   type        = string
-  description = "The resource group name for Panorama."
+  description = "The existing resource group name for Panorama."
 }
 
 #----------------------#

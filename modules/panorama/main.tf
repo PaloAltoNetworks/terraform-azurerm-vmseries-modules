@@ -7,7 +7,7 @@ data "azurerm_resource_group" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.interfaces : k => v if v.public_ip == "true" }
 
-  name                = coalesce(try(each.value.public_ip_name, ""), "${each.key}-pip")
+  name                = coalesce(try(each.value.public_ip_name, ""), "${each.key}-${var.pip_suffix}")
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "this" {
   enable_ip_forwarding = lookup(each.value, "enable_ip_forwarding", "false")
 
   ip_configuration {
-    name                          = "${each.key}-ipconfig"
+    name                          = "${each.key}-${var.ipconfig_suffix}"
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = lookup(each.value, "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(each.value, "private_ip_address", null) != null ? each.value.private_ip_address : null
@@ -60,7 +60,7 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = "${var.panorama_name}-os-disk"
+    name              = "${var.panorama_name}-${var.os-disk-suffix}"
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
