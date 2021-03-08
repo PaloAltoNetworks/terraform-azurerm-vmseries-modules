@@ -18,7 +18,7 @@ output "virtual_network_id" {
   value       = module.vnet.virtual_network_id
 }
 
-output "subnets_ids" {
+output "subnet_ids" {
   description = "The IDs of the created Subnets."
   value       = module.vnet.subnet_ids
 }
@@ -28,7 +28,7 @@ output "network_security_group_ids" {
   value       = module.vnet.network_security_group_ids
 }
 
-output "route_tables_id" {
+output "route_tables_ids" {
   description = "The IDs of the created Route Tables."
   value       = module.vnet.route_table_ids
 }
