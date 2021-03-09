@@ -5,7 +5,7 @@ data "azurerm_resource_group" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
-  name                = "${each.key}-pip"
+  name                = "${each.key}-${var.pip_suffix}"
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -37,10 +37,10 @@ locals {
   frontend_ips = { for k, v in var.frontend_ips : k => {
     name                          = try(v.create_public_ip, false) ? "${azurerm_public_ip.this[k].name}-fip" : k
     public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : lookup(v, "public_ip_address_id", null)
-    subnet_id                     = try(v.subnet_id, false) != false ? v.subnet_id : null
-    private_ip_address_allocation = try(v.private_ip_address_allocation, false) != false ? v.private_ip_address_allocation : null
-    private_ip_address            = try(v.private_ip_address, false) != false ? v.private_ip_address : null
-    rules                         = lookup(v, "rules", {})
+    subnet_id                     = try(v.subnet_id, null)
+    private_ip_address_allocation = try(v.private_ip_address_allocation, null)
+    private_ip_address            = try(v.private_ip_address, null)
+    rules                         = try(v.rules, {})
   } }
 
   # Terraform for_each unfortunately requires a single-dimensional map, but we have
@@ -63,7 +63,7 @@ locals {
   input_rules = { for v in local.input_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 }
 
-resource "azurerm_lb_backend_address_pool" "lb-backend" {
+resource "azurerm_lb_backend_address_pool" "lb_backend" {
   for_each = local.input_rules
 
   loadbalancer_id = azurerm_lb.lb.id
@@ -77,14 +77,14 @@ resource "azurerm_lb_probe" "probe" {
   resource_group_name = data.azurerm_resource_group.this.name
 }
 
-resource "azurerm_lb_rule" "lb-rules" {
+resource "azurerm_lb_rule" "lb_rules" {
   for_each = local.input_rules
 
   name                    = each.key
   resource_group_name     = data.azurerm_resource_group.this.name
   loadbalancer_id         = azurerm_lb.lb.id
   probe_id                = azurerm_lb_probe.probe.id
-  backend_address_pool_id = azurerm_lb_backend_address_pool.lb-backend[each.key].id
+  backend_address_pool_id = azurerm_lb_backend_address_pool.lb_backend[each.key].id
 
   protocol                       = each.value.rule.protocol
   backend_port                   = each.value.rule.port

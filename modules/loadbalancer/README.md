@@ -41,7 +41,7 @@ module "outbound-lb" {
     internal_fe = {
       subnet_id                     = ""
       private_ip_address_allocation = "Static" // Dynamic or Static
-      private_ip_address = "10.0.1.6" 
+      private_ip_address            = "10.0.1.6" 
       rules = {
         HA_PORTS = {
           port         = 0
@@ -60,13 +60,13 @@ module "outbound-lb" {
 | Name | Version |
 |------|---------|
 | terraform | >=0.13, <0.14 |
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.42 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.42 |
 
 ## Inputs
 
@@ -76,6 +76,7 @@ module "outbound-lb" {
 | location | Region to deploy load balancer and dependencies. | `string` | `""` | no |
 | name\_lb | The loadbalancer name. | `string` | n/a | yes |
 | name\_probe | The loadbalancer probe name. | `string` | n/a | yes |
+| pip\_suffix | The suffix for new public ip naming. | `string` | `"pip"` | no |
 | probe\_port | Health check port definition. | `string` | `"80"` | no |
 | resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 
@@ -83,7 +84,7 @@ module "outbound-lb" {
 
 | Name | Description |
 |------|-------------|
-| backend-pool-ids | The ID of the backend pools. |
-| frontend-ip-configs | IP config resources of the load balancer. |
+| backend\_pool\_ids | The ID of the backend pools. |
+| frontend\_ip\_configs | IP config resources of the load balancer. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

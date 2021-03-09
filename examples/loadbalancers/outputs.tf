@@ -1,19 +1,19 @@
-output "private-backend-pool-ids" {
-  value       = module.private_lb.backend-pool-ids
+output "private_backend_pool_ids" {
+  value       = module.private_lb.backend_pool_ids
   description = "The ID of the private backend pools."
 }
 
-output "public-backend-pool-ids" {
-  value       = module.public_lb.backend-pool-ids
+output "public_backend_pool_ids" {
+  value       = module.public_lb.backend_pool_ids
   description = "The ID of the backend public pools."
 }
 
-output "private-frontend-ip-configs" {
-  value       = module.private_lb.frontend-ip-configs
+output "private_frontend_ip_configs" {
+  value       = module.private_lb.frontend_ip_configs
   description = "IP config resources of the private load balancer."
 }
 
-output "public-frontend-ip-configs" {
-  value       = module.public_lb.frontend-ip-configs
+output "public_frontend_ip_configs" {
+  value       = module.public_lb.frontend_ip_configs
   description = "IP config resources of the public load balancer."
 }

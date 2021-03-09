@@ -82,3 +82,9 @@ variable "probe_port" {
   description = "Health check port definition."
   default     = "80"
 }
+
+variable "pip_suffix" {
+  description = "The suffix for new public ip naming."
+  default     = "pip"
+  type        = string
+}
