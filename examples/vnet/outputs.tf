@@ -28,7 +28,7 @@ output "network_security_group_ids" {
   value       = module.vnet.network_security_group_ids
 }
 
-output "route_tables_ids" {
+output "route_table_ids" {
   description = "The IDs of the created Route Tables."
   value       = module.vnet.route_table_ids
 }

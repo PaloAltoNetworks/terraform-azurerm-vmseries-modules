@@ -1,7 +1,7 @@
 resource_group_name  = "example-rg"
 location             = "East US"
 virtual_network_name = "example-vnet"
-address_space        = ["10.100.0.0/16"]
+address_space        = ["10.112.0.0/16"]
 network_security_groups = {
   "network_security_group_1" = {
     location = "East US"
@@ -50,11 +50,11 @@ route_tables = {
   "route_table_1" = {
     routes = {
       "route_1" = {
-        address_prefix = "10.1.0.0/16"
+        address_prefix = "10.110.0.0/16"
         next_hop_type  = "vnetlocal"
       },
       "route_2" = {
-        address_prefix = "10.2.0.0/16"
+        address_prefix = "10.111.0.0/16"
         next_hop_type  = "vnetlocal"
       },
     }
@@ -65,25 +65,25 @@ route_tables = {
   "route_table_3" = {
     routes = {
       "route_3" = {
-        address_prefix = "10.2.0.0/16"
-        next_hop_type  = "vnetlocal"
+        address_prefix = "0.0.0.0/0"
+        next_hop_type  = "Internet"
       },
     }
   },
 }
 subnets = {
   "management" = {
-    address_prefixes       = ["10.100.0.0/24"]
+    address_prefixes       = ["10.112.255.0/24"]
     network_security_group = "network_security_group_1"
     route_table            = "route_table_1"
   },
   "private" = {
-    address_prefixes       = ["10.100.1.0/24"]
+    address_prefixes       = ["10.112.0.0/24"]
     network_security_group = "network_security_group_2"
     route_table            = "route_table_2"
   },
   "public" = {
-    address_prefixes       = ["10.100.2.0/24"]
+    address_prefixes       = ["10.112.129.0/24"]
     network_security_group = "network_security_group_3"
     route_table            = "route_table_3"
   },
