@@ -1,18 +1,21 @@
 variable "location" {
-  description = "Region to deploy panorama into."
+  description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
+  default     = ""
 }
 
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here."
+variable "resource_group_name" {
+  type        = string
+  description = "The existing resource group name for Panorama."
+}
+
+variable "avzone" {
+  default     = null
+  description = "Optional Availability Zone number."
 }
 
 variable "panorama_size" {
   description = "Virtual Machine size."
   default     = "Standard_D5_v2"
-}
-
-variable "subnet_mgmt" {
-  description = "Panorama's management subnet ID."
 }
 
 variable "username" {
@@ -24,6 +27,12 @@ variable "username" {
 variable "password" {
   description = "Initial administrative password to use for Panorama."
   type        = string
+}
+
+variable "enable_plan" {
+  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
+  default     = true
+  type        = bool
 }
 
 variable "panorama_sku" {
@@ -38,29 +47,110 @@ variable "panorama_version" {
   type        = string
 }
 
+variable "panorama_publisher" {
+  description = "Panorama Publisher."
+  default     = "paloaltonetworks"
+  type        = string
+}
 
+variable "panorama_offer" {
+  description = "Panorama offer."
+  default     = "panorama"
+  type        = string
+}
+
+variable "interfaces" {
+  type        = map(any)
+  description = <<-EOF
+  A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
+  ```
+  {
+    public = {
+      subnet_id            = module.vnet.vnet_subnets[0]
+      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
+      public_ip            = "true"    // (optional|bool, default: "false")
+      public_ip_name       = ""        // (optional|bool, default: "")
+      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
+      primary_interface    = "true"
+    }
+    mgmt = {
+      subnet_id            = module.vnet.vnet_subnets[1]
+      private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation
+      public_ip            = "false"   // (optional|bool, default: "false")
+      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
+    }
+  }
+  ```
+  EOF
+}
+
+variable "logging_disks" {
+  type        = map(any)
+  default     = {}
+  description = <<-EOF
+   A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zones, lun }. 
+   The size value is provided in GB. The recommended size for additional(optional) disks should be at least 2TB (2048 GB). Example:
+  ```
+  {
+    disk_name_1 = {
+      size: "2048"
+      zone: "1"
+      lun: "1"
+    }
+    disk_name_2 = {
+      size: "2048"
+      zone: "2"
+      lun: "2"
+    }
+  }
+  ```
+  EOF
+}
+
+variable "custom_image_id" {
+  type    = string
+  default = null
+}
+
+variable "boot_diagnostic_storage_uri" {
+  description = "Existing diagnostic storage uri"
+  default     = null
+}
 
 #  ---   #
 # Naming #
 #  ---   #
 
-variable "sep" {
-  default     = "-"
-  description = "Separator used in the names of the generated resources. May be empty."
+variable "name_panorama_pip" {
+  description = "The name for public ip allows distinguish from other type of public ips."
+  default     = "panorama-pip"
 }
 
-variable "name_rg" {
-  default = "rg-panorama"
+variable "panorama_name" {
+  description = "The Panorama common name."
+  default     = "panorama"
 }
 
-variable "name_panorama_pip_mgmt" {
-  default = "panorama-pip"
+variable "os-disk-suffix" {
+  description = "The suffix for disk name."
+  default     = "os-disk"
+  type        = string
 }
 
-variable "name_mgmt" {
-  default = "nic-mgmt"
+variable "ipconfig_suffix" {
+  description = "The suffix for ip_configuration naming."
+  default     = "ipconfig"
+  type        = string
 }
 
-variable "name_panorama" {
-  default = "panorama"
+variable "pip_suffix" {
+  description = "The suffix for new public ip naming."
+  default     = "pip"
+  type        = string
+}
+
+variable "tags" {
+  description = "A map of tags to be associated with the resources created."
+  default     = {}
+  type        = map(any)
 }
