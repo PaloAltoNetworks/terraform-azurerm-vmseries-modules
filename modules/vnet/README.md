@@ -58,9 +58,9 @@ module "vnet" {
 
 | Name | Description |
 |------|-------------|
-| network\_security\_group\_ids | The IDs of the created Network Security Groups. |
-| route\_table\_ids | The IDs of the created Route Tables. |
-| subnet\_ids | The IDs of the created Subnets. |
-| virtual\_network\_id | The ID of the created Virtual Network. |
+| network\_security\_group\_ids | The identifiers of the created Network Security Groups. |
+| route\_table\_ids | The identifiers of the created Route Tables. |
+| subnet\_ids | The identifiers of the created Subnets. |
+| virtual\_network\_id | The identifier of the created Virtual Network. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
