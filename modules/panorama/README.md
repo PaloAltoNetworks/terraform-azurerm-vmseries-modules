@@ -39,7 +39,7 @@ module "panorama" {
       lun : "1"
     }
     disk_name_2 = {
-      dize : "50"
+      dize : "4096"
       zone : "2"
       lun : "2"
     }
