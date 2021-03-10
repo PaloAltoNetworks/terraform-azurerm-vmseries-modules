@@ -22,10 +22,10 @@ resource "azurerm_lb" "lb" {
     for_each = local.frontend_ips
     content {
       name                          = frontend_ip_configuration.value.name
-      public_ip_address_id          = lookup(frontend_ip_configuration.value, "public_ip_address_id", null)
-      subnet_id                     = lookup(frontend_ip_configuration.value, "subnet_id", null)
-      private_ip_address_allocation = lookup(frontend_ip_configuration.value, "private_ip_address_allocation", null)
-      private_ip_address            = lookup(frontend_ip_configuration.value, "private_ip_address_allocation", null) == "Static" ? frontend_ip_configuration.value.private_ip_address : null
+      public_ip_address_id          = frontend_ip_configuration.value.public_ip_address_id
+      subnet_id                     = frontend_ip_configuration.value.subnet_id
+      private_ip_address_allocation = frontend_ip_configuration.value.private_ip_address_allocation
+      private_ip_address            = frontend_ip_configuration.value.private_ip_address_allocation == "Static" ? frontend_ip_configuration.value.private_ip_address : null
     }
   }
 }
