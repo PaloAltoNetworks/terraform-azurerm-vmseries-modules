@@ -16,7 +16,7 @@ output "resource_group_location" {
 
 output "virtual_network_id" {
   description = "The identifier of the created Virtual Network."
-  value       = module.vnet.*.virtual_network_id
+  value       = module.vnet.virtual_network_id
 }
 
 output "subnet_ids" {
