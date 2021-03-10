@@ -94,7 +94,7 @@ module "panorama" {
 
   logging_disks = {
     disk_name_1 = {
-      size : "50"
+      size : "2048"
       zone : "1"
       lun : "1"
     }
