@@ -1,6 +1,6 @@
 output "virtual_network_id" {
   description = "The identifier of the created Virtual Network."
-  value = azurerm_virtual_network.this
+  value = azurerm_virtual_network.this.id
 }
 
 output "subnet_ids" {
