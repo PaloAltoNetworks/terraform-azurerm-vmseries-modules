@@ -22,134 +22,139 @@ frontend_ips = {
 vnets = {
   "vnet-panorama-mgmt" = {
     address_space = ["10.255.0.0/16"]
-    network_security_groups = {
-      "sg-panorama-mgmt" = {
-        rules = {
-          "inter-vnet-rule" = {
-            access                     = "Allow"
-            direction                  = "Inbound"
-            priority                   = 200
-            protocol                   = "*"
-            source_port_range          = "*"
-            source_address_prefix      = "10.110.255.0/24"
-            destination_address_prefix = "*"
-            destination_port_range     = "*"
-          }
-          "panorama-allowall-outbound" = {
-            access                     = "Allow"
-            direction                  = "Outbound"
-            priority                   = 100
-            protocol                   = "*"
-            source_port_range          = "*"
-            source_address_prefix      = "*"
-            destination_address_prefix = "*"
-            destination_port_range     = "*"
-          }
-          "management-rules" = {
-            access                     = "Allow"
-            direction                  = "Inbound"
-            priority                   = 100
-            protocol                   = "TCP"
-            source_port_range          = "*"
-            source_address_prefix      = "199.199.199.199"
-            destination_address_prefix = "*"
-            destination_port_range     = "*"
-          }
-        }
-      }
-    }
-    route_tables = {}
-    subnets = {
-      "subnet-panorama-mgmt" = {
-        address_prefixes       = "10.255.0.0/24"
-        network_security_group = "sg-panorama-mgmt"
-      }
-    }
   }
   "vnet-vmseries" = {
     address_space = ["10.110.0.0/16"]
-    network_security_groups = {
-      "sg-mgmt" = {
-        rules = {
-          "vmseries-allowall-outbound" = {
-            access                     = "Allow"
-            direction                  = "Outbound"
-            priority                   = 100
-            protocol                   = "*"
-            source_port_range          = "*"
-            source_address_prefix      = "*"
-            destination_address_prefix = "*"
-            destination_port_range     = "*"
-          }
-          "vmseries-mgmt-inbound" = {
-            access                     = "Allow"
-            direction                  = "Inbound"
-            priority                   = 101
-            protocol                   = "*"
-            source_port_range          = "*"
-            source_address_prefix      = "10.255.0.0/24"
-            destination_address_prefix = "*"
-            destination_port_range     = "*"
-          }
-          "vm-management-rules" = {
-            access                      = "Allow"
-            direction                   = "Inbound"
-            priority                    = 100
-            protocol                    = "TCP"
-            source_port_range           = "*"
-            source_address_prefix       = "199.199.199.199"
-            destination_address_prefix  = "*"
-            destination_port_range      = "*"
-          }
-        }
+  }
+}
+network_security_groups = {
+  "sg-panorama-mgmt" = {
+    rules = {
+      "inter-vnet-rule" = {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        priority                   = 200
+        protocol                   = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "10.110.255.0/24"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
       }
-      "sg-allowall" = {
-        "outside-allowall-inbound" = {
-          access                     = "Allow"
-          direction                  = "Inbound"
-          priority                   = 100
-          protocol                   = "*"
-          source_port_range          = "*"
-          source_address_prefix      = "*"
-          destination_address_prefix = "*"
-          destination_port_range     = "*"
-        }
-        "outside-allowall-outbound" = {
-          access                     = "Allow"
-          direction                  = "Outbound"
-          priority                   = 101
-          protocol                   = "*"
-          source_port_range          = "*"
-          source_address_prefix      = "*"
-          destination_address_prefix = "*"
-          destination_port_range     = "*"
-        }
+      "panorama-allowall-outbound" = {
+        access                     = "Allow"
+        direction                  = "Outbound"
+        priority                   = 100
+        protocol                   = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
+      }
+      "management-rules" = {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        priority                   = 100
+        protocol                   = "TCP"
+        source_port_range          = "*"
+        source_address_prefix      = "199.199.199.199"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
       }
     }
-    route_tables = {
-      "udr-inside" = {
-        routes = {
-          address_prefix         = "0.0.0.0/0"
-          name                   = "default"
-          next_hop_type          = "VirtualAppliance"
-          next_hop_in_ip_address = "10.110.0.21"
-        }
+  }
+  "sg-mgmt" = {
+    rules = {
+      "vmseries-allowall-outbound" = {
+        access                     = "Allow"
+        direction                  = "Outbound"
+        priority                   = 100
+        protocol                   = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
+      }
+      "vmseries-mgmt-inbound" = {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        priority                   = 101
+        protocol                   = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "10.255.0.0/24"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
+      }
+      "vm-management-rules" = {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        priority                   = 100
+        protocol                   = "TCP"
+        source_port_range          = "*"
+        source_address_prefix      = "199.199.199.199"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
       }
     }
-    subnets = {
-      "subnet_mgmt" = {
-        address_prefixes       = "10.110.255.0/24"
-        network_security_group = "sg-mgmt"
+  }
+  "sg-allowall" = {
+    rules = {
+      "outside-allowall-inbound" = {
+        access                     = "Allow"
+        direction                  = "Inbound"
+        priority                   = 100
+        protocol                   = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
       }
-      "subnet-inside" = {
-        address_prefixes       = "10.110.0.0/24"
-        network_security_group = "sg-allowall"
-        route_table            = "udr-inside"
-      }
-      "subnet-outside" = {
-        address_prefixes       = "10.110.129.0/24"
-        network_security_group = "sg-allowall"
+      "outside-allowall-outbound" = {
+        access                     = "Allow"
+        direction                  = "Outbound"
+        priority                   = 101
+        protocol                   = "*"
+        source_port_range          = "*"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+        destination_port_range     = "*"
       }
     }
+  }
+}
+route_tables = {
+  "udr-inside" = {
+    routes = {
+      default = {
+        address_prefix         = "0.0.0.0/0"
+        next_hop_type          = "VirtualAppliance"
+        next_hop_in_ip_address = "10.110.0.21"
+      }
+    }
+  }
+}
+subnets = {
+  "subnet-panorama-mgmt" = {
+    address_prefixes       = ["10.255.0.0/24"]
+    network_security_group = "sg-panorama-mgmt"
+    route_table            = "udr-inside" //just for testing
+    virtual_network_name   = "vnet-panorama-mgmt"
+  }
+  "subnet_mgmt" = {
+    address_prefixes       = ["10.110.255.0/24"]
+    network_security_group = "sg-mgmt"
+    route_table            = "udr-inside" //just for testing
+    virtual_network_name   = "vnet-vmseries"
+  }
+  "subnet-inside" = {
+    address_prefixes       = ["10.110.0.0/24"]
+    network_security_group = "sg-allowall"
+    route_table            = "udr-inside"
+    virtual_network_name   = "vnet-vmseries"
+  }
+  "subnet-outside" = {
+    address_prefixes       = ["10.110.129.0/24"]
+    network_security_group = "sg-allowall"
+    route_table            = "udr-inside" //just for testing
+    virtual_network_name   = "vnet-vmseries"
   }
 }

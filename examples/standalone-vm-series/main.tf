@@ -24,9 +24,9 @@ module "vnet" {
   virtual_network_name    = each.key
   resource_group_name     = azurerm_resource_group.this.name
   address_space           = each.value.address_space
-  network_security_groups = each.value.network_security_groups
-  route_tables            = each.value.route_tables
-  subnets                 = each.value.subnets
+  network_security_groups = var.network_security_groups
+  route_tables            = var.route_tables
+  subnets                 = var.subnets
 
   depends_on = [azurerm_resource_group.this]
 }
@@ -67,7 +67,6 @@ module "outbound-lb" {
   location       = var.location
   name_prefix    = var.name_prefix
   backend-subnet = module.vnet["vnet-vmseries"].subnet_ids["subnet-inside"]
-  # backend-subnet = module.networks.subnet_private.id
 }
 
 module "bootstrap" {
@@ -96,7 +95,6 @@ module "inbound-vm-series" {
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share_name
   subnet_mgmt               = module.vnet["vnet-vmseries"].subnet_ids["subnet_mgmt"]
-  # subnet_mgmt               = module.networks.subnet_mgmt
   data_nics = [
     {
       subnet              = module.vnet["vnet-vmseries"].subnet_ids["subnet-outside"]
