@@ -89,9 +89,9 @@ module "bootstrap" {
   }
 }
 
-# Create inbound vm-series
-module "inbound-vm-series" {
-  source = "../../modules/vm-series"
+# VM-Series for handling Inbound traffic from the Internet
+module "inbound_vmseries" {
+  source = "../../modules/vmseries"
 
   resource_group_name       = local.resource_group_name
   location                  = var.location

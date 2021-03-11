@@ -1,13 +1,13 @@
 # Palo Alto Networks VM-Series Module for Azure
 
-
-A terraform module for deploying a standalone (non-scale-set) VM-Series firewall in Azure.
+A Terraform module for deploying a VM-Series firewall in Azure cloud.
+The module is not intended for use with Scale Sets.
 
 ## Usage
 
 ```hcl
-module "vm-series" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vm-series"
+module "vmseries" {
+  source  = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/vmseries"
 
   location                      = "Australia Central"
   name_prefix                   = "panostf"
