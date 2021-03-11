@@ -1,6 +1,5 @@
-# Configure the Azure provider
+
 provider "azurerm" {
-  # whilst the `version` attribute is optional, we recommend pinning to a given version of the Provider
   version = ">=2.24.0"
   features {}
 }
@@ -11,32 +10,25 @@ resource "random_password" "password" {
   override_special = "_%@"
 }
 
-# Setup all the networks required for the topology
-module "networks" {
-  source = "../../modules/networking"
-
-  location               = var.location
-  management_ips         = var.management_ips
-  name_prefix            = var.name_prefix
-  management_vnet_prefix = var.management_vnet_prefix
-  management_subnet      = var.management_subnet
-  olb_private_ip         = var.olb_private_ip
-  firewall_vnet_prefix   = var.firewall_vnet_prefix
-  private_subnet         = var.private_subnet
-  public_subnet          = var.public_subnet
-  vm_management_subnet   = var.vm_management_subnet
-}
-
-# Create the VM-Series RG outside of the module and pass it in.
 resource "azurerm_resource_group" "this" {
-  count = var.existing_resource_group_name == null ? 1 : 0
-
+  name     = var.resource_group_name
   location = var.location
-  name     = coalesce(var.create_resource_group_name, "${var.name_prefix}-vmseries-rg")
+  tags     = {}
 }
 
-locals {
-  resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
+module "vnet" {
+  source = "../../modules/vnet"
+
+  for_each = var.vnets
+
+  virtual_network_name    = each.key
+  resource_group_name     = azurerm_resource_group.this.name
+  address_space           = each.value.address_space
+  network_security_groups = each.value.network_security_groups
+  route_tables            = each.value.route_tables
+  subnets                 = each.value.subnets
+
+  depends_on = [azurerm_resource_group.this]
 }
 
 # Create a public IP for management
@@ -45,7 +37,7 @@ resource "azurerm_public_ip" "mgmt" {
 
   name                = "${var.name_prefix}${each.key}-mgmt"
   location            = var.location
-  resource_group_name = local.resource_group_name
+  resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "standard"
 }
@@ -56,7 +48,7 @@ resource "azurerm_public_ip" "public" {
 
   name                = "${var.name_prefix}${each.key}-public"
   location            = var.location
-  resource_group_name = local.resource_group_name
+  resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "standard"
 }
@@ -74,7 +66,8 @@ module "outbound-lb" {
 
   location       = var.location
   name_prefix    = var.name_prefix
-  backend-subnet = module.networks.subnet_private.id
+  backend-subnet = module.vnet["vnet-vmseries"].subnet_ids["subnet-inside"]
+  # backend-subnet = module.networks.subnet_private.id
 }
 
 module "bootstrap" {
@@ -93,7 +86,7 @@ module "bootstrap" {
 module "inbound-vm-series" {
   source = "../../modules/vm-series"
 
-  resource_group_name       = local.resource_group_name
+  resource_group_name       = azurerm_resource_group.this.name
   location                  = var.location
   name_prefix               = var.name_prefix
   username                  = var.username
@@ -102,15 +95,16 @@ module "inbound-vm-series" {
   vm_series_sku             = "byol"
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share_name
-  subnet_mgmt               = module.networks.subnet_mgmt
+  subnet_mgmt               = module.vnet["vnet-vmseries"].subnet_ids["subnet_mgmt"]
+  # subnet_mgmt               = module.networks.subnet_mgmt
   data_nics = [
     {
-      subnet              = module.networks.subnet_public
+      subnet              = module.vnet["vnet-vmseries"].subnet_ids["subnet-outside"]
       lb_backend_pool_id  = module.inbound-lb.backend-pool-id
       enable_backend_pool = true
     },
     {
-      subnet              = module.networks.subnet_private
+      subnet              = module.vnet["vnet-vmseries"].subnet_ids["subnet-inside"]
       enable_backend_pool = false
     },
   ]

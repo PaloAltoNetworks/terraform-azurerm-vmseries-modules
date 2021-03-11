@@ -1,21 +1,11 @@
-#----------------------#
-#   Global Variables   #
-#----------------------#
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
+}
+
 variable "location" {
   description = "The Azure region to use."
   default     = "Australia Central"
-  type        = string
-}
-
-variable "create_resource_group_name" {
-  description = "Name for a created resource group. The input is ignored if `existing_resource_group_name` is set. If null, uses an auto-generated name."
-  default     = null
-  type        = string
-}
-
-variable "existing_resource_group_name" {
-  description = "Name for an existing resource group to use. If null, use instead `create_resource_group_name`."
-  default     = null
   type        = string
 }
 
@@ -44,9 +34,9 @@ variable "instances" {
   }
 }
 
-#----------------------#
-#      Networking      #
-#----------------------#
+variable "vnets" {
+  description = "Definition of Virtual Networks to create. Refer to the `VNet` module documentation for more information."
+}
 variable "management_ips" {
   description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
   type        = map(number)
