@@ -41,13 +41,13 @@ ___NOTE:___ The module only supports Azure regions that have more than one fault
 | Name | Version |
 |------|---------|
 | terraform | >=0.12.29, <0.14 |
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.26 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| azurerm | >=2.26.0 |
+| azurerm | ~>2.26 |
 
 ## Inputs
 
