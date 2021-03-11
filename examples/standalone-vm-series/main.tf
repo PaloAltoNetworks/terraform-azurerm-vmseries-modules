@@ -89,35 +89,54 @@ module "bootstrap" {
   }
 }
 
-# VM-Series for handling Inbound traffic from the Internet
-module "inbound_vmseries" {
+resource "azurerm_availability_set" "this" {
+  count = contains([for k, v in var.instances : try(v.zone, null) != null], true) ? 0 : 1
+
+  name                        = "${var.name_prefix}avset"
+  resource_group_name         = local.resource_group_name
+  location                    = var.location
+  platform_fault_domain_count = 2
+}
+
+# Common VM-Series for handling:
+#   - inbound traffic from the Internet
+#   - outbound traffic to the Internet
+#   - internal traffic (also known as "east-west" traffic)
+module "common_vmseries" {
   source = "../../modules/vmseries"
+  for_each = { for k, v in var.instances : k => {
+    mgmt_public_ip_address_id = azurerm_public_ip.mgmt[k].id
+    nic1_public_ip_address_id = azurerm_public_ip.public[k].id
+  } }
 
   resource_group_name       = local.resource_group_name
   location                  = var.location
-  name_prefix               = var.name_prefix
+  name                      = "${var.name_prefix}-${each.key}"
+  avset_id                  = azurerm_availability_set.this[0].id
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
   vm_series_version         = "9.1.3"
   vm_series_sku             = "byol"
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share_name
-  subnet_mgmt               = module.networks.subnet_mgmt
   data_nics = [
     {
+      name                = "${each.key}-mgmt"
+      subnet              = module.networks.subnet_mgmt
+      enable_backend_pool = false
+    },
+    {
+      name                = "${each.key}-public"
       subnet              = module.networks.subnet_public
       lb_backend_pool_id  = module.inbound-lb.backend-pool-id
       enable_backend_pool = true
     },
     {
+      name                = "${each.key}-private"
       subnet              = module.networks.subnet_private
       enable_backend_pool = false
     },
   ]
-  instances = { for k, v in var.instances : k => {
-    mgmt_public_ip_address_id = azurerm_public_ip.mgmt[k].id
-    nic1_public_ip_address_id = azurerm_public_ip.public[k].id
-  } }
 
   depends_on = [module.bootstrap]
 }

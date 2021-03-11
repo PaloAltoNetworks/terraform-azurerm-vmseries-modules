@@ -3,67 +3,39 @@ variable "location" {
   type        = string
 }
 
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
-}
-
-variable "instances" {
-  description = <<-EOF
-  Map of virtual machine instances to create. Keys are instance identifiers, values
-  are the per-vm objects containing the attributes unique to specific virtual machines:
-
-  - `mgmt_public_ip_address_id`: the Public IP identifier to assign to the nic0 interface (the management interface which listens on ssh/https).
-  - `nic1_public_ip_address_id`: the Public IP identifier to assign to the first data interface (nic1). Assigning to remaining data interfaces is unsupported.
-  - `zone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
-
-  Basic:
-  ```
-  {
-    "fw00" = {
-      mgmt_public_ip_address_id = azurerm_public_ip.this.id
-    }
-    "fw01" = { 
-      mgmt_public_ip_address_id = azurerm_public_ip.that.id
-    }
-  }
-  ```
-
-  Full example:
-  ```
-  {
-    "fw00" = {
-      mgmt_public_ip_address_id = azurerm_public_ip.m0.id
-      nic1_public_ip_address_id = azurerm_public_ip.d0.id
-      zone                      = "1"
-    }
-    "fw01" = { 
-      mgmt_public_ip_address_id = azurerm_public_ip.m1.id
-      nic1_public_ip_address_id = azurerm_public_ip.d1.id
-      zone                      = "2"
-    }
-  }
-  ```
-  EOF
-}
-
 variable "resource_group_name" {
   description = "The resource group name for VM-Series."
   type        = string
 }
 
-variable "subnet_mgmt" {
-  description = "Management subnet object."
+variable "name" {
+  description = "Hostname of the VM-Series virtual machine."
+  default     = "fw00"
+  type        = string
+}
+
+variable "avzone" {
+  description = "The availability zone to use. Conflicts with `avset_id`. Example: `1`"
+  default     = null
+  type        = string
+}
+
+variable "avset_id" {
+  description = "The identifier of the Availability Set to use. Conflicts with `avzone`."
+  default     = null
+  type        = string
 }
 
 variable "data_nics" {
   description = <<-EOF
   List of the network interface specifications shared between all the VM-Series instances.
-  Except the Management network interface (which gets `subnet_mgmt`), all the network interfaces are assigned
-  to subnets in the same order as in the list.
+  The first should be the Management network interface, which does not participate in data filtering.
+  All the network interfaces are assigned to subnets in the same order as in the list.
 
   - `subnet`: Subnet object to use.
   - `lb_backend_pool_id`: Identifier of the backend pool of the load balancer to associate.
   - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default it false.
+  - `public_ip_address_id`: Identifier of the existing public IP to associate.
 
   Example:
 

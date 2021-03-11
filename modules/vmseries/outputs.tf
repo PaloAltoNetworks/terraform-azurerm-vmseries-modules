@@ -1,12 +1,12 @@
 
-output "ip_addresses" {
+output "mgmt_ip_address" {
   description = "VM-Series management IP addresses."
-  value       = { for k, v in var.instances : k => azurerm_network_interface.mgmt[k].ip_configuration[0].private_ip_address }
+  value       = azurerm_network_interface.data[0].ip_configuration[0].private_ip_address
 }
 
 output "principal_id" {
-  description = "A map of Azure Service Principals for each of the created VM-Series. Map's key is the same as virtual machine key, the value is an oid of a Service Principal. Usable only if `identity_type` contains SystemAssigned."
-  value       = { for k, v in var.instances : k => azurerm_virtual_machine.this[k].identity[0].principal_id if var.identity_type != null && var.identity_type != "" }
+  description = "The oid of Azure Service Principal of the created VM-Series. Usable only if `identity_type` contains SystemAssigned."
+  value       = var.identity_type != null && var.identity_type != "" ? azurerm_virtual_machine.this.identity[0].principal_id : null
 }
 
 output "metrics_instrumentation_key" {
