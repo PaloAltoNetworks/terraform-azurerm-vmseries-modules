@@ -1,90 +1,39 @@
-resource "azurerm_availability_set" "this" {
-  count = contains([for k, v in var.instances : try(v.zone, null) != null], true) ? 0 : 1
-
-  name                        = coalesce(var.name_avset, "${var.name_prefix}avset")
-  location                    = var.location
-  resource_group_name         = var.resource_group_name
-  platform_fault_domain_count = 2
-}
-
-resource "azurerm_network_interface" "mgmt" {
-  for_each = var.instances
-
-  name                          = "${var.name_prefix}${each.key}-mgmt"
-  location                      = var.location
-  resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = false # unsupported by PAN-OS
-
-  ip_configuration {
-    name                          = "primary"
-    subnet_id                     = var.subnet_mgmt.id
-    private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = try(each.value.mgmt_public_ip_address_id, null)
-  }
-}
-
-locals {
-  # Terraform for_each unfortunately requires a single-dimensional map, but we have
-  # a two-dimensional inputs. We need two steps for conversion.
-
-  # Firstly, flatten() ensures that this local value is a flat list of objects, rather
-  # than a list of lists of objects.
-  input_flat_data_nics = flatten([
-    for vmkey, vm in var.instances : [
-      for nickey, nic in var.data_nics : {
-        vmkey  = vmkey
-        vm     = vm
-        nickey = nickey
-        nic    = nic
-      }
-    ]
-  ])
-
-  # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
-  input_data_nics = { for v in local.input_flat_data_nics : "${v.vmkey}-${v.nickey}" => v }
-}
-
 resource "azurerm_network_interface" "data" {
-  for_each = local.input_data_nics
+  count = length(var.data_nics)
 
-  name                          = "${var.name_prefix}${each.key}"
+  name                          = var.data_nics[count.index].name
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = var.accelerated_networking
+  enable_accelerated_networking = count.index == 0 ? false : var.accelerated_networking # for interface 0 it is unsupported by PAN-OS
   enable_ip_forwarding          = true
 
   ip_configuration {
     name                          = "primary"
-    subnet_id                     = each.value.nic.subnet.id
+    subnet_id                     = var.data_nics[count.index].subnet.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = each.value.nickey == 0 ? try(each.value.vm.nic1_public_ip_address_id, null) : null
+    public_ip_address_id          = try(var.data_nics[count.index].public_ip_address_id, null)
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = { for k, v in local.input_data_nics : k => v if try(v.nic.enable_backend_pool, false) }
+  for_each = { for k, v in var.data_nics : k => v if try(v.enable_backend_pool, false) }
 
-  backend_address_pool_id = each.value.nic.lb_backend_pool_id
+  backend_address_pool_id = each.value.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.data[each.key].ip_configuration[0].name
   network_interface_id    = azurerm_network_interface.data[each.key].id
 }
 
 resource "azurerm_virtual_machine" "this" {
-  for_each = var.instances
-
-  name                         = "${var.name_prefix}${each.key}"
+  name                         = var.name
   location                     = var.location
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size
-  zones                        = try(each.value.zone, null) != null ? [each.value.zone] : null
-  availability_set_id          = try(each.value.zone, null) != null ? null : azurerm_availability_set.this[0].id
-  primary_network_interface_id = azurerm_network_interface.mgmt[each.key].id
+  zones                        = var.avzone != null ? [var.avzone] : null
+  availability_set_id          = var.avset_id
+  primary_network_interface_id = azurerm_network_interface.data[0].id
 
-  network_interface_ids = concat(
-    [azurerm_network_interface.mgmt[each.key].id],
-    [for k, v in local.input_data_nics : azurerm_network_interface.data[k].id if v.vmkey == each.key]
-  )
+  network_interface_ids = [for k, v in azurerm_network_interface.data : v.id]
 
   storage_image_reference {
     id        = var.custom_image_id
@@ -106,7 +55,7 @@ resource "azurerm_virtual_machine" "this" {
 
   storage_os_disk {
     create_option     = "FromImage"
-    name              = "${var.name_prefix}${each.key}-vhd"
+    name              = "${var.name}-vhd"
     managed_disk_type = var.managed_disk_type
     os_type           = "Linux"
     caching           = "ReadWrite"
@@ -116,7 +65,7 @@ resource "azurerm_virtual_machine" "this" {
   delete_data_disks_on_termination = true
 
   os_profile {
-    computer_name  = "${var.name_prefix}${each.key}"
+    computer_name  = var.name
     admin_username = var.username
     admin_password = var.password
     custom_data = var.bootstrap_share_name == null ? null : join(
@@ -150,7 +99,7 @@ resource "azurerm_virtual_machine" "this" {
 resource "azurerm_application_insights" "this" {
   count = var.metrics_retention_in_days != 0 ? 1 : 0
 
-  name                = var.name_prefix
+  name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
   application_type    = "other"
