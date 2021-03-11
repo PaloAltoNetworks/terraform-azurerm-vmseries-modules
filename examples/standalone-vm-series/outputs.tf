@@ -9,7 +9,7 @@ output "password" {
 }
 
 output mgmt_private_ip_addresses {
-  value = module.inbound-vm-series.ip_addresses
+  value = module.inbound_vmseries.ip_addresses
 }
 
 output mgmt_public_ip_addresses {
