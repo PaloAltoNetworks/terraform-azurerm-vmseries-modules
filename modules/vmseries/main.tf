@@ -99,7 +99,7 @@ resource "azurerm_virtual_machine" "this" {
 resource "azurerm_application_insights" "this" {
   count = var.metrics_retention_in_days != 0 ? 1 : 0
 
-  name                = var.name
+  name                = coalesce(var.name_application_insights, var.name)
   location            = var.location
   resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
   application_type    = "other"
