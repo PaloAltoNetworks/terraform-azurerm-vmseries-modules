@@ -124,9 +124,9 @@ variable "vm_series_version" {
   type        = string
 }
 
-variable "name_avset" {
+variable "name_application_insights" {
   default     = null
-  description = "Name of the Availability Set to be created. Can be `null`, in which case a default name is auto-generated."
+  description = "Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated."
   type        = string
 }
 
