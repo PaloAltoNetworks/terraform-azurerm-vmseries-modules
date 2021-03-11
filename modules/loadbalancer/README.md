@@ -1,6 +1,6 @@
 # Palo Alto Networks inbound/outbound Load Balancer Module for Azure
 
-A terraform module for deploying an inbound/Outbound Load Balancer for VM-Series firewalls. Supports both standalone and scaleset deployments.
+A terraform module for deploying an Inbound/Outbound Load Balancer for VM-Series firewalls. Supports both standalone and scale set deployments.
 
 ## Usage
 
@@ -85,6 +85,6 @@ module "outbound-lb" {
 | Name | Description |
 |------|-------------|
 | backend\_pool\_ids | The IDs of the backend pools. |
-| frontend\_ip\_configs | IP configs resources of the load balancer. |
+| frontend\_ip\_configs | The Frontend configs of the loadbalancer. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

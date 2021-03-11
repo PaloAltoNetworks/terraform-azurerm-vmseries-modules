@@ -5,5 +5,5 @@ output "backend_pool_ids" {
 
 output "frontend_ip_configs" {
   value       = { for k, v in azurerm_lb.lb.frontend_ip_configuration : v.name => v.id }
-  description = "IP configs resources of the load balancer."
+  description = "The Frontend configs of the loadbalancer."
 }

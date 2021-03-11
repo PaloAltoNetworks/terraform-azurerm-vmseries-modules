@@ -10,10 +10,10 @@ output "public_backend_pool_ids" {
 
 output "private_frontend_ip_configs" {
   value       = module.private_lb.frontend_ip_configs
-  description = "IP config resources of the private load balancer."
+  description = "The Frontend configs of the load balancer."
 }
 
 output "public_frontend_ip_configs" {
   value       = module.public_lb.frontend_ip_configs
-  description = "IP config resources of the public load balancer."
+  description = "The Frontend configs of the load balancer."
 }
