@@ -26,11 +26,11 @@ variable "avset_id" {
   type        = string
 }
 
-variable "data_nics" {
+variable "interfaces" { # FIXME maybe `subnet_id` instead of `subnet`
   description = <<-EOF
-  List of the network interface specifications shared between all the VM-Series instances.
+  List of the network interface specifications.
   The first should be the Management network interface, which does not participate in data filtering.
-  All the network interfaces are assigned to subnets in the same order as in the list.
+  The remaining ones are the dataplane interfaces.
 
   - `subnet`: Subnet object to use.
   - `lb_backend_pool_id`: Identifier of the backend pool of the load balancer to associate.

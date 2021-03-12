@@ -123,7 +123,7 @@ module "common_vmseries" {
   vm_size                   = var.common_vmseries_vm_size
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share_name
-  data_nics = [
+  interfaces = [
     {
       name   = "${each.key}-mgmt"
       subnet = module.networks.subnet_mgmt
