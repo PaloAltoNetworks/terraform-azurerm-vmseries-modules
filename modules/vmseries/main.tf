@@ -1,7 +1,7 @@
 resource "azurerm_network_interface" "data" {
-  count = length(var.data_nics)
+  count = length(var.interfaces)
 
-  name                          = var.data_nics[count.index].name
+  name                          = var.interfaces[count.index].name
   location                      = var.location
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = count.index == 0 ? false : var.accelerated_networking # for interface 0 it is unsupported by PAN-OS
@@ -9,14 +9,14 @@ resource "azurerm_network_interface" "data" {
 
   ip_configuration {
     name                          = "primary"
-    subnet_id                     = var.data_nics[count.index].subnet.id
+    subnet_id                     = var.interfaces[count.index].subnet.id
     private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = try(var.data_nics[count.index].public_ip_address_id, null)
+    public_ip_address_id          = try(var.interfaces[count.index].public_ip_address_id, null)
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = { for k, v in var.data_nics : k => v if try(v.enable_backend_pool, false) }
+  for_each = { for k, v in var.interfaces : k => v if try(v.enable_backend_pool, false) }
 
   backend_address_pool_id = each.value.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.data[each.key].ip_configuration[0].name
