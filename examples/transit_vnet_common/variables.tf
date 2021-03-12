@@ -37,24 +37,21 @@ variable "password" {
   type        = string
 }
 
-variable "instances" {
+variable "vmseries" {
   description = <<-EOF
-  Map of virtual machine instances to create for VM-Series. Keys are the individual hostnames, values
-  are the per-vm objects containing the attributes unique to specific virtual machines:
+  Map of virtual machines to create to run VM-Series. Keys are the individual names, values
+  are the objects containing the attributes unique to that individual virtual machine:
 
-  - `mgmt_public_ip_address_id`: the Public IP identifier to assign to the nic0 interface (the management interface which listens on ssh/https).
-  - `nic1_public_ip_address_id`: the Public IP identifier to assign to the first data interface (nic1). Assigning to remaining data interfaces is unsupported.
-  - `zone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
+  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
+  - `trust_private_ip`: the static private IP to assign to the trust-side data interface (nic2). If unspecified, uses a dynamic IP.
+
+  The hostname of each of the VM-Series will consist of a `name_prefix` concatenated with its map key.
 
   Basic:
   ```
   {
-    "fw00" = {
-      mgmt_public_ip_address_id = azurerm_public_ip.this.id
-    }
-    "fw01" = { 
-      mgmt_public_ip_address_id = azurerm_public_ip.that.id
-    }
+    "fw00" = { avzone = 1 }
+    "fw01" = { avzone = 2 }
   }
   ```
 
@@ -62,21 +59,16 @@ variable "instances" {
   ```
   {
     "fw00" = {
-      mgmt_public_ip_address_id = azurerm_public_ip.m0.id
-      nic1_public_ip_address_id = azurerm_public_ip.d0.id
-      zone                      = "1"
+      trust_private_ip = "192.168.0.10"
+      avzone           = "1"
     }
     "fw01" = { 
-      mgmt_public_ip_address_id = azurerm_public_ip.m1.id
-      nic1_public_ip_address_id = azurerm_public_ip.d1.id
-      zone                      = "2"
+      trust_private_ip = "192.168.0.11"
+      avzone           = "2"
     }
   }
   ```
   EOF
-  default = {
-    "fw00" = {}
-  }
 }
 
 #----------------------#

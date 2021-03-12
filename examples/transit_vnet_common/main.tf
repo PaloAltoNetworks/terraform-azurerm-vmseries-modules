@@ -41,7 +41,7 @@ locals {
 
 # Create public IPs for management (https or ssh).
 resource "azurerm_public_ip" "mgmt" {
-  for_each = var.instances
+  for_each = var.vmseries
 
   name                = "${var.name_prefix}${each.key}-mgmt"
   location            = var.location
@@ -52,7 +52,7 @@ resource "azurerm_public_ip" "mgmt" {
 
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
-  for_each = var.instances
+  for_each = var.vmseries
 
   name                = "${var.name_prefix}${each.key}-public"
   location            = var.location
@@ -95,7 +95,7 @@ module "bootstrap" {
 # Create the Availability Set only if we do not use Availability Zones.
 # Each of these two mechanisms improves availability of the VM-Series.
 resource "azurerm_availability_set" "this" {
-  count = contains([for k, v in var.instances : try(v.zone, null) != null], true) ? 0 : 1
+  count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
 
   name                        = "${var.name_prefix}avset"
   resource_group_name         = local.resource_group_name
@@ -109,12 +109,13 @@ resource "azurerm_availability_set" "this" {
 #   - internal traffic (also known as "east-west" traffic)
 module "common_vmseries" {
   source   = "../../modules/vmseries"
-  for_each = var.instances
+  for_each = var.vmseries
 
   resource_group_name       = local.resource_group_name
   location                  = var.location
-  name                      = "${var.name_prefix}-${each.key}"
-  avset_id                  = azurerm_availability_set.this[0].id
+  name                      = "${var.name_prefix}${each.key}"
+  avset_id                  = try(azurerm_availability_set.this[0].id, null)
+  avzone                    = try(each.value.avzone, null)
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
   vm_series_version         = "9.1.3"
