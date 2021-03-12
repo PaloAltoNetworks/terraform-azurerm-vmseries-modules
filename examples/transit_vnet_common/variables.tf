@@ -115,8 +115,7 @@ variable "private_subnet" {
 }
 
 variable "olb_private_ip" {
-  # !! This IP MUST fall in the private-subnet network. !!
-  description = "The private IP address to assign to the Outgoing Load balancer frontend"
+  description = "The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network."
   default     = "10.110.0.21"
 }
 
@@ -127,18 +126,6 @@ variable "frontend_ips" {
 #----------------------#
 #      VM Options      #
 #----------------------#
-
-variable "panorama_sku" {
-  description = "Panorama SKU."
-  default     = "byol"
-  type        = string
-}
-
-variable "panorama_version" {
-  description = "Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama`"
-  default     = "9.0.5"
-  type        = string
-}
 
 variable "vm_series_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
