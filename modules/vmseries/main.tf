@@ -37,19 +37,19 @@ resource "azurerm_virtual_machine" "this" {
 
   storage_image_reference {
     id        = var.custom_image_id
-    publisher = var.custom_image_id == null ? var.vm_series_publisher : null
-    offer     = var.custom_image_id == null ? var.vm_series_offer : null
-    sku       = var.custom_image_id == null ? var.vm_series_sku : null
-    version   = var.custom_image_id == null ? var.vm_series_version : null
+    publisher = var.custom_image_id == null ? var.img_publisher : null
+    offer     = var.custom_image_id == null ? var.img_offer : null
+    sku       = var.custom_image_id == null ? var.img_sku : null
+    version   = var.custom_image_id == null ? var.img_version : null
   }
 
   dynamic "plan" {
     for_each = var.enable_plan ? ["one"] : []
 
     content {
-      name      = var.vm_series_sku
-      publisher = var.vm_series_publisher
-      product   = var.vm_series_offer
+      name      = var.img_sku
+      publisher = var.img_publisher
+      product   = var.img_offer
     }
   }
 
