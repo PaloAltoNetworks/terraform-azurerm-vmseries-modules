@@ -42,6 +42,8 @@ module "vmss" {
 | accelerated\_networking | If true, enable Azure accelerated networking (SR-IOV) for all dataplane network interfaces. [Requires](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) PAN-OS 9.0 or higher. The PAN-OS management interface (nic0) is never accelerated, whether this variable is true or false. | `bool` | `true` | no |
 | bootstrap\_share\_name | File share for bootstrap config | `any` | n/a | yes |
 | bootstrap\_storage\_account | Storage account setup for bootstrapping | `any` | n/a | yes |
+| img\_sku | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
+| img\_version | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.0.4"` | no |
 | lb\_backend\_pool\_id | ID Of inbound load balancer backend pool to associate with the VM series firewall | `any` | n/a | yes |
 | location | Region to install VM Series Scale sets and dependencies. | `any` | n/a | yes |
 | name\_domain\_name\_label | n/a | `string` | `"inbound-vm-mgmt"` | no |
@@ -64,8 +66,6 @@ module "vmss" {
 | username | Initial administrative username to use for VM-Series. | `string` | `"panadmin"` | no |
 | vhd\_container | Storage container for storing VMSS instance VHDs. | `any` | n/a | yes |
 | vm\_count | Minimum instances per scale set. | `number` | `2` | no |
-| vm\_series\_sku | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
-| vm\_series\_version | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.0.4"` | no |
 | vm\_size | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 
 ## Outputs

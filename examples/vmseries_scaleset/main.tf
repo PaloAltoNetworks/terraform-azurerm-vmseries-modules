@@ -92,7 +92,7 @@ module "inbound-scaleset" {
   bootstrap_share_name      = module.bootstrap.storage_share.name
   vhd_container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
-  vm_count                  = var.vm_series_count
+  vm_count                  = var.vmseries_count
   depends_on                = [module.panorama]
 }
 
@@ -122,6 +122,6 @@ module "outbound-scaleset" {
   bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
   vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
-  vm_count                  = var.vm_series_count
+  vm_count                  = var.vmseries_count
   depends_on                = [module.panorama]
 }
