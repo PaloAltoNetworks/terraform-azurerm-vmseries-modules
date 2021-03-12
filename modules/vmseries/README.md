@@ -10,8 +10,8 @@ module "vmseries" {
   source  = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/vmseries"
 
   location                      = "Australia Central"
-  name_prefix                   = "panostf"
-  password                      = "your-password"
+  name                          = "my-firewall"
+  password                      = "change-me-XOX0"
   bootstrap_storage_account     = module.vm-bootstrap.bootstrap_storage_account
   bootstrap_share_name          = "sharename"
   subnet_mgmt                   = module.networks.subnet_mgmt
@@ -25,9 +25,6 @@ module "vmseries" {
       enable_backend_pool = false
     },
   ]
-  instances = {
-    "my-firewall" = {}
-  }
 }
 ```
 
