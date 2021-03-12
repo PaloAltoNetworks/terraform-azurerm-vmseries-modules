@@ -32,7 +32,7 @@ resource "azurerm_resource_group" "this" {
   count = var.existing_resource_group_name == null ? 1 : 0
 
   location = var.location
-  name     = coalesce(var.create_resource_group_name, "${var.name_prefix}-vmseries-rg")
+  name     = coalesce(var.create_resource_group_name, "${var.name_prefix}vmseries")
 }
 
 locals {
