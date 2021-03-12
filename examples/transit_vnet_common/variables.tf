@@ -127,14 +127,20 @@ variable "frontend_ips" {
 #      VM Options      #
 #----------------------#
 
-variable "vm_series_sku" {
+variable "common_vmseries_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
   type        = string
 }
 
-variable "vm_series_version" {
+variable "common_vmseries_version" {
   description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "9.0.4"
+  type        = string
+}
+
+variable "common_vmseries_vm_size" {
+  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
+  default     = "Standard_D3_v2"
   type        = string
 }

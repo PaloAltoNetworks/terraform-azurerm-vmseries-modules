@@ -91,7 +91,7 @@ variable "vm_size" {
 }
 
 variable "custom_image_id" {
-  description = "Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `vm_series_version`, `vm_series_publisher`, `vm_series_offer`, `vm_series_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
+  description = "Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
   default     = null
   type        = string
 }
@@ -102,24 +102,24 @@ variable "enable_plan" {
   type        = bool
 }
 
-variable "vm_series_publisher" {
+variable "img_publisher" {
   description = "The Azure Publisher identifier for a image which should be deployed."
   default     = "paloaltonetworks"
 }
 
-variable "vm_series_offer" {
-  description = "The Azure Offer identifier corresponding to a published image. For `vm_series_version` 9.1.1 or above, use \"vmseries-flex\"; for 9.1.0 or below use \"vmseries1\"."
+variable "img_offer" {
+  description = "The Azure Offer identifier corresponding to a published image. For `img_version` 9.1.1 or above, use \"vmseries-flex\"; for 9.1.0 or below use \"vmseries1\"."
   default     = "vmseries-flex"
 }
 
-variable "vm_series_sku" {
+variable "img_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
   type        = string
 }
 
-variable "vm_series_version" {
-  description = "VM-series PAN-OS version - list available for a default `vm_series_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
+variable "img_version" {
+  description = "VM-series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
   default     = "9.0.4"
   type        = string
 }

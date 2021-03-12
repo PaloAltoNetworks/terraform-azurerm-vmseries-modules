@@ -118,8 +118,9 @@ module "common_vmseries" {
   avzone                    = try(each.value.avzone, null)
   username                  = var.username
   password                  = coalesce(var.password, random_password.password.result)
-  vm_series_version         = "9.1.3"
-  vm_series_sku             = "byol"
+  img_version               = var.common_vmseries_version
+  img_sku                   = var.common_vmseries_sku
+  vm_size                   = var.common_vmseries_vm_size
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share_name
   data_nics = [
