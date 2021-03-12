@@ -13,5 +13,5 @@ output mgmt_private_ip_addresses {
 }
 
 output mgmt_public_ip_addresses {
-  value = { for k, v in var.instances : k => azurerm_public_ip.mgmt[k].ip_address }
+  value = { for k, v in var.vmseries : k => azurerm_public_ip.mgmt[k].ip_address }
 }

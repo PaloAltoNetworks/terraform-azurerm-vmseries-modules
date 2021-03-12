@@ -17,3 +17,8 @@ frontend_ips = {
     }
   }
 }
+
+vmseries = {
+  "fw00" = { avzone = 1 }
+  "fw01" = { avzone = 2 }
+}
