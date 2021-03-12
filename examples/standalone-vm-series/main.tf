@@ -27,7 +27,7 @@ module "networks" {
   vm_management_subnet   = var.vm_management_subnet
 }
 
-# Create the VM-Series RG outside of the module and pass it in.
+# Create the VM-Series RG only if an existing one has not been already provided.
 resource "azurerm_resource_group" "this" {
   count = var.existing_resource_group_name == null ? 1 : 0
 
@@ -39,7 +39,7 @@ locals {
   resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
 }
 
-# Create a public IP for management
+# Create public IPs for management (https or ssh).
 resource "azurerm_public_ip" "mgmt" {
   for_each = var.instances
 
@@ -50,7 +50,7 @@ resource "azurerm_public_ip" "mgmt" {
   sku                 = "standard"
 }
 
-# Create another PIP for the outside interface so we can talk outbound
+# Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
   for_each = var.instances
 
@@ -61,6 +61,7 @@ resource "azurerm_public_ip" "public" {
   sku                 = "standard"
 }
 
+# The Inbound Load Balancer for handling the traffic from the Internet.
 module "inbound-lb" {
   source = "../../modules/inbound-load-balancer"
 
@@ -69,6 +70,7 @@ module "inbound-lb" {
   frontend_ips = var.frontend_ips
 }
 
+# The Outbound Load Balancer for handling the traffic from the private networks.
 module "outbound-lb" {
   source = "../../modules/outbound-load-balancer"
 
@@ -77,6 +79,7 @@ module "outbound-lb" {
   backend-subnet = module.networks.subnet_private.id
 }
 
+# The storage account for VM-Series initialization.
 module "bootstrap" {
   source = "../../modules/vm-bootstrap"
 
@@ -89,6 +92,8 @@ module "bootstrap" {
   }
 }
 
+# Create the Availability Set only if we do not use Availability Zones.
+# Each of these two mechanisms improves availability of the VM-Series.
 resource "azurerm_availability_set" "this" {
   count = contains([for k, v in var.instances : try(v.zone, null) != null], true) ? 0 : 1
 
