@@ -19,7 +19,7 @@ frontend_ips = {
 }
 
 # The count here defines how many VM-series are deployed PER VM direction (inbound/outbound)
-vm_series_count     = 2
+vmseries_count      = 2
 resource_group_name = "example-rg"
 location            = "East US"
 files = {

@@ -76,8 +76,8 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   storage_profile_image_reference {
     publisher = "paloaltonetworks"
     offer     = "vmseries1"
-    sku       = var.vm_series_sku
-    version   = var.vm_series_version
+    sku       = var.img_sku
+    version   = var.img_version
   }
 
   sku {
@@ -93,7 +93,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   }
 
   plan {
-    name      = var.vm_series_sku
+    name      = var.img_sku
     publisher = "paloaltonetworks"
     product   = "vmseries1"
   }

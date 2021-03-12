@@ -91,7 +91,7 @@ variable "frontend_ips" {
   description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
 }
 
-variable "vm_series_count" {
+variable "vmseries_count" {
   description = "Total number of VM series to deploy per direction (inbound/outbound)."
   default     = 1
 }
@@ -108,13 +108,13 @@ variable "panorama_version" {
   type        = string
 }
 
-variable "vm_series_sku" {
+variable "vmseries_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
   type        = string
 }
 
-variable "vm_series_version" {
+variable "vmseries_version" {
   description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "9.0.4"
   type        = string
