@@ -3,7 +3,7 @@
 #----------------------#
 variable "location" {
   description = "The Azure region to use."
-  default     = "Australia Central"
+  default     = "East US 2"
   type        = string
 }
 
@@ -135,7 +135,7 @@ variable "common_vmseries_sku" {
 
 variable "common_vmseries_version" {
   description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "9.0.4"
+  default     = "9.1.3"
   type        = string
 }
 

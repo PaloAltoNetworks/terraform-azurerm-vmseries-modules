@@ -125,9 +125,8 @@ module "common_vmseries" {
   bootstrap_share_name      = module.bootstrap.storage_share_name
   interfaces = [
     {
-      name   = "${each.key}-mgmt"
-      subnet = module.networks.subnet_mgmt
-      # FIXME untested
+      name                 = "${each.key}-mgmt"
+      subnet               = module.networks.subnet_mgmt
       public_ip_address_id = azurerm_public_ip.mgmt[each.key].id
       enable_backend_pool  = false
     },
