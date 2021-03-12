@@ -108,11 +108,8 @@ resource "azurerm_availability_set" "this" {
 #   - outbound traffic to the Internet
 #   - internal traffic (also known as "east-west" traffic)
 module "common_vmseries" {
-  source = "../../modules/vmseries"
-  for_each = { for k, v in var.instances : k => {
-    mgmt_public_ip_address_id = azurerm_public_ip.mgmt[k].id
-    nic1_public_ip_address_id = azurerm_public_ip.public[k].id
-  } }
+  source   = "../../modules/vmseries"
+  for_each = var.instances
 
   resource_group_name       = local.resource_group_name
   location                  = var.location
@@ -126,15 +123,18 @@ module "common_vmseries" {
   bootstrap_share_name      = module.bootstrap.storage_share_name
   data_nics = [
     {
-      name                = "${each.key}-mgmt"
-      subnet              = module.networks.subnet_mgmt
-      enable_backend_pool = false
+      name   = "${each.key}-mgmt"
+      subnet = module.networks.subnet_mgmt
+      # FIXME untested
+      public_ip_address_id = azurerm_public_ip.mgmt[each.key].id
+      enable_backend_pool  = false
     },
     {
-      name                = "${each.key}-public"
-      subnet              = module.networks.subnet_public
-      lb_backend_pool_id  = module.inbound-lb.backend-pool-id
-      enable_backend_pool = true
+      name                 = "${each.key}-public"
+      subnet               = module.networks.subnet_public
+      public_ip_address_id = azurerm_public_ip.public[each.key].id
+      lb_backend_pool_id   = module.inbound-lb.backend-pool-id
+      enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
