@@ -1,7 +1,7 @@
 
 output "mgmt_ip_address" {
   description = "VM-Series management IP addresses."
-  value       = azurerm_network_interface.data[0].ip_configuration[0].private_ip_address
+  value       = azurerm_network_interface.this[0].ip_configuration[0].private_ip_address
 }
 
 output "principal_id" {
