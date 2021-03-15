@@ -66,6 +66,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
   default     = ""
+  type        = "string"
 }
 
 variable "name_lb" {
@@ -81,10 +82,6 @@ variable "name_probe" {
 variable "probe_port" {
   description = "Health check port definition."
   default     = "80"
+  type        = "string"
 }
 
-variable "pip_suffix" {
-  description = "The suffix for new public ip naming."
-  default     = "pip"
-  type        = string
-}

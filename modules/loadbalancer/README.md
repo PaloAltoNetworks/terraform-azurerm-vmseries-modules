@@ -76,7 +76,6 @@ module "outbound-lb" {
 | location | Region to deploy load balancer and dependencies. | `string` | `""` | no |
 | name\_lb | The loadbalancer name. | `string` | n/a | yes |
 | name\_probe | The loadbalancer probe name. | `string` | n/a | yes |
-| pip\_suffix | The suffix for new public ip naming. | `string` | `"pip"` | no |
 | probe\_port | Health check port definition. | `string` | `"80"` | no |
 | resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 
@@ -86,5 +85,6 @@ module "outbound-lb" {
 |------|-------------|
 | backend\_pool\_ids | The IDs of the backend pools. |
 | frontend\_ip\_configs | The Frontend configs of the loadbalancer. |
+| public\_data\_regex | n/a |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

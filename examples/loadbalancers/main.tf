@@ -4,7 +4,7 @@ provider "azurerm" {
 
 # Pubic LB
 module "public_lb" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
+  source = "../../modules/loadbalancer"
 
   name_lb             = "LB-public"
   name_probe          = "Probe-public"
@@ -44,7 +44,7 @@ module "public_lb" {
 
 #  Private LB
 module "private_lb" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
+  source = "../../modules/loadbalancer"
 
   name_lb             = "LB-private"
   name_probe          = "Probe-private"

@@ -5,7 +5,7 @@ data "azurerm_resource_group" "this" {
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
-  name                = "${each.key}-${var.pip_suffix}"
+  name                = each.key
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -35,8 +35,10 @@ locals {
 
   # Recalculate the main input map, taking into account whether the boolean condition is true/false.
   frontend_ips = { for k, v in var.frontend_ips : k => {
-    name                          = try(v.create_public_ip, false) ? "${azurerm_public_ip.this[k].name}-fip" : k
+    name                          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].name : k
+    public_ip_data                = try(v.public_ip_address_id, "false") != "false" ? regex("/subscriptions/[^/]*/resourceGroups/([^/]*)/providers/Microsoft\\.Network/publicIPAddresses/(.*)", v.public_ip_address_id) : null
     public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : lookup(v, "public_ip_address_id", null)
+    create_public_ip              = try(v.create_public_ip, null)
     subnet_id                     = try(v.subnet_id, null)
     private_ip_address_allocation = try(v.private_ip_address_allocation, null)
     private_ip_address            = try(v.private_ip_address, null)
@@ -61,6 +63,13 @@ locals {
 
   # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
   input_rules = { for v in local.input_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
+}
+
+data "azurerm_public_ip" "provided" {
+  for_each = { for k, v in local.frontend_ips : k => v if v.public_ip_data != null }
+
+  name                = each.value.public_ip_data[1]
+  resource_group_name = each.value.public_ip_data[0]
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
