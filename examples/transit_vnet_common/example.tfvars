@@ -24,3 +24,6 @@ vmseries = {
   "fw00" = { avzone = 1 }
   "fw01" = { avzone = 2 }
 }
+
+common_vmseries_version = "9.1.3"
+common_vmseries_sku     = "bundle1"
