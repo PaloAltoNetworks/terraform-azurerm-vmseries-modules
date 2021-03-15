@@ -126,20 +126,20 @@ module "common_vmseries" {
   interfaces = [
     {
       name                 = "${each.key}-mgmt"
-      subnet               = module.networks.subnet_mgmt
+      subnet_id            = module.networks.subnet_mgmt.id
       public_ip_address_id = azurerm_public_ip.mgmt[each.key].id
       enable_backend_pool  = false
     },
     {
       name                 = "${each.key}-public"
-      subnet               = module.networks.subnet_public
+      subnet_id            = module.networks.subnet_public.id
       public_ip_address_id = azurerm_public_ip.public[each.key].id
       lb_backend_pool_id   = module.inbound-lb.backend-pool-id
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
-      subnet              = module.networks.subnet_private
+      subnet_id           = module.networks.subnet_private.id
       enable_backend_pool = false
     },
   ]
