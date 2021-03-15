@@ -1,4 +1,4 @@
-resource "azurerm_network_interface" "data" {
+resource "azurerm_network_interface" "this" {
   count = length(var.interfaces)
 
   name                          = var.interfaces[count.index].name
@@ -19,8 +19,8 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
   for_each = { for k, v in var.interfaces : k => v if try(v.enable_backend_pool, false) }
 
   backend_address_pool_id = each.value.lb_backend_pool_id
-  ip_configuration_name   = azurerm_network_interface.data[each.key].ip_configuration[0].name
-  network_interface_id    = azurerm_network_interface.data[each.key].id
+  ip_configuration_name   = azurerm_network_interface.this[each.key].ip_configuration[0].name
+  network_interface_id    = azurerm_network_interface.this[each.key].id
 }
 
 resource "azurerm_virtual_machine" "this" {
@@ -31,9 +31,9 @@ resource "azurerm_virtual_machine" "this" {
   vm_size                      = var.vm_size
   zones                        = var.avzone != null ? [var.avzone] : null
   availability_set_id          = var.avset_id
-  primary_network_interface_id = azurerm_network_interface.data[0].id
+  primary_network_interface_id = azurerm_network_interface.this[0].id
 
-  network_interface_ids = [for k, v in azurerm_network_interface.data : v.id]
+  network_interface_ids = [for k, v in azurerm_network_interface.this : v.id]
 
   storage_image_reference {
     id        = var.custom_image_id
