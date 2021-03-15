@@ -136,13 +136,11 @@ subnets = {
   "subnet-panorama-mgmt" = {
     address_prefixes       = ["10.255.0.0/24"]
     network_security_group = "sg-panorama-mgmt"
-    route_table            = "udr-inside" //just for testing
     virtual_network_name   = "vnet-panorama-mgmt"
   }
   "subnet_mgmt" = {
     address_prefixes       = ["10.110.255.0/24"]
     network_security_group = "sg-mgmt"
-    route_table            = "udr-inside" //just for testing
     virtual_network_name   = "vnet-vmseries"
   }
   "subnet-inside" = {
@@ -154,7 +152,6 @@ subnets = {
   "subnet-outside" = {
     address_prefixes       = ["10.110.129.0/24"]
     network_security_group = "sg-allowall"
-    route_table            = "udr-inside" //just for testing
     virtual_network_name   = "vnet-vmseries"
   }
 }
