@@ -85,6 +85,5 @@ module "outbound-lb" {
 |------|-------------|
 | backend\_pool\_ids | The IDs of the backend pools. |
 | frontend\_ip\_configs | The Frontend configs of the loadbalancer. |
-| public\_data\_regex | n/a |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
