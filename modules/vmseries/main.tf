@@ -9,7 +9,7 @@ resource "azurerm_network_interface" "this" {
 
   ip_configuration {
     name                          = "primary"
-    subnet_id                     = var.interfaces[count.index].subnet.id
+    subnet_id                     = var.interfaces[count.index].subnet_id
     private_ip_address_allocation = "dynamic"
     public_ip_address_id          = try(var.interfaces[count.index].public_ip_address_id, null)
   }

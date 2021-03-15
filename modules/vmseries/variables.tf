@@ -32,8 +32,8 @@ variable "interfaces" { # FIXME maybe `subnet_id` instead of `subnet`
   The first should be the Management network interface, which does not participate in data filtering.
   The remaining ones are the dataplane interfaces.
 
-  - `subnet`: Subnet object to use.
-  - `lb_backend_pool_id`: Identifier of the backend pool of the load balancer to associate.
+  - `subnet_id`: Identifier of the existing subnet to use.
+  - `lb_backend_pool_id`: Identifier of the existing backend pool of the load balancer to associate.
   - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default it false.
   - `public_ip_address_id`: Identifier of the existing public IP to associate.
 
@@ -42,13 +42,12 @@ variable "interfaces" { # FIXME maybe `subnet_id` instead of `subnet`
   ```
   [
     {
-      subnet              = { id = var.vmseries_subnet_id_public }
-      lb_backend_pool_id  = module.inbound_lb.backend-pool-id
-      enable_backend_pool = true
+      subnet_id            = azurerm_subnet.my_mgmt_subnet.id
+      public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
     },
     {
-      subnet              = { id = var.vmseries_subnet_id_private }
-      lb_backend_pool_id  = module.outbound_lb.backend-pool-id
+      subnet_id           = azurerm_subnet.my_pub_subnet.id
+      lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
     },
   ]
@@ -59,6 +58,8 @@ variable "interfaces" { # FIXME maybe `subnet_id` instead of `subnet`
 
 variable "bootstrap_storage_account" {
   description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
+  default     = null
+  type        = any
 }
 
 variable "bootstrap_share_name" {
