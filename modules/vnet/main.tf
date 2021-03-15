@@ -92,14 +92,14 @@ resource "azurerm_route" "this" {
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
-  for_each = var.subnets
+  for_each = { for k, v in var.subnets : k => v if lookup(v, "network_security_group", "") != "" }
 
   subnet_id                 = azurerm_subnet.this[each.key].id
   network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group].id
 }
 
 resource "azurerm_subnet_route_table_association" "this" {
-  for_each = var.subnets
+  for_each = { for k, v in var.subnets : k => v if lookup(v, "route_table", "") != "" }
 
   subnet_id      = azurerm_subnet.this[each.key].id
   route_table_id = azurerm_route_table.this[each.value.route_table].id
