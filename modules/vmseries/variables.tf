@@ -120,7 +120,7 @@ variable "img_sku" {
 
 variable "img_version" {
   description = "VM-series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
-  default     = "9.0.4"
+  default     = "9.1.3"
   type        = string
 }
 
