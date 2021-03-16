@@ -85,9 +85,13 @@ resource "azurerm_virtual_machine" "this" {
 
   # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
   # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
-  boot_diagnostics {
-    enabled     = (var.bootstrap_storage_account != null)
-    storage_uri = var.bootstrap_storage_account.primary_blob_endpoint
+  dynamic "boot_diagnostics" {
+    for_each = var.bootstrap_storage_account != null ? ["one"] : []
+
+    content {
+      enabled     = true
+      storage_uri = var.bootstrap_storage_account.primary_blob_endpoint
+    }
   }
 
   identity {
