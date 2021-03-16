@@ -53,11 +53,6 @@ resource "azurerm_subnet_network_security_group_association" "public" {
   subnet_id                 = module.vnet.vnet_subnets[0]
 }
 
-resource "azurerm_subnet_network_security_group_association" "mgmt" {
-  network_security_group_id = module.nsg.network_security_group_id
-  subnet_id                 = module.vnet.vnet_subnets[1]
-}
-
 resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
@@ -84,7 +79,7 @@ module "panorama" {
   location            = azurerm_resource_group.this.location
   avzone              = var.avzone // Optional Availability Zone number
 
-  interfaces = {
+  interface = { // Only one interface in Panorama VM is supported
     public = {
       subnet_id            = module.vnet.vnet_subnets[0]
       private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
@@ -92,12 +87,6 @@ module "panorama" {
       public_ip_name       = ""         // (optional|string, default: "")
       enable_ip_forwarding = "false"    // (optional|bool, default: "false")
       primary_interface    = "true"
-    }
-    mgmt = {
-      subnet_id            = module.vnet.vnet_subnets[1]
-      private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "false"    // (optional|bool, default: "false")
-      enable_ip_forwarding = "false"    // (optional|bool, default: "false")
     }
   }
 
@@ -122,4 +111,12 @@ module "panorama" {
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
   tags                        = var.tags
+}
+
+output panorama_url {
+  value = "https://${module.panorama.panorama-publicip[0]}"
+}
+
+output panorama_admin_password {
+  value = random_password.password.result
 }

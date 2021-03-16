@@ -5,9 +5,9 @@ data "azurerm_resource_group" "this" {
 
 # Create a public IP for management
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.interfaces : k => v if v.public_ip == "true" }
+  for_each = { for k, v in var.interface : k => v if v.public_ip == "true" }
 
-  name                = coalesce(try(each.value.public_ip_name, ""), "${each.key}-${var.pip_suffix}")
+  name                = coalesce(try(each.value.public_ip_name, ""), each.key)
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -15,9 +15,9 @@ resource "azurerm_public_ip" "this" {
   tags = var.tags
 }
 
-# Build Panorama interfaces
+# Build Panorama interface
 resource "azurerm_network_interface" "this" {
-  for_each = var.interfaces
+  for_each = var.interface
 
   name                 = each.key
   location             = coalesce(var.location, data.azurerm_resource_group.this.location)
@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "this" {
   enable_ip_forwarding = lookup(each.value, "enable_ip_forwarding", "false")
 
   ip_configuration {
-    name                          = "${each.key}-${var.ipconfig_suffix}"
+    name                          = each.key
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = lookup(each.value, "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(each.value, "private_ip_address", null) != null ? each.value.private_ip_address : null
@@ -36,7 +36,7 @@ resource "azurerm_network_interface" "this" {
 }
 
 locals {
-  primary_interface = [for k, v in var.interfaces : k if lookup(v, "primary_interface", false) == "true"][0]
+  primary_interface = [for k, v in var.interface : k if lookup(v, "primary_interface", false) == "true"][0]
 }
 
 # Build the Panorama VM
@@ -60,7 +60,7 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = "${var.panorama_name}-${var.os-disk-suffix}"
+    name              = var.os_disk_name
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"

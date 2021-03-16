@@ -16,19 +16,13 @@ module "panorama" {
   location            = var.location //Optional; if not provided, will use Resource Group location
   avzone              = var.avzone   // Optional Availability Zone number
 
-  interfaces = {
+  interface = {                          // Only one interface in Panorama VM is supported
     public = {
-      subnet_id            = module.vnet.vnet_subnets[0]
+      subnet_id            = ""
       private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
       public_ip            = "true"    // (optional|bool, default: "false")
       enable_ip_forwarding = "false"  // (optional|bool, default: "false")
       primary_interface    = "true"
-    }
-    mgmt = {
-      subnet_id            = module.vnet.vnet_subnets[1]
-      private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "false"   // (optional|bool, default: "false")
-      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
     }
   }
 
@@ -81,12 +75,10 @@ module "panorama" {
 | boot\_diagnostic\_storage\_uri | Existing diagnostic storage uri | `any` | `null` | no |
 | custom\_image\_id | n/a | `string` | `null` | no |
 | enable\_plan | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
-| interfaces | A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet\_id, private\_ip\_address, public\_ip, enable\_ip\_forwarding }. Example:<pre>{<br>  public = {<br>    subnet_id            = module.vnet.vnet_subnets[0]<br>    private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation<br>    public_ip            = "true"    // (optional|bool, default: "false")<br>    public_ip_name       = ""        // (optional|bool, default: "")<br>    enable_ip_forwarding = "false"  // (optional|bool, default: "false")<br>    primary_interface    = "true"<br>  }<br>  mgmt = {<br>    subnet_id            = module.vnet.vnet_subnets[1]<br>    private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation<br>    public_ip            = "false"   // (optional|bool, default: "false")<br>    enable_ip_forwarding = "false"  // (optional|bool, default: "false")<br>  }<br>}</pre> | `map(any)` | n/a | yes |
-| ipconfig\_suffix | The suffix for ip\_configuration naming. | `string` | `"ipconfig"` | no |
+| interface | A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet\_id, private\_ip\_address, public\_ip, enable\_ip\_forwarding }. Example:<pre>{<br>  public = {                          // Only one interface in Panorama VM is supported<br>    subnet_id            = ""<br>    private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation<br>    public_ip            = "true"    // (optional|bool, default: "false")<br>    public_ip_name       = ""        // (optional|bool, default: "")<br>    enable_ip_forwarding = "false"  // (optional|bool, default: "false")<br>    primary_interface    = "true"<br>  }<br>}</pre> | `map(any)` | n/a | yes |
 | location | Region to deploy Panorama into. If not provided location will be taken from Resource Group. | `string` | `""` | no |
 | logging\_disks | A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zones, lun }. <br> The size value is provided in GB. The recommended size for additional(optional) disks should be at least 2TB (2048 GB). Example:<pre>{<br>  disk_name_1 = {<br>    size: "2048"<br>    zone: "1"<br>    lun: "1"<br>  }<br>  disk_name_2 = {<br>    size: "2048"<br>    zone: "2"<br>    lun: "2"<br>  }<br>}</pre> | `map(any)` | `{}` | no |
-| name\_panorama\_pip | The name for public ip allows distinguish from other type of public ips. | `string` | `"panorama-pip"` | no |
-| os-disk-suffix | The suffix for disk name. | `string` | `"os-disk"` | no |
+| os\_disk\_name | The suffix for disk name. | `string` | `"panorama_os_disk"` | no |
 | panorama\_name | The Panorama common name. | `string` | `"panorama"` | no |
 | panorama\_offer | Panorama offer. | `string` | `"panorama"` | no |
 | panorama\_publisher | Panorama Publisher. | `string` | `"paloaltonetworks"` | no |
@@ -94,7 +86,6 @@ module "panorama" {
 | panorama\_sku | Panorama SKU. | `string` | `"byol"` | no |
 | panorama\_version | Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama` | `string` | `"10.0.3"` | no |
 | password | Initial administrative password to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm). | `string` | n/a | yes |
-| pip\_suffix | The suffix for new public ip naming. | `string` | `"pip"` | no |
 | resource\_group\_name | The existing resource group name for Panorama. | `string` | n/a | yes |
 | tags | A map of tags to be associated with the resources created. | `map(any)` | `{}` | no |
 | username | Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm). | `string` | `"panadmin"` | no |
@@ -103,6 +94,6 @@ module "panorama" {
 
 | Name | Description |
 |------|-------------|
-| panorama-publicips | Panorama Public IP addresses |
+| panorama-publicip | Panorama Public IP address |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
