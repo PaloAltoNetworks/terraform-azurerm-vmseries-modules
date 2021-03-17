@@ -7,7 +7,7 @@ The module is not intended for use with Scale Sets.
 
 ```hcl
 module "vmseries" {
-  source  = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/vmseries"
+  source  = "../../modules/vmseries"
 
   location                      = "Australia Central"
   name                          = "my-firewall"
