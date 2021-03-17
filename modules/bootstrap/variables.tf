@@ -1,53 +1,45 @@
-variable storage_account_name {
-  type = string
-}
-
-variable resource_group_name {
-  description = "Name of the Resource Group where bootstrap resources will be deployed"
+variable "location" {
+  description = "Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`."
+  default     = null
   type        = string
 }
 
-variable location {
-  type = string
-}
-
-variable storage_account_replication_type {
-  description = "Valid options are LRS, GRS, RAGRS, ZRS, GZRS and RAGZRS."
-  type        = string
-  default     = "LRS"
-}
-
-variable config_dirs {
-  description = "List of directories required to bootstrap firewalls"
-  type        = list(string)
-  default     = ["config", "license", "content", "software"]
-}
-
-variable config_files {
-  description = "List of config files uploaded to storage and required for vmseries firewalls to bootstrap"
-  default = {
-    "authcodes" = {
-      path = "license"
-    }
-    "init-cfg.txt" = {
-      path = "config"
-    }
-  }
-}
-
-variable file_share_name {
-  description = "Name of the file share inside storage account"
-  type        = string
-  default     = "bootstrap"
-}
-
-variable bootstrap_files_dir {
-  description = "Directory where bootstrap files are kept on the local filesystem"
+variable "name_prefix" {
+  description = "Prefix to add to all the object names here."
   type        = string
 }
 
-variable "root_directory" {
-  description = "Name of the root storage share directory in the bucket"
+variable "create_storage_account" {
+  description = "If true, create a Storage Account and a Resource Group and ignore `existing_storage_account`."
+  default     = true
+  type        = bool
+}
+
+variable "existing_storage_account" {
+  description = "The existing Storage Account object to use. Ignored when `create_storage_account` is true."
+  default     = null
+}
+
+variable "files" {
+  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
+variable "resource_group_name" {
+  description = "Name of the resource group, if creating it. Ignored when `existing_storage_account` object is non-null."
+  default     = null
   type        = string
-  default     = "firewalls"
+}
+
+variable "storage_account_name" {
+  description = "Name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null."
+  default     = null
+  type        = string
+}
+
+variable "storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping."
+  default     = "bootstrapshare"
+  type        = string
 }
