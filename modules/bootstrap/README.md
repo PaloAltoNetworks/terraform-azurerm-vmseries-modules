@@ -30,11 +30,11 @@ See the examples/vm-series directory.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | create\_storage\_account | If true, create a Storage Account and a Resource Group and ignore `existing_storage_account`. | `bool` | `true` | no |
-| existing\_storage\_account | The existing Storage Account object to use. Ignored when `create_storage_account` is true. | `any` | `null` | no |
+| existing\_storage\_account | The existing Storage Account object to use. Ignored when `create_storage_account` is true. | `string` | `null` | no |
+| existing\_storage\_account\_resource\_group | The Resource Group of the `existing_storage_account`. | `string` | `null` | no |
 | files | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | location | Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`. | `string` | `null` | no |
-| name\_prefix | Prefix to add to all the object names here. | `string` | n/a | yes |
-| resource\_group\_name | Name of the resource group, if creating it. Ignored when `existing_storage_account` object is non-null. | `string` | `null` | no |
+| resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 | storage\_account\_name | Name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null. | `string` | `null` | no |
 | storage\_share\_name | Name of storage share to be created that holds `files` for bootstrapping. | `string` | `"bootstrapshare"` | no |
 
