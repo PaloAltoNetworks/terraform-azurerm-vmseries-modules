@@ -22,13 +22,7 @@ variable "storage_account_name" {
 }
 
 variable "existing_storage_account" {
-  description = "The existing Storage Account object to use. Ignored when `create_storage_account` is true."
-  default     = null
-  type        = string
-}
-
-variable "existing_storage_account_resource_group" {
-  description = "The Resource Group of the `existing_storage_account`."
+  description = "Name of the existing Storage Account object to use. Ignored when `create_storage_account` is true."
   default     = null
   type        = string
 }
