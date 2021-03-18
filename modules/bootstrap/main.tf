@@ -1,25 +1,27 @@
-resource "azurerm_resource_group" "this" {
-  count = var.create_storage_account ? 1 : 0
-
-  name     = coalesce(var.resource_group_name, "${var.name_prefix}bootstrap")
-  location = var.location
+data "azurerm_resource_group" "this" {
+  name = var.resource_group_name
 }
 
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
-  name                     = substr(lower(coalesce(var.storage_account_name, replace("${var.name_prefix}bootstrap", "/[_-]+/", ""))), 0, 23)
+  name                     = substr(lower(replace(var.storage_account_name, "/[_-]+/", "")), 0, 23)
+  location                 = coalesce(var.location, data.azurerm_resource_group.this.location)
+  resource_group_name      = data.azurerm_resource_group.this.name
   account_replication_type = "LRS"
   account_tier             = "Standard"
-  location                 = azurerm_resource_group.this[0].location
-  resource_group_name      = azurerm_resource_group.this[0].name
+}
+
+data "azurerm_storage_account" "this" {
+  count = var.existing_storage_account != null ? 1 : 0
+
+  name                = var.existing_storage_account
+  resource_group_name = var.existing_storage_account_resource_group
 }
 
 locals {
-  storage_account = var.create_storage_account ? azurerm_storage_account.this[0] : var.existing_storage_account
+  storage_account = var.create_storage_account ? azurerm_storage_account.this[0] : data.azurerm_storage_account.this[0]
 }
-
-###############################################################################
 
 resource "azurerm_storage_share" "this" {
   name                 = var.storage_share_name
@@ -32,15 +34,16 @@ resource "azurerm_storage_share_directory" "nonconfig" {
     "content",
     "software",
   "license"])
+
   name                 = each.key
   share_name           = azurerm_storage_share.this.name
   storage_account_name = local.storage_account.name
 }
 
 resource "azurerm_storage_share_directory" "config" {
+  name                 = "config"
   share_name           = azurerm_storage_share.this.name
   storage_account_name = local.storage_account.name
-  name                 = "config"
 }
 
 resource "azurerm_storage_share_file" "this" {

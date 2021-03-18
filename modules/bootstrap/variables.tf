@@ -1,11 +1,11 @@
-variable "location" {
-  description = "Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`."
-  default     = null
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
   type        = string
 }
 
-variable "name_prefix" {
-  description = "Prefix to add to all the object names here."
+variable "location" {
+  description = "Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`."
+  default     = null
   type        = string
 }
 
@@ -15,9 +15,22 @@ variable "create_storage_account" {
   type        = bool
 }
 
+variable "storage_account_name" {
+  description = "Name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null."
+  default     = null
+  type        = string
+}
+
 variable "existing_storage_account" {
   description = "The existing Storage Account object to use. Ignored when `create_storage_account` is true."
   default     = null
+  type        = string
+}
+
+variable "existing_storage_account_resource_group" {
+  description = "The Resource Group of the `existing_storage_account`."
+  default     = null
+  type        = string
 }
 
 variable "files" {
@@ -26,17 +39,6 @@ variable "files" {
   type        = map(string)
 }
 
-variable "resource_group_name" {
-  description = "Name of the resource group, if creating it. Ignored when `existing_storage_account` object is non-null."
-  default     = null
-  type        = string
-}
-
-variable "storage_account_name" {
-  description = "Name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null."
-  default     = null
-  type        = string
-}
 
 variable "storage_share_name" {
   description = "Name of storage share to be created that holds `files` for bootstrapping."
