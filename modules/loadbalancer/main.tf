@@ -81,7 +81,7 @@ resource "azurerm_lb_backend_address_pool" "lb_backend" {
 
 resource "azurerm_lb_probe" "probe" {
   loadbalancer_id     = azurerm_lb.lb.id
-  name                = var.name_probe
+  name                = coalesce(var.name_probe, var.name_lb)
   port                = var.probe_port
   resource_group_name = data.azurerm_resource_group.this.name
 }

@@ -66,7 +66,7 @@ variable "resource_group_name" {
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
   default     = ""
-  type        = "string"
+  type        = string
 }
 
 variable "name_lb" {
@@ -77,11 +77,12 @@ variable "name_lb" {
 variable "name_probe" {
   description = "The loadbalancer probe name."
   type        = string
+  default     = ""
 }
 
 variable "probe_port" {
   description = "Health check port definition."
   default     = "80"
-  type        = "string"
+  type        = string
 }
 
