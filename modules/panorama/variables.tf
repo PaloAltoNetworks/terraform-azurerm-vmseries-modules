@@ -65,7 +65,7 @@ variable "interface" {
   A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
   ```
   {
-    public = {                          // Only one interface in Panorama VM is supported
+    mgmt = {                          // Only one interface in Panorama VM is supported
       subnet_id            = ""
       private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
       public_ip            = "true"    // (optional|bool, default: "false")

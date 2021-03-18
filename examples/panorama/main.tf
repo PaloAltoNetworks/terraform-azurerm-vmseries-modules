@@ -80,7 +80,7 @@ module "panorama" {
   avzone              = var.avzone // Optional Availability Zone number
 
   interface = { // Only one interface in Panorama VM is supported
-    public = {
+    mgmt = {
       subnet_id            = module.vnet.vnet_subnets[0]
       private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
       public_ip            = "true"     // (optional|bool, default: "false")
