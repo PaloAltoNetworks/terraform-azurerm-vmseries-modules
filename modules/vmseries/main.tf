@@ -1,3 +1,13 @@
+resource "azurerm_public_ip" "this" {
+  for_each = { for k, v in var.interfaces : k => v if try(v.create_public_ip, false) }
+
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  name                = each.value.name
+  allocation_method   = "Static"
+  sku                 = "Standard"
+}
+
 resource "azurerm_network_interface" "this" {
   count = length(var.interfaces)
 
@@ -10,8 +20,9 @@ resource "azurerm_network_interface" "this" {
   ip_configuration {
     name                          = "primary"
     subnet_id                     = var.interfaces[count.index].subnet_id
-    private_ip_address_allocation = "dynamic"
-    public_ip_address_id          = try(var.interfaces[count.index].public_ip_address_id, null)
+    private_ip_address_allocation = try(var.interfaces[count.index].private_ip_address, null) != null ? "static" : "dynamic"
+    private_ip_address            = try(var.interfaces[count.index].private_ip_address, null)
+    public_ip_address_id          = try(azurerm_public_ip.this[count.index].id, var.interfaces[count.index].public_ip_address_id, null)
   }
 }
 

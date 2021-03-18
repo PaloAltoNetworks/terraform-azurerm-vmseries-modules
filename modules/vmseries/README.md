@@ -95,8 +95,9 @@ are `SouthCentralUSSTG` and `CentralUSEUAP`. The reason is that the module uses 
 
 | Name | Description |
 |------|-------------|
+| interfaces | List of VM-Series network interfaces. The elements of the list are `azurerm_network_interface` objects. The order is the same as `interfaces` input. |
 | metrics\_instrumentation\_key | The Instrumentation Key of the created instance of Azure Application Insights. The instance is unused by default, but is ready to receive custom PAN-OS metrics from the firewalls. To use it, paste this Instrumentation Key into PAN-OS -> Device -> VM-Series -> Azure. |
-| mgmt\_ip\_address | VM-Series management IP addresses. |
+| mgmt\_ip\_address | VM-Series management IP address. If `create_public_ip` was `true`, it is a public IP address, otherwise a private IP address. |
 | principal\_id | The oid of Azure Service Principal of the created VM-Series. Usable only if `identity_type` contains SystemAssigned. |
 
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

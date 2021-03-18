@@ -26,7 +26,7 @@ variable "avset_id" {
   type        = string
 }
 
-variable "interfaces" { # FIXME maybe `subnet_id` instead of `subnet`
+variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
   The first should be the Management network interface, which does not participate in data filtering.

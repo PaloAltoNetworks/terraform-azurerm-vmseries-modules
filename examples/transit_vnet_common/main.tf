@@ -30,17 +30,6 @@ module "networks" {
   vm_management_subnet   = var.vm_management_subnet
 }
 
-# Create a public IP for management
-resource "azurerm_public_ip" "mgmt" {
-  for_each = var.vmseries
-
-  name                = "${var.name_prefix}${each.key}-mgmt"
-  location            = var.location
-  resource_group_name = local.resource_group_name
-  allocation_method   = "Static"
-  sku                 = "standard"
-}
-
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
   for_each = var.vmseries
@@ -113,10 +102,10 @@ module "common_vmseries" {
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [
     {
-      name                 = "${each.key}-mgmt"
-      subnet_id            = module.networks.subnet_mgmt.id
-      public_ip_address_id = azurerm_public_ip.mgmt[each.key].id
-      enable_backend_pool  = false
+      name                = "${each.key}-mgmt"
+      subnet_id           = module.networks.subnet_mgmt.id
+      create_public_ip    = true
+      enable_backend_pool = false
     },
     {
       name                 = "${each.key}-public"
@@ -129,6 +118,9 @@ module "common_vmseries" {
       name                = "${each.key}-private"
       subnet_id           = module.networks.subnet_private.id
       enable_backend_pool = false
+
+      # Optional static private IP
+      private_ip_address = try(each.value.trust_private_ip, null)
     },
   ]
 
