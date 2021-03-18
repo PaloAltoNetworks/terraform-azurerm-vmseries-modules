@@ -16,7 +16,7 @@ data "azurerm_storage_account" "this" {
   count = var.existing_storage_account != null ? 1 : 0
 
   name                = var.existing_storage_account
-  resource_group_name = var.existing_storage_account_resource_group
+  resource_group_name = data.azurerm_resource_group.this.name
 }
 
 locals {
