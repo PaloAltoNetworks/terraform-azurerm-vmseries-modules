@@ -8,10 +8,6 @@ output "password" {
   value       = coalesce(var.password, random_password.password.result)
 }
 
-output mgmt_private_ip_addresses {
+output mgmt_ip_addresses {
   value = { for k, v in module.common_vmseries : k => v.mgmt_ip_address }
-}
-
-output mgmt_public_ip_addresses {
-  value = { for k, v in var.vmseries : k => azurerm_public_ip.mgmt[k].ip_address }
 }
