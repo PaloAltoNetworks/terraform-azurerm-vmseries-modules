@@ -113,10 +113,14 @@ module "panorama" {
   tags                        = var.tags
 }
 
-output panorama_url {
-  value = "https://${module.panorama.panorama-publicip[0]}"
+output "panorama_url" {
+  value = "https://${module.panorama.public_mgmt_ip[0]}"
 }
 
-output panorama_admin_password {
+output "panorama_admin_password" {
   value = random_password.password.result
+}
+
+output "private_mgmt_ip" {
+  value = module.panorama.private_mgmt_ip[0]
 }
