@@ -36,7 +36,6 @@ variable "files" {
   type        = map(string)
 }
 
-
 variable "storage_share_name" {
   description = "Name of storage share to be created that holds `files` for bootstrapping."
   default     = "bootstrapshare"
