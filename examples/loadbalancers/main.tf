@@ -14,8 +14,9 @@ module "public_lb" {
   frontend_ips = {
     # Map of maps (each object has one frontend to many backend relationship) 
     fe1-pip-existing = {
-      create_public_ip     = false
-      public_ip_address_id = ""
+      create_public_ip         = false
+      public_ip_name           = ""
+      public_ip_resource_group = ""
       rules = {
         HTTP = {
           port         = 80

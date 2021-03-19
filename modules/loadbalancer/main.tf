@@ -12,6 +12,13 @@ resource "azurerm_public_ip" "this" {
   sku                 = "standard"
 }
 
+data "azurerm_public_ip" "exists" {
+  for_each = { for k, v in var.frontend_ips : k => v if try(v.public_ip_name, null) != null }
+
+  name                = each.value.public_ip_name
+  resource_group_name = coalesce(try(each.value.public_ip_resource_group, ""), data.azurerm_resource_group.this.name)
+}
+
 resource "azurerm_lb" "lb" {
   name                = var.name_lb
   resource_group_name = data.azurerm_resource_group.this.name
@@ -36,8 +43,7 @@ locals {
   # Recalculate the main input map, taking into account whether the boolean condition is true/false.
   frontend_ips = { for k, v in var.frontend_ips : k => {
     name                          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].name : k
-    public_ip_data                = try(v.public_ip_address_id, "false") != "false" ? regex("/subscriptions/[^/]*/resourceGroups/([^/]*)/providers/Microsoft\\.Network/publicIPAddresses/(.*)", v.public_ip_address_id) : null
-    public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : lookup(v, "public_ip_address_id", null)
+    public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : try(data.azurerm_public_ip.exists[k].id, null)
     create_public_ip              = try(v.create_public_ip, null)
     subnet_id                     = try(v.subnet_id, null)
     private_ip_address_allocation = try(v.private_ip_address_allocation, null)
@@ -63,13 +69,6 @@ locals {
 
   # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
   input_rules = { for v in local.input_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
-}
-
-data "azurerm_public_ip" "provided" {
-  for_each = { for k, v in local.frontend_ips : k => v if v.public_ip_data != null }
-
-  name                = each.value.public_ip_data[1]
-  resource_group_name = each.value.public_ip_data[0]
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {

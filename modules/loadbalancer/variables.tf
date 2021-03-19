@@ -1,51 +1,45 @@
 variable "frontend_ips" {
   description = <<-EOF
-  A map of objects describing LB Frontend IP configurations. Keys of the map are the names and values are { create_public_ip, public_ip_address_id, rules }. Example:
+  A map of objects describing LB Frontend IP configurations for public or private loadbalancer type. 
+  Keys of the map are the names of new resources.
+  # Public loadbalancer:
+  - `create_public_ip` : Greenfield or Brawnfield deployment for public IP.
+  - `public_ip_name` : If Brawnfield deployment - the existing ip name in Azure resource for public IP.
+  - `public_ip_resource_group` : If Brawnfield deployment - the existing resource group in Azure resource for public IP.
+  # Private loadbalancer:
+  - `subnet_id` : ID of an existing subnet.
+  - `private_ip_address_allocation` : Type of private allocation Static/Dynamic.
+  - `private_ip_address` : If Static, private IP.
+  Example:
 
   ```
-  # Deploy the inbound load balancer for traffic into the azure environment
-  module "inbound-lb" {
-    source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
-
-    resource_group_name = ""
-    location            = ""
-    name_probe          = ""
-    name_lb             = ""
-    frontend_ips = {
-      # Map of maps (each object has one frontend to many backend relationship) 
-      pip-existing = {
-        create_public_ip     = false
-        public_ip_address_id = ""
-        rules = {
-          HTTP = {
-            port         = 80
-            protocol     = "Tcp"
-            backend_name = "backend1_name"
-          }
+  # Public loadbalancer exmple
+  frontend_ips = {
+    pip-existing = {
+      create_public_ip         = false
+      public_ip_name           = ""
+      public_ip_resource_group = ""
+      rules = {
+        HTTP = {
+          port         = 80
+          protocol     = "Tcp"
+          backend_name = "backend1_name"
         }
       }
     }
   }
 
-  # Deploy the outbound load balancer for traffic into the azure environment
-  module "outbound-lb" {
-    source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
-
-    resource_group_name = ""
-    location            = ""
-    name_probe          = ""
-    name_lb             = ""
-    frontend_ips = {
-      internal_fe = {
-        subnet_id                     = ""
-        private_ip_address_allocation = "Static" // Dynamic or Static
-        private_ip_address = "" 
-        rules = {
-          HA_PORTS = {
-            port         = 0
-            protocol     = "All"
-            backend_name = "backend3_name"
-          }
+  # Private loadbalancer exmple
+  frontend_ips = {
+    internal_fe = {
+      subnet_id                     = ""
+      private_ip_address_allocation = "Static" // Dynamic or Static
+      private_ip_address = ""
+      rules = {
+        HA_PORTS = {
+          port         = 0
+          protocol     = "All"
+          backend_name = "backend3_name"
         }
       }
     }
