@@ -52,19 +52,16 @@ resource "azurerm_storage_share_file" "this" {
   name             = regex("[^/]*$", each.value)
   path             = replace(each.value, "/[/]*[^/]*$/", "")
   storage_share_id = azurerm_storage_share.this.id
-  source           = replace(each.key, "/CalculateMe[X]${random_id.file[each.key].id}/", "CalculateMeX${random_id.file[each.key].id}")
+  source           = replace(each.key, "/CalculateMe[X]${random_id.this[each.key].id}/", "CalculateMeX${random_id.this[each.key].id}")
   # Live above is equivalent to:   `source = each.key`  but it re-creates the file every time the content changes.
   # The replace() is not actually doing anything, except tricking Terraform to destroy a resource.
   # There is a field content_md5 designed specifically for that. But I see a bug in the provider: 
   # When content_md5 is changed, the re-upload seemingly succeeds, result being however a totally empty file (size zero).
   # Workaround: use random_id above to cause the full destroy/create of a file.
-  depends_on = [
-    azurerm_storage_share_directory.config,
-    azurerm_storage_share_directory.nonconfig,
-  ]
+  depends_on = [azurerm_storage_share_directory.config, azurerm_storage_share_directory.nonconfig]
 }
 
-resource "random_id" "file" {
+resource "random_id" "this" {
   for_each = var.files
 
   keepers = {
