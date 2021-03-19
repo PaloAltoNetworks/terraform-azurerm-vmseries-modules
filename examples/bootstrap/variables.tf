@@ -10,7 +10,7 @@ variable "location" {
 }
 
 variable "create_storage_account" {
-  description = "If true, create a Storage Account and a Resource Group and ignore `existing_storage_account`."
+  description = "If true, create a Storage Account and ignore `existing_storage_account`."
   default     = true
   type        = bool
 }
