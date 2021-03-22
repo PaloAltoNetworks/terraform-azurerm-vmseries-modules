@@ -1,6 +1,6 @@
 # Palo Alto Networks Bootstrap Module Example
 
-This folder shows an example of Terraform code that uses the [Palo Alto Networks Bootstrap module](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/tree/develop/modules/bootstrap) to deploy a Storage Account and the dependencies required
+This Terraform example uses the [Palo Alto Networks Bootstrap module](../../modules/bootstrap) to deploy a Storage Account and the dependencies required
 to [bootstrap a VM-Series firewall in Azure](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-the-vm-series-firewall-in-azure.html#idd51f75b8-e579-44d6-a809-2fafcfe4b3b6).
 
 The following resources will be deployed when using the provided example:
