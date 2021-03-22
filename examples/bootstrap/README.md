@@ -10,7 +10,7 @@ The following resources will be deployed when using the provided example:
 
 ## Quick Start
 
-1. Install [Terraform](https://www.terraform.io/). The Terraform version required to run this module can be checked [here](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/develop/modules/bootstrap/versions.tf).
+1. Install [Terraform](https://www.terraform.io/). The Terraform version required to run this module can be checked [here](./versions.tf).
 1. `git clone` this repository to your computer, navigate into:
 
     >/terraform-azurerm-vmseries-modules/examples/bootstrap
