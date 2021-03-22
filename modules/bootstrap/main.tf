@@ -5,7 +5,7 @@ data "azurerm_resource_group" "this" {
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
-  name                     = substr(lower(replace(var.storage_account_name, "/[_-]+/", "")), 0, 23)
+  name                     = var.storage_account_name
   location                 = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name      = data.azurerm_resource_group.this.name
   account_replication_type = "LRS"
