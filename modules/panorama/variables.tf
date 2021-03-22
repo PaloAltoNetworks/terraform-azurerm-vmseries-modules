@@ -122,7 +122,7 @@ variable "panorama_name" {
 
 variable "os_disk_name" {
   description = "The suffix for disk name."
-  default     = "panorama_os_disk"
+  default     = null
   type        = string
 }
 
