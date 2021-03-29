@@ -9,7 +9,7 @@ variable "location" {
 
 variable "create_resource_group_name" {
   description = "Name for a created resource group. The input is ignored if `existing_resource_group_name` is set. If null, uses an auto-generated name."
-  default     = null
+  default     = "example-rg"
   type        = string
 }
 
@@ -69,6 +69,26 @@ variable "vmseries" {
   }
   ```
   EOF
+}
+
+variable "storage_account_name" {
+  description = <<-EOF
+  Default name of the storage account to create.
+  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+  EOF
+  default     = "pantfstorage"
+  type        = string
+}
+
+variable "files" {
+  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
+variable "storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping."
+  type        = string
 }
 
 #----------------------#
