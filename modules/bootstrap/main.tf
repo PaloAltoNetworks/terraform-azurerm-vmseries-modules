@@ -20,7 +20,7 @@ data "azurerm_storage_account" "this" {
 }
 
 locals {
-  storage_account = var.create_storage_account ? azurerm_storage_account.this[0] : data.azurerm_storage_account.this[0]
+  storage_account = var.create_storage_account ? try(azurerm_storage_account.this[0], null) : data.azurerm_storage_account.this[0]
 }
 
 resource "azurerm_storage_share" "this" {

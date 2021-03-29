@@ -4,7 +4,7 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  description = "Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`."
+  description = "Region to deploy vm-series bootstrap resources."
   default     = null
   type        = string
 }
@@ -12,21 +12,14 @@ variable "location" {
 variable "create_storage_account" {
   description = "If true, create a Storage Account and ignore `existing_storage_account`."
   default     = true
-  type        = bool
 }
 
 variable "storage_account_name" {
   description = <<-EOF
-  Default name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null.
+  Default name of the storage account to create.
   The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
   EOF
   default     = "pantfstorage"
-  type        = string
-}
-
-variable "existing_storage_account" {
-  description = "Name of the existing Storage Account object to use. Ignored when `create_storage_account` is true."
-  default     = null
   type        = string
 }
 
