@@ -20,3 +20,9 @@ frontend_ips = {
 
 # The count here defines how many VM-series are deployed PER VM direction (inbound/outbound)
 vm_series_count = 2
+resource_group_name = "example-rg"
+location            = "East US"
+files = {
+  "files/authcodes.sample"    = "license/authcodes"
+  "files/init-cfg.sample.txt" = "config/init-cfg.txt"
+}
