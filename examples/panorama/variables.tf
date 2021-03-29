@@ -1,34 +1,33 @@
-#----------------------#
-#   Global Variables   #
-#----------------------#
 variable "location" {
-  type        = string
   description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
   default     = ""
-}
-
-variable "name_prefix" {
   type        = string
-  description = "A prefix_name for bootstrap module."
-  default     = "pantf"
 }
 
 variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
   type        = string
-  description = "The existing resource group name for Panorama."
 }
 
-#----------------------#
-#      Networking      #
-#----------------------#
+variable "storage_account_name" {
+  description = <<-EOF
+  Default name of the storage account to create.
+  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+  EOF
+  default     = "pantfstorage"
+  type        = string
+}
+
+variable "files" {
+  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
 variable "management_ips" {
   description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
   type        = map(number)
 }
-
-##########
-# Naming #
-##########
 
 variable "panorama_name" {
   type    = string
