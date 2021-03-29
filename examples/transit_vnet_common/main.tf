@@ -33,19 +33,7 @@ module "networks" {
   vm_management_subnet   = var.vm_management_subnet
 }
 
-# Create the VM-Series RG only if an existing one has not been already provided.
-resource "azurerm_resource_group" "this" {
-  count = var.existing_resource_group_name == null ? 1 : 0
-
-  location = var.location
-  name     = coalesce(var.create_resource_group_name, "${var.name_prefix}vmseries")
-}
-
-locals {
-  resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
-}
-
-# Create public IPs for management (https or ssh).
+# Create a public IP for management
 resource "azurerm_public_ip" "mgmt" {
   for_each = var.vmseries
 
@@ -126,8 +114,13 @@ module "common_vmseries" {
   vm_size                   = var.common_vmseries_vm_size
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
-  subnet_mgmt               = module.networks.subnet_mgmt
-  data_nics = [
+  interfaces = [
+    {
+      name                 = "${each.key}-mgmt"
+      subnet_id            = module.networks.subnet_mgmt.id
+      public_ip_address_id = azurerm_public_ip.mgmt[each.key].id
+      enable_backend_pool  = false
+    },
     {
       name                 = "${each.key}-public"
       subnet_id            = module.networks.subnet_public.id
