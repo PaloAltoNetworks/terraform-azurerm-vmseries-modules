@@ -28,7 +28,23 @@ module "vmseries" {
 }
 ```
 
-___NOTE:___ The module only supports Azure regions that have more than one fault domain - as of 2021, the only two regions impacted are `SouthCentralUSSTG` and `CentralUSEUAP`. The reason is that the module uses Availability Sets with Managed Disks.
+## Accept Azure Marketplace Terms
+
+Accept the Azure Marketplace terms for the VM-Series images. In a typical situation use these commands:
+
+```sh
+az vm image terms accept --publisher paloaltonetworks --offer vmseries-flex --plan byol --subscription MySubscription
+az vm image terms accept --publisher paloaltonetworks --offer vmseries-flex --plan bundle1 --subscription MySubscription
+az vm image terms accept --publisher paloaltonetworks --offer vmseries-flex --plan bundle2 --subscription MySubscription
+```
+
+You can revoke the acceptance later with the `az vm image terms cancel` command.
+The acceptance applies to the entirety of your Azure Subscription.
+
+## Caveat
+
+The module only supports Azure regions that have more than one fault domain - as of 2021, the only two regions impacted
+are `SouthCentralUSSTG` and `CentralUSEUAP`. The reason is that the module uses Availability Sets with Managed Disks.
 
 [Instruction to re-check regions](https://docs.microsoft.com/en-us/azure/virtual-machines/manage-availability#use-managed-disks-for-vms-in-an-availability-set).
 
