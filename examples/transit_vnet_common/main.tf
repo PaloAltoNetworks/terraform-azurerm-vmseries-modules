@@ -1,7 +1,3 @@
-provider "azurerm" {
-  features {}
-}
-
 resource "azurerm_resource_group" "this" {
   count = var.existing_resource_group_name == null ? 1 : 0
 
@@ -12,6 +8,7 @@ resource "azurerm_resource_group" "this" {
 locals {
   resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
 }
+
 resource "random_password" "password" {
   length           = 16
   special          = true
