@@ -15,8 +15,8 @@ The following resources will be deployed when using the provided example:
 
     >/terraform-azurerm-vmseries-modules/examples/bootstrap
 
+1. Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
 1. Run `terraform init` to initialize the working directory.
-1. Run `terraform plan -var-file=example.tfvars` and verify the execution plan.
-1. Run `terraform apply -var-file=example.tfvars` to apply the changes required to reach the desired state of the configuration specified for this example.
+1. Run `terraform apply` to apply the changes required to reach the desired state of the configuration specified for this example.
 
 __NOTE:__ As the file names suggests, the `init-cfg.sample.txt` and `authcodes.sample` are used only for demonstration purposes - if you wish to bootstrap your VM-Series firewall, you should modify the files content with proper data.
