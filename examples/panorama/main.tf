@@ -68,9 +68,9 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = azurerm_resource_group.this.name
+  location             = azurerm_resource_group.this.location
   storage_account_name = var.storage_account_name
   files                = var.files
-  depends_on           = [azurerm_resource_group.this]
 }
 
 module "panorama" {
@@ -78,7 +78,7 @@ module "panorama" {
 
   panorama_name       = var.panorama_name
   resource_group_name = azurerm_resource_group.this.name
-  location            = var.location //Optional; if not provided, will use Resource Group location
+  location            = azurerm_resource_group.this.location
   avzone              = var.avzone   // Optional Availability Zone number
 
   interfaces = {
@@ -119,5 +119,4 @@ module "panorama" {
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
   tags                        = var.tags
-  depends_on                  = [azurerm_resource_group.this]
 }
