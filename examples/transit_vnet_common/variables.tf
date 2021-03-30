@@ -1,6 +1,3 @@
-#----------------------#
-#   Global Variables   #
-#----------------------#
 variable "location" {
   description = "The Azure region to use."
   default     = "East US 2"
@@ -9,7 +6,7 @@ variable "location" {
 
 variable "create_resource_group_name" {
   description = "Name for a created resource group. The input is ignored if `existing_resource_group_name` is set. If null, uses an auto-generated name."
-  default     = "example-rg"
+  default     = null
   type        = string
 }
 
@@ -91,9 +88,6 @@ variable "storage_share_name" {
   type        = string
 }
 
-#----------------------#
-#      Networking      #
-#----------------------#
 variable "management_ips" {
   description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
   type        = map(number)
@@ -142,10 +136,6 @@ variable "olb_private_ip" {
 variable "frontend_ips" {
   description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
 }
-
-#----------------------#
-#      VM Options      #
-#----------------------#
 
 variable "common_vmseries_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
