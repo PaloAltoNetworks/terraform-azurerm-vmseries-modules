@@ -1,13 +1,9 @@
-data "azurerm_resource_group" "this" {
-  name = var.resource_group_name
-}
-
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
   name                     = var.storage_account_name
-  location                 = coalesce(var.location, data.azurerm_resource_group.this.location)
-  resource_group_name      = data.azurerm_resource_group.this.name
+  location                 = var.location
+  resource_group_name      = var.resource_group_name
   account_replication_type = "LRS"
   account_tier             = "Standard"
 }
@@ -16,7 +12,7 @@ data "azurerm_storage_account" "this" {
   count = var.existing_storage_account != null ? 1 : 0
 
   name                = var.existing_storage_account
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = var.resource_group_name
 }
 
 locals {

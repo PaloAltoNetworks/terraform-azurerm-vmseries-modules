@@ -78,9 +78,9 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = local.resource_group_name
+  location             = var.location
   storage_account_name = var.storage_account_name
   files                = var.files
-  depends_on           = [azurerm_resource_group.this]
 }
 
 # Create the Availability Set only if we do not use Availability Zones.

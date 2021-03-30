@@ -100,6 +100,7 @@ module "outbound_bootstrap" {
 
   create_storage_account   = false
   resource_group_name      = module.bootstrap.resource_group_name.name
+  location                 = var.location
   existing_storage_account = module.bootstrap.storage_account
   storage_account_name     = "${var.storage_account_name}ob-"
   storage_share_name       = "obbootstrapshare"
