@@ -1,6 +1,3 @@
-#----------------------#
-#   Global Variables   #
-#----------------------#
 variable "location" {
   description = "The Azure region to use."
   default     = "East US 2"
@@ -71,9 +68,26 @@ variable "vmseries" {
   EOF
 }
 
-#----------------------#
-#      Networking      #
-#----------------------#
+variable "storage_account_name" {
+  description = <<-EOF
+  Default name of the storage account to create.
+  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+  EOF
+  default     = "pantfstorage"
+  type        = string
+}
+
+variable "files" {
+  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
+variable "storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping."
+  type        = string
+}
+
 variable "management_ips" {
   description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
   type        = map(number)
@@ -122,10 +136,6 @@ variable "olb_private_ip" {
 variable "frontend_ips" {
   description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
 }
-
-#----------------------#
-#      VM Options      #
-#----------------------#
 
 variable "common_vmseries_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"

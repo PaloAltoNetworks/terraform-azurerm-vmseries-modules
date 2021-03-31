@@ -1,24 +1,27 @@
-data "azurerm_resource_group" "this" {
-  name = var.resource_group_name
+resource "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
+  location = var.location
+  tags     = {}
 }
 
 module "vnet" {
   source = "Azure/vnet/azurerm"
 
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = azurerm_resource_group.this.name
   vnet_name           = var.vnet_name
   address_space       = var.address_space
   subnet_prefixes     = var.subnet_prefixes
   subnet_names        = var.subnet_names
 
-  tags = var.tags
+  tags       = var.tags
+  depends_on = [azurerm_resource_group.this]
 }
 
 module "nsg" {
   source = "Azure/network-security-group/azurerm"
 
-  resource_group_name     = data.azurerm_resource_group.this.name
-  location                = coalesce(var.location, data.azurerm_resource_group.this.location)
+  resource_group_name     = azurerm_resource_group.this.name
+  location                = azurerm_resource_group.this.location
   security_group_name     = var.security_group_name
   source_address_prefixes = keys(var.management_ips)
   predefined_rules = [
@@ -41,7 +44,8 @@ module "nsg" {
     }
   ]
 
-  tags = var.tags
+  tags       = var.tags
+  depends_on = [azurerm_resource_group.this]
 }
 
 resource "azurerm_subnet_network_security_group_association" "public" {
@@ -61,18 +65,20 @@ resource "random_password" "password" {
 }
 
 module "bootstrap" {
-  source = "../../modules/vm-bootstrap"
+  source = "../../modules/bootstrap"
 
-  location    = var.location
-  name_prefix = var.name_prefix
+  resource_group_name  = azurerm_resource_group.this.name
+  location             = azurerm_resource_group.this.location
+  storage_account_name = var.storage_account_name
+  files                = var.files
 }
 
 module "panorama" {
   source = "../../modules/panorama"
 
   panorama_name       = var.panorama_name
-  resource_group_name = var.resource_group_name
-  location            = var.location //Optional; if not provided, will use Resource Group location
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
   avzone              = var.avzone   // Optional Availability Zone number
 
   interfaces = {
@@ -113,12 +119,4 @@ module "panorama" {
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
   tags                        = var.tags
-}
-
-output panorama_url {
-  value = "https://${module.panorama.panorama-publicips[0]}"
-}
-
-output panorama_admin_password {
-  value = random_password.password.result
 }

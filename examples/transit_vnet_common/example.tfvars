@@ -27,3 +27,10 @@ vmseries = {
 
 common_vmseries_version = "9.1.3"
 common_vmseries_sku     = "bundle1"
+storage_account_name    = "pantfstorage"
+storage_share_name      = "ibbootstrapshare"
+
+files = {
+  "files/authcodes.sample"    = "license/authcodes"
+  "files/init-cfg.sample.txt" = "config/init-cfg.txt"
+}

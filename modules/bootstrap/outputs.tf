@@ -1,8 +1,14 @@
-# sotrage_account
-output "storage_account" { value = azurerm_storage_account.this }
-output "storage_account_access_key" { value = azurerm_storage_account.this.primary_access_key }
-output "storage_account_endpoint" { value = azurerm_storage_account.this.primary_blob_endpoint }
+output "storage_account" {
+  description = "The Azure Storage Account object used for the Bootstrap."
+  value       = local.storage_account
+}
 
-# storage_share
-output "storage_share" { value = azurerm_storage_share.this }
+output "storage_share" {
+  description = "The File Share object within Azure Storage used for the Bootstrap."
+  value       = azurerm_storage_share.this
+}
 
+output "primary_access_key" {
+  description = "The primary access key for the Azure Storage Account."
+  value       = local.storage_account.primary_access_key
+}

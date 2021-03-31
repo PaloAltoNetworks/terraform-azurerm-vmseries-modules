@@ -1,8 +1,12 @@
 # Configure the Azure provider
 provider "azurerm" {
-  # whilst the `version` attribute is optional, we recommend pinning to a given version of the Provider
-  version = ">=2.24.0"
   features {}
+}
+
+resource "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
+  location = var.location
+  tags     = {}
 }
 
 resource "random_password" "password" {
@@ -57,10 +61,12 @@ module "outbound-lb" {
 }
 
 module "bootstrap" {
-  source = "../../modules/vm-bootstrap"
+  source = "../../modules/bootstrap"
 
-  location    = var.location
-  name_prefix = var.name_prefix
+  resource_group_name  = azurerm_resource_group.this.name
+  storage_account_name = var.storage_account_name
+  files                = var.files
+  depends_on           = [azurerm_resource_group.this]
 }
 
 # Create a storage container for storing VM disks provisioned via VMSS
@@ -90,11 +96,13 @@ module "inbound-scaleset" {
 
 # Outbound
 module "outbound_bootstrap" {
-  source = "../../modules/vm-bootstrap"
+  source = "../../modules/bootstrap"
 
   create_storage_account   = false
+  resource_group_name      = module.bootstrap.resource_group_name.name
+  location                 = var.location
   existing_storage_account = module.bootstrap.storage_account
-  name_prefix              = "${var.name_prefix}ob-"
+  storage_account_name     = "${var.storage_account_name}ob-"
   storage_share_name       = "obbootstrapshare"
 }
 
