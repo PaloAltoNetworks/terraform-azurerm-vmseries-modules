@@ -21,5 +21,3 @@ The following resources will be deployed when using the provided example:
 * Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
 * Run `terraform init` to initialize the working directory.
 * Run `terraform apply` to apply the changes required to reach the desired state of the configuration specified for this example.
-
-
