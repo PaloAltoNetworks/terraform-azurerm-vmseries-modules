@@ -5,7 +5,7 @@ output "username" {
 
 output "password" {
   description = "PAN Device password"
-  value       = coalesce(var.password, random_password.password.result)
+  value       = coalesce(var.password, random_password.this.result)
 }
 
 output mgmt_ip_addresses {
