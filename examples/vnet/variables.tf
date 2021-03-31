@@ -9,7 +9,7 @@ variable "location" {
   default     = ""
 }
 
-variable tags {
+variable "tags" {
   description = "A mapping of tags to assign to all of the created resources."
   type        = map(any)
   default     = {}
