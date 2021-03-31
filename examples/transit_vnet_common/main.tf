@@ -9,7 +9,7 @@ locals {
   resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
 }
 
-resource "random_password" "password" {
+resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
   min_numeric      = 1
@@ -97,7 +97,7 @@ module "common_vmseries" {
   avset_id                  = try(azurerm_availability_set.this[0].id, null)
   avzone                    = try(each.value.avzone, null)
   username                  = var.username
-  password                  = coalesce(var.password, random_password.password.result)
+  password                  = coalesce(var.password, random_password.this.result)
   img_version               = var.common_vmseries_version
   img_sku                   = var.common_vmseries_sku
   vm_size                   = var.common_vmseries_vm_size
