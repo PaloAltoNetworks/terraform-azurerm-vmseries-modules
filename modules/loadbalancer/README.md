@@ -1,4 +1,4 @@
-# Palo Alto Networks inbound/outbound Load Balancer Module for Azure
+# Palo Alto Networks Inbound/Outbound Load Balancer Module for Azure
 
 A terraform module for deploying an Inbound/Outbound Load Balancer for VM-Series firewalls. Supports both standalone and scale set deployments.
 
