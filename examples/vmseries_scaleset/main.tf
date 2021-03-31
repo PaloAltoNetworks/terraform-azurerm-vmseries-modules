@@ -64,7 +64,9 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = azurerm_resource_group.this.name
+  location             = var.location
   storage_account_name = var.storage_account_name
+  storage_share_name   = "ibbootstrapshare"
   files                = var.files
   depends_on           = [azurerm_resource_group.this]
 }
@@ -87,7 +89,7 @@ module "inbound-scaleset" {
   subnet_private            = module.networks.subnet_private
   subnet_public             = module.networks.subnet_public
   bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap_share_name      = module.bootstrap.storage_share_name
+  bootstrap_share_name      = module.bootstrap.storage_share.name
   vhd_container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
@@ -99,11 +101,11 @@ module "outbound_bootstrap" {
   source = "../../modules/bootstrap"
 
   create_storage_account   = false
-  resource_group_name      = module.bootstrap.resource_group_name.name
+  resource_group_name      = azurerm_resource_group.this.name
   location                 = var.location
-  existing_storage_account = module.bootstrap.storage_account
-  storage_account_name     = "${var.storage_account_name}ob-"
+  existing_storage_account = module.bootstrap.storage_account.name
   storage_share_name       = "obbootstrapshare"
+  files                    = var.files
 }
 
 module "outbound-scaleset" {
@@ -117,7 +119,7 @@ module "outbound-scaleset" {
   subnet_private            = module.networks.subnet_private
   subnet_public             = module.networks.subnet_public
   bootstrap_storage_account = module.outbound_bootstrap.storage_account
-  bootstrap_share_name      = module.outbound_bootstrap.storage_share_name
+  bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
   vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
   vm_count                  = var.vm_series_count
