@@ -13,11 +13,11 @@ The following resources will be deployed when using the provided example:
 
 ## Quick Start
 
-1. Install [Terraform](https://www.terraform.io/). The Terraform version required to run this module can be checked [here](./versions.tf).
-1. `git clone` this repository to your computer, navigate into:
+* Install [Terraform](https://www.terraform.io/). The Terraform version required to run this module can be checked [here](./versions.tf).
+* `git clone` this repository to your computer, navigate into:
 
     >/terraform-azurerm-vmseries-modules/examples/vnet
 
-1. Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
-1. Run `terraform init` to initialize the working directory.
-1. Run `terraform apply` to apply the changes required to reach the desired state of the configuration specified for this example.
+* Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
+* Run `terraform init` to initialize the working directory.
+* Run `terraform apply` to apply the changes required to reach the desired state of the configuration specified for this example.
