@@ -9,7 +9,7 @@ resource "azurerm_storage_account" "this" {
 }
 
 data "azurerm_storage_account" "this" {
-  count = var.existing_storage_account != null ? 1 : 0
+  count = var.create_storage_account ? 0 : 1
 
   name                = var.existing_storage_account
   resource_group_name = var.resource_group_name
