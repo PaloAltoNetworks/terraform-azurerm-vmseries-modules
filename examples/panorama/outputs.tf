@@ -4,6 +4,6 @@ output "panorama_url" {
 }
 
 output "panorama_admin_password" {
-  description = "Panorama administrator password."
-  value       = random_password.password.result
+  description = "Panorama administrator's initial password."
+  value       = random_password.this.result
 }
