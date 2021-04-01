@@ -58,9 +58,12 @@ resource "azurerm_subnet_network_security_group_association" "mgmt" {
   subnet_id                 = module.vnet.vnet_subnets[1]
 }
 
-resource "random_password" "password" {
+resource "random_password" "this" {
   length           = 16
-  special          = true
+  min_lower        = 16 - 4
+  min_numeric      = 1
+  min_special      = 1
+  min_upper        = 1
   override_special = "_%@"
 }
 
@@ -79,7 +82,7 @@ module "panorama" {
   panorama_name       = var.panorama_name
   resource_group_name = azurerm_resource_group.this.name
   location            = azurerm_resource_group.this.location
-  avzone              = var.avzone   // Optional Availability Zone number
+  avzone              = var.avzone // Optional Availability Zone number
 
   interfaces = {
     public = {
@@ -112,9 +115,9 @@ module "panorama" {
   }
 
   panorama_size               = var.panorama_size
-  custom_image_id             = var.custom_image_id             // optional
-  username                    = var.username                    // no default - this can't be admin anymore (add this in documentation)
-  password                    = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
+  custom_image_id             = var.custom_image_id // optional
+  username                    = var.username
+  password                    = random_password.this.result
   panorama_sku                = var.panorama_sku
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
