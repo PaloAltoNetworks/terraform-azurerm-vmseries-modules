@@ -5,7 +5,7 @@ output "USERNAME" {
 
 output "PASSWORD" {
   description = "PAN Device password"
-  value       = random_password.password
+  value       = random_password.this.result
 }
 
 output "PANORAMA-IP" {
