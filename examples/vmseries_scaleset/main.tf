@@ -9,9 +9,12 @@ resource "azurerm_resource_group" "this" {
   tags     = {}
 }
 
-resource "random_password" "password" {
+resource "random_password" "this" {
   length           = 16
-  special          = true
+  min_lower        = 16 - 4
+  min_numeric      = 1
+  min_special      = 1
+  min_upper        = 1
   override_special = "_%@"
 }
 
@@ -39,7 +42,7 @@ module "panorama" {
   name_prefix      = var.name_prefix
   subnet_mgmt      = module.networks.panorama_mgmt_subnet
   username         = var.username
-  password         = coalesce(var.password, random_password.password.result)
+  password         = coalesce(var.password, random_password.this.result)
   panorama_sku     = var.panorama_sku
   panorama_version = var.panorama_version
 }
@@ -82,7 +85,7 @@ module "inbound-scaleset" {
   location                  = var.location
   name_prefix               = var.name_prefix
   username                  = var.username
-  password                  = coalesce(var.password, random_password.password.result)
+  password                  = coalesce(var.password, random_password.this.result)
   subnet_mgmt               = module.networks.subnet_mgmt
   subnet_private            = module.networks.subnet_private
   subnet_public             = module.networks.subnet_public
@@ -112,7 +115,7 @@ module "outbound-scaleset" {
   location                  = var.location
   name_prefix               = var.name_prefix
   username                  = var.username
-  password                  = coalesce(var.password, random_password.password.result)
+  password                  = coalesce(var.password, random_password.this.result)
   subnet_mgmt               = module.networks.subnet_mgmt
   subnet_private            = module.networks.subnet_private
   subnet_public             = module.networks.subnet_public
