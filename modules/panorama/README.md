@@ -46,9 +46,9 @@ module "panorama" {
   }
 
   panorama_size    = var.panorama_size
-  custom_image_id  = var.custom_image_id             // optional
-  username         = var.username                    // no default - this can't be admin anymore (add this in documentation)
-  password         = random_password.password.result // no default - check the complexity required by Azure marketplace (add this in documentation)
+  custom_image_id  = var.custom_image_id // optional
+  username         = var.username        // required, no default
+  password         = var.password        // required, no default
   panorama_sku     = var.panorama_sku
   panorama_version = var.panorama_version
 
@@ -93,11 +93,11 @@ module "panorama" {
 | panorama\_size | Virtual Machine size. | `string` | `"Standard_D5_v2"` | no |
 | panorama\_sku | Panorama SKU. | `string` | `"byol"` | no |
 | panorama\_version | Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama` | `string` | `"10.0.3"` | no |
-| password | Initial administrative password to use for Panorama. | `string` | n/a | yes |
+| password | Initial administrative password to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm). | `string` | n/a | yes |
 | pip\_suffix | The suffix for new public ip naming. | `string` | `"pip"` | no |
 | resource\_group\_name | The existing resource group name for Panorama. | `string` | n/a | yes |
 | tags | A map of tags to be associated with the resources created. | `map(any)` | `{}` | no |
-| username | Initial administrative username to use for Panorama. | `string` | `"panadmin"` | no |
+| username | Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm). | `string` | `"panadmin"` | no |
 
 ## Outputs
 
