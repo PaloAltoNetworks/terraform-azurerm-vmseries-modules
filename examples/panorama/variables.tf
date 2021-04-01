@@ -45,8 +45,9 @@ variable "custom_image_id" {
 }
 
 variable "username" {
-  type    = string
-  default = "panadmin"
+  description = "Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
+  type        = string
+  default     = "panadmin"
 }
 
 variable "panorama_sku" {
