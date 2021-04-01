@@ -68,7 +68,6 @@ module "bootstrap" {
   storage_account_name = var.storage_account_name
   storage_share_name   = "ibbootstrapshare"
   files                = var.files
-  depends_on           = [azurerm_resource_group.this]
 }
 
 # Create a storage container for storing VM disks provisioned via VMSS
