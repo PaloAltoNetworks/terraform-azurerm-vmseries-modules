@@ -80,24 +80,22 @@ module "panorama" {
 
   interface = [ // Only one interface in Panorama VM is supported
     {
-      name                 = "mgmt"
-      subnet_id            = module.vnet.vnet_subnets[0]
-      private_ip_address   = "10.0.0.6"  // Optional: If not set, use dynamic allocation
-      public_ip            = "true"      // (optional|bool, default: "false")
-      public_ip_name       = "public_ip" // (optional|string, default: "")
-      enable_ip_forwarding = "false"     // (optional|bool, default: "false")
-      primary_interface    = "true"
+      name               = "mgmt"
+      subnet_id          = module.vnet.vnet_subnets[0]
+      private_ip_address = "10.0.0.6"  // Optional: If not set, use dynamic allocation
+      public_ip          = "true"      // (optional|bool, default: "false")
+      public_ip_name     = "public_ip" // (optional|string, default: "")
     }
   ]
 
   logging_disks = {
     disk_name_1 = {
-      size : "50"
+      size : "2048"
       zone : "1"
       lun : "1"
     }
     disk_name_2 = {
-      size : "50"
+      size : "2048"
       zone : "2"
       lun : "2"
     }

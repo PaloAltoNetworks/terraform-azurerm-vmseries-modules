@@ -63,15 +63,14 @@ variable "interface" {
   description = <<-EOF
   A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
   ```
-  [ // Only one interface in Panorama VM is supported 
+  [
     {
       name                 = "mgmt"
       subnet_id            = ""
-      private_ip_address   = ""         // Optional: If not set, use dynamic allocation
-      public_ip            = "true"     // (optional|bool, default: "false")
-      public_ip_name       = ""         // (optional|string, default: "")
-      enable_ip_forwarding = "false"    // (optional|bool, default: "false")
-      primary_interface    = "true"
+      private_ip_address   = ""
+      public_ip            = "true"
+      public_ip_name       = ""
+      enable_ip_forwarding = "false"
     }
   ]
   ```
@@ -121,7 +120,7 @@ variable "panorama_name" {
 }
 
 variable "os_disk_name" {
-  description = "The suffix for disk name."
+  description = "The name of OS disk. The name is auto-generated when not provided."
   default     = null
   type        = string
 }

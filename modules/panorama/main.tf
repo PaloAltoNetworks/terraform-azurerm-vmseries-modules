@@ -5,9 +5,9 @@ data "azurerm_resource_group" "this" {
 
 # Create a public IP for management
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.interface : k => v if v.public_ip == "true" }
+  count = var.interface[0].public_ip == "true" ? 1 : 0
 
-  name                = coalesce(try(each.value.public_ip_name, ""), each.key)
+  name                = var.interface[0].public_ip_name
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
