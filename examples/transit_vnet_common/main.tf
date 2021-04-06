@@ -42,6 +42,7 @@ resource "azurerm_public_ip" "public" {
   resource_group_name = local.resource_group_name
   allocation_method   = "Static"
   sku                 = "standard"
+  tags                = var.common_vmseries_tags
 }
 
 # The Inbound Load Balancer for handling the traffic from the Internet.
@@ -101,6 +102,7 @@ module "common_vmseries" {
   img_version               = var.common_vmseries_version
   img_sku                   = var.common_vmseries_sku
   vm_size                   = var.common_vmseries_vm_size
+  tags                      = var.common_vmseries_tags
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [
