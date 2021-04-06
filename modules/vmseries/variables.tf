@@ -69,13 +69,12 @@ variable "bootstrap_share_name" {
 }
 
 variable "username" {
-  description = "Initial administrative username to use for VM-Series."
-  default     = "panadmin"
+  description = "Initial administrative username to use for VM-Series. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
   type        = string
 }
 
 variable "password" {
-  description = "Initial administrative password to use for VM-Series."
+  description = "Initial administrative password to use for VM-Series. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
   type        = string
 }
 
