@@ -6,6 +6,7 @@ resource "azurerm_public_ip" "this" {
   name                = each.value.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  tags                = try(each.value.tags, var.tags)
 }
 
 resource "azurerm_network_interface" "this" {
@@ -16,6 +17,7 @@ resource "azurerm_network_interface" "this" {
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = count.index == 0 ? false : var.accelerated_networking # for interface 0 it is unsupported by PAN-OS
   enable_ip_forwarding          = true
+  tags                          = try(var.interfaces[count.index].tags, var.tags)
 
   ip_configuration {
     name                          = "primary"
@@ -119,4 +121,5 @@ resource "azurerm_application_insights" "this" {
   resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
   application_type    = "other"
   retention_in_days   = var.metrics_retention_in_days
+  tags                = var.tags
 }

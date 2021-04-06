@@ -154,3 +154,9 @@ variable "common_vmseries_vm_size" {
   default     = "Standard_D3_v2"
   type        = string
 }
+
+variable "common_vmseries_tags" {
+  description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
+  default     = {}
+  type        = map
+}
