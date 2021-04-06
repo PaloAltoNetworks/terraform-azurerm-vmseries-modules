@@ -18,12 +18,6 @@ variable "storage_account_name" {
   type        = string
 }
 
-variable "files" {
-  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
-  default     = {}
-  type        = map(string)
-}
-
 variable "management_ips" {
   description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
   type        = map(number)

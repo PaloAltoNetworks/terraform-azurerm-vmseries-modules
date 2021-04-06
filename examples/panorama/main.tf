@@ -68,7 +68,6 @@ module "bootstrap" {
   resource_group_name  = azurerm_resource_group.this.name
   location             = azurerm_resource_group.this.location
   storage_account_name = var.storage_account_name
-  files                = var.files
 }
 
 module "panorama" {
@@ -79,25 +78,26 @@ module "panorama" {
   location            = azurerm_resource_group.this.location
   avzone              = var.avzone // Optional Availability Zone number
 
-  interface = { // Only one interface in Panorama VM is supported
-    mgmt = {
+  interface = [ // Only one interface in Panorama VM is supported
+    {
+      name                 = "mgmt"
       subnet_id            = module.vnet.vnet_subnets[0]
-      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "true"     // (optional|bool, default: "false")
-      public_ip_name       = ""         // (optional|string, default: "")
-      enable_ip_forwarding = "false"    // (optional|bool, default: "false")
+      private_ip_address   = "10.0.0.6"  // Optional: If not set, use dynamic allocation
+      public_ip            = "true"      // (optional|bool, default: "false")
+      public_ip_name       = "public_ip" // (optional|string, default: "")
+      enable_ip_forwarding = "false"     // (optional|bool, default: "false")
       primary_interface    = "true"
     }
-  }
+  ]
 
   logging_disks = {
     disk_name_1 = {
-      size : "2048"
+      size : "50"
       zone : "1"
       lun : "1"
     }
     disk_name_2 = {
-      dize : "4096"
+      size : "50"
       zone : "2"
       lun : "2"
     }
@@ -111,16 +111,6 @@ module "panorama" {
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
   tags                        = var.tags
-}
 
-output "panorama_url" {
-  value = "https://${module.panorama.public_mgmt_ip[0]}"
-}
-
-output "panorama_admin_password" {
-  value = random_password.password.result
-}
-
-output "private_mgmt_ip" {
-  value = module.panorama.private_mgmt_ip[0]
+  depends_on = [azurerm_resource_group.this]
 }

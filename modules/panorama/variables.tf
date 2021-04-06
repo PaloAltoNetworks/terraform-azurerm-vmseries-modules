@@ -60,20 +60,20 @@ variable "panorama_offer" {
 }
 
 variable "interface" {
-  type        = map(any)
   description = <<-EOF
-  A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
+  A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
   ```
-  {
-    mgmt = {                          // Only one interface in Panorama VM is supported
+  [ // Only one interface in Panorama VM is supported 
+    {
+      name                 = "mgmt"
       subnet_id            = ""
-      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "true"    // (optional|bool, default: "false")
-      public_ip_name       = ""        // (optional|bool, default: "")
-      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
+      private_ip_address   = ""         // Optional: If not set, use dynamic allocation
+      public_ip            = "true"     // (optional|bool, default: "false")
+      public_ip_name       = ""         // (optional|string, default: "")
+      enable_ip_forwarding = "false"    // (optional|bool, default: "false")
       primary_interface    = "true"
     }
-  }
+  ]
   ```
   EOF
 }
