@@ -26,14 +26,12 @@ variable "address_space" {
 
 variable "network_security_groups" {
   description = <<-EOF
-  A map of Network Security Groups objects to create. The object `key` acts as the Network Security Group name.
+  A map of Network Security Groups objects to create. The key of each entry acts as the Network Security Group name.
   List of arguments available to define a Network Security Group:
-  - `location` : Specifies the Azure location where to deploy the resource.
-  - `resource_group_name` : Name of an existing Resource Group in which to create the Network Security Group.
-  - `rules`: A list of objects representing a Network Security Rule. The object `key` acts as the name of the rule and
+  - `location` : (Optional) Specifies the Azure location where to deploy the resource.
+  - `rules`: A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
       needs to be unique across all rules in the Network Security Group.
       List of arguments available to define Network Security Rules:
-      - `resource_group_name` : Name of an existing Resource Group in which to create the Network Security Rules.
       - `priority` : Specifies the priority of the rule. The value can be between 100 and 4096. The priority number must be unique for each rule in the collection. 
       The lower the priority number, the higher the priority of the rule.
       - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
@@ -83,13 +81,11 @@ variable "network_security_groups" {
 
 variable "route_tables" {
   description = <<-EOF
-  A map of objects describing a Route Table. The object `key` acts as the Route Table name.
+  A map of objects describing a Route Table. The key of each entry acts as the Route Table name.
   List of arguments available to define a Route Table:
-  - `location` : Specifies the Azure location where to deploy the resource.
-  - `resource_group_name` : Name of an existing Resource Group in which to create the Route Table.
-  - `routes` (Optional) - A map of routes within a Route Table. 
+  - `location` : (Optional) Specifies the Azure location where to deploy the resource.
+  - `routes` : (Optional) Map of routes within a Route Table.
     List of arguments available to define a Route:
-    - `resource_group_name` : Name of an existing Resource Group in which to create the Route Table.
     - `address_prefix` : The destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type` : The type of Azure hop the packet should be sent to.
     Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
@@ -119,7 +115,7 @@ variable "route_tables" {
 
 variable "subnets" {
   description = <<-EOF
-  A map of subnet objects to create within a Virtual Network. The object `key` acts as the subnet name.
+  A map of subnet objects to create within a Virtual Network. The key of each entry acts as the subnet name.
   List of arguments available to define a subnet:
   - `address_prefixes` : The address prefix to use for the subnet.
   - `network_security_group_id` : The Network Security Group ID which should be associated with the subnet.
