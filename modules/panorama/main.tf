@@ -5,9 +5,9 @@ data "azurerm_resource_group" "this" {
 
 # Create a public IP for management
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.interfaces : k => v if v.public_ip == "true" }
+  count = var.interface[0].public_ip == "true" ? 1 : 0
 
-  name                = coalesce(try(each.value.public_ip_name, ""), "${each.key}-${var.pip_suffix}")
+  name                = var.interface[0].public_ip_name
   location            = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name = data.azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -15,28 +15,22 @@ resource "azurerm_public_ip" "this" {
   tags = var.tags
 }
 
-# Build Panorama interfaces
+# Build Panorama interface
 resource "azurerm_network_interface" "this" {
-  for_each = var.interfaces
-
-  name                 = each.key
+  name                 = var.interface[0].name
   location             = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name  = data.azurerm_resource_group.this.name
-  enable_ip_forwarding = lookup(each.value, "enable_ip_forwarding", "false")
+  enable_ip_forwarding = lookup(var.interface[0], "enable_ip_forwarding", "false")
 
   ip_configuration {
-    name                          = "${each.key}-${var.ipconfig_suffix}"
-    subnet_id                     = each.value.subnet_id
-    private_ip_address_allocation = lookup(each.value, "private_ip_address", null) != null ? "static" : "dynamic"
-    private_ip_address            = lookup(each.value, "private_ip_address", null) != null ? each.value.private_ip_address : null
-    public_ip_address_id          = lookup(each.value, "public_ip", "false") != "false" ? try(azurerm_public_ip.this[each.key].id) : null
+    name                          = var.interface[0].name
+    subnet_id                     = var.interface[0].subnet_id
+    private_ip_address_allocation = lookup(var.interface[0], "private_ip_address", null) != null ? "static" : "dynamic"
+    private_ip_address            = lookup(var.interface[0], "private_ip_address", null) != null ? var.interface[0].private_ip_address : null
+    public_ip_address_id          = lookup(var.interface[0], "public_ip", "false") != "false" ? try(azurerm_public_ip.this[0].id) : null
   }
 
   tags = var.tags
-}
-
-locals {
-  primary_interface = [for k, v in var.interfaces : k if lookup(v, "primary_interface", false) == "true"][0]
 }
 
 # Build the Panorama VM
@@ -44,8 +38,8 @@ resource "azurerm_virtual_machine" "panorama" {
   name                         = var.panorama_name
   location                     = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name          = data.azurerm_resource_group.this.name
-  network_interface_ids        = [for k, v in azurerm_network_interface.this : azurerm_network_interface.this[k].id]
-  primary_network_interface_id = azurerm_network_interface.this[local.primary_interface].id
+  network_interface_ids        = [azurerm_network_interface.this.id]
+  primary_network_interface_id = azurerm_network_interface.this.id
   vm_size                      = var.panorama_size
 
   delete_os_disk_on_termination    = true
@@ -60,7 +54,7 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = "${var.panorama_name}-${var.os-disk-suffix}"
+    name              = coalesce(var.os_disk_name, "${var.panorama_name}-disk")
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Standard_LRS"
@@ -96,7 +90,8 @@ resource "azurerm_virtual_machine" "panorama" {
 
 # Panorama managed disk
 resource "azurerm_managed_disk" "this" {
-  for_each             = var.logging_disks
+  for_each = var.logging_disks
+
   name                 = "${var.panorama_name}-disk-${each.key}"
   location             = coalesce(var.location, data.azurerm_resource_group.this.location)
   resource_group_name  = data.azurerm_resource_group.this.name

@@ -59,27 +59,20 @@ variable "panorama_offer" {
   type        = string
 }
 
-variable "interfaces" {
-  type        = map(any)
+variable "interface" {
   description = <<-EOF
-  A map of objects describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
+  A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
   ```
-  {
-    public = {
-      subnet_id            = module.vnet.vnet_subnets[0]
-      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "true"    // (optional|bool, default: "false")
-      public_ip_name       = ""        // (optional|bool, default: "")
-      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
-      primary_interface    = "true"
+  [
+    {
+      name                 = "mgmt"
+      subnet_id            = ""
+      private_ip_address   = ""
+      public_ip            = "true"
+      public_ip_name       = ""
+      enable_ip_forwarding = "false"
     }
-    mgmt = {
-      subnet_id            = module.vnet.vnet_subnets[1]
-      private_ip_address   = "10.0.1.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "false"   // (optional|bool, default: "false")
-      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
-    }
-  }
+  ]
   ```
   EOF
 }
@@ -121,31 +114,14 @@ variable "boot_diagnostic_storage_uri" {
 # Naming #
 #  ---   #
 
-variable "name_panorama_pip" {
-  description = "The name for public ip allows distinguish from other type of public ips."
-  default     = "panorama-pip"
-}
-
 variable "panorama_name" {
   description = "The Panorama common name."
   default     = "panorama"
 }
 
-variable "os-disk-suffix" {
-  description = "The suffix for disk name."
-  default     = "os-disk"
-  type        = string
-}
-
-variable "ipconfig_suffix" {
-  description = "The suffix for ip_configuration naming."
-  default     = "ipconfig"
-  type        = string
-}
-
-variable "pip_suffix" {
-  description = "The suffix for new public ip naming."
-  default     = "pip"
+variable "os_disk_name" {
+  description = "The name of OS disk. The name is auto-generated when not provided."
+  default     = null
   type        = string
 }
 
