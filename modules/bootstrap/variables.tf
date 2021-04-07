@@ -24,6 +24,12 @@ variable "storage_account_name" {
   type        = string
 }
 
+variable "min_tls_version" {
+  description = "The minimum supported TLS version for the storage account."
+  default     = "TLS1_2"
+  type        = string
+}
+
 variable "existing_storage_account" {
   description = "Name of the existing Storage Account object to use. Ignored when `create_storage_account` is true."
   default     = null
