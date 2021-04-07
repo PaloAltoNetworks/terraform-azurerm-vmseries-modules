@@ -33,6 +33,7 @@ See the examples/vm-series directory.
 | existing\_storage\_account | Name of the existing Storage Account object to use. Ignored when `create_storage_account` is true. | `string` | `null` | no |
 | files | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | location | Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`. | `string` | `null` | no |
+| min\_tls\_version | The minimum supported TLS version for the storage account. | `string` | `"TLS1_2"` | no |
 | resource\_group\_name | Name of the Resource Group to use. | `string` | n/a | yes |
 | storage\_account\_name | Default name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
 | storage\_share\_name | Name of storage share to be created that holds `files` for bootstrapping. | `string` | `"bootstrapshare"` | no |

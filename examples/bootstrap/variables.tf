@@ -23,6 +23,12 @@ variable "storage_account_name" {
   type        = string
 }
 
+variable "min_tls_version" {
+  description = "The minimum supported TLS version for the storage account."
+  default     = "TLS1_2"
+  type        = string
+}
+
 variable "files" {
   description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
   default     = {}
