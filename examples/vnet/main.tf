@@ -15,11 +15,10 @@ module "vnet" {
 
   virtual_network_name    = var.virtual_network_name
   resource_group_name     = azurerm_resource_group.this.name
+  location                = var.location
   address_space           = var.address_space
   network_security_groups = var.network_security_groups
   route_tables            = var.route_tables
   subnets                 = var.subnets
   tags                    = var.tags
-
-  depends_on = [azurerm_resource_group.this]
 }
