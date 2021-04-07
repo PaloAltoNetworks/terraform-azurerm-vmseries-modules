@@ -4,9 +4,8 @@ variable "virtual_network_name" {
 }
 
 variable "location" {
-  description = "Location of the resources that will be deployed. By default, uses the location obtained from the Resource Group Data Source."
+  description = "Location of the resources that will be deployed."
   type        = string
-  default     = ""
 }
 
 variable "tags" {
@@ -29,15 +28,12 @@ variable "network_security_groups" {
   description = <<-EOF
   A map of Network Security Groups objects to create. The object `key` acts as the Network Security Group name.
   List of arguments available to define a Network Security Group:
-  - `location` : Specifies the supported Azure location where to deploy the resource,
-  by default uses the location from the Resource Group Data Source.
-  - `resource_group_name` : Name of an existing Resource Group in which to create the Network Security Group,
-  by default uses the Resource Group name from the Resource Group Data Source.
+  - `location` : Specifies the Azure location where to deploy the resource.
+  - `resource_group_name` : Name of an existing Resource Group in which to create the Network Security Group.
   - `rules`: A list of objects representing a Network Security Rule. The object `key` acts as the name of the rule and
       needs to be unique across all rules in the Network Security Group.
       List of arguments available to define Network Security Rules:
-      - `resource_group_name` : Name of an existing Resource Group in which to create the Network Security Rules,
-      by default uses the Resource Group name from the Resource Group Data Source.
+      - `resource_group_name` : Name of an existing Resource Group in which to create the Network Security Rules.
       - `priority` : Specifies the priority of the rule. The value can be between 100 and 4096. The priority number must be unique for each rule in the collection. 
       The lower the priority number, the higher the priority of the rule.
       - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
@@ -89,14 +85,11 @@ variable "route_tables" {
   description = <<-EOF
   A map of objects describing a Route Table. The object `key` acts as the Route Table name.
   List of arguments available to define a Route Table:
-  - `location` : Specifies the supported Azure location where to deploy the resource,
-  by default uses the location from the Resource Group Data Source.
-  - `resource_group_name` : Name of an existing Resource Group in which to create the Route Table,
-  by default uses the Resource Group name from the Resource Group Data Source.
+  - `location` : Specifies the Azure location where to deploy the resource.
+  - `resource_group_name` : Name of an existing Resource Group in which to create the Route Table.
   - `routes` (Optional) - A map of routes within a Route Table. 
     List of arguments available to define a Route:
-    - `resource_group_name` : Name of an existing Resource Group in which to create the Route Table,
-    by default uses the Resource Group name from the Resource Group Data Source.
+    - `resource_group_name` : Name of an existing Resource Group in which to create the Route Table.
     - `address_prefix` : The destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type` : The type of Azure hop the packet should be sent to.
     Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
