@@ -1,7 +1,7 @@
 resource_group_name = "vmss-example-rg"
 location            = "East US"
-name_prefix = "vmssexample"
-vmseries_count     = 7
+name_prefix         = "vmssexample"
+vmseries_count      = 1
 
 frontend_ips = {
   "frontend01" = {
@@ -55,14 +55,6 @@ network_security_groups = {
 route_tables = {
   "route_table_1" = {
     routes = {
-      # "route_1" = {
-      #   address_prefix = "10.110.0.0/16"
-      #   next_hop_type  = "vnetlocal"
-      # },
-      # "route_2" = {
-      #   address_prefix = "10.111.0.0/16"
-      #   next_hop_type  = "vnetlocal"
-      # },
     }
   },
   "route_table_2" = {
@@ -70,10 +62,6 @@ route_tables = {
   },
   "route_table_3" = {
     routes = {
-      # "route_3" = {
-      #   address_prefix = "0.0.0.0/0"
-      #   next_hop_type  = "Internet"
-      # },
     }
   },
 }

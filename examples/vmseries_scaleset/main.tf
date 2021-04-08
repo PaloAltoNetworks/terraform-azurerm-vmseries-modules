@@ -52,7 +52,7 @@ module "outbound-lb" {
   location       = var.location
   name_prefix    = var.name_prefix
   backend-subnet = module.vnet.subnet_ids["private"]
-  private-ip = "10.112.1.100"
+  private-ip     = "10.112.1.100"
 }
 
 

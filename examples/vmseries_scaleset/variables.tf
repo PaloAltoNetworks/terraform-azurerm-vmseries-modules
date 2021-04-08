@@ -53,7 +53,7 @@ variable "vmseries_count" {
 
 variable "virtual_network_name" {
   description = "Name of the Virtual Network to create."
-  type = string
+  type        = string
 }
 
 variable "address_space" {
