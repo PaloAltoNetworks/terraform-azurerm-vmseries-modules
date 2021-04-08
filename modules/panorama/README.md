@@ -8,7 +8,7 @@ Usage
 
 ```hcl
 module "panorama" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/panorama"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/panorama"
 
   panorama_name       = var.panorama_name
   name_prefix         = var.name_prefix

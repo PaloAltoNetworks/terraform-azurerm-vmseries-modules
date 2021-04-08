@@ -6,7 +6,7 @@ A terraform module for VMSS VM-Series firewalls in Azure.
 
 ```hcl
 module "vmss" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/vmss"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/vmss"
 
   location                  = "Australia Central"
   name_prefix               = "pan"
