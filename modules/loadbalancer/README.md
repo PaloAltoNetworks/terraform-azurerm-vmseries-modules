@@ -7,7 +7,7 @@ A terraform module for deploying an Inbound/Outbound Load Balancer for VM-Series
 ```hcl
 # Deploy the inbound load balancer for traffic into the azure environment
 module "inbound-lb" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/loadbalancer"
 
   resource_group_name = ""
   location            = ""
@@ -31,7 +31,7 @@ module "inbound-lb" {
 
 # Deploy the outbound load balancer for traffic into the azure environment
 module "outbound-lb" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/modules/loadbalancer"
+  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/loadbalancer"
   
   resource_group_name = ""
   location            = ""
