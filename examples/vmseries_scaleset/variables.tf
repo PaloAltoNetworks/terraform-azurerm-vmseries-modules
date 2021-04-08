@@ -2,6 +2,7 @@ variable "resource_group_name" {
   description = "Name of the Resource Group to use."
   type        = string
 }
+
 variable "location" {
   description = "The Azure region to use."
   default     = "Australia Central"
@@ -41,52 +42,6 @@ variable "files" {
   type        = map(string)
 }
 
-variable "management_ips" {
-  description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
-  type        = map(number)
-}
-
-# Subnet definitions
-#  All subnet defs are joined with their vnet prefix to form a full CIDR prefix
-#  ex. for management, ${management_vnet_prefix}${management_subnet}
-#  Thus to change the VNET addressing you only need to update the relevent _vnet_prefix variable.
-
-variable "management_vnet_prefix" {
-  default     = "10.255."
-  description = "The private prefix used for the management virtual network"
-}
-
-variable "management_subnet" {
-  default     = "0.0/24"
-  description = "The private network that terminates all FW and Panorama IP addresses."
-}
-
-variable "firewall_vnet_prefix" {
-  default     = "10.110."
-  description = "The private prefix used for all firewall networks"
-}
-
-variable "vm_management_subnet" {
-  default     = "255.0/24"
-  description = "The subnet used for the management NICs on the vm-series"
-}
-
-variable "public_subnet" {
-  default     = "129.0/24"
-  description = "The private network that is the external or public side of the VM series firewalls (eth1/1)"
-}
-
-variable "private_subnet" {
-  default     = "0.0/24"
-  description = "The private network behind or on the internal side of the VM series firewalls (eth1/2)"
-}
-
-variable "olb_private_ip" {
-  # !! This IP MUST fall in the private-subnet network. !!
-  description = "The private IP address to assign to the Outgoing Load balancer frontend"
-  default     = "10.110.0.21"
-}
-
 variable "frontend_ips" {
   description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
 }
@@ -96,26 +51,27 @@ variable "vmseries_count" {
   default     = 1
 }
 
-variable "panorama_sku" {
-  description = "Panorama SKU."
-  default     = "byol"
-  type        = string
+variable "virtual_network_name" {
+  description = "Name of the Virtual Network to create."
+  type = string
 }
 
-variable "panorama_version" {
-  description = "Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama`"
-  default     = "9.0.5"
-  type        = string
+variable "address_space" {
+  description = "The address space used by the virtual network. You can supply more than one address space."
+  type        = list(string)
 }
 
-variable "vmseries_sku" {
-  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "bundle2"
-  type        = string
+variable "network_security_groups" {
+  description = "A map of Network Security Groups objects to create."
+  type        = map
 }
 
-variable "vmseries_version" {
-  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "9.0.4"
-  type        = string
+variable "route_tables" {
+  description = "A map of objects describing a Route Table."
+  type        = map
+}
+
+variable "subnets" {
+  description = "A map of subnet objects to create within a Virtual Network."
+  type        = map
 }
