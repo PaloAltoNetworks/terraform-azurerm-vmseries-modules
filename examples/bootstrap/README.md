@@ -8,15 +8,60 @@ The following resources will be deployed when using the provided example:
 * 1 [Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview).
 * 1 [File Share](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction#:~:text=Azure%20Files%20offers%20fully%20managed,cloud%20or%20on%2Dpremises%20deployments).
 
-## Quick Start
+## Usage
 
-1. Install [Terraform](https://www.terraform.io/). The Terraform version required to run this module can be checked [here](./versions.tf).
-1. `git clone` this repository to your computer, navigate into:
+Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
 
-    >/terraform-azurerm-vmseries-modules/examples/bootstrap
+```bash
+$ terraform init
+$ terraform apply
+```
 
-1. Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
-1. Run `terraform init` to initialize the working directory.
-1. Run `terraform apply` to apply the changes required to reach the desired state of the configuration specified for this example.
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+## Requirements
 
-__NOTE:__ As the file names suggests, the `init-cfg.sample.txt` and `authcodes.sample` are used only for demonstration purposes - if you wish to bootstrap your VM-Series firewall, you should modify the files content with proper data.
+| Name | Version |
+|------|---------|
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=0.12.29, <0.14 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~>2.42 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~>3.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~>2.42 |
+
+## Modules
+
+| Name | Source | Version |
+|------|--------|---------|
+| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap |  |
+
+## Resources
+
+| Name | Type |
+|------|------|
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
+
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account) | If true, create a Storage Account and ignore `existing_storage_account`. | `bool` | `true` | no |
+| <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
+| <a name="input_location"></a> [location](#input\_location) | Region to deploy vm-series bootstrap resources. | `string` | `null` | no |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
+| <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
+| <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping. | `string` | `"bootstrapshare"` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| <a name="output_primary_access_key"></a> [primary\_access\_key](#output\_primary\_access\_key) | The primary access key for the Azure Storage Account. |
+| <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | Identifier of the Azure Storage Account object used for the Bootstrap. |
+| <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name) | Name of the Azure Storage Account object used for the Bootstrap. |
+| <a name="output_storage_share_id"></a> [storage\_share\_id](#output\_storage\_share\_id) | Identifier of the File Share within Azure Storage. |
+| <a name="output_storage_share_name"></a> [storage\_share\_name](#output\_storage\_share\_name) | Name of the File Share within Azure Storage. |
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
