@@ -4,15 +4,8 @@ variable "location" {
   type        = string
 }
 
-variable "create_resource_group_name" {
-  description = "Name for a created resource group. The input is ignored if `existing_resource_group_name` is set. If null, uses an auto-generated name."
-  default     = null
-  type        = string
-}
-
-variable "existing_resource_group_name" {
-  description = "Name for an existing resource group to use. If null, use instead `create_resource_group_name`."
-  default     = null
+variable "resource_group_name" {
+  description = "A Resource group name."
   type        = string
 }
 
@@ -133,9 +126,9 @@ variable "olb_private_ip" {
   default     = "10.110.0.21"
 }
 
-variable "frontend_ips" {
-  description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
-}
+#variable "frontend_ips" {
+#  description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
+#}
 
 variable "common_vmseries_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
