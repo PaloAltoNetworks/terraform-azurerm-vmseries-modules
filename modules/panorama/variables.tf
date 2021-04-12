@@ -1,11 +1,11 @@
 variable "location" {
-  description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
-  default     = ""
+  description = "Region to deploy Panorama into."
+  type        = string
 }
 
 variable "resource_group_name" {
+  description = "The name of the existing resource group where to place all the resources created by this module."
   type        = string
-  description = "The existing resource group name for Panorama."
 }
 
 variable "avzone" {
