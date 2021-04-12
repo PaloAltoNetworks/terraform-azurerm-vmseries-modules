@@ -1,15 +1,10 @@
-# Base resource group
-data "azurerm_resource_group" "this" {
-  name = var.resource_group_name
-}
-
 # Create a public IP for management
 resource "azurerm_public_ip" "this" {
   count = var.interface[0].public_ip == "true" ? 1 : 0
 
   name                = var.interface[0].public_ip_name
-  location            = coalesce(var.location, data.azurerm_resource_group.this.location)
-  resource_group_name = data.azurerm_resource_group.this.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   allocation_method   = "Static"
 
   tags = var.tags
@@ -18,8 +13,8 @@ resource "azurerm_public_ip" "this" {
 # Build Panorama interface
 resource "azurerm_network_interface" "this" {
   name                 = var.interface[0].name
-  location             = coalesce(var.location, data.azurerm_resource_group.this.location)
-  resource_group_name  = data.azurerm_resource_group.this.name
+  location             = var.location
+  resource_group_name  = var.resource_group_name
   enable_ip_forwarding = lookup(var.interface[0], "enable_ip_forwarding", "false")
 
   ip_configuration {
@@ -36,8 +31,8 @@ resource "azurerm_network_interface" "this" {
 # Build the Panorama VM
 resource "azurerm_virtual_machine" "panorama" {
   name                         = var.panorama_name
-  location                     = coalesce(var.location, data.azurerm_resource_group.this.location)
-  resource_group_name          = data.azurerm_resource_group.this.name
+  location                     = var.location
+  resource_group_name          = var.resource_group_name
   network_interface_ids        = [azurerm_network_interface.this.id]
   primary_network_interface_id = azurerm_network_interface.this.id
   vm_size                      = var.panorama_size
@@ -93,8 +88,8 @@ resource "azurerm_managed_disk" "this" {
   for_each = var.logging_disks
 
   name                 = "${var.panorama_name}-disk-${each.key}"
-  location             = coalesce(var.location, data.azurerm_resource_group.this.location)
-  resource_group_name  = data.azurerm_resource_group.this.name
+  location             = var.location
+  resource_group_name  = var.resource_group_name
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = lookup(each.value, "size", "2048")

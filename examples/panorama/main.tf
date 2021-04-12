@@ -24,6 +24,7 @@ module "nsg" {
   location                = azurerm_resource_group.this.location
   security_group_name     = var.security_group_name
   source_address_prefixes = keys(var.management_ips)
+  tags                    = var.tags
   predefined_rules = [
     { name = "SSH" },
     { name = "HTTPS" },
@@ -43,9 +44,6 @@ module "nsg" {
       priority               = 100 + i
     }
   ]
-
-  tags       = var.tags
-  depends_on = [azurerm_resource_group.this]
 }
 
 resource "azurerm_subnet_network_security_group_association" "public" {
@@ -62,6 +60,9 @@ resource "random_password" "this" {
   override_special = "_%@"
 }
 
+# While this example does not require a bootstrap file share,
+# we will use the module just to get a storage blob.
+# The blob will hold boot diagnostics of our virtual machine.
 module "bootstrap" {
   source = "../../modules/bootstrap"
 
@@ -109,6 +110,4 @@ module "panorama" {
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
   tags                        = var.tags
-
-  depends_on = [azurerm_resource_group.this]
 }
