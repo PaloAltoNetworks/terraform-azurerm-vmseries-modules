@@ -3,12 +3,13 @@ provider "azurerm" {
   features {}
 }
 
+# Create new Resource Group
 resource "azurerm_resource_group" "this" {
   name     = var.resource_group_name
   location = var.location
-  tags     = {}
 }
 
+# Generate random password than meets our requirements
 resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
@@ -19,34 +20,22 @@ resource "random_password" "this" {
 }
 
 # Setup all the networks required for the topology
-module "networks" {
-  source = "../../modules/networking"
+module "vnet" {
+  source = "../../modules/vnet"
 
-  location               = var.location
-  management_ips         = var.management_ips
-  name_prefix            = var.name_prefix
-  management_vnet_prefix = var.management_vnet_prefix
-  management_subnet      = var.management_subnet
-  olb_private_ip         = var.olb_private_ip
-  firewall_vnet_prefix   = var.firewall_vnet_prefix
-  private_subnet         = var.private_subnet
-  public_subnet          = var.public_subnet
-  vm_management_subnet   = var.vm_management_subnet
+  virtual_network_name    = var.virtual_network_name
+  resource_group_name     = azurerm_resource_group.this.name
+  location                = var.location
+  address_space           = var.address_space
+  network_security_groups = var.network_security_groups
+  route_tables            = var.route_tables
+  subnets                 = var.subnets
 }
 
-# Create a panorama instance
-module "panorama" {
-  source = "../../modules/panorama"
 
-  location         = var.location
-  name_prefix      = var.name_prefix
-  subnet_mgmt      = module.networks.panorama_mgmt_subnet
-  username         = var.username
-  password         = coalesce(var.password, random_password.this.result)
-  panorama_sku     = var.panorama_sku
-  panorama_version = var.panorama_version
-}
 
+### LOAD BALANCERS ###
+# Create the inbound load balancer
 module "inbound-lb" {
   source = "../../modules/inbound-load-balancer"
 
@@ -55,75 +44,85 @@ module "inbound-lb" {
   frontend_ips = var.frontend_ips
 }
 
+# Create the outbound load balancer
 module "outbound-lb" {
   source = "../../modules/outbound-load-balancer"
 
   location       = var.location
   name_prefix    = var.name_prefix
-  backend-subnet = module.networks.subnet_private.id
+  backend-subnet = module.vnet.subnet_ids["private"]
+  private-ip     = "10.112.1.100"
 }
 
-module "bootstrap" {
+
+
+### BOOTSTRAPPING ###
+# Inbound
+module "inbound-bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
-  storage_account_name = var.storage_account_name
   storage_share_name   = "ibbootstrapshare"
+  storage_account_name = var.storage_account_name
   files                = var.files
+}
+
+# Outbound
+module "outbound-bootstrap" {
+  source = "../../modules/bootstrap"
+
+  resource_group_name      = azurerm_resource_group.this.name
+  location                 = var.location
+  storage_share_name       = "obbootstrapshare"
+  create_storage_account   = false
+  existing_storage_account = module.inbound-bootstrap.storage_account.name
+  files                    = var.files
 }
 
 # Create a storage container for storing VM disks provisioned via VMSS
 resource "azurerm_storage_container" "this" {
   name                 = "${var.name_prefix}vm-container"
-  storage_account_name = module.bootstrap.storage_account.name
+  storage_account_name = module.inbound-bootstrap.storage_account.name
 }
 
+
+
+### SCALE SETS ###
 # Create the inbound Scaleset
 module "inbound-scaleset" {
   source = "../../modules/vmss"
 
   location                  = var.location
-  name_prefix               = var.name_prefix
+  name_prefix               = "${var.name_prefix}-inbound"
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
-  subnet_mgmt               = module.networks.subnet_mgmt
-  subnet_private            = module.networks.subnet_private
-  subnet_public             = module.networks.subnet_public
-  bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap_share_name      = module.bootstrap.storage_share.name
-  vhd_container             = "${module.bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
+  subnet_private            = { id = module.vnet.subnet_ids["private"] }
+  subnet_public             = { id = module.vnet.subnet_ids["public"] }
+  bootstrap_storage_account = module.inbound-bootstrap.storage_account
+  bootstrap_share_name      = module.inbound-bootstrap.storage_share.name
+  vhd_container             = "${module.inbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.inbound-lb.backend-pool-id
   vm_count                  = var.vmseries_count
-  depends_on                = [module.panorama]
 }
 
-# Outbound
-module "outbound_bootstrap" {
-  source = "../../modules/bootstrap"
 
-  create_storage_account   = false
-  resource_group_name      = azurerm_resource_group.this.name
-  location                 = var.location
-  existing_storage_account = module.bootstrap.storage_account.name
-  storage_share_name       = "obbootstrapshare"
-  files                    = var.files
-}
 
+# Create the outbound Scaleset
 module "outbound-scaleset" {
   source = "../../modules/vmss"
 
   location                  = var.location
-  name_prefix               = var.name_prefix
+  name_prefix               = "${var.name_prefix}-outbound"
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
-  subnet_mgmt               = module.networks.subnet_mgmt
-  subnet_private            = module.networks.subnet_private
-  subnet_public             = module.networks.subnet_public
-  bootstrap_storage_account = module.outbound_bootstrap.storage_account
-  bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
-  vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
+  subnet_private            = { id = module.vnet.subnet_ids["private"] }
+  subnet_public             = { id = module.vnet.subnet_ids["public"] }
+  bootstrap_storage_account = module.outbound-bootstrap.storage_account
+  bootstrap_share_name      = module.outbound-bootstrap.storage_share.name
+  vhd_container             = "${module.outbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_backend_pool_id        = module.outbound-lb.backend-pool-id
   vm_count                  = var.vmseries_count
-  depends_on                = [module.panorama]
 }

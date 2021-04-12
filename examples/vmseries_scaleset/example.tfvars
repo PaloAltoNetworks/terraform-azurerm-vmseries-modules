@@ -1,11 +1,8 @@
-# Priority map of security rules for your management IP addresses.
-# Each key is the public IP, and the number is the priority it gets in the relevant network security groups (NSGs).
-management_ips = {
-  "199.199.199.199" : 100,
-}
+resource_group_name = "vmss-example-rg"
+location            = "East US"
+name_prefix         = "vmssexample"
+vmseries_count      = 1
 
-# Optional Load Balancer (LB) rules
-# These will automatically create a public Azure IP and associate to LB configuration.
 frontend_ips = {
   "frontend01" = {
     create_public_ip = true
@@ -18,11 +15,71 @@ frontend_ips = {
   }
 }
 
-# The count here defines how many VM-series are deployed PER VM direction (inbound/outbound)
-vmseries_count      = 2
-resource_group_name = "example-rg"
-location            = "East US"
 files = {
   "files/authcodes.sample"    = "license/authcodes"
   "files/init-cfg.sample.txt" = "config/init-cfg.txt"
+}
+
+storage_account_name = "vmssexample20210406"
+virtual_network_name = "vmss-example-vnet"
+address_space        = ["10.112.0.0/16"]
+
+network_security_groups = {
+  "network_security_group_1" = {
+    location = "East US"
+    rules = {
+      "AllOutbound" = {
+        priority                   = 100
+        direction                  = "Outbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "*"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+      },
+      "AllowSSH" = {
+        priority                   = 200
+        direction                  = "Inbound"
+        access                     = "Allow"
+        protocol                   = "Tcp"
+        source_port_range          = "*"
+        destination_port_range     = "22"
+        source_address_prefix      = "*"
+        destination_address_prefix = "*"
+      },
+    }
+  },
+}
+
+route_tables = {
+  "route_table_1" = {
+    routes = {
+    }
+  },
+  "route_table_2" = {
+    routes = {},
+  },
+  "route_table_3" = {
+    routes = {
+    }
+  },
+}
+
+subnets = {
+  "management" = {
+    address_prefixes       = ["10.112.0.0/24"]
+    network_security_group = "network_security_group_1"
+    route_table            = "route_table_1"
+  },
+  "private" = {
+    address_prefixes       = ["10.112.1.0/24"]
+    network_security_group = "network_security_group_1"
+    route_table            = "route_table_2"
+  },
+  "public" = {
+    address_prefixes       = ["10.112.2.0/24"]
+    network_security_group = "network_security_group_1"
+    route_table            = "route_table_3"
+  },
 }
