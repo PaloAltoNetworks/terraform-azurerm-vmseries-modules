@@ -32,26 +32,69 @@ module "vnet" {
   subnets                 = var.subnets
 }
 
+resource "azurerm_public_ip" "lb" {
+  name                = var.lb_public_name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  allocation_method   = "Static"
+  sku                 = "standard"
+}
 
+locals {
+  public_frontend_ips = {
+    pip-existing = {
+      create_public_ip         = false
+      public_ip_name           = azurerm_public_ip.lb.name
+      public_ip_resource_group = azurerm_resource_group.this.name
+      rules = {
+        HTTP = {
+          port         = 80
+          protocol     = "Tcp"
+          backend_name = "backend1_name"
+        }
+      }
+    }
+  }
+}
 
 ### LOAD BALANCERS ###
 # Create the inbound load balancer
 module "inbound-lb" {
-  source = "../../modules/inbound-load-balancer"
+  source = "../../modules/loadbalancer"
 
-  location     = var.location
-  name_prefix  = var.name_prefix
-  frontend_ips = var.frontend_ips
+  name_lb             = var.lb_private_name
+  frontend_ips        = local.public_frontend_ips
+  resource_group_name = azurerm_resource_group.this.name
+
+  depends_on = [azurerm_resource_group.this, azurerm_public_ip.lb]
+}
+
+locals {
+  private_frontend_ips = {
+    internal_fe = {
+      subnet_id                     = module.vnet.subnet_ids["private"]
+      private_ip_address_allocation = "Static" // Dynamic or Static
+      private_ip_address            = "10.112.1.100"
+      rules = {
+        HA_PORTS = {
+          port         = 0
+          protocol     = "All"
+          backend_name = "backend3_name"
+        }
+      }
+    }
+  }
 }
 
 # Create the outbound load balancer
 module "outbound-lb" {
-  source = "../../modules/outbound-load-balancer"
+  source = "../../modules/loadbalancer"
 
-  location       = var.location
-  name_prefix    = var.name_prefix
-  backend-subnet = module.vnet.subnet_ids["private"]
-  private-ip     = "10.112.1.100"
+  name_lb             = "outboundLB"
+  frontend_ips        = local.private_frontend_ips
+  resource_group_name = azurerm_resource_group.this.name
+
+  depends_on = [azurerm_resource_group.this]
 }
 
 
@@ -103,7 +146,7 @@ module "inbound-scaleset" {
   bootstrap_storage_account = module.inbound-bootstrap.storage_account
   bootstrap_share_name      = module.inbound-bootstrap.storage_share.name
   vhd_container             = "${module.inbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.inbound-lb.backend-pool-id
+  lb_backend_pool_id        = module.inbound-lb.backend_pool_ids["backend1_name"]
   vm_count                  = var.vmseries_count
 }
 
@@ -123,6 +166,6 @@ module "outbound-scaleset" {
   bootstrap_storage_account = module.outbound-bootstrap.storage_account
   bootstrap_share_name      = module.outbound-bootstrap.storage_share.name
   vhd_container             = "${module.outbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.outbound-lb.backend-pool-id
+  lb_backend_pool_id        = module.outbound-lb.backend_pool_ids["backend3_name"]
   vm_count                  = var.vmseries_count
 }
