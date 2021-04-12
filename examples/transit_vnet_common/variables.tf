@@ -5,7 +5,7 @@ variable "location" {
 }
 
 variable "resource_group_name" {
-  description = "A Resource group name."
+  description = "Name of the Resource Group to use."
   type        = string
 }
 
