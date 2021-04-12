@@ -21,7 +21,7 @@ module "nsg" {
   source = "Azure/network-security-group/azurerm"
 
   resource_group_name     = azurerm_resource_group.this.name
-  location                = azurerm_resource_group.this.location
+  location                = var.location
   security_group_name     = var.security_group_name
   source_address_prefixes = keys(var.management_ips)
   tags                    = var.tags
@@ -67,7 +67,7 @@ module "bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = azurerm_resource_group.this.name
-  location             = azurerm_resource_group.this.location
+  location             = var.location
   storage_account_name = var.storage_account_name
 }
 
@@ -76,7 +76,7 @@ module "panorama" {
 
   panorama_name       = var.panorama_name
   resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
+  location            = var.location
   avzone              = var.avzone // Optional Availability Zone number
 
   interface = [ // Only one interface in Panorama VM is supported
