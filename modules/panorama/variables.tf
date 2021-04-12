@@ -101,13 +101,15 @@ variable "logging_disks" {
 }
 
 variable "custom_image_id" {
-  type    = string
-  default = null
+  description = "Absolute ID of your own Custom Image to be used for creating Panorama. If set, the `username`, `password`, `panorama_version`, `panorama_publisher`, `panorama_offer`, `panorama_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
+  default     = null
+  type        = string
 }
 
 variable "boot_diagnostic_storage_uri" {
   description = "Existing diagnostic storage uri"
   default     = null
+  type        = string
 }
 
 #  ---   #
@@ -117,6 +119,7 @@ variable "boot_diagnostic_storage_uri" {
 variable "panorama_name" {
   description = "The Panorama common name."
   default     = "panorama"
+  type        = string
 }
 
 variable "os_disk_name" {
