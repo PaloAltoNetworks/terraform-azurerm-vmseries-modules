@@ -12,8 +12,8 @@ module "vnet" {
   address_space       = var.address_space
   subnet_prefixes     = var.subnet_prefixes
   subnet_names        = var.subnet_names
+  tags                = var.tags
 
-  tags       = var.tags
   depends_on = [azurerm_resource_group.this]
 }
 
@@ -44,6 +44,8 @@ module "nsg" {
       priority               = 100 + i
     }
   ]
+
+  depends_on = [azurerm_resource_group.this]
 }
 
 resource "azurerm_subnet_network_security_group_association" "public" {
