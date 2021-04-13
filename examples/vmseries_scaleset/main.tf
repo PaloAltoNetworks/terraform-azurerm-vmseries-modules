@@ -62,9 +62,10 @@ locals {
 module "inbound-lb" {
   source = "../../modules/loadbalancer"
 
-  name_lb             = var.lb_private_name
+  name_lb             = var.lb_public_name
   frontend_ips        = local.public_frontend_ips
   resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
 
   depends_on = [azurerm_resource_group.this, azurerm_public_ip.lb]
 }
@@ -90,9 +91,10 @@ locals {
 module "outbound-lb" {
   source = "../../modules/loadbalancer"
 
-  name_lb             = "outboundLB"
+  name_lb             = var.lb_private_name
   frontend_ips        = local.private_frontend_ips
   resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
 
   depends_on = [azurerm_resource_group.this]
 }
