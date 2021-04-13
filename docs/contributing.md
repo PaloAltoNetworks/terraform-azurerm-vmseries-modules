@@ -3,6 +3,27 @@
 Contributions are welcome, and they are greatly appreciated! Every little bit helps,
 and credit will always be given.
 
+## Tools
+
+Any serious changes, especially any changes of variables or providers, require the
+`pre-commit` tool. Install the recommended versions:
+
+- pre-commit 2.9.3 - [installation instruction](https://pre-commit.com/#installation) (a Python3 package)
+- terraform-docs 0.12.1 - download the binary from [GitHub releases](https://github.com/terraform-docs/terraform-docs/releases)
+- tflint 0.20.2 - download the binary from [GitHub releases](https://github.com/terraform-linters/tflint/releases)
+- coreutils - required only on macOS (due to use of `realpath`), simply execute `brew install coreutils`
+
+For more details and a Docker-compatible alternative see the [official guide](https://github.com/antonbabenko/pre-commit-terraform#how-to-install) of the author of pre-commit-terraform, Anton Babenko.
+
+For these Contributors who prefer *not* to use the recommended git hooks, the command
+to fully update the auto-generated README files and to run formatters/tests:
+
+```sh
+pre-commit run -a
+```
+
+This command does not commit/add/push any changes to Git. It only changes local files.
+
 ## Coding Standards
 
 Please follow the [Terraform conventions](https://github.com/PaloAltoNetworks/terraform-best-practices/blob/master/README.md).
