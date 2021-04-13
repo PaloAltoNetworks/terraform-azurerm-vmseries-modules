@@ -28,10 +28,11 @@ jobs:
         env:
           AWS_DEFAULT_REGION: us-west-2
         run: |
-          cd ${GITHUB_WORKSPACE}/modules
-          for dir in $(find . -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1);
+          cd "$GITHUB_WORKSPACE"
+          for dir in $(find modules examples -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1);
           do
-            cd ${GITHUB_WORKSPACE}/modules/${dir}
+            echo "Processing directory: $dir"
+            cd "$GITHUB_WORKSPACE/$dir"
             terraform init -backend=false
             terraform validate
           done
