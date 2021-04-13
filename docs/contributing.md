@@ -13,13 +13,13 @@ Please follow the [Terraform conventions](https://github.com/PaloAltoNetworks/te
 
 Testing the workflow requires node, npm, and semantic-release to be installed locally:
 
-```
-$ npm install -g semantic-release@^17.1.1 @semantic-release/git@^9.0.0 @semantic-release/exec@^5.0.0 conventional-changelog-conventionalcommits@^4.4.0
+```sh
+npm install -g semantic-release@^17.1.1 @semantic-release/git@^9.0.0 @semantic-release/exec@^5.0.0 conventional-changelog-conventionalcommits@^4.4.0
 ```
 
 Run `semantic-release` on develop:
 
-```
+```sh
 semantic-release --dry-run --no-ci --branches=develop
 ```
 
@@ -27,7 +27,7 @@ Verify in the output that the next version is set correctly, and the release not
 
 ### Merge develop to master and push
 
-```
+```sh
 git checkout master
 git merge develop
 git push origin master
@@ -39,7 +39,7 @@ At this point, GitHub Actions builds and tags the release.
 
 Now, sync develop to master to add any commits made by the release bot.
 
-```
+```sh
 git fetch --all --tags
 git pull origin master
 git checkout develop
