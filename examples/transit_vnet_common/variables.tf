@@ -152,4 +152,16 @@ variable "common_vmseries_tags" {
   description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
   default     = {}
   type        = map
+
+variable "lb_public_name" {
+  description = "A name of public loadbalancer."
+  type        = string
+  default     = "lb_public"
 }
+
+variable "lb_private_name" {
+  description = "A name of private loadbalancer."
+  type        = string
+  default     = "lb_private"
+}
+
