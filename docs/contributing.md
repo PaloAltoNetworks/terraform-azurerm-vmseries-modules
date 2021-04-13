@@ -5,7 +5,7 @@ and credit will always be given.
 
 ## Coding Standards
 
-Please follow the [Terraform conventions](terraform-conventions.md) for the project.
+Please follow the [Terraform conventions](https://github.com/PaloAltoNetworks/terraform-best-practices/blob/master/README.md).
 
 ## Publish a new release (for maintainers)
 
