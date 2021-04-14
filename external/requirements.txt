@@ -1,0 +1,3 @@
+skilletcli
+pyinstaller
+terraform_external_data
