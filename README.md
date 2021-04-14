@@ -37,7 +37,7 @@ along with the changelog, on the GitHub [Releases](../../releases) page.
 ## Contributing
 
 Contributions are welcome, and they are greatly appreciated! Every little bit helps,
-and credit will always be given. Please follow our [contributing guide](./docs/contributing.md).
+and credit will always be given. Please follow our [contributing guide](./CONTRIBUTING.md).
 
 <!-- ## Who maintains these modules?
 
