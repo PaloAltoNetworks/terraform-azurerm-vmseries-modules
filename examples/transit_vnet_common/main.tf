@@ -78,12 +78,8 @@ module "bootstrap" {
   files                = var.files
 }
 
-# Create the Availability Set only if we do not use Availability Zones.
-# Each of these two mechanisms improves availability of the VM-Series.
 resource "azurerm_availability_set" "this" {
-  count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
-
-  name                        = "${var.name_prefix}-avset"
+  name                        = "${var.name_prefix}avset"
   location                    = var.location
   resource_group_name         = azurerm_resource_group.this.name
   platform_fault_domain_count = 2
@@ -98,11 +94,15 @@ module "common_vmseries" {
 
   for_each = var.vmseries
 
+  high_availability = { avset_id = azurerm_availability_set.this.id }
+  # Attempt below succeeds the `plan`, it fails in the middle of `apply`, passable I guess, but meh.
+  # high_availability = { something_else_than_avset_id = azurerm_availability_set.this.id }
+  # How to use the Zones instead:
+  # high_availability = try(each.value.high_availability, null)
+
   location                  = var.location
   resource_group_name       = azurerm_resource_group.this.name
   name                      = "${var.name_prefix}${each.key}"
-  avset_id                  = try(azurerm_availability_set.this[0].id, null)
-  avzone                    = try(each.value.avzone, null)
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
   img_version               = var.common_vmseries_version

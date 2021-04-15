@@ -42,8 +42,8 @@ resource "azurerm_virtual_machine" "this" {
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size
-  zones                        = var.avzone != null ? [var.avzone] : null
-  availability_set_id          = var.avset_id
+  zones                        = lookup(var.high_availability, "avzone", null) != null ? [var.high_availability.avzone] : null
+  availability_set_id          = lookup(var.high_availability, "avset_id", null)
   primary_network_interface_id = azurerm_network_interface.this[0].id
 
   network_interface_ids = [for k, v in azurerm_network_interface.this : v.id]

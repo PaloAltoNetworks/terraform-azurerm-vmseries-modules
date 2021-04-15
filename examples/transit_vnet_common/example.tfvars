@@ -102,8 +102,8 @@ frontend_ips = {
 }
 
 vmseries = {
-  "fw00" = { avzone = 1 }
-  "fw01" = { avzone = 2 }
+  "fw00" = { high_availability = { avzone = 1 } }
+  "fw01" = { high_availability = { avzone = 2 } }
 }
 
 common_vmseries_version = "9.1.3"

@@ -14,16 +14,14 @@ variable "name" {
   type        = string
 }
 
-variable "avzone" {
-  description = "The availability zone to use. Conflicts with `avset_id`. Example: `1`"
-  default     = null
-  type        = string
-}
-
-variable "avset_id" {
-  description = "The identifier of the Availability Set to use. Conflicts with `avzone`."
-  default     = null
-  type        = string
+variable "high_availability" {
+  description = "The availability option to use. Either specify `high_availability = { avzone = <number> }` (recommended) or alternatively `high_availability = { avset_id = \"idstring\" }`. Use the curly brackets. The `avzone` is the Azure Availability Zone, which is not yet supported in every Region. The `avset_id` is the identifier of the existing Availability Set object, an older mechanism but supported in all Regions. You cannot use this module without high availability."
+  default     = { avzone = "1" }
+  type        = any
+  validation {
+    condition     = lookup(var.high_availability, "avzone", null) != null || lookup(var.high_availability, "avset_id", null) != null
+    error_message = "The `high_availability` should either specify `avzone` attribute or `avset_id` attribute."
+  }
 }
 
 variable "interfaces" {
