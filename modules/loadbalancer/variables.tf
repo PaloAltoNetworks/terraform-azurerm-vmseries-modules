@@ -59,7 +59,6 @@ variable "resource_group_name" {
 
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
-  default     = ""
   type        = string
 }
 

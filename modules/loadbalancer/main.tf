@@ -1,13 +1,9 @@
-data "azurerm_resource_group" "this" {
-  name = var.resource_group_name
-}
-
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
   name                = each.key
-  location            = coalesce(var.location, data.azurerm_resource_group.this.location)
-  resource_group_name = data.azurerm_resource_group.this.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
   allocation_method   = "Static"
   sku                 = "standard"
 }
@@ -16,13 +12,13 @@ data "azurerm_public_ip" "exists" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.public_ip_name, null) != null }
 
   name                = each.value.public_ip_name
-  resource_group_name = coalesce(try(each.value.public_ip_resource_group, ""), data.azurerm_resource_group.this.name)
+  resource_group_name = try(each.value.public_ip_resource_group, var.resource_group_name)
 }
 
 resource "azurerm_lb" "lb" {
   name                = var.name_lb
-  resource_group_name = data.azurerm_resource_group.this.name
-  location            = coalesce(var.location, data.azurerm_resource_group.this.location)
+  resource_group_name = var.resource_group_name
+  location            = var.location
   sku                 = "standard"
 
   dynamic "frontend_ip_configuration" {
@@ -83,14 +79,14 @@ resource "azurerm_lb_probe" "probe" {
   loadbalancer_id     = azurerm_lb.lb.id
   name                = coalesce(var.name_probe, var.name_lb)
   port                = var.probe_port
-  resource_group_name = data.azurerm_resource_group.this.name
+  resource_group_name = var.resource_group_name
 }
 
 resource "azurerm_lb_rule" "lb_rules" {
   for_each = local.input_rules
 
   name                    = each.key
-  resource_group_name     = data.azurerm_resource_group.this.name
+  resource_group_name     = var.resource_group_name
   loadbalancer_id         = azurerm_lb.lb.id
   probe_id                = azurerm_lb_probe.probe.id
   backend_address_pool_id = azurerm_lb_backend_address_pool.lb_backend[each.key].id
