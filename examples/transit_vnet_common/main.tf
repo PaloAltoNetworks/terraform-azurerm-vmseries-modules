@@ -78,13 +78,6 @@ module "bootstrap" {
   files                = var.files
 }
 
-resource "azurerm_availability_set" "this" {
-  name                        = "${var.name_prefix}avset"
-  location                    = var.location
-  resource_group_name         = azurerm_resource_group.this.name
-  platform_fault_domain_count = 2
-}
-
 # Common VM-Series for handling:
 #   - inbound traffic from the Internet
 #   - outbound traffic to the Internet
@@ -93,12 +86,6 @@ module "common_vmseries" {
   source = "../../modules/vmseries"
 
   for_each = var.vmseries
-
-  high_availability = { avset_id = azurerm_availability_set.this.id }
-  # Attempt below succeeds the `plan`, it fails in the middle of `apply`, passable I guess, but meh.
-  # high_availability = { something_else_than_avset_id = azurerm_availability_set.this.id }
-  # How to use the Zones instead:
-  # high_availability = try(each.value.high_availability, null)
 
   location                  = var.location
   resource_group_name       = azurerm_resource_group.this.name
@@ -109,6 +96,7 @@ module "common_vmseries" {
   img_sku                   = var.common_vmseries_sku
   vm_size                   = var.common_vmseries_vm_size
   tags                      = var.common_vmseries_tags
+  high_availability         = try(each.value.high_availability, null)
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [
