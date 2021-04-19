@@ -88,15 +88,6 @@ variable "storage_share_name" {
   type        = string
 }
 
-variable "management_ips" {
-  description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
-  type        = map(number)
-}
-
-# Subnet definitions
-#  All subnet defs are joined with their vnet prefix to form a full CIDR prefix
-#  ex. for management, ${management_vnet_prefix}${management_subnet}
-#  Thus to change the VNET addressing you only need to update the relevent _vnet_prefix variable.
 variable "virtual_network_name" {
   description = "The name of the VNet to create."
   type        = string
@@ -123,11 +114,6 @@ variable "tags" {
   description = "A mapping of tags to assign to all of the created resources."
   type        = map(any)
   default     = {}
-}
-
-variable "olb_private_ip" {
-  description = "The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network."
-  default     = "10.110.0.21"
 }
 
 variable "frontend_ips" {
