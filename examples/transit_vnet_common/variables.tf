@@ -126,9 +126,13 @@ variable "olb_private_ip" {
   default     = "10.110.0.21"
 }
 
-#variable "frontend_ips" {
-#  description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
-#}
+variable "public_frontend_ips" {
+  description = "A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details."
+}
+
+variable "private_frontend_ips" {
+  description = "A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details."
+}
 
 variable "common_vmseries_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
@@ -154,14 +158,13 @@ variable "common_vmseries_tags" {
   type        = map
 
 variable "lb_public_name" {
-  description = "A name of public loadbalancer."
+  description = "Name of the public-facing load balancer."
   type        = string
   default     = "lb_public"
 }
 
 variable "lb_private_name" {
-  description = "A name of private loadbalancer."
+  description = "Name of the private load balancer."
   type        = string
   default     = "lb_private"
 }
-
