@@ -28,7 +28,7 @@ module "vnet" {
   network_security_groups = var.network_security_groups
   route_tables            = var.route_tables
   subnets                 = var.subnets
-  tags                    = var.tags
+  tags                    = var.vnet_tags
 }
 
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
