@@ -78,17 +78,6 @@ module "bootstrap" {
   files                = var.files
 }
 
-# Create the Availability Set only if we do not use Availability Zones.
-# Each of these two mechanisms improves availability of the VM-Series.
-resource "azurerm_availability_set" "this" {
-  count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
-
-  name                        = "${var.name_prefix}-avset"
-  location                    = var.location
-  resource_group_name         = azurerm_resource_group.this.name
-  platform_fault_domain_count = 2
-}
-
 # Common VM-Series for handling:
 #   - inbound traffic from the Internet
 #   - outbound traffic to the Internet
@@ -101,8 +90,7 @@ module "common_vmseries" {
   location                  = var.location
   resource_group_name       = azurerm_resource_group.this.name
   name                      = "${var.name_prefix}${each.key}"
-  avset_id                  = try(azurerm_availability_set.this[0].id, null)
-  avzone                    = try(each.value.avzone, null)
+  avzone                    = try(each.value.avzone, 1)
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
   img_version               = var.common_vmseries_version

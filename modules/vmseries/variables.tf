@@ -15,8 +15,8 @@ variable "name" {
 }
 
 variable "avzone" {
-  description = "The availability zone to use. Conflicts with `avset_id`. Example: `1`"
-  default     = null
+  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Conflicts with `avset_id`, in which case use `avzone = null`."
+  default     = "1"
   type        = string
 }
 
