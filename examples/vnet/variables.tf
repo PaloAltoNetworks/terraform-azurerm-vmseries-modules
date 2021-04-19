@@ -84,11 +84,13 @@ variable "route_tables" {
   A map of objects describing a Route Table. The key of each entry acts as the Route Table name.
   List of arguments available to define a Route Table:
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
-  - `routes` : (Optional) Map of routes within a Route Table.
+  - `routes` : (Optional) A map of routes within a Route Table.
     List of arguments available to define a Route:
     - `address_prefix` : The destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type` : The type of Azure hop the packet should be sent to.
     Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
+    - `next_hop_in_ip_address` : Contains the IP address packets should be forwarded to. 
+    Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
 
   Example:
   ```
@@ -106,7 +108,13 @@ variable "route_tables" {
       }
     },
     "route_table_2" = {
-      routes = {},
+      routes = {
+        "route_3" = {
+          address_prefix         = "0.0.0.0/0"
+          next_hop_type          = "VirtualAppliance"
+          next_hop_in_ip_address = "10.112.0.100"
+        }
+      },
     },
   }
   ```
