@@ -97,35 +97,32 @@ variable "management_ips" {
 #  All subnet defs are joined with their vnet prefix to form a full CIDR prefix
 #  ex. for management, ${management_vnet_prefix}${management_subnet}
 #  Thus to change the VNET addressing you only need to update the relevent _vnet_prefix variable.
-
-variable "management_vnet_prefix" {
-  default     = "10.255."
-  description = "The private prefix used for the management virtual network"
+variable "virtual_network_name" {
+  description = "The name of the VNet to create."
+  type        = string
 }
 
-variable "management_subnet" {
-  default     = "0.0/24"
-  description = "The private network that terminates all FW and Panorama IP addresses."
+variable "address_space" {
+  description = "The address space used by the virtual network. You can supply more than one address space."
+  type        = list(string)
 }
 
-variable "firewall_vnet_prefix" {
-  default     = "10.110."
-  description = "The private prefix used for all firewall networks"
+variable "network_security_groups" {
+  description = "Definition of Network Security Groups to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "vm_management_subnet" {
-  default     = "255.0/24"
-  description = "The subnet used for the management NICs on the vm-series"
+variable "route_tables" {
+  description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "public_subnet" {
-  default     = "129.0/24"
-  description = "The private network that is the external or public side of the VM series firewalls (eth1/1)"
+variable "subnets" {
+  description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "private_subnet" {
-  default     = "0.0/24"
-  description = "The private network behind or on the internal side of the VM series firewalls (eth1/2)"
+variable "tags" {
+  description = "A mapping of tags to assign to all of the created resources."
+  type        = map(any)
+  default     = {}
 }
 
 variable "olb_private_ip" {

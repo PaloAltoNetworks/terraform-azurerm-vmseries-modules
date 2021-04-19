@@ -18,19 +18,17 @@ resource "random_password" "this" {
   override_special = "_%@"
 }
 
-module "networks" {
-  source = "../../modules/networking"
+module "vnet" {
+  source = "../../modules/vnet"
 
-  location               = var.location
-  management_ips         = var.management_ips
-  name_prefix            = var.name_prefix
-  management_vnet_prefix = var.management_vnet_prefix
-  management_subnet      = var.management_subnet
-  olb_private_ip         = var.olb_private_ip
-  firewall_vnet_prefix   = var.firewall_vnet_prefix
-  private_subnet         = var.private_subnet
-  public_subnet          = var.public_subnet
-  vm_management_subnet   = var.vm_management_subnet
+  virtual_network_name    = var.virtual_network_name
+  resource_group_name     = local.resource_group_name
+  location                = var.location
+  address_space           = var.address_space
+  network_security_groups = var.network_security_groups
+  route_tables            = var.route_tables
+  subnets                 = var.subnets
+  tags                    = var.tags
 }
 
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
@@ -60,7 +58,7 @@ module "outbound-lb" {
 
   location       = var.location
   name_prefix    = var.name_prefix
-  backend-subnet = module.networks.subnet_private.id
+  backend-subnet = module.vnet.subnet_ids["subnet-private"]
 }
 
 # The storage account for VM-Series initialization.
@@ -108,20 +106,20 @@ module "common_vmseries" {
   interfaces = [
     {
       name                = "${each.key}-mgmt"
-      subnet_id           = module.networks.subnet_mgmt.id
+      subnet_id           = module.vnet.subnet_ids["subnet-mgmt"]
       create_public_ip    = true
       enable_backend_pool = false
     },
     {
       name                 = "${each.key}-public"
-      subnet_id            = module.networks.subnet_public.id
+      subnet_id            = module.vnet.subnet_ids["subnet-public"]
       public_ip_address_id = azurerm_public_ip.public[each.key].id
       lb_backend_pool_id   = module.inbound-lb.backend-pool-id
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
-      subnet_id           = module.networks.subnet_private.id
+      subnet_id           = module.vnet.subnet_ids["subnet-private"]
       enable_backend_pool = false
 
       # Optional static private IP
