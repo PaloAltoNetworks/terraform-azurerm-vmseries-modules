@@ -18,7 +18,7 @@ variable "existing_resource_group_name" {
 
 variable "name_prefix" {
   description = "A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator."
-  default     = "pantf-"
+  default     = "pantf"
   type        = string
 }
 
