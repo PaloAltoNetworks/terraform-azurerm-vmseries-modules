@@ -65,9 +65,8 @@ route_tables = {
   "route_table_3" = {
     routes = {
       "route_3" = {
-        address_prefix         = "0.0.0.0/0"
-        next_hop_type          = "VirtualAppliance"
-        next_hop_in_ip_address = "10.112.0.100"
+        address_prefix = "0.0.0.0/0"
+        next_hop_type  = "Internet"
       },
     }
   },
