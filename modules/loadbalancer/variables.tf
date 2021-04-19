@@ -1,24 +1,24 @@
 variable "frontend_ips" {
   description = <<-EOF
-  A map of objects describing LB Frontend IP configurations for public or private loadbalancer type. 
-  Keys of the map are the names of new resources.
-  # Public loadbalancer:
-  - `create_public_ip` : Greenfield or Brawnfield deployment for public IP.
-  - `public_ip_name` : If Brawnfield deployment - the existing ip name in Azure resource for public IP.
-  - `public_ip_resource_group` : If Brawnfield deployment - the existing resource group in Azure resource for public IP.
-  # Private loadbalancer:
+  A map of objects describing LB frontend IP configurations. Used for both public or private load balancers. 
+  Keys of the map are the names of the created load balancers.
+  ### Public loadbalancer:
+  - `create_public_ip` : Set to `true` to create a public IP, otherwise use a pre-existing public IP.
+  - `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.
+  - `public_ip_resource_group` : Ignored if `create_public_ip` is `true`. The existing public IP resource group name.
+  #### Private loadbalancer:
   - `subnet_id` : ID of an existing subnet.
-  - `private_ip_address_allocation` : Type of private allocation Static/Dynamic.
-  - `private_ip_address` : If Static, private IP.
+  - `private_ip_address_allocation` : Type of private allocation: `Static` or `Dynamic`.
+  - `private_ip_address` : If Static, the private IP address.
   Example:
 
   ```
-  # Public loadbalancer exmple
+  # Public load balancer example
   frontend_ips = {
     pip-existing = {
       create_public_ip         = false
-      public_ip_name           = ""
-      public_ip_resource_group = ""
+      public_ip_name           = "my_ip"
+      public_ip_resource_group = "my_rg"
       rules = {
         HTTP = {
           port         = 80
@@ -29,12 +29,12 @@ variable "frontend_ips" {
     }
   }
 
-  # Private loadbalancer exmple
+  # Private load balancer example
   frontend_ips = {
     internal_fe = {
       subnet_id                     = ""
-      private_ip_address_allocation = "Static" // Dynamic or Static
-      private_ip_address = ""
+      private_ip_address_allocation = "Static"
+      private_ip_address            = "192.168.0.10"
       rules = {
         HA_PORTS = {
           port         = 0
@@ -48,12 +48,8 @@ variable "frontend_ips" {
   EOF
 }
 
-#  ---   #
-# Naming #
-#  ---   #
-
 variable "resource_group_name" {
-  description = "Name of the Resource Group to use."
+  description = "Name of a pre-existing Resource Group to place the resources in."
   type        = string
 }
 
@@ -63,19 +59,18 @@ variable "location" {
 }
 
 variable "name_lb" {
-  description = "The loadbalancer name."
+  description = "The name of the load balancer."
   type        = string
 }
 
 variable "name_probe" {
-  description = "The loadbalancer probe name."
+  description = "The name of the load balancer probe."
   type        = string
   default     = ""
 }
 
 variable "probe_port" {
-  description = "Health check port definition."
+  description = "Health check port number of the load balancer probe."
   default     = "80"
   type        = string
 }
-
