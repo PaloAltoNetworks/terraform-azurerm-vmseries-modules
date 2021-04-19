@@ -4,7 +4,7 @@ variable "location" {
 }
 
 variable "resource_group_name" {
-  description = "The resource group name for VM-Series."
+  description = "Name of the existing resource group where to place the resources created."
   type        = string
 }
 
