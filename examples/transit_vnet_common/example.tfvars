@@ -20,7 +20,7 @@ network_security_groups = {
         priority                   = 101
         protocol                   = "*"
         source_port_range          = "*"
-        source_address_prefix      = "10.255.0.0/24"
+        source_address_prefix      = "10.255.0.0/24" // External peering access
         destination_address_prefix = "*"
         destination_port_range     = "*"
       }
@@ -76,18 +76,15 @@ subnets = {
   "subnet-mgmt" = {
     address_prefixes       = ["10.110.255.0/24"]
     network_security_group = "sg-mgmt"
-    virtual_network_name   = "vnet-vmseries"
   }
   "subnet-private" = {
     address_prefixes       = ["10.110.0.0/24"]
     network_security_group = "sg-allowall"
     route_table            = "udr-private"
-    virtual_network_name   = "vnet-vmseries"
   }
   "subnet-public" = {
     address_prefixes       = ["10.110.129.0/24"]
     network_security_group = "sg-allowall"
-    virtual_network_name   = "vnet-vmseries"
   }
 }
 

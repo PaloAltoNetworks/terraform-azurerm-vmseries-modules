@@ -35,7 +35,7 @@ module "vnet" {
 resource "azurerm_public_ip" "public" {
   for_each = var.vmseries
 
-  name                = "${var.name_prefix}${each.key}-public"
+  name                = "${var.name_prefix}-${each.key}-public"
   location            = var.location
   resource_group_name = local.resource_group_name
   allocation_method   = "Static"
@@ -76,7 +76,7 @@ module "bootstrap" {
 resource "azurerm_availability_set" "this" {
   count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
 
-  name                        = "${var.name_prefix}avset"
+  name                        = "${var.name_prefix}-avset"
   resource_group_name         = local.resource_group_name
   location                    = var.location
   platform_fault_domain_count = 2
@@ -92,7 +92,7 @@ module "common_vmseries" {
 
   resource_group_name       = local.resource_group_name
   location                  = var.location
-  name                      = "${var.name_prefix}${each.key}"
+  name                      = "${var.name_prefix}-${each.key}"
   avset_id                  = try(azurerm_availability_set.this[0].id, null)
   avzone                    = try(each.value.avzone, null)
   username                  = var.username
@@ -106,20 +106,20 @@ module "common_vmseries" {
   interfaces = [
     {
       name                = "${each.key}-mgmt"
-      subnet_id           = module.vnet.subnet_ids["subnet-mgmt"]
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
       create_public_ip    = true
       enable_backend_pool = false
     },
     {
       name                 = "${each.key}-public"
-      subnet_id            = module.vnet.subnet_ids["subnet-public"]
+      subnet_id            = = lookup(module.vnet.subnet_ids, "subnet-public", null)
       public_ip_address_id = azurerm_public_ip.public[each.key].id
       lb_backend_pool_id   = module.inbound-lb.backend-pool-id
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
-      subnet_id           = module.vnet.subnet_ids["subnet-private"]
+      subnet_id           = = lookup(module.vnet.subnet_ids, "subnet-private", null)
       enable_backend_pool = false
 
       # Optional static private IP

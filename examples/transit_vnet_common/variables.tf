@@ -110,10 +110,15 @@ variable "subnets" {
   description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "tags" {
-  description = "A mapping of tags to assign to all of the created resources."
+variable "vnet_tags" {
+  description = "A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
   type        = map(any)
   default     = {}
+}
+
+variable "olb_private_ip" {
+  description = "The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network."
+  default     = "10.110.0.21"
 }
 
 variable "frontend_ips" {
