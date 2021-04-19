@@ -33,7 +33,7 @@ variable "vmseries" {
   Map of virtual machines to create to run VM-Series. Keys are the individual names, values
   are the objects containing the attributes unique to that individual virtual machine:
 
-  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
+  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1" in order to avoid non-HA deployments.
   - `trust_private_ip`: the static private IP to assign to the trust-side data interface (nic2). If unspecified, uses a dynamic IP.
 
   The hostname of each of the VM-Series will consist of a `name_prefix` concatenated with its map key.
