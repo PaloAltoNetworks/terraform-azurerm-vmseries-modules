@@ -112,14 +112,14 @@ module "common_vmseries" {
     },
     {
       name                 = "${each.key}-public"
-      subnet_id            = = lookup(module.vnet.subnet_ids, "subnet-public", null)
+      subnet_id            = lookup(module.vnet.subnet_ids, "subnet-public", null)
       public_ip_address_id = azurerm_public_ip.public[each.key].id
       lb_backend_pool_id   = module.inbound-lb.backend-pool-id
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
-      subnet_id           = = lookup(module.vnet.subnet_ids, "subnet-private", null)
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
       enable_backend_pool = false
 
       # Optional static private IP
