@@ -41,7 +41,7 @@ No resources.
 | <a name="input_location"></a> [location](#input\_location) | Region to deploy load balancer and dependencies. | `string` | `""` | no |
 | <a name="input_name_lb"></a> [name\_lb](#input\_name\_lb) | The loadbalancer name. | `string` | n/a | yes |
 | <a name="input_name_probe"></a> [name\_probe](#input\_name\_probe) | The loadbalancer probe name. | `string` | `""` | no |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
 
 ## Outputs
 

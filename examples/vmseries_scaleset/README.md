@@ -64,7 +64,7 @@ $ terraform apply
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
 | <a name="input_private_frontend_ips"></a> [private\_frontend\_ips](#input\_private\_frontend\_ips) | A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details. | `any` | n/a | yes |
 | <a name="input_public_frontend_ips"></a> [public\_frontend\_ips](#input\_public\_frontend\_ips) | A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details. | `any` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
 | <a name="input_route_tables"></a> [route\_tables](#input\_route\_tables) | A map of objects describing a Route Table. | `map` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | A map of subnet objects to create within a Virtual Network. | `map` | n/a | yes |

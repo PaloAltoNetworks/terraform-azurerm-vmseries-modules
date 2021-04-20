@@ -44,7 +44,10 @@ $ terraform apply
 | [azurerm_availability_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/availability_set) | resource |
 | [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/public_ip) | resource |
 | [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/resource_group) | resource |
+| [azurerm_virtual_network_peering.panorama](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/virtual_network_peering) | resource |
+| [azurerm_virtual_network_peering.panorama_ret](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/virtual_network_peering) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
+| [azurerm_virtual_network.panorama](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/data-sources/virtual_network) | data source |
 
 ## Inputs
 
@@ -55,6 +58,8 @@ $ terraform apply
 | <a name="input_common_vmseries_tags"></a> [common\_vmseries\_tags](#input\_common\_vmseries\_tags) | A map of tags to be associated with the virtual machines, their interfaces and public IP addresses. | `map` | `{}` | no |
 | <a name="input_common_vmseries_version"></a> [common\_vmseries\_version](#input\_common\_vmseries\_version) | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.1.3"` | no |
 | <a name="input_common_vmseries_vm_size"></a> [common\_vmseries\_vm\_size](#input\_common\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
+| <a name="input_existing_panorama_network_name"></a> [existing\_panorama\_network\_name](#input\_existing\_panorama\_network\_name) | n/a | `string` | `"fadv-panorama"` | no |
+| <a name="input_existing_panorama_resource_group_name"></a> [existing\_panorama\_resource\_group\_name](#input\_existing\_panorama\_resource\_group\_name) | n/a | `string` | `"fadv-panorama"` | no |
 | <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | <a name="input_lb_private_name"></a> [lb\_private\_name](#input\_lb\_private\_name) | Name of the private load balancer. | `string` | `"lb_private"` | no |
 | <a name="input_lb_public_name"></a> [lb\_public\_name](#input\_lb\_public\_name) | Name of the public-facing load balancer. | `string` | `"lb_public"` | no |
@@ -65,7 +70,7 @@ $ terraform apply
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
 | <a name="input_private_frontend_ips"></a> [private\_frontend\_ips](#input\_private\_frontend\_ips) | A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details. | `any` | n/a | yes |
 | <a name="input_public_frontend_ips"></a> [public\_frontend\_ips](#input\_public\_frontend\_ips) | A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details. | `any` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
 | <a name="input_route_tables"></a> [route\_tables](#input\_route\_tables) | Definition of Route Tables to create. Refer to the `VNet` module documentation for more information. | `any` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
 | <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping. | `string` | n/a | yes |
