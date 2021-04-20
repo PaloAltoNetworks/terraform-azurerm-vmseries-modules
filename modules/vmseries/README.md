@@ -41,12 +41,16 @@ az vm image terms accept --publisher paloaltonetworks --offer vmseries-flex --pl
 You can revoke the acceptance later with the `az vm image terms cancel` command.
 The acceptance applies to the entirety of your Azure Subscription.
 
-## Caveat
+## Caveat Regarding Region
 
-The module only supports Azure regions that have more than one fault domain - as of 2021, the only two regions impacted
-are `SouthCentralUSSTG` and `CentralUSEUAP`. The reason is that the module uses Availability Sets with Managed Disks.
+By default, the VM-Series is placed into an Availability Zone "1". Hence, it can only deploy
+successfully in the [Regions that support Zones](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
+If your Region doesn't, set the high_availability input to specify an alternative mechanism
+of Availability Sets, which is inferior but universally supported:
 
-[Instruction to re-check regions](https://docs.microsoft.com/en-us/azure/virtual-machines/manage-availability#use-managed-disks-for-vms-in-an-availability-set).
+```hcl
+   high_availability = { avset_id = azurerm_availability_set.this.id }
+```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
@@ -85,7 +89,7 @@ No modules.
 | <a name="input_bootstrap_storage_account"></a> [bootstrap\_storage\_account](#input\_bootstrap\_storage\_account) | Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output. | `any` | `null` | no |
 | <a name="input_custom_image_id"></a> [custom\_image\_id](#input\_custom\_image\_id) | Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software. | `string` | `null` | no |
 | <a name="input_enable_plan"></a> [enable\_plan](#input\_enable\_plan) | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
-| <a name="input_high_availability"></a> [high\_availability](#input\_high\_availability) | The availability option to use. Either specify `high_availability = { avzone = <number> }` (recommended) or alternatively `high_availability = { avset_id = "idstring" }`. Use the curly brackets. The `avzone` is the Azure Availability Zone, which is not yet supported in every Region. The `avset_id` is the identifier of the existing Availability Set object, an older mechanism but supported in all Regions. You cannot use this module without high availability. | `any` | <pre>{<br>  "avzone": "1"<br>}</pre> | no |
+| <a name="input_high_availability"></a> [high\_availability](#input\_high\_availability) | The availability option to use; you cannot opt out of high availability when using this module. Either specify `high_availability = { avzone = <number> }` or alternatively `high_availability = { avset_id = "idstring" }`, but not both. Use the curly brackets. The `avzone` is the Azure Availability Zone (recommended). The `avset_id` is the identifier of the existing Availability Set object. | `any` | <pre>{<br>  "avzone": "1"<br>}</pre> | no |
 | <a name="input_identity_ids"></a> [identity\_ids](#input\_identity\_ids) | See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids). | `list(string)` | `null` | no |
 | <a name="input_identity_type"></a> [identity\_type](#input\_identity\_type) | See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_type). | `string` | `"SystemAssigned"` | no |
 | <a name="input_img_offer"></a> [img\_offer](#input\_img\_offer) | The Azure Offer identifier corresponding to a published image. For `img_version` 9.1.1 or above, use "vmseries-flex"; for 9.1.0 or below use "vmseries1". | `string` | `"vmseries-flex"` | no |

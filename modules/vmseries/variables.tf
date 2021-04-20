@@ -15,7 +15,7 @@ variable "name" {
 }
 
 variable "high_availability" {
-  description = "The availability option to use. Either specify `high_availability = { avzone = <number> }` (recommended) or alternatively `high_availability = { avset_id = \"idstring\" }`. Use the curly brackets. The `avzone` is the Azure Availability Zone, which is not yet supported in every Region. The `avset_id` is the identifier of the existing Availability Set object, an older mechanism but supported in all Regions. You cannot use this module without high availability."
+  description = "The availability option to use; you cannot opt out of high availability when using this module. Either specify `high_availability = { avzone = <number> }` or alternatively `high_availability = { avset_id = \"idstring\" }`, but not both. Use the curly brackets. The `avzone` is the Azure Availability Zone (recommended). The `avset_id` is the identifier of the existing Availability Set object."
   default     = { avzone = "1" }
   type        = any
   validation {
