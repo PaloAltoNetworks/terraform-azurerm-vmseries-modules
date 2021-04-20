@@ -10,7 +10,7 @@ module "public_lb" {
   name_probe          = "Probe-public"
   location            = var.location
   resource_group_name = var.resource_group_name
-
+  backend_name        = "backend1_name"
   frontend_ips = {
     # Map of maps (each object has one frontend to many backend relationship) 
     fe1-pip-existing = {
@@ -19,9 +19,8 @@ module "public_lb" {
       public_ip_resource_group = ""
       rules = {
         HTTP = {
-          port         = 80
-          protocol     = "Tcp"
-          backend_name = "backend1_name"
+          port     = 80
+          protocol = "Tcp"
         }
       }
     }
@@ -29,14 +28,12 @@ module "public_lb" {
       create_public_ip = true
       rules = {
         HTTPS = {
-          port         = 8080
-          protocol     = "Tcp"
-          backend_name = "backend2_name"
+          port     = 8080
+          protocol = "Tcp"
         }
         SSH = {
-          port         = 22
-          protocol     = "Tcp"
-          backend_name = "backend3_name"
+          port     = 22
+          protocol = "Tcp"
         }
       }
     }
@@ -51,7 +48,7 @@ module "private_lb" {
   name_probe          = "Probe-private"
   location            = var.location
   resource_group_name = var.resource_group_name
-
+  backend_name        = "backend1_name"
   frontend_ips = {
     internal_fe = {
       subnet_id                     = ""
@@ -59,9 +56,8 @@ module "private_lb" {
       private_ip_address            = "10.0.1.6"
       rules = {
         HA_PORTS = {
-          port         = 0
-          protocol     = "All"
-          backend_name = "backend1_name"
+          port     = 0
+          protocol = "All"
         }
       }
     }
