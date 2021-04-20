@@ -41,7 +41,6 @@ $ terraform apply
 
 | Name | Type |
 |------|------|
-| [azurerm_availability_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/availability_set) | resource |
 | [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/public_ip) | resource |
 | [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/resource_group) | resource |
 | [azurerm_virtual_network_peering.panorama](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/virtual_network_peering) | resource |
@@ -76,7 +75,7 @@ $ terraform apply
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | Definition of Subnets to create. Refer to the `VNet` module documentation for more information. | `any` | n/a | yes |
 | <a name="input_username"></a> [username](#input\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
 | <a name="input_virtual_network_name"></a> [virtual\_network\_name](#input\_virtual\_network\_name) | The name of the VNet to create. | `string` | n/a | yes |
-| <a name="input_vmseries"></a> [vmseries](#input\_vmseries) | Map of virtual machines to create to run VM-Series. Keys are the individual names, values<br>are the objects containing the attributes unique to that individual virtual machine:<br><br>- `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.<br>- `trust_private_ip`: the static private IP to assign to the trust-side data interface (nic2). If unspecified, uses a dynamic IP.<br><br>The hostname of each of the VM-Series will consist of a `name_prefix` concatenated with its map key.<br><br>Basic:<pre>{<br>  "fw00" = { avzone = 1 }<br>  "fw01" = { avzone = 2 }<br>}</pre>Full example:<pre>{<br>  "fw00" = {<br>    trust_private_ip = "192.168.0.10"<br>    avzone           = "1"<br>  }<br>  "fw01" = { <br>    trust_private_ip = "192.168.0.11"<br>    avzone           = "2"<br>  }<br>}</pre> | `any` | n/a | yes |
+| <a name="input_vmseries"></a> [vmseries](#input\_vmseries) | Map of virtual machines to create to run VM-Series. Keys are the individual names, values<br>are the objects containing the attributes unique to that individual virtual machine:<br><br>- `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1" in order to avoid non-HA deployments.<br>- `trust_private_ip`: the static private IP to assign to the trust-side data interface (nic2). If unspecified, uses a dynamic IP.<br><br>The hostname of each of the VM-Series will consist of a `name_prefix` concatenated with its map key.<br><br>Basic:<pre>{<br>  "fw00" = { avzone = 1 }<br>  "fw01" = { avzone = 2 }<br>}</pre>Full example:<pre>{<br>  "fw00" = {<br>    trust_private_ip = "192.168.0.10"<br>    avzone           = "1"<br>  }<br>  "fw01" = { <br>    trust_private_ip = "192.168.0.11"<br>    avzone           = "2"<br>  }<br>}</pre> | `any` | n/a | yes |
 | <a name="input_vnet_tags"></a> [vnet\_tags](#input\_vnet\_tags) | A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`. | `map(any)` | `{}` | no |
 
 ## Outputs

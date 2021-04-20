@@ -21,7 +21,7 @@ variable "avzone" {
 }
 
 variable "avset_id" {
-  description = "The identifier of the Availability Set to use. Conflicts with `avzone`."
+  description = "The identifier of the Availability Set to use. When using this variable, set `avzone = null`."
   default     = null
   type        = string
 }
