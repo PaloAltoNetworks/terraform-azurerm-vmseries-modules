@@ -37,7 +37,7 @@ resource "azurerm_public_ip" "public" {
 }
 
 # The Inbound Load Balancer for handling the traffic from the Internet.
-module "inbound-lb" {
+module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
   name_lb             = var.lb_public_name
@@ -59,15 +59,14 @@ locals {
 }
 
 # The Outbound Load Balancer for handling the traffic from the private networks.
-module "outbound-lb" {
+module "outbound_lb" {
   source = "../../modules/loadbalancer"
 
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
   name_lb             = var.lb_private_name
   frontend_ips        = local.private_frontend_ips
-
-  depends_on = [azurerm_resource_group.this]
+  backend_name        = var.outbound_lb_name
 }
 
 # The storage account for VM-Series initialization.
@@ -124,13 +123,13 @@ module "common_vmseries" {
       name                 = "${each.key}-public"
       subnet_id            = lookup(module.vnet.subnet_ids, "subnet-public", null)
       public_ip_address_id = azurerm_public_ip.public[each.key].id
-      lb_backend_pool_id   = module.inbound-lb.backend_pool_ids["backend1_name"]
+      lb_backend_pool_id   = module.inbound_lb.backend_pool_id
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
       subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
-      lb_backend_pool_id  = module.outbound-lb.backend_pool_ids["backend3_name"]
+      lb_backend_pool_id  = module.outbound_lb.backend_pool_id
       enable_backend_pool = true
 
       # Optional static private IP

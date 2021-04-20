@@ -1,18 +1,21 @@
-# Palo Alto Networks Inbound/Outbound Load Balancer Module for Azure
+# Load Balancer Module for Azure
 
-A terraform module for deploying an Inbound/Outbound Load Balancer for VM-Series firewalls. Supports both standalone and scale set deployments.
+A Terraform module for deploying a Load Balancer for VM-Series firewalls. Supports both standalone and scale set deployments. Supports either inbound or outbound configuration.
+
+The module creates a single load balancer and a single backend for it, but it allows multiple frontends.
 
 ## Usage
 
 ```hcl
 # Deploy the inbound load balancer for traffic into the azure environment
-module "inbound-lb" {
+module "inbound_lb" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/loadbalancer"
 
   resource_group_name = ""
   location            = ""
   name_probe          = ""
   name_lb             = ""
+  backend_name        = ""
   frontend_ips = {
     # Map of maps (each object has one frontend to many backend relationship) 
     pip-existing = {
@@ -22,7 +25,6 @@ module "inbound-lb" {
         HTTP = {
           port         = 80
           protocol     = "Tcp"
-          backend_name = "backend1_name"
         }
       }
     }
@@ -30,13 +32,14 @@ module "inbound-lb" {
 }
 
 # Deploy the outbound load balancer for traffic into the azure environment
-module "outbound-lb" {
+module "outbound_lb" {
   source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/loadbalancer"
   
   resource_group_name = ""
   location            = ""
   name_probe          = ""
   name_lb             = ""
+  backend_name        = ""
   frontend_ips = {
     internal_fe = {
       subnet_id                     = ""
@@ -46,7 +49,6 @@ module "outbound-lb" {
         HA_PORTS = {
           port         = 0
           protocol     = "All"
-          backend_name = "backend3_name"
         }
       }
     }
@@ -87,7 +89,8 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_frontend_ips"></a> [frontend\_ips](#input\_frontend\_ips) | A map of objects describing LB frontend IP configurations. Used for both public or private load balancers. <br>Keys of the map are the names of the created load balancers.<br>### Public loadbalancer:<br>- `create_public_ip` : Set to `true` to create a public IP, otherwise use a pre-existing public IP.<br>- `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.<br>- `public_ip_resource_group` : Ignored if `create_public_ip` is `true`. The existing public IP resource group name.<br>#### Private loadbalancer:<br>- `subnet_id` : ID of an existing subnet.<br>- `private_ip_address_allocation` : Type of private allocation: `Static` or `Dynamic`.<br>- `private_ip_address` : If Static, the private IP address.<br>Example:<pre># Public load balancer example<br>frontend_ips = {<br>  pip-existing = {<br>    create_public_ip         = false<br>    public_ip_name           = "my_ip"<br>    public_ip_resource_group = "my_rg"<br>    rules = {<br>      HTTP = {<br>        port         = 80<br>        protocol     = "Tcp"<br>        backend_name = "backend1_name"<br>      }<br>    }<br>  }<br>}<br><br># Private load balancer example<br>frontend_ips = {<br>  internal_fe = {<br>    subnet_id                     = ""<br>    private_ip_address_allocation = "Static"<br>    private_ip_address            = "192.168.0.10"<br>    rules = {<br>      HA_PORTS = {<br>        port         = 0<br>        protocol     = "All"<br>        backend_name = "backend3_name"<br>      }<br>    }<br>  }<br>}</pre> | `any` | n/a | yes |
+| <a name="input_backend_name"></a> [backend\_name](#input\_backend\_name) | The name of the backend pool to create. If an empty name is provided, it will be auto-generated. All the frontends of the load balancer always use the same single backend. | `string` | `""` | no |
+| <a name="input_frontend_ips"></a> [frontend\_ips](#input\_frontend\_ips) | A map of objects describing LB frontend IP configurations. Used for both public or private load balancers. <br>Keys of the map are the names of the created load balancers.<br>### Public loadbalancer:<br>- `create_public_ip` : Set to `true` to create a public IP, otherwise use a pre-existing public IP.<br>- `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.<br>- `public_ip_resource_group` : Ignored if `create_public_ip` is `true`. The existing public IP resource group name.<br>#### Private loadbalancer:<br>- `subnet_id` : ID of an existing subnet.<br>- `private_ip_address_allocation` : Type of private allocation: `Static` or `Dynamic`.<br>- `private_ip_address` : If Static, the private IP address.<br>Example:<pre># Public load balancer example<br>frontend_ips = {<br>  pip-existing = {<br>    create_public_ip         = false<br>    public_ip_name           = "my_ip"<br>    public_ip_resource_group = "my_rg"<br>    rules = {<br>      HTTP = {<br>        port         = 80<br>        protocol     = "Tcp"<br>      }<br>    }<br>  }<br>}<br><br># Private load balancer example<br>frontend_ips = {<br>  internal_fe = {<br>    subnet_id                     = ""<br>    private_ip_address_allocation = "Static"<br>    private_ip_address            = "192.168.0.10"<br>    rules = {<br>      HA_PORTS = {<br>        port         = 0<br>        protocol     = "All"<br>      }<br>    }<br>  }<br>}</pre> | `any` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | Region to deploy load balancer and dependencies. | `string` | n/a | yes |
 | <a name="input_name_lb"></a> [name\_lb](#input\_name\_lb) | The name of the load balancer. | `string` | n/a | yes |
 | <a name="input_name_probe"></a> [name\_probe](#input\_name\_probe) | The name of the load balancer probe. | `string` | `""` | no |
@@ -98,6 +101,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_backend_pool_ids"></a> [backend\_pool\_ids](#output\_backend\_pool\_ids) | The IDs of the backend pools. |
+| <a name="output_backend_pool_id"></a> [backend\_pool\_id](#output\_backend\_pool\_id) | The identifier of the backend pool. |
 | <a name="output_frontend_ip_configs"></a> [frontend\_ip\_configs](#output\_frontend\_ip\_configs) | The Frontend configs of the loadbalancer. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
