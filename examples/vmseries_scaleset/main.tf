@@ -32,57 +32,25 @@ module "vnet" {
   subnets                 = var.subnets
 }
 
-resource "azurerm_public_ip" "lb" {
-  name                = var.lb_public_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  allocation_method   = "Static"
-  sku                 = "standard"
-}
-
-locals {
-  public_frontend_ips = {
-    pip-existing = {
-      create_public_ip         = false
-      public_ip_name           = azurerm_public_ip.lb.name
-      public_ip_resource_group = azurerm_resource_group.this.name
-      rules = {
-        HTTP = {
-          port         = 80
-          protocol     = "Tcp"
-          backend_name = "backend1_name"
-        }
-      }
-    }
-  }
-}
-
 ### LOAD BALANCERS ###
 # Create the inbound load balancer
 module "inbound-lb" {
   source = "../../modules/loadbalancer"
 
   name_lb             = var.lb_public_name
-  frontend_ips        = local.public_frontend_ips
+  frontend_ips        = var.public_frontend_ips
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
 
-  depends_on = [azurerm_resource_group.this, azurerm_public_ip.lb]
+  depends_on = [azurerm_resource_group.this]
 }
 
 locals {
-  private_frontend_ips = {
-    internal_fe = {
-      subnet_id                     = module.vnet.subnet_ids["private"]
-      private_ip_address_allocation = "Static" // Dynamic or Static
-      private_ip_address            = "10.112.1.100"
-      rules = {
-        HA_PORTS = {
-          port         = 0
-          protocol     = "All"
-          backend_name = "backend3_name"
-        }
-      }
+  private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
+    subnet_id                     = module.vnet.subnet_ids["private"]
+    private_ip_address_allocation = v.private_ip_address_allocation
+    private_ip_address            = var.olb_private_ip
+    rules                         = v.rules
     }
   }
 }

@@ -73,13 +73,26 @@ variable "subnets" {
 }
 
 variable "lb_public_name" {
-  description = "A name of public loadbalancer."
+  description = "Name of the public-facing load balancer."
   type        = string
   default     = "lb_public"
 }
 
 variable "lb_private_name" {
-  description = "A name of private loadbalancer."
+  description = "Name of the private load balancer."
   type        = string
   default     = "lb_private"
+}
+
+variable "olb_private_ip" {
+  description = "The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network."
+  default     = "10.110.0.21"
+}
+
+variable "public_frontend_ips" {
+  description = "A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details."
+}
+
+variable "private_frontend_ips" {
+  description = "A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details."
 }
