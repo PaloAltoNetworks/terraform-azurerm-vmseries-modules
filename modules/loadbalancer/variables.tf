@@ -23,7 +23,6 @@ variable "frontend_ips" {
         HTTP = {
           port         = 80
           protocol     = "Tcp"
-          backend_name = "backend1_name"
         }
       }
     }
@@ -39,7 +38,6 @@ variable "frontend_ips" {
         HA_PORTS = {
           port         = 0
           protocol     = "All"
-          backend_name = "backend3_name"
         }
       }
     }
@@ -55,6 +53,12 @@ variable "resource_group_name" {
 
 variable "location" {
   description = "Region to deploy load balancer and dependencies."
+  type        = string
+}
+
+variable "backend_name" {
+  description = "The name of the backend pool to create. If an empty name is provided, it will be auto-generated. All the frontends of the load balancer always use the same single backend."
+  default     = ""
   type        = string
 }
 

@@ -2,10 +2,10 @@ resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
   name                = each.key
-  location            = var.location
   resource_group_name = var.resource_group_name
+  location            = var.location
   allocation_method   = "Static"
-  sku                 = "standard"
+  sku                 = "Standard"
 }
 
 data "azurerm_public_ip" "exists" {
@@ -19,7 +19,7 @@ resource "azurerm_lb" "lb" {
   name                = var.name_lb
   resource_group_name = var.resource_group_name
   location            = var.location
-  sku                 = "standard"
+  sku                 = "Standard"
 
   dynamic "frontend_ip_configuration" {
     for_each = local.frontend_ips
@@ -68,18 +68,16 @@ locals {
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
-  for_each = local.input_rules
-
-  loadbalancer_id     = azurerm_lb.lb.id
-  name                = each.value.rule.backend_name
+  name                = coalesce(var.backend_name, var.name_lb)
   resource_group_name = var.resource_group_name
+  loadbalancer_id     = azurerm_lb.lb.id
 }
 
 resource "azurerm_lb_probe" "probe" {
-  loadbalancer_id     = azurerm_lb.lb.id
   name                = coalesce(var.name_probe, var.name_lb)
-  port                = var.probe_port
   resource_group_name = var.resource_group_name
+  loadbalancer_id     = azurerm_lb.lb.id
+  port                = var.probe_port
 }
 
 resource "azurerm_lb_rule" "lb_rules" {
@@ -89,7 +87,7 @@ resource "azurerm_lb_rule" "lb_rules" {
   resource_group_name     = var.resource_group_name
   loadbalancer_id         = azurerm_lb.lb.id
   probe_id                = azurerm_lb_probe.probe.id
-  backend_address_pool_id = azurerm_lb_backend_address_pool.lb_backend[each.key].id
+  backend_address_pool_id = azurerm_lb_backend_address_pool.lb_backend.id
 
   protocol                       = each.value.rule.protocol
   backend_port                   = each.value.rule.port
