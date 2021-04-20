@@ -32,26 +32,39 @@ module "vnet" {
   subnets                 = var.subnets
 }
 
-
-
 ### LOAD BALANCERS ###
 # Create the inbound load balancer
 module "inbound-lb" {
-  source = "../../modules/inbound-load-balancer"
+  source = "../../modules/loadbalancer"
 
-  location     = var.location
-  name_prefix  = var.name_prefix
-  frontend_ips = var.frontend_ips
+  name_lb             = var.lb_public_name
+  frontend_ips        = var.public_frontend_ips
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+
+  depends_on = [azurerm_resource_group.this]
+}
+
+locals {
+  private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
+    subnet_id                     = module.vnet.subnet_ids["private"]
+    private_ip_address_allocation = v.private_ip_address_allocation
+    private_ip_address            = var.olb_private_ip
+    rules                         = v.rules
+    }
+  }
 }
 
 # Create the outbound load balancer
 module "outbound-lb" {
-  source = "../../modules/outbound-load-balancer"
+  source = "../../modules/loadbalancer"
 
-  location       = var.location
-  name_prefix    = var.name_prefix
-  backend-subnet = module.vnet.subnet_ids["private"]
-  private-ip     = "10.112.1.100"
+  name_lb             = var.lb_private_name
+  frontend_ips        = local.private_frontend_ips
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+
+  depends_on = [azurerm_resource_group.this]
 }
 
 
@@ -103,7 +116,7 @@ module "inbound-scaleset" {
   bootstrap_storage_account = module.inbound-bootstrap.storage_account
   bootstrap_share_name      = module.inbound-bootstrap.storage_share.name
   vhd_container             = "${module.inbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.inbound-lb.backend-pool-id
+  lb_backend_pool_id        = module.inbound-lb.backend_pool_ids["backend1_name"]
   vm_count                  = var.vmseries_count
 }
 
@@ -123,6 +136,6 @@ module "outbound-scaleset" {
   bootstrap_storage_account = module.outbound-bootstrap.storage_account
   bootstrap_share_name      = module.outbound-bootstrap.storage_share.name
   vhd_container             = "${module.outbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.outbound-lb.backend-pool-id
+  lb_backend_pool_id        = module.outbound-lb.backend_pool_ids["backend3_name"]
   vm_count                  = var.vmseries_count
 }

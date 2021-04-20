@@ -42,10 +42,6 @@ variable "files" {
   type        = map(string)
 }
 
-variable "frontend_ips" {
-  description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
-}
-
 variable "vmseries_count" {
   description = "Total number of VM series to deploy per direction (inbound/outbound)."
   default     = 1
@@ -74,4 +70,29 @@ variable "route_tables" {
 variable "subnets" {
   description = "A map of subnet objects to create within a Virtual Network."
   type        = map
+}
+
+variable "lb_public_name" {
+  description = "Name of the public-facing load balancer."
+  type        = string
+  default     = "lb_public"
+}
+
+variable "lb_private_name" {
+  description = "Name of the private load balancer."
+  type        = string
+  default     = "lb_private"
+}
+
+variable "olb_private_ip" {
+  description = "The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network."
+  default     = "10.110.0.21"
+}
+
+variable "public_frontend_ips" {
+  description = "A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details."
+}
+
+variable "private_frontend_ips" {
+  description = "A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details."
 }
