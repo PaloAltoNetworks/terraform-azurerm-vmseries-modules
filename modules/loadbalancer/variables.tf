@@ -62,12 +62,12 @@ variable "backend_name" {
   type        = string
 }
 
-variable "name_lb" {
+variable "name" {
   description = "The name of the load balancer."
   type        = string
 }
 
-variable "name_probe" {
+variable "probe_name" {
   description = "The name of the load balancer probe."
   type        = string
   default     = ""
