@@ -10,7 +10,7 @@ The following resources will be deployed when using the provided example:
 
 ## Usage
 
-Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
+Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust the variables (in particular the `storage_account_name` should be unique).
 
 ```bash
 $ terraform init
@@ -48,9 +48,8 @@ $ terraform apply
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account) | If true, create a Storage Account and ignore `existing_storage_account`. | `bool` | `true` | no |
 | <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
-| <a name="input_location"></a> [location](#input\_location) | Region to deploy vm-series bootstrap resources. | `string` | `null` | no |
+| <a name="input_location"></a> [location](#input\_location) | Region to deploy the bootstrap resources into. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
 | <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping. | `string` | `"bootstrapshare"` | no |

@@ -4,14 +4,8 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  description = "Region to deploy vm-series bootstrap resources."
-  default     = null
+  description = "Region to deploy the bootstrap resources into."
   type        = string
-}
-
-variable "create_storage_account" {
-  description = "If true, create a Storage Account and ignore `existing_storage_account`."
-  default     = true
 }
 
 variable "storage_account_name" {
