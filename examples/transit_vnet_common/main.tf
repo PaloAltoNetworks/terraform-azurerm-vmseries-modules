@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "this" {
-  location = var.location
   name     = var.resource_group_name
+  location = var.location
 }
 
 resource "random_password" "this" {
@@ -12,26 +12,24 @@ resource "random_password" "this" {
   override_special = "_%@"
 }
 
-module "networks" {
-  source = "../../modules/networking"
+module "vnet" {
+  source = "../../modules/vnet"
 
-  location               = var.location
-  management_ips         = var.management_ips
-  name_prefix            = var.name_prefix
-  management_vnet_prefix = var.management_vnet_prefix
-  management_subnet      = var.management_subnet
-  olb_private_ip         = var.olb_private_ip
-  firewall_vnet_prefix   = var.firewall_vnet_prefix
-  private_subnet         = var.private_subnet
-  public_subnet          = var.public_subnet
-  vm_management_subnet   = var.vm_management_subnet
+  virtual_network_name    = var.virtual_network_name
+  location                = var.location
+  resource_group_name     = azurerm_resource_group.this.name
+  address_space           = var.address_space
+  network_security_groups = var.network_security_groups
+  route_tables            = var.route_tables
+  subnets                 = var.subnets
+  tags                    = var.vnet_tags
 }
 
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
   for_each = var.vmseries
 
-  name                = "${var.name_prefix}${each.key}-public"
+  name                = "${var.name_prefix}-${each.key}-public"
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -44,15 +42,15 @@ module "inbound-lb" {
 
   name_lb             = var.lb_public_name
   frontend_ips        = var.public_frontend_ips
-  resource_group_name = azurerm_resource_group.this.name
   location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [azurerm_resource_group.this]
 }
 
 locals {
   private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
-    subnet_id                     = module.networks.subnet_private.id
+    subnet_id                     = module.vnet.subnet_ids["subnet-private"]
     private_ip_address_allocation = v.private_ip_address_allocation
     private_ip_address            = var.olb_private_ip
     rules                         = v.rules
@@ -64,10 +62,10 @@ locals {
 module "outbound-lb" {
   source = "../../modules/loadbalancer"
 
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
   name_lb             = var.lb_private_name
   frontend_ips        = local.private_frontend_ips
-  resource_group_name = azurerm_resource_group.this.name
-  location            = var.location
 
   depends_on = [azurerm_resource_group.this]
 }
@@ -76,8 +74,8 @@ module "outbound-lb" {
 module "bootstrap" {
   source = "../../modules/bootstrap"
 
-  resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
+  resource_group_name  = azurerm_resource_group.this.name
   storage_account_name = var.storage_account_name
   files                = var.files
 }
@@ -87,9 +85,9 @@ module "bootstrap" {
 resource "azurerm_availability_set" "this" {
   count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
 
-  name                        = "${var.name_prefix}avset"
-  resource_group_name         = azurerm_resource_group.this.name
+  name                        = "${var.name_prefix}-avset"
   location                    = var.location
+  resource_group_name         = azurerm_resource_group.this.name
   platform_fault_domain_count = 2
 }
 
@@ -98,12 +96,13 @@ resource "azurerm_availability_set" "this" {
 #   - outbound traffic to the Internet
 #   - internal traffic (also known as "east-west" traffic)
 module "common_vmseries" {
-  source   = "../../modules/vmseries"
+  source = "../../modules/vmseries"
+
   for_each = var.vmseries
 
-  resource_group_name       = azurerm_resource_group.this.name
   location                  = var.location
-  name                      = "${var.name_prefix}${each.key}"
+  resource_group_name       = azurerm_resource_group.this.name
+  name                      = "${var.name_prefix}-${each.key}"
   avset_id                  = try(azurerm_availability_set.this[0].id, null)
   avzone                    = try(each.value.avzone, null)
   username                  = var.username
@@ -117,20 +116,20 @@ module "common_vmseries" {
   interfaces = [
     {
       name                = "${each.key}-mgmt"
-      subnet_id           = module.networks.subnet_mgmt.id
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
       create_public_ip    = true
       enable_backend_pool = false
     },
     {
       name                 = "${each.key}-public"
-      subnet_id            = module.networks.subnet_public.id
+      subnet_id            = lookup(module.vnet.subnet_ids, "subnet-public", null)
       public_ip_address_id = azurerm_public_ip.public[each.key].id
       lb_backend_pool_id   = module.inbound-lb.backend_pool_ids["backend1_name"]
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
-      subnet_id           = module.networks.subnet_private.id
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
       lb_backend_pool_id  = module.outbound-lb.backend_pool_ids["backend3_name"]
       enable_backend_pool = true
 

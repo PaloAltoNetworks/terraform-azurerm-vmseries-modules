@@ -11,7 +11,7 @@ variable "resource_group_name" {
 
 variable "name_prefix" {
   description = "A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator."
-  default     = "pantf-"
+  default     = "pantf"
   type        = string
 }
 
@@ -81,44 +81,32 @@ variable "storage_share_name" {
   type        = string
 }
 
-variable "management_ips" {
-  description = "A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique."
-  type        = map(number)
+variable "virtual_network_name" {
+  description = "The name of the VNet to create."
+  type        = string
 }
 
-# Subnet definitions
-#  All subnet defs are joined with their vnet prefix to form a full CIDR prefix
-#  ex. for management, ${management_vnet_prefix}${management_subnet}
-#  Thus to change the VNET addressing you only need to update the relevent _vnet_prefix variable.
-
-variable "management_vnet_prefix" {
-  default     = "10.255."
-  description = "The private prefix used for the management virtual network"
+variable "address_space" {
+  description = "The address space used by the virtual network. You can supply more than one address space."
+  type        = list(string)
 }
 
-variable "management_subnet" {
-  default     = "0.0/24"
-  description = "The private network that terminates all FW and Panorama IP addresses."
+variable "network_security_groups" {
+  description = "Definition of Network Security Groups to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "firewall_vnet_prefix" {
-  default     = "10.110."
-  description = "The private prefix used for all firewall networks"
+variable "route_tables" {
+  description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "vm_management_subnet" {
-  default     = "255.0/24"
-  description = "The subnet used for the management NICs on the vm-series"
+variable "subnets" {
+  description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
 }
 
-variable "public_subnet" {
-  default     = "129.0/24"
-  description = "The private network that is the external or public side of the VM series firewalls (eth1/1)"
-}
-
-variable "private_subnet" {
-  default     = "0.0/24"
-  description = "The private network behind or on the internal side of the VM series firewalls (eth1/2)"
+variable "vnet_tags" {
+  description = "A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
+  type        = map(any)
+  default     = {}
 }
 
 variable "olb_private_ip" {
