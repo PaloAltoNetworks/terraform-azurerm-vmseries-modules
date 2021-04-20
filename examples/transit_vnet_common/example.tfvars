@@ -1,4 +1,5 @@
 location             = "East US 2"
+resource_group_name  = "example-rg"
 virtual_network_name = "vnet-vmseries"
 address_space        = ["10.110.0.0/16"]
 network_security_groups = {

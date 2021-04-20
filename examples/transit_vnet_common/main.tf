@@ -1,6 +1,6 @@
 resource "azurerm_resource_group" "this" {
-  location = var.location
   name     = var.resource_group_name
+  location = var.location
 }
 
 resource "random_password" "this" {
@@ -16,8 +16,8 @@ module "vnet" {
   source = "../../modules/vnet"
 
   virtual_network_name    = var.virtual_network_name
-  resource_group_name     = local.resource_group_name
   location                = var.location
+  resource_group_name     = azurerm_resource_group.this.name
   address_space           = var.address_space
   network_security_groups = var.network_security_groups
   route_tables            = var.route_tables
@@ -42,15 +42,15 @@ module "inbound-lb" {
 
   name_lb             = var.lb_public_name
   frontend_ips        = var.public_frontend_ips
-  resource_group_name = azurerm_resource_group.this.name
   location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
 
   depends_on = [azurerm_resource_group.this]
 }
 
 locals {
   private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
-    subnet_id                     = module.networks.subnet_private.id
+    subnet_id                     = module.vnet.subnet_ids["subnet-private"]
     private_ip_address_allocation = v.private_ip_address_allocation
     private_ip_address            = var.olb_private_ip
     rules                         = v.rules
@@ -61,7 +61,6 @@ locals {
 # The Outbound Load Balancer for handling the traffic from the private networks.
 module "outbound-lb" {
   source = "../../modules/loadbalancer"
-
 
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
@@ -75,8 +74,8 @@ module "outbound-lb" {
 module "bootstrap" {
   source = "../../modules/bootstrap"
 
-  resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
+  resource_group_name  = azurerm_resource_group.this.name
   storage_account_name = var.storage_account_name
   files                = var.files
 }
@@ -87,8 +86,8 @@ resource "azurerm_availability_set" "this" {
   count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
 
   name                        = "${var.name_prefix}-avset"
-  resource_group_name         = azurerm_resource_group.this.name
   location                    = var.location
+  resource_group_name         = azurerm_resource_group.this.name
   platform_fault_domain_count = 2
 }
 
@@ -97,11 +96,12 @@ resource "azurerm_availability_set" "this" {
 #   - outbound traffic to the Internet
 #   - internal traffic (also known as "east-west" traffic)
 module "common_vmseries" {
-  source   = "../../modules/vmseries"
+  source = "../../modules/vmseries"
+
   for_each = var.vmseries
 
-  resource_group_name       = azurerm_resource_group.this.name
   location                  = var.location
+  resource_group_name       = azurerm_resource_group.this.name
   name                      = "${var.name_prefix}-${each.key}"
   avset_id                  = try(azurerm_availability_set.this[0].id, null)
   avzone                    = try(each.value.avzone, null)
