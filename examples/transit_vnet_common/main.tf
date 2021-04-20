@@ -40,10 +40,9 @@ resource "azurerm_public_ip" "public" {
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name_lb             = var.inbound_lb_name
+  name                = var.inbound_lb_name
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
-  backend_name        = var.inbound_lb_name # FIXME automatize
   frontend_ips        = var.frontend_ips
 }
 
@@ -51,10 +50,9 @@ module "inbound_lb" {
 module "outbound_lb" {
   source = "../../modules/loadbalancer"
 
+  name                = var.outbound_lb_name
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
-  name_lb             = var.outbound_lb_name
-  backend_name        = var.outbound_lb_name
   frontend_ips = {
     outbound = {
       subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)

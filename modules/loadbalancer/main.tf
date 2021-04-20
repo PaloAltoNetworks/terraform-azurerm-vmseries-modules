@@ -16,7 +16,7 @@ data "azurerm_public_ip" "exists" {
 }
 
 resource "azurerm_lb" "lb" {
-  name                = var.name_lb
+  name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = "Standard"
@@ -68,13 +68,13 @@ locals {
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
-  name                = coalesce(var.backend_name, var.name_lb)
+  name                = coalesce(var.backend_name, var.name)
   resource_group_name = var.resource_group_name
   loadbalancer_id     = azurerm_lb.lb.id
 }
 
 resource "azurerm_lb_probe" "probe" {
-  name                = coalesce(var.name_probe, var.name_lb)
+  name                = coalesce(var.probe_name, var.name)
   resource_group_name = var.resource_group_name
   loadbalancer_id     = azurerm_lb.lb.id
   port                = var.probe_port
