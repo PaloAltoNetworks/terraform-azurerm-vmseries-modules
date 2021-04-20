@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "this" {
-  name     = var.resource_group_name
+  name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries")
   location = var.location
 }
 
@@ -40,22 +40,11 @@ resource "azurerm_public_ip" "public" {
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name_lb             = var.lb_public_name
-  frontend_ips        = var.public_frontend_ips
+  name_lb             = var.inbound_lb_name
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
-
-  depends_on = [azurerm_resource_group.this]
-}
-
-locals {
-  private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
-    subnet_id                     = module.vnet.subnet_ids["subnet-private"]
-    private_ip_address_allocation = v.private_ip_address_allocation
-    private_ip_address            = var.olb_private_ip
-    rules                         = v.rules
-    }
-  }
+  backend_name        = var.inbound_lb_name # FIXME automatize
+  frontend_ips        = var.frontend_ips
 }
 
 # The Outbound Load Balancer for handling the traffic from the private networks.
@@ -64,9 +53,21 @@ module "outbound_lb" {
 
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
-  name_lb             = var.lb_private_name
-  frontend_ips        = local.private_frontend_ips
+  name_lb             = var.outbound_lb_name
   backend_name        = var.outbound_lb_name
+  frontend_ips = {
+    outbound = {
+      subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)
+      private_ip_address_allocation = "Static"
+      private_ip_address            = var.olb_private_ip
+      rules = {
+        HA_PORTS = {
+          port     = 0
+          protocol = "All"
+        }
+      }
+    }
+  }
 }
 
 # The storage account for VM-Series initialization.

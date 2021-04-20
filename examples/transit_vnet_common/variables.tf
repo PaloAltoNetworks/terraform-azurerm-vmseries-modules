@@ -5,7 +5,8 @@ variable "location" {
 }
 
 variable "resource_group_name" {
-  description = "Name of the Resource Group to create."
+  description = "Name of the Resource Group to create. If not provided, it will be auto-generated."
+  default     = ""
   type        = string
 }
 
@@ -110,16 +111,13 @@ variable "vnet_tags" {
 }
 
 variable "olb_private_ip" {
-  description = "The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network."
+  description = "The private IP address to assign to the outbound load balancer. This IP **must** fall in the `private_subnet` network."
   default     = "10.110.0.21"
+  type        = string
 }
 
-variable "public_frontend_ips" {
-  description = "A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details."
-}
-
-variable "private_frontend_ips" {
-  description = "A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details."
+variable "frontend_ips" {
+  description = "A map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details."
 }
 
 variable "common_vmseries_sku" {
@@ -146,14 +144,14 @@ variable "common_vmseries_tags" {
   type        = map
 }
 
-variable "lb_public_name" {
-  description = "Name of the public-facing load balancer."
+variable "inbound_lb_name" {
+  description = "Name of the inbound load balancer (the public-facing one)."
+  default     = "lb_inbound"
   type        = string
-  default     = "lb_public"
 }
 
-variable "lb_private_name" {
-  description = "Name of the private load balancer."
+variable "outbound_lb_name" {
+  description = "Name of the outbound load balancer."
+  default     = "lb_outbound"
   type        = string
-  default     = "lb_private"
 }
