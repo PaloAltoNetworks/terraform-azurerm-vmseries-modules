@@ -4,15 +4,8 @@ variable "location" {
   type        = string
 }
 
-variable "create_resource_group_name" {
-  description = "Name for a created resource group. The input is ignored if `existing_resource_group_name` is set. If null, uses an auto-generated name."
-  default     = null
-  type        = string
-}
-
-variable "existing_resource_group_name" {
-  description = "Name for an existing resource group to use. If null, use instead `create_resource_group_name`."
-  default     = null
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
   type        = string
 }
 
@@ -121,8 +114,12 @@ variable "olb_private_ip" {
   default     = "10.110.0.21"
 }
 
-variable "frontend_ips" {
-  description = "A map of objects describing LB Frontend IP configurations and rules. See the module's documentation for details."
+variable "public_frontend_ips" {
+  description = "A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details."
+}
+
+variable "private_frontend_ips" {
+  description = "A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details."
 }
 
 variable "common_vmseries_sku" {
@@ -147,4 +144,16 @@ variable "common_vmseries_tags" {
   description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
   default     = {}
   type        = map
+}
+
+variable "lb_public_name" {
+  description = "Name of the public-facing load balancer."
+  type        = string
+  default     = "lb_public"
+}
+
+variable "lb_private_name" {
+  description = "Name of the private load balancer."
+  type        = string
+  default     = "lb_private"
 }

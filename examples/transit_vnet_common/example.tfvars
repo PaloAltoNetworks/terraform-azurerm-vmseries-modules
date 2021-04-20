@@ -88,15 +88,29 @@ subnets = {
   }
 }
 
-# Optional Load Balancer (LB) rules
-# These will automatically create a public Azure IP and associate to LB configuration.
-frontend_ips = {
-  "frontend01" = {
+public_frontend_ips = {
+  pip-existing = {
     create_public_ip = true
     rules = {
-      "balancessh" = {
-        protocol = "Tcp"
-        port     = 22
+      HTTP = {
+        port         = 80
+        protocol     = "Tcp"
+        backend_name = "backend1_name"
+      }
+    }
+  }
+}
+
+private_frontend_ips = {
+  internal_fe = {
+    subnet_id                     = ""
+    private_ip_address_allocation = "Dynamic" // Dynamic or Static
+    private_ip_address            = ""
+    rules = {
+      HA_PORTS = {
+        port         = 0
+        protocol     = "All"
+        backend_name = "backend3_name"
       }
     }
   }

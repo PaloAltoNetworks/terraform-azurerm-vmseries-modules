@@ -1,12 +1,6 @@
 resource "azurerm_resource_group" "this" {
-  count = var.existing_resource_group_name == null ? 1 : 0
-
   location = var.location
-  name     = coalesce(var.create_resource_group_name, "${var.name_prefix}-vmseries-rg")
-}
-
-locals {
-  resource_group_name = coalesce(var.existing_resource_group_name, azurerm_resource_group.this[0].name)
+  name     = var.resource_group_name
 }
 
 resource "random_password" "this" {
@@ -37,35 +31,51 @@ resource "azurerm_public_ip" "public" {
 
   name                = "${var.name_prefix}-${each.key}-public"
   location            = var.location
-  resource_group_name = local.resource_group_name
+  resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
-  sku                 = "standard"
-  tags                = var.common_vmseries_tags
+  sku                 = "Standard"
 }
 
 # The Inbound Load Balancer for handling the traffic from the Internet.
 module "inbound-lb" {
-  source = "../../modules/inbound-load-balancer"
+  source = "../../modules/loadbalancer"
 
-  location     = var.location
-  name_prefix  = var.name_prefix
-  frontend_ips = var.frontend_ips
+  name_lb             = var.lb_public_name
+  frontend_ips        = var.public_frontend_ips
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+
+  depends_on = [azurerm_resource_group.this]
+}
+
+locals {
+  private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
+    subnet_id                     = module.networks.subnet_private.id
+    private_ip_address_allocation = v.private_ip_address_allocation
+    private_ip_address            = var.olb_private_ip
+    rules                         = v.rules
+    }
+  }
 }
 
 # The Outbound Load Balancer for handling the traffic from the private networks.
 module "outbound-lb" {
-  source = "../../modules/outbound-load-balancer"
+  source = "../../modules/loadbalancer"
 
-  location       = var.location
-  name_prefix    = var.name_prefix
-  backend-subnet = module.vnet.subnet_ids["subnet-private"]
+
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  name_lb             = var.lb_private_name
+  frontend_ips        = local.private_frontend_ips
+
+  depends_on = [azurerm_resource_group.this]
 }
 
 # The storage account for VM-Series initialization.
 module "bootstrap" {
   source = "../../modules/bootstrap"
 
-  resource_group_name  = local.resource_group_name
+  resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
   storage_account_name = var.storage_account_name
   files                = var.files
@@ -77,7 +87,7 @@ resource "azurerm_availability_set" "this" {
   count = contains([for k, v in var.vmseries : try(v.avzone, null) != null], true) ? 0 : 1
 
   name                        = "${var.name_prefix}-avset"
-  resource_group_name         = local.resource_group_name
+  resource_group_name         = azurerm_resource_group.this.name
   location                    = var.location
   platform_fault_domain_count = 2
 }
@@ -90,7 +100,7 @@ module "common_vmseries" {
   source   = "../../modules/vmseries"
   for_each = var.vmseries
 
-  resource_group_name       = local.resource_group_name
+  resource_group_name       = azurerm_resource_group.this.name
   location                  = var.location
   name                      = "${var.name_prefix}-${each.key}"
   avset_id                  = try(azurerm_availability_set.this[0].id, null)
@@ -114,13 +124,14 @@ module "common_vmseries" {
       name                 = "${each.key}-public"
       subnet_id            = lookup(module.vnet.subnet_ids, "subnet-public", null)
       public_ip_address_id = azurerm_public_ip.public[each.key].id
-      lb_backend_pool_id   = module.inbound-lb.backend-pool-id
+      lb_backend_pool_id   = module.inbound-lb.backend_pool_ids["backend1_name"]
       enable_backend_pool  = true
     },
     {
       name                = "${each.key}-private"
       subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
-      enable_backend_pool = false
+      lb_backend_pool_id  = module.outbound-lb.backend_pool_ids["backend3_name"]
+      enable_backend_pool = true
 
       # Optional static private IP
       private_ip_address = try(each.value.trust_private_ip, null)
