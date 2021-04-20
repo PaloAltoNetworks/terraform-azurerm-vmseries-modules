@@ -1,5 +1,5 @@
 variable "resource_group_name" {
-  description = "Name of the Resource Group to use."
+  description = "Name of the Resource Group to create."
   type        = string
 }
 
