@@ -33,8 +33,8 @@ $ terraform apply
 |------|--------|---------|
 | <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap |  |
 | <a name="module_common_vmseries"></a> [common\_vmseries](#module\_common\_vmseries) | ../../modules/vmseries |  |
-| <a name="module_inbound-lb"></a> [inbound-lb](#module\_inbound-lb) | ../../modules/loadbalancer |  |
-| <a name="module_outbound-lb"></a> [outbound-lb](#module\_outbound-lb) | ../../modules/loadbalancer |  |
+| <a name="module_inbound_lb"></a> [inbound\_lb](#module\_inbound\_lb) | ../../modules/loadbalancer |  |
+| <a name="module_outbound_lb"></a> [outbound\_lb](#module\_outbound\_lb) | ../../modules/loadbalancer |  |
 | <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet |  |
 
 ## Resources
@@ -61,16 +61,15 @@ $ terraform apply
 | <a name="input_existing_panorama_network_name"></a> [existing\_panorama\_network\_name](#input\_existing\_panorama\_network\_name) | n/a | `string` | `"fadv-panorama"` | no |
 | <a name="input_existing_panorama_resource_group_name"></a> [existing\_panorama\_resource\_group\_name](#input\_existing\_panorama\_resource\_group\_name) | n/a | `string` | `"fadv-panorama"` | no |
 | <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
-| <a name="input_lb_private_name"></a> [lb\_private\_name](#input\_lb\_private\_name) | Name of the private load balancer. | `string` | `"lb_private"` | no |
-| <a name="input_lb_public_name"></a> [lb\_public\_name](#input\_lb\_public\_name) | Name of the public-facing load balancer. | `string` | `"lb_public"` | no |
+| <a name="input_frontend_ips"></a> [frontend\_ips](#input\_frontend\_ips) | A map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details. | `any` | n/a | yes |
+| <a name="input_inbound_lb_name"></a> [inbound\_lb\_name](#input\_inbound\_lb\_name) | Name of the inbound load balancer (the public-facing one). | `string` | `"lb_inbound"` | no |
 | <a name="input_location"></a> [location](#input\_location) | The Azure region to use. | `string` | `"East US 2"` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator. | `string` | `"pantf"` | no |
 | <a name="input_network_security_groups"></a> [network\_security\_groups](#input\_network\_security\_groups) | Definition of Network Security Groups to create. Refer to the `VNet` module documentation for more information. | `any` | n/a | yes |
-| <a name="input_olb_private_ip"></a> [olb\_private\_ip](#input\_olb\_private\_ip) | The private IP address to assign to the Outbound Load Balancer. This IP **must** fall in the `private_subnet` network. | `string` | `"10.110.0.21"` | no |
+| <a name="input_olb_private_ip"></a> [olb\_private\_ip](#input\_olb\_private\_ip) | The private IP address to assign to the outbound load balancer. This IP **must** fall in the `private_subnet` network. | `string` | `"10.110.0.21"` | no |
+| <a name="input_outbound_lb_name"></a> [outbound\_lb\_name](#input\_outbound\_lb\_name) | Name of the outbound load balancer. | `string` | `"lb_outbound"` | no |
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
-| <a name="input_private_frontend_ips"></a> [private\_frontend\_ips](#input\_private\_frontend\_ips) | A map of objects describing private LB Frontend IP configurations and rules. See the module's documentation for details. | `any` | n/a | yes |
-| <a name="input_public_frontend_ips"></a> [public\_frontend\_ips](#input\_public\_frontend\_ips) | A map of objects describing public LB Frontend IP configurations and rules. See the module's documentation for details. | `any` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
+| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. If not provided, it will be auto-generated. | `string` | `""` | no |
 | <a name="input_route_tables"></a> [route\_tables](#input\_route\_tables) | Definition of Route Tables to create. Refer to the `VNet` module documentation for more information. | `any` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
 | <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping. | `string` | n/a | yes |
@@ -84,7 +83,8 @@ $ terraform apply
 
 | Name | Description |
 |------|-------------|
-| <a name="output_mgmt_ip_addresses"></a> [mgmt\_ip\_addresses](#output\_mgmt\_ip\_addresses) | n/a |
-| <a name="output_password"></a> [password](#output\_password) | PAN Device password |
-| <a name="output_username"></a> [username](#output\_username) | PAN Device username |
+| <a name="output_frontend_ips"></a> [frontend\_ips](#output\_frontend\_ips) | IP Addresses of the inbound load balancer. |
+| <a name="output_mgmt_ip_addresses"></a> [mgmt\_ip\_addresses](#output\_mgmt\_ip\_addresses) | IP Addresses for VM-Series management (https or ssh). |
+| <a name="output_password"></a> [password](#output\_password) | Initial administrative password to use for VM-Series. |
+| <a name="output_username"></a> [username](#output\_username) | Initial administrative username to use for VM-Series. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
