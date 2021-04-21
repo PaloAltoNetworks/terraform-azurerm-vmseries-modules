@@ -29,7 +29,7 @@ module "vnet" {
 resource "azurerm_public_ip" "public" {
   for_each = var.vmseries
 
-  name                = "${var.name_prefix}-${each.key}-public"
+  name                = "${var.name_prefix}${each.key}-public"
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
@@ -100,7 +100,7 @@ module "common_vmseries" {
 
   location                  = var.location
   resource_group_name       = azurerm_resource_group.this.name
-  name                      = "${var.name_prefix}-${each.key}"
+  name                      = "${var.name_prefix}${each.key}"
   avset_id                  = try(azurerm_availability_set.this[0].id, null)
   avzone                    = try(each.value.avzone, null)
   username                  = var.username
