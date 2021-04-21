@@ -41,17 +41,19 @@ resource "azurerm_network_security_rule" "this" {
     for nsg in local.nsg_rules : "${nsg.nsg_name}-${nsg.name}" => nsg
   }
 
-  name                        = each.value.name
-  resource_group_name         = var.resource_group_name
-  network_security_group_name = azurerm_network_security_group.this[each.value.nsg_name].name
-  priority                    = each.value.rule.priority
-  direction                   = each.value.rule.direction
-  access                      = each.value.rule.access
-  protocol                    = each.value.rule.protocol
-  source_port_range           = each.value.rule.source_port_range
-  destination_port_range      = each.value.rule.destination_port_range
-  source_address_prefix       = each.value.rule.source_address_prefix
-  destination_address_prefix  = each.value.rule.destination_address_prefix
+  name                         = each.value.name
+  resource_group_name          = var.resource_group_name
+  network_security_group_name  = azurerm_network_security_group.this[each.value.nsg_name].name
+  priority                     = each.value.rule.priority
+  direction                    = each.value.rule.direction
+  access                       = each.value.rule.access
+  protocol                     = each.value.rule.protocol
+  source_port_range            = each.value.rule.source_port_range
+  destination_port_range       = each.value.rule.destination_port_range
+  source_address_prefix        = lookup(each.value.rule, "source_address_prefix", null)
+  source_address_prefixes      = lookup(each.value.rule, "source_address_prefixes", null)
+  destination_address_prefix   = lookup(each.value.rule, "destination_address_prefix", null)
+  destination_address_prefixes = lookup(each.value.rule, "destination_address_prefixes", null)
 }
 
 resource "azurerm_route_table" "this" {
