@@ -112,6 +112,6 @@ storage_account_name    = "pantfstorage"
 storage_share_name      = "ibbootstrapshare"
 
 files = {
-  "files/authcodes.sample"    = "license/authcodes"
-  "files/init-cfg.sample.txt" = "config/init-cfg.txt"
+  "files/authcodes"    = "license/authcodes"
+  "files/init-cfg.txt" = "config/init-cfg.txt"
 }
