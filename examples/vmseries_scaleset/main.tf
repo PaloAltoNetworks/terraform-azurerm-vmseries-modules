@@ -37,12 +37,10 @@ module "vnet" {
 module "inbound-lb" {
   source = "../../modules/loadbalancer"
 
-  name_lb             = var.lb_public_name
-  frontend_ips        = var.public_frontend_ips
+  name                = var.lb_public_name
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
-
-  depends_on = [azurerm_resource_group.this]
+  frontend_ips        = var.public_frontend_ips
 }
 
 locals {
@@ -59,12 +57,10 @@ locals {
 module "outbound-lb" {
   source = "../../modules/loadbalancer"
 
-  name_lb             = var.lb_private_name
-  frontend_ips        = local.private_frontend_ips
+  name                = var.lb_private_name
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
-
-  depends_on = [azurerm_resource_group.this]
+  frontend_ips        = local.private_frontend_ips
 }
 
 
@@ -116,7 +112,7 @@ module "inbound-scaleset" {
   bootstrap_storage_account = module.inbound-bootstrap.storage_account
   bootstrap_share_name      = module.inbound-bootstrap.storage_share.name
   vhd_container             = "${module.inbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.inbound-lb.backend_pool_ids["backend1_name"]
+  lb_backend_pool_id        = module.inbound-lb.backend_pool_id
   vm_count                  = var.vmseries_count
 }
 
@@ -136,6 +132,6 @@ module "outbound-scaleset" {
   bootstrap_storage_account = module.outbound-bootstrap.storage_account
   bootstrap_share_name      = module.outbound-bootstrap.storage_share.name
   vhd_container             = "${module.outbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.outbound-lb.backend_pool_ids["backend3_name"]
+  lb_backend_pool_id        = module.outbound-lb.backend_pool_id
   vm_count                  = var.vmseries_count
 }
