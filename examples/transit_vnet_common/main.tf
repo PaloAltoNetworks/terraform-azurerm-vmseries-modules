@@ -40,10 +40,15 @@ resource "azurerm_public_ip" "public" {
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name                = var.inbound_lb_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  frontend_ips        = var.frontend_ips
+  name                        = var.inbound_lb_name
+  location                    = var.location
+  resource_group_name         = azurerm_resource_group.this.name
+  frontend_ips                = var.frontend_ips
+  network_security_group_name = "sg-public"
+  network_security_allow_source_ips = try(
+    var.network_security_groups.sg-mgmt.rules.vm-management-rules.source_address_prefixes,
+    var.network_security_groups.sg-mgmt.rules.vm-management-rules.source_address_prefix
+  )
 }
 
 # The Outbound Load Balancer for handling the traffic from the private networks.
