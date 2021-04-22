@@ -173,3 +173,65 @@ variable "outbound_lb_name" {
   default     = "lb_outbound"
   type        = string
 }
+
+### spoke vnet
+variable "spoke_resource_group_name" {
+  description = "Name for a created resource group."
+  default     = null
+  type        = string
+}
+
+variable "spoke_virtual_network_name" {
+  description = "The name of the spoke VNet to create."
+  type        = string
+}
+
+variable "spoke_address_space" {
+  description = "The address space used by the spoke virtual network. You can supply more than one address space."
+  type        = list(string)
+}
+
+variable "spoke_route_tables" {
+  description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
+}
+
+variable "spoke_subnets" {
+  description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
+}
+
+variable "vmspoke" {
+  description = <<-EOF
+  Map of virtual machines to create to run sample VM. Keys are the individual names, values
+  are the objects containing the attributes unique to that individual virtual machine:
+
+  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
+  EOF
+}
+
+variable "spoke_vm_publisher" {
+  description = "Specifies the publisher of the spoke image."
+}
+
+variable "spoke_vm_offer" {
+  description = "Specifies the offer of the image from the Azure Marketplace"
+}
+
+variable "spoke_vm_sku" {
+  description = "Spoke VM SKU from Azure Marketplace."
+}
+
+variable "spoke_vm_version" {
+  description = "Spoke image version."
+}
+
+variable "spoke_vm_size" {
+  description = "Spoke VM size (type) to be created."
+}
+
+variable "peering_spoke_name" {
+  description = "A name definition for peering from spoke vnet to transit vnet."
+}
+
+variable "peering_common_name" {
+  description = "A name definition for peering from transit vnet to spoke vnet."
+}
