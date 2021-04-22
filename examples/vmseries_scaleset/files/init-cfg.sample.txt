@@ -1,8 +1,8 @@
 type=dhcp-client
-vm-auth-key=xxxxxyyyyyzzzzz
-panorama-server=aaa.bbb.ccc.ddd
-tplname=some-stack
-dgname=some_dg
+vm-auth-key=
+panorama-server=
+tplname=
+dgname=
 dhcp-send-hostname=yes
 dhcp-send-client-id=yes
 dhcp-accept-server-hostname=yes
