@@ -65,6 +65,9 @@ locals {
 
   # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
   input_rules = { for v in local.input_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
+
+  # Having the frontends, just get their raw IP addresses.
+  frontend_ip_configs = { for k, v in azurerm_lb.lb.frontend_ip_configuration : v.name => coalesce(try(data.azurerm_public_ip.exists[v.name].ip_address, ""), try(azurerm_public_ip.this[v.name].ip_address, ""), v.private_ip_address) }
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
