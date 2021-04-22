@@ -25,7 +25,6 @@ route_tables = {
     }
   }
 }
-
 subnets = {
   "subnet-mgmt" = {
     address_prefixes       = ["10.110.255.0/24"]
