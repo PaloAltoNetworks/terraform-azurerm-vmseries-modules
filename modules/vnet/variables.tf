@@ -29,7 +29,7 @@ variable "network_security_groups" {
   A map of Network Security Groups objects to create. The key of each entry acts as the Network Security Group name.
   List of arguments available to define a Network Security Group:
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
-  - `rules`: A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
+  - `rules`: (Optional) A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
       needs to be unique across all rules in the Network Security Group.
       List of arguments available to define Network Security Rules:
       - `priority` : Specifies the priority of the rule. The value can be between 100 and 4096. The priority number must be unique for each rule in the collection. 
