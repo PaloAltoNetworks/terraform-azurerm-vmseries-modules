@@ -37,7 +37,8 @@ network_security_groups = {
       }
     }
   }
-  "sg-allowall" = {
+  "sg-private" = { rules = {} }
+  "sg-public" = {
     rules = {
       "public-allowall-inbound" = {
         access                     = "Allow"
@@ -80,12 +81,12 @@ subnets = {
   }
   "subnet-private" = {
     address_prefixes       = ["10.110.0.0/24"]
-    network_security_group = "sg-allowall"
+    network_security_group = "sg-private"
     route_table            = "udr-private"
   }
   "subnet-public" = {
     address_prefixes       = ["10.110.129.0/24"]
-    network_security_group = "sg-allowall"
+    network_security_group = "sg-public"
   }
 }
 
