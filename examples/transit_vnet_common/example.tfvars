@@ -37,11 +37,8 @@ network_security_groups = {
       }
     }
   }
-  "sg-private" = { rules = {} }
-  "sg-public" = {
-    rules = {
-    }
-  }
+  "sg-private" = {}
+  "sg-public"  = {}
 }
 route_tables = {
   "udr-private" = {
