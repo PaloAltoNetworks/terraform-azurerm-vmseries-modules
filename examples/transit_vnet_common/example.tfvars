@@ -40,26 +40,6 @@ network_security_groups = {
   "sg-private" = { rules = {} }
   "sg-public" = {
     rules = {
-      "public-allowall-inbound" = {
-        access                     = "Allow"
-        direction                  = "Inbound"
-        priority                   = 100
-        protocol                   = "*"
-        source_port_range          = "*"
-        source_address_prefix      = "*"
-        destination_address_prefix = "*"
-        destination_port_range     = "*"
-      }
-      "public-allowall-outbound" = {
-        access                     = "Allow"
-        direction                  = "Outbound"
-        priority                   = 101
-        protocol                   = "*"
-        source_port_range          = "*"
-        source_address_prefix      = "*"
-        destination_address_prefix = "*"
-        destination_port_range     = "*"
-      }
     }
   }
 }
