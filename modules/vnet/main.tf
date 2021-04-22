@@ -27,7 +27,7 @@ resource "azurerm_network_security_group" "this" {
 locals {
   nsg_rules = flatten([
     for nsg_name, nsg in var.network_security_groups : [
-      for rule_name, rule in nsg.rules : {
+      for rule_name, rule in lookup(nsg, "rules", {}) : {
         nsg_name = nsg_name
         name     = rule_name
         rule     = rule
