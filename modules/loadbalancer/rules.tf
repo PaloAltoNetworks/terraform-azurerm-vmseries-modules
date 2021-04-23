@@ -1,12 +1,7 @@
 
 resource "azurerm_network_security_rule" "allow_inbound_ips" {
-  # In order to generate unique numerical `priority`, we need a numerical index. So, lets use keys() for that:
-  for_each = { for i, k in keys(local.input_rules) : k => {
-    index       = i
-    port        = local.input_rules[k].rule.port
-    protocol    = lower(local.input_rules[k].rule.protocol)
-    frontend_ip = local.frontend_ip_configs[local.input_rules[k].fipkey]
-    } if var.network_security_group_name != null && var.network_security_group_name != "" && length(var.network_security_allow_source_ips) > 0
+  for_each = { for k, v in local.output_rules : k => v
+    if var.network_security_group_name != null && var.network_security_group_name != "" && length(var.network_security_allow_source_ips) > 0
   }
 
   name                        = "allow-inbound-ips-${each.value.protocol}-protocol-${each.value.index}"

@@ -107,5 +107,6 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_backend_pool_id"></a> [backend\_pool\_id](#output\_backend\_pool\_id) | The identifier of the backend pool. |
-| <a name="output_frontend_ip_configs"></a> [frontend\_ip\_configs](#output\_frontend\_ip\_configs) | The Frontend configs of the loadbalancer. |
+| <a name="output_frontend_combined_rules"></a> [frontend\_combined\_rules](#output\_frontend\_combined\_rules) | Map of all rules of all load balancer's frontends combined.<br>The map entries are intended to be easily convertable into an NSG rule, hence each entry<br>contains `port`, `protocol`,  `frontend_ip`, and numerical sequential `index`.<br>The `frontend_ip` is the same as as returned by output `frontend_ip_configs`.<br><br>Full example:<pre>hcl<br>{<br>  "frontend01-balancessh" = {<br>    "fipkey" = "frontend01"<br>    "frontend_ip" = "34.34.34.34"<br>    "index" = 0<br>    "port" = 22<br>    "protocol" = "tcp"<br>    "rulekey" = "balancessh"<br>  }<br>}</pre> |
+| <a name="output_frontend_ip_configs"></a> [frontend\_ip\_configs](#output\_frontend\_ip\_configs) | Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
