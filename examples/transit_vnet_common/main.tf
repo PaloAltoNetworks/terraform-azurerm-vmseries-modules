@@ -75,6 +75,7 @@ module "bootstrap" {
   location             = var.location
   resource_group_name  = azurerm_resource_group.this.name
   storage_account_name = var.storage_account_name
+  storage_share_name   = var.storage_share_name
   files                = var.files
 }
 
