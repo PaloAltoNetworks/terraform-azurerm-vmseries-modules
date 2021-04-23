@@ -6,4 +6,5 @@ output "USERNAME" {
 output "PASSWORD" {
   description = "PAN Device password"
   value       = random_password.this.result
+  sensitive   = true
 }
