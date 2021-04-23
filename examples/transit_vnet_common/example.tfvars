@@ -2,44 +2,18 @@ location             = "East US 2"
 resource_group_name  = "example-rg"
 virtual_network_name = "vnet-vmseries"
 address_space        = ["10.110.0.0/16"]
+
 network_security_groups = {
-  "sg-mgmt" = {
-    rules = {
-      "vmseries-allowall-outbound" = {
-        access                     = "Allow"
-        direction                  = "Outbound"
-        priority                   = 100
-        protocol                   = "*"
-        source_port_range          = "*"
-        source_address_prefix      = "*"
-        destination_address_prefix = "*"
-        destination_port_range     = "*"
-      }
-      "vmseries-mgmt-inbound" = {
-        access                     = "Allow"
-        direction                  = "Inbound"
-        priority                   = 101
-        protocol                   = "*"
-        source_port_range          = "*"
-        source_address_prefix      = "10.255.0.0/24" // External peering access
-        destination_address_prefix = "*"
-        destination_port_range     = "*"
-      }
-      "vm-management-rules" = {
-        access                     = "Allow"
-        direction                  = "Inbound"
-        priority                   = 100
-        protocol                   = "TCP"
-        source_port_range          = "*"
-        source_address_prefix      = "199.199.199.199"
-        destination_address_prefix = "*"
-        destination_port_range     = "*"
-      }
-    }
-  }
+  "sg-mgmt"    = {}
   "sg-private" = {}
   "sg-public"  = {}
 }
+
+allow_inbound_mgmt_ips = [
+  "191.191.191.191", # Put your own public IP address here
+  "10.255.0.0/24",   # Example Panorama access
+]
+
 route_tables = {
   "udr-private" = {
     routes = {
@@ -51,6 +25,7 @@ route_tables = {
     }
   }
 }
+
 subnets = {
   "subnet-mgmt" = {
     address_prefixes       = ["10.110.255.0/24"]
