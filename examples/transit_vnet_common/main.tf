@@ -25,6 +25,23 @@ module "vnet" {
   tags                    = var.vnet_tags
 }
 
+# Allow inbound access to Management subnet.
+resource "azurerm_network_security_rule" "mgmt" {
+  name                        = "vmseries-mgmt-allow-inbound"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = "sg-mgmt"
+  access                      = "Allow"
+  direction                   = "Inbound"
+  priority                    = 1000
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefixes     = var.allow_inbound_mgmt_ips
+  destination_address_prefix  = "*"
+  destination_port_range      = "*"
+
+  depends_on = [module.vnet]
+}
+
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
   for_each = var.vmseries
@@ -40,15 +57,12 @@ resource "azurerm_public_ip" "public" {
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name                        = var.inbound_lb_name
-  location                    = var.location
-  resource_group_name         = azurerm_resource_group.this.name
-  frontend_ips                = var.frontend_ips
-  network_security_group_name = "sg-public"
-  network_security_allow_source_ips = try(
-    var.network_security_groups.sg-mgmt.rules.vm-management-rules.source_address_prefixes,
-    var.network_security_groups.sg-mgmt.rules.vm-management-rules.source_address_prefix
-  )
+  name                              = var.inbound_lb_name
+  location                          = var.location
+  resource_group_name               = azurerm_resource_group.this.name
+  frontend_ips                      = var.frontend_ips
+  network_security_group_name       = "sg-public"
+  network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
 }
 
 # The Outbound Load Balancer for handling the traffic from the private networks.

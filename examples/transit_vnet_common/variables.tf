@@ -96,6 +96,18 @@ variable "network_security_groups" {
   description = "Definition of Network Security Groups to create. Refer to the `vnet` module documentation for more information."
 }
 
+variable "allow_inbound_mgmt_ips" {
+  description = "List of IP CIDR ranges (like `[\"23.23.23.23\"]`) that are allowed to access management interfaces of VM-Series. If you use Panorama, it also needs to be present (including the secondary Panorama)."
+  default     = []
+  type        = list(string)
+}
+
+variable "allow_inbound_data_ips" {
+  description = "List of IP CIDR ranges (like `[\"23.23.23.23\"]`) that are allowed to access data interfaces of VM-Series. If the list is empty, `allow_inbound_mgmt_ips` are used by default."
+  default     = []
+  type        = list(string)
+}
+
 variable "route_tables" {
   description = "Definition of Route Tables to create. Refer to the `vnet` module documentation for more information."
 }
