@@ -6,6 +6,7 @@ output "username" {
 output "password" {
   description = "Initial administrative password to use for VM-Series."
   value       = coalesce(var.password, random_password.this.result)
+  sensitive   = true
 }
 
 output mgmt_ip_addresses {
