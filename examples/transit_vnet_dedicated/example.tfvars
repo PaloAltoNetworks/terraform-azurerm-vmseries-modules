@@ -54,17 +54,33 @@ frontend_ips = {
   }
 }
 
-vmseries = {
-  "fw00" = { avzone = 1 }
-  "fw01" = { avzone = 2 }
+inbound_vmseries = {
+  "inboundfw00" = { avzone = 1 }
+  "inboundfw01" = { avzone = 2 }
 }
 
-common_vmseries_version = "9.1.3"
-common_vmseries_sku     = "bundle1"
-storage_account_name    = "pantfstorage"
-storage_share_name      = "ibbootstrapshare"
+inbound_vmseries_version = "10.0.4"
+inbound_vmseries_vm_size = "Standard_D3_v2"
 
-files = {
-  "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
-  "files/init-cfg.txt" = "config/init-cfg.txt"
+outbound_vmseries = {
+  "outboundfw00" = { avzone = 1 }
+  "outboundfw01" = { avzone = 2 }
+}
+
+outbound_vmseries_version = "10.0.4"
+outbound_vmseries_vm_size = "Standard_D3_v2"
+
+common_vmseries_sku         = "bundle1"
+storage_account_name        = "pantfstorage"
+inbound_storage_share_name  = "ibbootstrapshare"
+outbound_storage_share_name = "obbootstrapshare"
+
+inbound_files = {
+  "inbound_files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
+  "inbound_files/init-cfg.txt" = "config/init-cfg.txt"
+}
+
+outbound_files = {
+  "outbound_files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
+  "outbound_files/init-cfg.txt" = "config/init-cfg.txt"
 }
