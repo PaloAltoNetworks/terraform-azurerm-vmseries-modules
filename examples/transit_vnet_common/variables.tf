@@ -93,15 +93,15 @@ variable "address_space" {
 }
 
 variable "network_security_groups" {
-  description = "Definition of Network Security Groups to create. Refer to the `VNet` module documentation for more information."
+  description = "Definition of Network Security Groups to create. Refer to the `vnet` module documentation for more information."
 }
 
 variable "route_tables" {
-  description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
+  description = "Definition of Route Tables to create. Refer to the `vnet` module documentation for more information."
 }
 
 variable "subnets" {
-  description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
+  description = "Definition of Subnets to create. Refer to the `vnet` module documentation for more information."
 }
 
 variable "vnet_tags" {
