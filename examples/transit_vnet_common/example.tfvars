@@ -112,6 +112,6 @@ storage_account_name    = "pantfstorage"
 storage_share_name      = "ibbootstrapshare"
 
 files = {
-  "files/authcodes"    = "license/authcodes"
+  "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
   "files/init-cfg.txt" = "config/init-cfg.txt"
 }
