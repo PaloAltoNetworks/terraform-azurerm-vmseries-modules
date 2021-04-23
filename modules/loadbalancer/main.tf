@@ -38,7 +38,7 @@ locals {
 
   # Recalculate the main input map, taking into account whether the boolean condition is true/false.
   frontend_ips = { for k, v in var.frontend_ips : k => {
-    name                          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].name : k
+    name                          = k
     public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : try(data.azurerm_public_ip.exists[k].id, null)
     create_public_ip              = try(v.create_public_ip, null)
     subnet_id                     = try(v.subnet_id, null)
