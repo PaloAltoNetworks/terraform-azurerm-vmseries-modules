@@ -12,9 +12,16 @@ The following resources will be deployed when using the provided example:
 
 Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust the variables (in particular the `storage_account_name` should be unique).
 
-```bash
-$ terraform init
-$ terraform apply
+```sh
+terraform init
+terraform apply
+terraform output -json
+```
+
+## Cleanup
+
+```sh
+terraform destroy
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
