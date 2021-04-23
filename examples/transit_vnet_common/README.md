@@ -43,10 +43,7 @@ $ terraform apply
 |------|------|
 | [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/public_ip) | resource |
 | [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/resource_group) | resource |
-| [azurerm_virtual_network_peering.panorama](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/virtual_network_peering) | resource |
-| [azurerm_virtual_network_peering.panorama_ret](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/resources/virtual_network_peering) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [azurerm_virtual_network.panorama](https://registry.terraform.io/providers/hashicorp/azurerm/2.42/docs/data-sources/virtual_network) | data source |
 
 ## Inputs
 
@@ -57,8 +54,6 @@ $ terraform apply
 | <a name="input_common_vmseries_tags"></a> [common\_vmseries\_tags](#input\_common\_vmseries\_tags) | A map of tags to be associated with the virtual machines, their interfaces and public IP addresses. | `map` | `{}` | no |
 | <a name="input_common_vmseries_version"></a> [common\_vmseries\_version](#input\_common\_vmseries\_version) | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.1.3"` | no |
 | <a name="input_common_vmseries_vm_size"></a> [common\_vmseries\_vm\_size](#input\_common\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
-| <a name="input_existing_panorama_network_name"></a> [existing\_panorama\_network\_name](#input\_existing\_panorama\_network\_name) | n/a | `string` | `"fadv-panorama"` | no |
-| <a name="input_existing_panorama_resource_group_name"></a> [existing\_panorama\_resource\_group\_name](#input\_existing\_panorama\_resource\_group\_name) | n/a | `string` | `"fadv-panorama"` | no |
 | <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | <a name="input_frontend_ips"></a> [frontend\_ips](#input\_frontend\_ips) | A map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details. | `any` | n/a | yes |
 | <a name="input_inbound_lb_name"></a> [inbound\_lb\_name](#input\_inbound\_lb\_name) | Name of the inbound load balancer (the public-facing one). | `string` | `"lb_inbound"` | no |
