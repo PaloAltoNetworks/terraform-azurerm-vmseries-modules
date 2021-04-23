@@ -32,7 +32,9 @@ along with the changelog, on the GitHub [Releases](../../releases) page.
 
 ## Getting Help
 
-[Open an issue](../../issues) on Github.
+If you have found a bug, please report it. The preferred way is to create a new issue on the [GitHub issue page](../../issues).
+
+For consulting support, please contact services-sales@paloaltonetworks.com or your Palo Alto Networks account manager.
 
 ## Contributing
 
