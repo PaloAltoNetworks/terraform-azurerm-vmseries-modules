@@ -4,7 +4,7 @@ resource "azurerm_network_security_rule" "allow_inbound_ips" {
     if var.network_security_group_name != null && var.network_security_group_name != "" && length(var.network_security_allow_source_ips) > 0
   }
 
-  name                        = "allow-inbound-ips-${each.value.protocol}-protocol-${each.value.index}"
+  name                        = "allow-inbound-ips-${each.key}"
   resource_group_name         = coalesce(var.network_security_resource_group_name, var.resource_group_name)
   network_security_group_name = var.network_security_group_name
   priority                    = each.value.index + var.network_security_base_priority
