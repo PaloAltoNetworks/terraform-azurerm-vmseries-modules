@@ -44,7 +44,7 @@ resource "azurerm_network_security_rule" "mgmt" {
 
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
-  for_each = var.vmseries
+  for_each = var.outbound_vmseries
 
   name                = "${var.name_prefix}${each.key}-public"
   location            = var.location
@@ -87,25 +87,34 @@ module "outbound_lb" {
   }
 }
 
-# The storage account for VM-Series initialization.
+# The common storage account for VM-Series initialization and the file share for Inbound VM-Series.
 module "bootstrap" {
   source = "../../modules/bootstrap"
 
   location             = var.location
   resource_group_name  = azurerm_resource_group.this.name
   storage_account_name = var.storage_account_name
-  storage_share_name   = var.storage_share_name
-  files                = var.files
+  storage_share_name   = var.inbound_storage_share_name
+  files                = var.inbound_files
 }
 
-# Common VM-Series for handling:
-#   - inbound traffic from the Internet
-#   - outbound traffic to the Internet
-#   - internal traffic (also known as "east-west" traffic)
-module "common_vmseries" {
+# The file share for Outbound VM-Series.
+module "outbound_bootstrap" {
+  source = "../../modules/bootstrap"
+
+  # location               = var.location
+  resource_group_name      = azurerm_resource_group.this.name
+  create_storage_account   = false
+  existing_storage_account = module.bootstrap.storage_account.name
+  storage_share_name       = var.outbound_storage_share_name
+  files                    = var.outbound_files
+}
+
+# Inbound VM-Series for handling inbound traffic from the Internet.
+module "inbound_vmseries" {
   source = "../../modules/vmseries"
 
-  for_each = var.vmseries
+  for_each = var.inbound_vmseries
 
   location                  = var.location
   resource_group_name       = azurerm_resource_group.this.name
@@ -113,10 +122,56 @@ module "common_vmseries" {
   avzone                    = try(each.value.avzone, 1)
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
-  img_version               = var.common_vmseries_version
   img_sku                   = var.common_vmseries_sku
-  vm_size                   = var.common_vmseries_vm_size
-  tags                      = var.common_vmseries_tags
+  img_version               = var.inbound_vmseries_version
+  vm_size                   = var.inbound_vmseries_vm_size
+  tags                      = var.inbound_vmseries_tags
+  bootstrap_storage_account = module.bootstrap.storage_account
+  bootstrap_share_name      = module.bootstrap.storage_share.name
+  interfaces = [
+    {
+      name                = "${each.key}-mgmt"
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
+      create_public_ip    = true
+      enable_backend_pool = false
+    },
+    {
+      name                = "${each.key}-public"
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-public", null)
+      lb_backend_pool_id  = module.inbound_lb.backend_pool_id
+      enable_backend_pool = true
+    },
+    {
+      name                = "${each.key}-private"
+      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
+      enable_backend_pool = false
+
+      # Optional static private IP
+      private_ip_address = try(each.value.trust_private_ip, null)
+    },
+  ]
+
+  depends_on = [module.bootstrap]
+}
+
+# Outbound VM-Series for handling:
+#   - outbound traffic to the Internet
+#   - internal traffic (also known as "east-west" traffic)
+module "outbound_vmseries" {
+  source = "../../modules/vmseries"
+
+  for_each = var.outbound_vmseries
+
+  location                  = var.location
+  resource_group_name       = azurerm_resource_group.this.name
+  name                      = "${var.name_prefix}${each.key}"
+  avzone                    = try(each.value.avzone, 1)
+  username                  = var.username
+  password                  = coalesce(var.password, random_password.this.result)
+  img_sku                   = var.common_vmseries_sku
+  img_version               = var.outbound_vmseries_version
+  vm_size                   = var.outbound_vmseries_vm_size
+  tags                      = var.outbound_vmseries_tags
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [
@@ -130,8 +185,7 @@ module "common_vmseries" {
       name                 = "${each.key}-public"
       subnet_id            = lookup(module.vnet.subnet_ids, "subnet-public", null)
       public_ip_address_id = azurerm_public_ip.public[each.key].id
-      lb_backend_pool_id   = module.inbound_lb.backend_pool_id
-      enable_backend_pool  = true
+      enable_backend_pool  = false
     },
     {
       name                = "${each.key}-private"
@@ -144,5 +198,5 @@ module "common_vmseries" {
     },
   ]
 
-  depends_on = [module.bootstrap]
+  depends_on = [module.outbound_bootstrap]
 }

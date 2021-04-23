@@ -9,12 +9,15 @@ output "password" {
   sensitive   = true
 }
 
-output mgmt_ip_addresses {
+output "mgmt_ip_addresses" {
   description = "IP Addresses for VM-Series management (https or ssh)."
-  value       = { for k, v in module.common_vmseries : k => v.mgmt_ip_address }
+  value = merge(
+    { for k, v in module.inbound_vmseries : k => v.mgmt_ip_address },
+    { for k, v in module.outbound_vmseries : k => v.mgmt_ip_address },
+  )
 }
 
-output frontend_ips {
+output "frontend_ips" {
   description = "IP Addresses of the inbound load balancer."
   value       = module.inbound_lb.frontend_ip_configs
 }

@@ -28,9 +28,9 @@ variable "password" {
   type        = string
 }
 
-variable "vmseries" {
+variable "inbound_vmseries" {
   description = <<-EOF
-  Map of virtual machines to create to run VM-Series. Keys are the individual names, values
+  Map of virtual machines to create to run VM-Series dedicated for traffic inbound from the Internet. Keys are the individual names, values
   are the objects containing the attributes unique to that individual virtual machine:
 
   - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1" in order to avoid non-HA deployments.
@@ -71,16 +71,28 @@ variable "storage_account_name" {
   type        = string
 }
 
-variable "files" {
-  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+variable "inbound_files" {
+  description = "Map of all files to copy to `inbound_storage_share_name`. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
   default     = {}
   type        = map(string)
 }
 
-variable "storage_share_name" {
-  description = "Name of storage share to be created that holds `files` for bootstrapping."
+variable "outbound_files" {
+  description = "Map of all files to copy to `outbound_storage_share_name`. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
+variable "inbound_storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping inbound VM-Series."
   type        = string
 }
+
+variable "outbound_storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping outbound VM-Series."
+  type        = string
+}
+
 
 variable "virtual_network_name" {
   description = "The name of the VNet to create."
@@ -123,7 +135,7 @@ variable "subnets" {
 }
 
 variable "vnet_tags" {
-  description = "A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
+  description = "A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `inbound_vmseries_tags`."
   type        = map(any)
   default     = {}
 }
@@ -144,20 +156,20 @@ variable "common_vmseries_sku" {
   type        = string
 }
 
-variable "common_vmseries_version" {
-  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+variable "inbound_vmseries_version" {
+  description = "Inbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "9.1.3"
   type        = string
 }
 
-variable "common_vmseries_vm_size" {
+variable "inbound_vmseries_vm_size" {
   description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
   default     = "Standard_D3_v2"
   type        = string
 }
 
-variable "common_vmseries_tags" {
-  description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
+variable "inbound_vmseries_tags" {
+  description = "A map of tags to be associated with the inbound virtual machines, their interfaces and public IP addresses."
   default     = {}
   type        = map
 }
@@ -166,6 +178,30 @@ variable "inbound_lb_name" {
   description = "Name of the inbound load balancer (the public-facing one)."
   default     = "lb_inbound"
   type        = string
+}
+
+variable "outbound_vmseries" {
+  description = <<-EOF
+  Map of virtual machines to create to run VM-Series dedicated for traffic outbound to the Internet. Format is the same as for `inbound_vmseries`.
+  EOF
+}
+
+variable "outbound_vmseries_version" {
+  description = "Outbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  default     = "9.1.3"
+  type        = string
+}
+
+variable "outbound_vmseries_vm_size" {
+  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
+  default     = "Standard_D3_v2"
+  type        = string
+}
+
+variable "outbound_vmseries_tags" {
+  description = "A map of tags to be associated with the outbound virtual machines, their interfaces and public IP addresses."
+  default     = {}
+  type        = map
 }
 
 variable "outbound_lb_name" {
