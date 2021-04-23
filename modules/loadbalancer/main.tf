@@ -66,8 +66,21 @@ locals {
   # Finally, convert flat list to a flat map. Make sure the keys are unique. This is used for for_each.
   input_rules = { for v in local.input_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 
-  # Having the frontends, just get their raw IP addresses.
-  frontend_ip_configs = { for k, v in azurerm_lb.lb.frontend_ip_configuration : v.name => coalesce(try(data.azurerm_public_ip.exists[v.name].ip_address, ""), try(azurerm_public_ip.this[v.name].ip_address, ""), v.private_ip_address) }
+  # Now, the outputs to be returned by the module. First, calculate the raw IP addresses.
+  output_ips = { for _, v in azurerm_lb.lb.frontend_ip_configuration : v.name => coalesce(try(data.azurerm_public_ip.exists[v.name].ip_address, azurerm_public_ip.this[v.name].ip_address, v.private_ip_address)) }
+
+  # A more rich output combines the raw IP addresses with more attributes.
+  # As the later NSGs demand that troublesome numerical `priority` attribute, we
+  # need to generate unique numerical `index`. So, lets use keys() for that:
+  output_rules = { for i, k in keys(local.input_rules) : k => {
+    index       = i
+    fipkey      = local.input_rules[k].fipkey
+    rulekey     = local.input_rules[k].rulekey
+    port        = local.input_rules[k].rule.port
+    protocol    = lower(local.input_rules[k].rule.protocol)
+    frontend_ip = local.output_ips[local.input_rules[k].fipkey]
+    }
+  }
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
