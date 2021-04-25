@@ -4,7 +4,7 @@ name: CI/CD
 on:
   push:
     branches:
-      - master
+      - main
       - develop
   pull_request:
   schedule:
@@ -43,7 +43,7 @@ jobs:
 
   release:
     name: release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [validate]
     runs-on: ubuntu-latest
 
@@ -55,10 +55,9 @@ jobs:
         id: release
         uses: cycjimmy/semantic-release-action@v2
         with:
-          semantic_version: 17.1.1
+          semantic_version: 17.4.2
           extra_plugins: |
-            conventional-changelog-conventionalcommits@^4.4.0
+            conventional-changelog-conventionalcommits@^4.5.0
             @semantic-release/git@^9.0.0
-            @semantic-release/exec@^5.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
