@@ -9,7 +9,7 @@ output "password" {
   sensitive   = true
 }
 
-output mgmt_ip_addresses {
+output "mgmt_ip_addresses" {
   description = "IP Addresses for VM-Series management (https or ssh)."
   value       = module.common_vmseries.mgmt_ip_address
 }

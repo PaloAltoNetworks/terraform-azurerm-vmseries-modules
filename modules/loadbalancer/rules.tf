@@ -8,8 +8,8 @@ resource "azurerm_network_security_rule" "allow_inbound_ips" {
   resource_group_name         = coalesce(var.network_security_resource_group_name, var.resource_group_name)
   network_security_group_name = var.network_security_group_name
   priority                    = each.value.index + var.network_security_base_priority
-  direction                   = "inbound"
-  access                      = "allow"
+  direction                   = "Inbound"
+  access                      = "Allow"
   protocol                    = replace(each.value.protocol, "all", "*")
   description                 = "Load balancer ${var.name} port ${each.value.protocol}/${each.value.port}: allowed inbound IP ranges"
   source_port_range           = "*"
