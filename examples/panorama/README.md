@@ -57,6 +57,7 @@ $ terraform apply
 | <a name="input_location"></a> [location](#input\_location) | Region to deploy Panorama into. If not provided location will be taken from Resource Group. | `string` | `""` | no |
 | <a name="input_management_ips"></a> [management\_ips](#input\_management\_ips) | A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique. | `map(number)` | n/a | yes |
 | <a name="input_panorama_name"></a> [panorama\_name](#input\_panorama\_name) | n/a | `string` | `"panorama"` | no |
+| <a name="input_panorama_private_ip_address"></a> [panorama\_private\_ip\_address](#input\_panorama\_private\_ip\_address) | Optional static private IP address of Panorama, for example 192.168.11.22. If empty, Panorama uses dynamic assignment. | `string` | `null` | no |
 | <a name="input_panorama_size"></a> [panorama\_size](#input\_panorama\_size) | n/a | `string` | `"Standard_D5_v2"` | no |
 | <a name="input_panorama_sku"></a> [panorama\_sku](#input\_panorama\_sku) | n/a | `string` | `"byol"` | no |
 | <a name="input_panorama_version"></a> [panorama\_version](#input\_panorama\_version) | n/a | `string` | `"10.0.3"` | no |

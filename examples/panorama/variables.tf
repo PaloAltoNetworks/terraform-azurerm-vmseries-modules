@@ -64,6 +64,12 @@ variable "subnet_prefixes" {
   default = ["10.0.0.0/24"]
 }
 
+variable "panorama_private_ip_address" {
+  description = "Optional static private IP address of Panorama, for example 192.168.11.22. If empty, Panorama uses dynamic assignment."
+  type        = string
+  default     = null
+}
+
 variable "vnet_name" {
   type = string
 }
