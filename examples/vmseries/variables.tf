@@ -9,7 +9,7 @@ variable "resource_group_name" {
 }
 
 variable "username" {
-  description = "Initial administrative username."
+  description = "Initial administrative username. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
   type        = string
 }
 

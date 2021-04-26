@@ -70,7 +70,7 @@ terraform destroy
 | <a name="input_common_vmseries_sku"></a> [common\_vmseries\_sku](#input\_common\_vmseries\_sku) | VM-series SKU, for example `bundle1` or `bundle2`. Do not use byol for this example as there is no way to supply `authcodes`. | `string` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | The Azure region to use. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
-| <a name="input_username"></a> [username](#input\_username) | Initial administrative username. | `string` | n/a | yes |
+| <a name="input_username"></a> [username](#input\_username) | Initial administrative username. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm). | `string` | n/a | yes |
 
 ## Outputs
 
