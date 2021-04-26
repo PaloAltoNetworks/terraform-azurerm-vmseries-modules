@@ -22,7 +22,7 @@ resource "azurerm_network_interface" "this" {
     subnet_id                     = var.interface[0].subnet_id
     private_ip_address_allocation = lookup(var.interface[0], "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(var.interface[0], "private_ip_address", null) != null ? var.interface[0].private_ip_address : null
-    public_ip_address_id          = lookup(var.interface[0], "public_ip", "false") != "false" ? try(azurerm_public_ip.this[0].id) : null
+    public_ip_address_id          = lookup(var.interface[0], "public_ip", false) ? azurerm_public_ip.this[0].id : null
   }
 
   tags = var.tags
