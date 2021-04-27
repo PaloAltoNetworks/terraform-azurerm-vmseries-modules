@@ -29,6 +29,7 @@ subnets = {
   "subnet-mgmt" = {
     address_prefixes       = ["10.110.255.0/24"]
     network_security_group = "sg-mgmt"
+    route_table            = "Transit-Management"
   }
   "subnet-private" = {
     address_prefixes       = ["10.110.0.0/24"]
