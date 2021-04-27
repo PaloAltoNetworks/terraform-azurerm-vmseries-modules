@@ -111,6 +111,8 @@ resource "azurerm_virtual_machine" "this" {
     type         = var.identity_type
     identity_ids = var.identity_ids
   }
+
+  depends_on = [azurerm_network_interface_backend_address_pool_association.this]
 }
 
 resource "azurerm_application_insights" "this" {
