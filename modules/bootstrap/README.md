@@ -5,6 +5,8 @@ to [bootstrap a VM-Series firewalls in Azure](https://docs.paloaltonetworks.com/
 
 The module does *not* configure the bootstrap images, licenses, or configurations.
 
+The following sample basic configuration [init-cfg.txt](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/sample-init-cfgtxt-file.html) files shows all the parameters that are supported in the file.
+
 ## Usage
 
 See the examples/vm-series directory.
