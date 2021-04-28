@@ -1,11 +1,11 @@
 variable "location" {
-  description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
+  description = "Region to deploy Panorama into."
   default     = ""
   type        = string
 }
 
 variable "resource_group_name" {
-  description = "Name of the Resource Group to use."
+  description = "Name of the Resource Group to create."
   type        = string
 }
 
@@ -62,6 +62,12 @@ variable "subnet_names" {
 variable "subnet_prefixes" {
   type    = list
   default = ["10.0.0.0/24"]
+}
+
+variable "panorama_private_ip_address" {
+  description = "Optional static private IP address of Panorama, for example 192.168.11.22. If empty, Panorama uses dynamic assignment."
+  type        = string
+  default     = null
 }
 
 variable "vnet_name" {

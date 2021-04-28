@@ -85,9 +85,9 @@ module "panorama" {
     {
       name               = "mgmt"
       subnet_id          = module.vnet.vnet_subnets[0]
-      private_ip_address = "10.0.0.6"  // Optional: If not set, use dynamic allocation
-      public_ip          = "true"      // (optional|bool, default: "false")
-      public_ip_name     = "public_ip" // (optional|string, default: "")
+      private_ip_address = var.panorama_private_ip_address // Optional: If not set, use dynamic allocation
+      public_ip          = true                            // (optional|bool,   default: false)
+      public_ip_name     = "public_ip"                     // (optional|string, default: "")
     }
   ]
 

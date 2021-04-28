@@ -1,6 +1,6 @@
 # Create a public IP for management
 resource "azurerm_public_ip" "this" {
-  count = var.interface[0].public_ip == "true" ? 1 : 0
+  count = var.interface[0].public_ip == true ? 1 : 0
 
   name                = var.interface[0].public_ip_name
   location            = var.location
@@ -15,14 +15,14 @@ resource "azurerm_network_interface" "this" {
   name                 = var.interface[0].name
   location             = var.location
   resource_group_name  = var.resource_group_name
-  enable_ip_forwarding = lookup(var.interface[0], "enable_ip_forwarding", "false")
+  enable_ip_forwarding = lookup(var.interface[0], "enable_ip_forwarding", false)
 
   ip_configuration {
     name                          = var.interface[0].name
     subnet_id                     = var.interface[0].subnet_id
     private_ip_address_allocation = lookup(var.interface[0], "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(var.interface[0], "private_ip_address", null) != null ? var.interface[0].private_ip_address : null
-    public_ip_address_id          = lookup(var.interface[0], "public_ip", "false") != "false" ? try(azurerm_public_ip.this[0].id) : null
+    public_ip_address_id          = lookup(var.interface[0], "public_ip", false) ? azurerm_public_ip.this[0].id : null
   }
 
   tags = var.tags

@@ -6,47 +6,30 @@ A terraform module for deploying a working Panorama instance in Azure.
 
 ```hcl
 module "panorama" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/panorama"
+  source  = "PaloAltoNetworks/vmseries-modules/azurerm//modules/panorama"
+  version = "0.1.0"
 
   panorama_name       = var.panorama_name
-  name_prefix         = var.name_prefix
-  resource_group_name = var.resource_group_name
-  location            = var.location //Optional; if not provided, will use Resource Group location
-  avzone              = var.avzone   // Optional Availability Zone number
+  resource_group_name = azurerm_resource_group.this.name
+  location            = var.location
+  avzone              = var.avzone // Optional Availability Zone number
 
-  interface = {                          // Only one interface in Panorama VM is supported
-    mgmt = {
-      subnet_id            = ""
-      private_ip_address   = "10.0.0.6" // Optional: If not set, use dynamic allocation
-      public_ip            = "true"    // (optional|bool, default: "false")
-      enable_ip_forwarding = "false"  // (optional|bool, default: "false")
-      primary_interface    = "true"
+  interface = [ // Only one interface in Panorama VM is supported
+    {
+      name               = "mgmt"
+      subnet_id          = var.subnet_id
+      public_ip          = true
+      public_ip_name     = "panorama"
     }
-  }
+  ]
 
-  logging_disks = {
-    disk_name_1 = {
-      size : "2048"
-      zone : "1"
-      lun : "1"
-    }
-    disk_name_2 = {
-      dize : "4096"
-      zone : "2"
-      lun : "2"
-    }
-  }
-
-  panorama_size    = var.panorama_size
-  custom_image_id  = var.custom_image_id // optional
-  username         = var.username        // required, no default
-  password         = var.password        // required, no default
-  panorama_sku     = var.panorama_sku
-  panorama_version = var.panorama_version
-
-  primary_interface = var.primary_interface
-
-  tags = var.tags
+  panorama_size               = var.panorama_size
+  username                    = var.username
+  password                    = random_password.this.result
+  panorama_sku                = var.panorama_sku
+  panorama_version            = var.panorama_version
+  boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
+  tags                        = var.tags
 }
 ```
 
@@ -87,7 +70,7 @@ No modules.
 | <a name="input_boot_diagnostic_storage_uri"></a> [boot\_diagnostic\_storage\_uri](#input\_boot\_diagnostic\_storage\_uri) | Existing diagnostic storage uri | `string` | `null` | no |
 | <a name="input_custom_image_id"></a> [custom\_image\_id](#input\_custom\_image\_id) | Absolute ID of your own Custom Image to be used for creating Panorama. If set, the `username`, `password`, `panorama_version`, `panorama_publisher`, `panorama_offer`, `panorama_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software. | `string` | `null` | no |
 | <a name="input_enable_plan"></a> [enable\_plan](#input\_enable\_plan) | Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image. | `bool` | `true` | no |
-| <a name="input_interface"></a> [interface](#input\_interface) | A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet\_id, private\_ip\_address, public\_ip, enable\_ip\_forwarding }. Example:<pre>[<br>  {<br>    name                 = "mgmt"<br>    subnet_id            = ""<br>    private_ip_address   = ""<br>    public_ip            = "true"<br>    public_ip_name       = ""<br>    enable_ip_forwarding = "false"<br>  }<br>]</pre> | `any` | n/a | yes |
+| <a name="input_interface"></a> [interface](#input\_interface) | A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet\_id, private\_ip\_address, public\_ip, enable\_ip\_forwarding }. Example:<pre>[<br>  {<br>    name                 = "mgmt"<br>    subnet_id            = ""<br>    private_ip_address   = ""<br>    public_ip            = true<br>    public_ip_name       = ""<br>    enable_ip_forwarding = false<br>  }<br>]</pre> | `any` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | Region to deploy Panorama into. | `string` | n/a | yes |
 | <a name="input_logging_disks"></a> [logging\_disks](#input\_logging\_disks) | A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zones, lun }. <br> The size value is provided in GB. The recommended size for additional(optional) disks should be at least 2TB (2048 GB). Example:<pre>{<br>  disk_name_1 = {<br>    size: "2048"<br>    zone: "1"<br>    lun: "1"<br>  }<br>  disk_name_2 = {<br>    size: "2048"<br>    zone: "2"<br>    lun: "2"<br>  }<br>}</pre> | `map(any)` | `{}` | no |
 | <a name="input_os_disk_name"></a> [os\_disk\_name](#input\_os\_disk\_name) | The name of OS disk. The name is auto-generated when not provided. | `string` | `null` | no |

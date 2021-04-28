@@ -68,9 +68,9 @@ variable "interface" {
       name                 = "mgmt"
       subnet_id            = ""
       private_ip_address   = ""
-      public_ip            = "true"
+      public_ip            = true
       public_ip_name       = ""
-      enable_ip_forwarding = "false"
+      enable_ip_forwarding = false
     }
   ]
   ```
