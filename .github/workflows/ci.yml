@@ -37,9 +37,8 @@ jobs:
             terraform validate
           done
 
-      - name: terraform fmt
-        run: |
-          terraform fmt -check -recursive
+      - name: Run the Pre-Commit Framework Action
+        uses: PaloAltoNetworks/terraform-azurerm-vmseries-modules@ci_precommit
 
   release:
     name: release

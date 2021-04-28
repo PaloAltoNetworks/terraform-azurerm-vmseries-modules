@@ -1,0 +1,5 @@
+name: 'GitHub Action for pre-commit framework'
+description: 'See https://pypi.org/project/pre-commit'
+runs:
+  using: 'docker'
+  image: '.github/action-precommit/Dockerfile'
