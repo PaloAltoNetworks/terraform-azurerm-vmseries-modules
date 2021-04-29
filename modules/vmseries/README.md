@@ -17,12 +17,8 @@ module "vmseries" {
   subnet_mgmt                   = module.networks.subnet_mgmt
   interfaces = [
     {
-      subnet              = module.networks.subnet_public
-      enable_backend_pool = false
-    },
-    {
-      subnet              = module.networks.subnet_private
-      enable_backend_pool = false
+      name      = "myfw-mgmt-interface"
+      subnet_id = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
     },
   ]
 }
