@@ -21,12 +21,12 @@ output "frontend_combined_rules" {
   ```hcl
   {
     "frontend01-balancessh" = {
-      "fipkey" = "frontend01"
+      "fipkey"      = "frontend01"
       "frontend_ip" = "34.34.34.34"
-      "index" = 0
-      "port" = 22
-      "protocol" = "tcp"
-      "rulekey" = "balancessh"
+      "index"       = 0
+      "port"        = 22
+      "protocol"    = "tcp"
+      "rulekey"     = "balancessh"
     }
   }
   ```
