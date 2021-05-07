@@ -97,13 +97,19 @@ variable "network_security_groups" {
 }
 
 variable "allow_inbound_mgmt_ips" {
-  description = "List of IP CIDR ranges (like `[\"23.23.23.23\"]`) that are allowed to access management interfaces of VM-Series. If you use Panorama, it also needs to be present (including the secondary Panorama)."
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interfaces of VM-Series.
+    If you use Panorama, include its address in the list (as well as the secondary Panorama's).
+  EOF
   default     = []
   type        = list(string)
 }
 
 variable "allow_inbound_data_ips" {
-  description = "List of IP CIDR ranges (like `[\"23.23.23.23\"]`) that are allowed to access data interfaces of VM-Series. If the list is empty, `allow_inbound_mgmt_ips` are used by default."
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access public data interfaces of VM-Series.
+    If the list is empty, the contents of `allow_inbound_mgmt_ips` are substituted instead.
+  EOF
   default     = []
   type        = list(string)
 }
