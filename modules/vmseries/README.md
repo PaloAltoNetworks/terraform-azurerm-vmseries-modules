@@ -9,12 +9,11 @@ The module is not intended for use with Scale Sets.
 module "vmseries" {
   source  = "../../modules/vmseries"
 
-  location                      = "Australia Central"
-  name                          = "my-firewall"
-  password                      = "change-me-XOX0"
-  bootstrap_storage_account     = module.vm-bootstrap.bootstrap_storage_account
-  bootstrap_share_name          = "sharename"
-  subnet_mgmt                   = module.networks.subnet_mgmt
+  location            = "Australia East"
+  resource_group_name = azurerm_resource_group.this.name
+  name                = "myfw"
+  username            = "panadmin"
+  password            = "Change-Me-007"
   interfaces = [
     {
       name      = "myfw-mgmt-interface"
