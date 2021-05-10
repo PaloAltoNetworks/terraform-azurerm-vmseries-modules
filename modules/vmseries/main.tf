@@ -42,7 +42,7 @@ resource "azurerm_virtual_machine" "this" {
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size
-  zones                        = var.avzone != null ? [var.avzone] : null
+  zones                        = var.avzone != null && var.avzone != "" ? [var.avzone] : null
   availability_set_id          = var.avset_id
   primary_network_interface_id = azurerm_network_interface.this[0].id
 
