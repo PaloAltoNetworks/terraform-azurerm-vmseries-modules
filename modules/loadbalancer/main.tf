@@ -87,9 +87,8 @@ locals {
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
-  name                = coalesce(var.backend_name, var.name)
-  resource_group_name = var.resource_group_name
-  loadbalancer_id     = azurerm_lb.lb.id
+  name            = coalesce(var.backend_name, var.name)
+  loadbalancer_id = azurerm_lb.lb.id
 }
 
 resource "azurerm_lb_probe" "probe" {
