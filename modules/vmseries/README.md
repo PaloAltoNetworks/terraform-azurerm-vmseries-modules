@@ -57,7 +57,7 @@ If your Region doesn't, use an alternative mechanism of Availability Set, which 
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=0.12.29, <0.15 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >=0.12.29, <0.16 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~>2.26 |
 
 ## Providers
