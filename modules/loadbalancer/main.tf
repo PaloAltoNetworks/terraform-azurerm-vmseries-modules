@@ -73,12 +73,15 @@ locals {
   # As the later NSGs demand that troublesome numerical `priority` attribute, we
   # need to generate unique numerical `index`. So, lets use keys() for that:
   output_rules = { for i, k in keys(local.input_rules) : k => {
-    index       = i
-    fipkey      = local.input_rules[k].fipkey
-    rulekey     = local.input_rules[k].rulekey
-    port        = local.input_rules[k].rule.port
-    protocol    = lower(local.input_rules[k].rule.protocol)
-    frontend_ip = local.output_ips[local.input_rules[k].fipkey]
+    index        = i
+    fipkey       = local.input_rules[k].fipkey
+    rulekey      = local.input_rules[k].rulekey
+    port         = local.input_rules[k].rule.port
+    nsg_priority = lookup(local.input_rules[k].rule, "nsg_priority", null)
+    protocol     = lower(local.input_rules[k].rule.protocol)
+    frontend_ip  = local.output_ips[local.input_rules[k].fipkey]
+    // The hash16 is 16-bit in size, just crudely yank the initial digits of sha256.
+    hash16 = parseint(substr(sha256("${local.output_ips[local.input_rules[k].fipkey]}:${local.input_rules[k].rule.port}"), 0, 4), 16)
     }
   }
 }
@@ -121,7 +124,6 @@ resource "azurerm_network_security_rule" "allow_inbound_ips" {
   name                        = "allow-inbound-ips-${each.key}"
   resource_group_name         = coalesce(var.network_security_resource_group_name, var.resource_group_name)
   network_security_group_name = var.network_security_group_name
-  priority                    = each.value.index + var.network_security_base_priority
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = replace(each.value.protocol, "all", "*")
@@ -130,4 +132,7 @@ resource "azurerm_network_security_rule" "allow_inbound_ips" {
   destination_port_ranges     = [each.value.port == "0" ? "*" : each.value.port]
   source_address_prefixes     = var.network_security_allow_source_ips
   destination_address_prefix  = each.value.frontend_ip
+  # For the priority, we add this %10 so that the numbering would be a bit more sparse instead of sequential.
+  # This helps tremendously when a mass of indexes shifts by +1 or -1:
+  priority = coalesce(each.value.nsg_priority, each.value.index * 10 + each.value.hash16 % 10 + var.network_security_base_priority)
 }

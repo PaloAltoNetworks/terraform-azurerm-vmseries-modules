@@ -117,9 +117,9 @@ variable "network_security_group_name" {
 
 variable "network_security_base_priority" {
   description = <<-EOF
-    The base number from which the priorities of the auto-generated NSG rules grow sequentially.
+    The base number from which the auto-generated priorities of the NSG rules grow.
     Ignored if `network_security_group_name` is empty or if `network_security_allow_source_ips` is empty.
   EOF
-  default     = 4000
+  default     = 1000
   type        = number
 }
