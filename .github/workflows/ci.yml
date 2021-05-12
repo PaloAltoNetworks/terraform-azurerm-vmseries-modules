@@ -11,6 +11,23 @@ on:
     - cron: '0 0 1 * *'
 
 jobs:
+  pre-commit:
+    name: Verify the pre-commit framework was used properly by developers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax (like 3.x) or the exact Python version
+          python-version: '3.9.4'
+
+      - name: Run pre-commit framework as the developer should run it
+        run: sudo ./scripts/install.sh && sudo ./scripts/run.sh
+
   validate:
     name: Validate
     runs-on: ubuntu-latest
@@ -22,7 +39,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 0.13.6
+          terraform_version: 0.13.7
 
       - name: terraform validate
         run: |
@@ -34,9 +51,6 @@ jobs:
             terraform init -backend=false
             terraform validate
           done
-
-      - name: Run the Pre-Commit Framework Action
-        uses: PaloAltoNetworks/terraform-azurerm-vmseries-modules@ci_precommit
 
   release:
     name: release
