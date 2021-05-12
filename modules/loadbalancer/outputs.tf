@@ -12,21 +12,23 @@ output "frontend_combined_rules" {
   value       = local.output_rules
   description = <<-EOF
   Map of all rules of all load balancer's frontends combined.
-  The map entries are intended to be easily convertable into an NSG rule, hence each entry
+  The map entries are intended to be easily convertible into NSG rules, hence each entry
   contains `port`, `protocol`,  `frontend_ip`, and numerical sequential `index`.
-  The `frontend_ip` is the same as as returned by output `frontend_ip_configs`.
+  The `frontend_ip` is the same as returned by output `frontend_ip_configs`.
 
   Full example:
 
-  ```hcl
+  ```
   {
     "frontend01-balancessh" = {
-      "fipkey"      = "frontend01"
-      "frontend_ip" = "34.34.34.34"
-      "index"       = 0
-      "port"        = 22
-      "protocol"    = "tcp"
-      "rulekey"     = "balancessh"
+      fipkey       = "frontend01"
+      frontend_ip  = "34.34.34.34"
+      hash16       = 45991
+      index        = 0
+      nsg_priority = null
+      port         = 22
+      protocol     = "tcp"
+      rulekey      = "balancessh"
     }
   }
   ```
