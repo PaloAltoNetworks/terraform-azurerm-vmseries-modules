@@ -2,23 +2,21 @@ variable "frontend_ips" {
   description = <<-EOF
   A map of objects describing LB frontend IP configurations. Used for both public or private load balancers. 
   Keys of the map are the names of the created load balancers.
-  ### Public loadbalancer:
-  - `create_public_ip` : Set to `true` to create a public IP, otherwise use a pre-existing public IP.
+
+  Public LB
+
+  - `create_public_ip` : Optional. Set to `true` to create a public IP.
   - `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.
-  - `public_ip_resource_group` : Ignored if `create_public_ip` is `true`. The existing public IP resource group name.
-  #### Private loadbalancer:
-  - `subnet_id` : ID of an existing subnet.
-  - `private_ip_address_allocation` : Type of private allocation: `Static` or `Dynamic`.
-  - `private_ip_address` : If Static, the private IP address.
-  Example:
+  - `public_ip_resource_group` : Ignored if `create_public_ip` is `true` or if `public_ip_name` is null. The name of the resource group which holds `public_ip_name`.
+
+  Example
 
   ```
-  # Public load balancer example
   frontend_ips = {
-    pip-existing = {
+    pip_existing = {
       create_public_ip         = false
       public_ip_name           = "my_ip"
-      public_ip_resource_group = "my_rg"
+      public_ip_resource_group = "my_rg_name"
       rules = {
         HTTP = {
           port         = 80
@@ -27,11 +25,20 @@ variable "frontend_ips" {
       }
     }
   }
+  ```
 
-  # Private load balancer example
+  Private LB
+
+  - `subnet_id` : Identifier of an existing subnet.
+  - `private_ip_address_allocation` : Type of private allocation: `Static` or `Dynamic`.
+  - `private_ip_address` : If `Static`, the private IP address.
+
+  Example
+
+  ```
   frontend_ips = {
     internal_fe = {
-      subnet_id                     = ""
+      subnet_id                     = azurerm_subnet.this.id
       private_ip_address_allocation = "Static"
       private_ip_address            = "192.168.0.10"
       rules = {
@@ -84,7 +91,7 @@ variable "probe_port" {
 
 variable "network_security_allow_source_ips" {
   description = <<-EOF
-    List of IP CIDR ranges (such as `[\"192.168.0.0/16\"]` or `[\"*\"]`) from which the inbound traffic to all frontends should be allowed.
+    List of IP CIDR ranges (such as `["192.168.0.0/16"]` or `["*"]`) from which the inbound traffic to all frontends should be allowed.
     If it's empty, user is responsible for configuring a Network Security Group separately, possibly using the `frontend_combined_rules` output.
     The list cannot include Azure tags like "Internet" or "Sql.EastUS".
   EOF
