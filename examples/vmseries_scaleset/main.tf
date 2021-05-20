@@ -63,8 +63,6 @@ module "outbound_lb" {
   frontend_ips        = local.private_frontend_ips
 }
 
-
-
 ### BOOTSTRAPPING ###
 # Inbound
 module "inbound_bootstrap" {
@@ -95,8 +93,6 @@ resource "azurerm_storage_container" "this" {
   storage_account_name = module.inbound_bootstrap.storage_account.name
 }
 
-
-
 ### SCALE SETS ###
 # Create the inbound scale set
 module "inbound_scale_set" {
@@ -115,8 +111,6 @@ module "inbound_scale_set" {
   lb_backend_pool_id        = module.inbound_lb.backend_pool_id
   vm_count                  = var.vmseries_count
 }
-
-
 
 # Create the outbound scale set
 module "outbound_scale_set" {

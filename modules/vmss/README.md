@@ -57,18 +57,18 @@ No modules.
 | <a name="input_img_version"></a> [img\_version](#input\_img\_version) | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.0.4"` | no |
 | <a name="input_lb_backend_pool_id"></a> [lb\_backend\_pool\_id](#input\_lb\_backend\_pool\_id) | Identifier of the backend pool to associate with the VM series firewall. | `string` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | Region to install VM-Series and dependencies. | `string` | n/a | yes |
-| <a name="input_name_domain_name_label"></a> [name\_domain\_name\_label](#input\_name\_domain\_name\_label) | n/a | `string` | `"inbound-vm-mgmt"` | no |
-| <a name="input_name_fw"></a> [name\_fw](#input\_name\_fw) | n/a | `string` | `"inbound-fw"` | no |
-| <a name="input_name_fw_mgmt_pip"></a> [name\_fw\_mgmt\_pip](#input\_name\_fw\_mgmt\_pip) | n/a | `string` | `"inbound-fw-mgmt-pip"` | no |
-| <a name="input_name_mgmt_nic_ip"></a> [name\_mgmt\_nic\_ip](#input\_name\_mgmt\_nic\_ip) | n/a | `string` | `"inbound-nic-fw-mgmt"` | no |
-| <a name="input_name_mgmt_nic_profile"></a> [name\_mgmt\_nic\_profile](#input\_name\_mgmt\_nic\_profile) | n/a | `string` | `"inbound-nic-fw-mgmt-profile"` | no |
+| <a name="input_name_domain_name_label"></a> [name\_domain\_name\_label](#input\_name\_domain\_name\_label) | n/a | `string` | `"fw-mgmt"` | no |
+| <a name="input_name_fw"></a> [name\_fw](#input\_name\_fw) | n/a | `string` | `"fw"` | no |
+| <a name="input_name_fw_mgmt_pip"></a> [name\_fw\_mgmt\_pip](#input\_name\_fw\_mgmt\_pip) | n/a | `string` | `"fw-mgmt-pip"` | no |
+| <a name="input_name_mgmt_nic_ip"></a> [name\_mgmt\_nic\_ip](#input\_name\_mgmt\_nic\_ip) | n/a | `string` | `"mgmt"` | no |
+| <a name="input_name_mgmt_nic_profile"></a> [name\_mgmt\_nic\_profile](#input\_name\_mgmt\_nic\_profile) | n/a | `string` | `"mgmt"` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix to add to all the created object names. | `string` | n/a | yes |
-| <a name="input_name_private_nic_ip"></a> [name\_private\_nic\_ip](#input\_name\_private\_nic\_ip) | n/a | `string` | `"inbound-nic-fw-private"` | no |
-| <a name="input_name_private_nic_profile"></a> [name\_private\_nic\_profile](#input\_name\_private\_nic\_profile) | n/a | `string` | `"inbound-nic-fw-private-profile"` | no |
-| <a name="input_name_public_nic_ip"></a> [name\_public\_nic\_ip](#input\_name\_public\_nic\_ip) | n/a | `string` | `"inbound-nic-fw-public"` | no |
-| <a name="input_name_public_nic_profile"></a> [name\_public\_nic\_profile](#input\_name\_public\_nic\_profile) | n/a | `string` | `"inbound-nic-fw-public-profile"` | no |
+| <a name="input_name_private_nic_ip"></a> [name\_private\_nic\_ip](#input\_name\_private\_nic\_ip) | n/a | `string` | `"private"` | no |
+| <a name="input_name_private_nic_profile"></a> [name\_private\_nic\_profile](#input\_name\_private\_nic\_profile) | n/a | `string` | `"private"` | no |
+| <a name="input_name_public_nic_ip"></a> [name\_public\_nic\_ip](#input\_name\_public\_nic\_ip) | n/a | `string` | `"public"` | no |
+| <a name="input_name_public_nic_profile"></a> [name\_public\_nic\_profile](#input\_name\_public\_nic\_profile) | n/a | `string` | `"public"` | no |
 | <a name="input_name_rg"></a> [name\_rg](#input\_name\_rg) | n/a | `string` | `"vmseries-rg"` | no |
-| <a name="input_name_scale_set"></a> [name\_scale\_set](#input\_name\_scale\_set) | n/a | `string` | `"inbound-scaleset"` | no |
+| <a name="input_name_scale_set"></a> [name\_scale\_set](#input\_name\_scale\_set) | n/a | `string` | `"scale-set"` | no |
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for VM-Series. | `string` | n/a | yes |
 | <a name="input_sep"></a> [sep](#input\_sep) | Seperator | `string` | `"-"` | no |
 | <a name="input_subnet_mgmt"></a> [subnet\_mgmt](#input\_subnet\_mgmt) | Management subnet. | `object({ id = string })` | n/a | yes |
@@ -83,5 +83,5 @@ No modules.
 
 | Name | Description |
 |------|-------------|
-| <a name="output_inbound-scale-set-name"></a> [inbound-scale-set-name](#output\_inbound-scale-set-name) | Name of inbound scale set. |
+| <a name="output_scale_set_name"></a> [scale\_set\_name](#output\_scale\_set\_name) | Name of the created scale set. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

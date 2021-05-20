@@ -101,41 +101,41 @@ variable "name_rg" {
 }
 
 variable "name_scale_set" {
-  default = "inbound-scaleset"
+  default = "scale-set"
 }
 
 variable "name_mgmt_nic_profile" {
-  default = "inbound-nic-fw-mgmt-profile"
+  default = "mgmt"
 }
 
 variable "name_mgmt_nic_ip" {
-  default = "inbound-nic-fw-mgmt"
+  default = "mgmt"
 }
 
 variable "name_fw_mgmt_pip" {
-  default = "inbound-fw-mgmt-pip"
+  default = "fw-mgmt-pip"
 }
 
 variable "name_domain_name_label" {
-  default = "inbound-vm-mgmt"
+  default = "fw-mgmt"
 }
 
 variable "name_public_nic_profile" {
-  default = "inbound-nic-fw-public-profile"
+  default = "public"
 }
 
 variable "name_public_nic_ip" {
-  default = "inbound-nic-fw-public"
+  default = "public"
 }
 
 variable "name_private_nic_profile" {
-  default = "inbound-nic-fw-private-profile"
+  default = "private"
 }
 
 variable "name_private_nic_ip" {
-  default = "inbound-nic-fw-private"
+  default = "private"
 }
 
 variable "name_fw" {
-  default = "inbound-fw"
+  default = "fw"
 }

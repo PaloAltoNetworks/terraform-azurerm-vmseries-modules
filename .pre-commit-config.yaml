@@ -8,5 +8,7 @@ repos:
       args: [
         --args=--only=terraform_deprecated_interpolation,
         --args=--only=terraform_deprecated_index,
+        --args=--only=terraform_module_pinned_source,
+        --args=--only=terraform_naming_convention,
         --args=--only=terraform_workspace_remote,
       ]

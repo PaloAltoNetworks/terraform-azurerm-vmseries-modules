@@ -4,7 +4,6 @@ resource "azurerm_resource_group" "vmss" {
   location = var.location
 }
 
-# inbound
 resource "azurerm_virtual_machine_scale_set" "this" {
   name                = "${var.name_prefix}${var.sep}${var.name_scale_set}"
   location            = azurerm_resource_group.vmss.location
