@@ -8,9 +8,19 @@ This folder shows an example of Terraform code that helps to deploy an auto-scal
 
 Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
 
-```bash
-$ terraform init
-$ terraform apply
+Create a `files/init-cfg.txt` file and copy the content of `files/init-cfg.sample.txt` into it, adjusting it. (Do not add the file to the repository if it contains secrets such as vm-auth-key.)
+
+```sh
+terraform init
+terraform apply
+```
+
+## Cleanup
+
+Execute:
+
+```sh
+terraform destroy -parallelism 1
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

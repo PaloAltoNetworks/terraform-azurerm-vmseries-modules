@@ -33,8 +33,8 @@ private_frontend_ips = {
 olb_private_ip = "10.112.1.100"
 
 files = {
-  "files/authcodes.sample"    = "license/authcodes"
-  "files/init-cfg.sample.txt" = "config/init-cfg.txt"
+  "files/authcodes"    = "license/authcodes"
+  "files/init-cfg.txt" = "config/init-cfg.txt"
 }
 
 storage_account_name = "vmssexample20210406"
