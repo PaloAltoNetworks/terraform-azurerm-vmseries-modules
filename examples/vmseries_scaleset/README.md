@@ -33,12 +33,12 @@ $ terraform apply
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_inbound-bootstrap"></a> [inbound-bootstrap](#module\_inbound-bootstrap) | ../../modules/bootstrap |  |
-| <a name="module_inbound-lb"></a> [inbound-lb](#module\_inbound-lb) | ../../modules/loadbalancer |  |
-| <a name="module_inbound-scaleset"></a> [inbound-scaleset](#module\_inbound-scaleset) | ../../modules/vmss |  |
-| <a name="module_outbound-bootstrap"></a> [outbound-bootstrap](#module\_outbound-bootstrap) | ../../modules/bootstrap |  |
-| <a name="module_outbound-lb"></a> [outbound-lb](#module\_outbound-lb) | ../../modules/loadbalancer |  |
-| <a name="module_outbound-scaleset"></a> [outbound-scaleset](#module\_outbound-scaleset) | ../../modules/vmss |  |
+| <a name="module_inbound_bootstrap"></a> [inbound\_bootstrap](#module\_inbound\_bootstrap) | ../../modules/bootstrap |  |
+| <a name="module_inbound_lb"></a> [inbound\_lb](#module\_inbound\_lb) | ../../modules/loadbalancer |  |
+| <a name="module_inbound_scale_set"></a> [inbound\_scale\_set](#module\_inbound\_scale\_set) | ../../modules/vmss |  |
+| <a name="module_outbound_bootstrap"></a> [outbound\_bootstrap](#module\_outbound\_bootstrap) | ../../modules/bootstrap |  |
+| <a name="module_outbound_lb"></a> [outbound\_lb](#module\_outbound\_lb) | ../../modules/loadbalancer |  |
+| <a name="module_outbound_scale_set"></a> [outbound\_scale\_set](#module\_outbound\_scale\_set) | ../../modules/vmss |  |
 | <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet |  |
 
 ## Resources
@@ -76,6 +76,6 @@ $ terraform apply
 
 | Name | Description |
 |------|-------------|
-| <a name="output_PASSWORD"></a> [PASSWORD](#output\_PASSWORD) | PAN Device password |
-| <a name="output_USERNAME"></a> [USERNAME](#output\_USERNAME) | PAN Device username |
+| <a name="output_password"></a> [password](#output\_password) | Initial administrative password to use for VM-Series. |
+| <a name="output_username"></a> [username](#output\_username) | Initial administrative username to use for VM-Series. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
