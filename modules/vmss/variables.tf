@@ -76,10 +76,18 @@ variable "vhd_container" {
   type        = string
 }
 
-variable "lb_backend_pool_id" {
-  description = "Identifier of the backend pool to associate with the VM series firewall."
+variable "lb_public_backend_pool_id" {
+  description = "Identifier of the backend pool to associate with the VM series firewall. It should serve the public load balancer (inbound)."
+  default     = null
   type        = string
 }
+
+variable "lb_private_backend_pool_id" {
+  description = "Identifier of the backend pool to associate with the VM series firewall. It should serve the private load balancer (outbound or east-west)."
+  default     = null
+  type        = string
+}
+
 
 variable "accelerated_networking" {
   description = "If true, enable Azure accelerated networking (SR-IOV) for all dataplane network interfaces. [Requires](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) PAN-OS 9.0 or higher. The PAN-OS management interface (nic0) is never accelerated, whether this variable is true or false."

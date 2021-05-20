@@ -39,7 +39,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
       name                                   = "${var.name_prefix}${var.sep}${var.name_public_nic_ip}"
       primary                                = false
       subnet_id                              = var.subnet_public.id
-      load_balancer_backend_address_pool_ids = [var.lb_backend_pool_id]
+      load_balancer_backend_address_pool_ids = compact([var.lb_public_backend_pool_id])
     }
   }
 
@@ -50,9 +50,10 @@ resource "azurerm_virtual_machine_scale_set" "this" {
     accelerated_networking = var.accelerated_networking
 
     ip_configuration {
-      name      = "${var.name_prefix}${var.sep}${var.name_private_nic_ip}"
-      primary   = false
-      subnet_id = var.subnet_private.id
+      name                                   = "${var.name_prefix}${var.sep}${var.name_private_nic_ip}"
+      primary                                = false
+      subnet_id                              = var.subnet_private.id
+      load_balancer_backend_address_pool_ids = compact([var.lb_private_backend_pool_id])
     }
   }
 

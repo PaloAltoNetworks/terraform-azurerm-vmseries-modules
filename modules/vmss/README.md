@@ -55,7 +55,8 @@ No modules.
 | <a name="input_bootstrap_storage_account"></a> [bootstrap\_storage\_account](#input\_bootstrap\_storage\_account) | Storage account setup for bootstrapping | <pre>object({<br>    name               = string<br>    primary_access_key = string<br>  })</pre> | n/a | yes |
 | <a name="input_img_sku"></a> [img\_sku](#input\_img\_sku) | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
 | <a name="input_img_version"></a> [img\_version](#input\_img\_version) | VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.0.4"` | no |
-| <a name="input_lb_backend_pool_id"></a> [lb\_backend\_pool\_id](#input\_lb\_backend\_pool\_id) | Identifier of the backend pool to associate with the VM series firewall. | `string` | n/a | yes |
+| <a name="input_lb_private_backend_pool_id"></a> [lb\_private\_backend\_pool\_id](#input\_lb\_private\_backend\_pool\_id) | Identifier of the backend pool to associate with the VM series firewall. It should serve the private load balancer (outbound or east-west). | `string` | `null` | no |
+| <a name="input_lb_public_backend_pool_id"></a> [lb\_public\_backend\_pool\_id](#input\_lb\_public\_backend\_pool\_id) | Identifier of the backend pool to associate with the VM series firewall. It should serve the public load balancer (inbound). | `string` | `null` | no |
 | <a name="input_location"></a> [location](#input\_location) | Region to install VM-Series and dependencies. | `string` | n/a | yes |
 | <a name="input_name_domain_name_label"></a> [name\_domain\_name\_label](#input\_name\_domain\_name\_label) | n/a | `string` | `"fw-mgmt"` | no |
 | <a name="input_name_fw"></a> [name\_fw](#input\_name\_fw) | n/a | `string` | `"fw"` | no |

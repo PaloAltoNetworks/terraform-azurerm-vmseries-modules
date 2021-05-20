@@ -18,9 +18,6 @@ public_frontend_ips = {
 
 private_frontend_ips = {
   internal_fe = {
-    subnet_id                     = ""
-    private_ip_address_allocation = "Dynamic" // Dynamic or Static
-    private_ip_address            = ""
     rules = {
       HA_PORTS = {
         port         = 0

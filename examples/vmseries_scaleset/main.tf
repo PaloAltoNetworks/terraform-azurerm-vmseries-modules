@@ -46,7 +46,7 @@ module "inbound_lb" {
 locals {
   private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
     subnet_id                     = module.vnet.subnet_ids["private"]
-    private_ip_address_allocation = v.private_ip_address_allocation
+    private_ip_address_allocation = "Static"
     private_ip_address            = var.olb_private_ip
     rules                         = v.rules
     }
@@ -108,7 +108,7 @@ module "inbound_scale_set" {
   bootstrap_storage_account = module.inbound_bootstrap.storage_account
   bootstrap_share_name      = module.inbound_bootstrap.storage_share.name
   vhd_container             = "${module.inbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.inbound_lb.backend_pool_id
+  lb_public_backend_pool_id = module.inbound_lb.backend_pool_id
   vm_count                  = var.vmseries_count
 }
 
@@ -116,16 +116,16 @@ module "inbound_scale_set" {
 module "outbound_scale_set" {
   source = "../../modules/vmss"
 
-  location                  = var.location
-  name_prefix               = "${var.name_prefix}-outbound"
-  username                  = var.username
-  password                  = coalesce(var.password, random_password.this.result)
-  subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
-  subnet_private            = { id = module.vnet.subnet_ids["private"] }
-  subnet_public             = { id = module.vnet.subnet_ids["public"] }
-  bootstrap_storage_account = module.outbound_bootstrap.storage_account
-  bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
-  vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.outbound_lb.backend_pool_id
-  vm_count                  = var.vmseries_count
+  location                   = var.location
+  name_prefix                = "${var.name_prefix}-outbound"
+  username                   = var.username
+  password                   = coalesce(var.password, random_password.this.result)
+  subnet_mgmt                = { id = module.vnet.subnet_ids["management"] }
+  subnet_private             = { id = module.vnet.subnet_ids["private"] }
+  subnet_public              = { id = module.vnet.subnet_ids["public"] }
+  bootstrap_storage_account  = module.outbound_bootstrap.storage_account
+  bootstrap_share_name       = module.outbound_bootstrap.storage_share.name
+  vhd_container              = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  lb_private_backend_pool_id = module.outbound_lb.backend_pool_id
+  vm_count                   = var.vmseries_count
 }
