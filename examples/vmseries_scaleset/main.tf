@@ -110,6 +110,7 @@ module "inbound_scale_set" {
   vhd_container             = "${module.inbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_public_backend_pool_id = module.inbound_lb.backend_pool_id
   vm_count                  = var.vmseries_count
+  img_sku                   = var.common_vmseries_sku
 }
 
 # Create the outbound scale set
@@ -128,4 +129,5 @@ module "outbound_scale_set" {
   vhd_container              = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   lb_private_backend_pool_id = module.outbound_lb.backend_pool_id
   vm_count                   = var.vmseries_count
+  img_sku                    = var.common_vmseries_sku
 }

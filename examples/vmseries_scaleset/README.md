@@ -64,6 +64,7 @@ terraform destroy -parallelism 1
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_address_space"></a> [address\_space](#input\_address\_space) | The address space used by the virtual network. You can supply more than one address space. | `list(string)` | n/a | yes |
+| <a name="input_common_vmseries_sku"></a> [common\_vmseries\_sku](#input\_common\_vmseries\_sku) | VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle1"` | no |
 | <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | <a name="input_lb_private_name"></a> [lb\_private\_name](#input\_lb\_private\_name) | Name of the private load balancer. | `string` | `"lb_private"` | no |
 | <a name="input_lb_public_name"></a> [lb\_public\_name](#input\_lb\_public\_name) | Name of the public-facing load balancer. | `string` | `"lb_public"` | no |

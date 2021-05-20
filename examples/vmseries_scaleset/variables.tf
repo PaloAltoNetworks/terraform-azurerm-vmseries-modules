@@ -47,6 +47,12 @@ variable "vmseries_count" {
   default     = 1
 }
 
+variable "common_vmseries_sku" {
+  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  default     = "bundle1"
+  type        = string
+}
+
 variable "virtual_network_name" {
   description = "Name of the Virtual Network to create."
   type        = string

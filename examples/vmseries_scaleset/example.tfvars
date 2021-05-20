@@ -30,10 +30,11 @@ private_frontend_ips = {
 olb_private_ip = "10.112.1.100"
 
 files = {
-  "files/authcodes"    = "license/authcodes"
+  # "files/authcodes"    = "license/authcodes" # this line is only needed for common_vmseries_sku  = "byol"
   "files/init-cfg.txt" = "config/init-cfg.txt"
 }
 
+common_vmseries_sku  = "bundle1"
 storage_account_name = "vmssexample20210406"
 virtual_network_name = "vmss-example-vnet"
 address_space        = ["10.112.0.0/16"]
