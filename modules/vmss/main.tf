@@ -81,7 +81,7 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   }
 
   sku {
-    capacity = 1
+    capacity = var.vm_count
     name     = var.vm_size
   }
 
