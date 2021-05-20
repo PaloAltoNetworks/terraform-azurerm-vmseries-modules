@@ -34,7 +34,7 @@ module "vnet" {
 
 ### LOAD BALANCERS ###
 # Create the inbound load balancer
-module "inbound-lb" {
+module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
   name                = var.lb_public_name
@@ -54,7 +54,7 @@ locals {
 }
 
 # Create the outbound load balancer
-module "outbound-lb" {
+module "outbound_lb" {
   source = "../../modules/loadbalancer"
 
   name                = var.lb_private_name
@@ -67,7 +67,7 @@ module "outbound-lb" {
 
 ### BOOTSTRAPPING ###
 # Inbound
-module "inbound-bootstrap" {
+module "inbound_bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = azurerm_resource_group.this.name
@@ -78,28 +78,28 @@ module "inbound-bootstrap" {
 }
 
 # Outbound
-module "outbound-bootstrap" {
+module "outbound_bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name      = azurerm_resource_group.this.name
   location                 = var.location
   storage_share_name       = "obbootstrapshare"
   create_storage_account   = false
-  existing_storage_account = module.inbound-bootstrap.storage_account.name
+  existing_storage_account = module.inbound_bootstrap.storage_account.name
   files                    = var.files
 }
 
 # Create a storage container for storing VM disks provisioned via VMSS
 resource "azurerm_storage_container" "this" {
   name                 = "${var.name_prefix}vm-container"
-  storage_account_name = module.inbound-bootstrap.storage_account.name
+  storage_account_name = module.inbound_bootstrap.storage_account.name
 }
 
 
 
 ### SCALE SETS ###
-# Create the inbound Scaleset
-module "inbound-scaleset" {
+# Create the inbound scale set
+module "inbound_scale_set" {
   source = "../../modules/vmss"
 
   location                  = var.location
@@ -109,17 +109,17 @@ module "inbound-scaleset" {
   subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
   subnet_private            = { id = module.vnet.subnet_ids["private"] }
   subnet_public             = { id = module.vnet.subnet_ids["public"] }
-  bootstrap_storage_account = module.inbound-bootstrap.storage_account
-  bootstrap_share_name      = module.inbound-bootstrap.storage_share.name
-  vhd_container             = "${module.inbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.inbound-lb.backend_pool_id
+  bootstrap_storage_account = module.inbound_bootstrap.storage_account
+  bootstrap_share_name      = module.inbound_bootstrap.storage_share.name
+  vhd_container             = "${module.inbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  lb_backend_pool_id        = module.inbound_lb.backend_pool_id
   vm_count                  = var.vmseries_count
 }
 
 
 
-# Create the outbound Scaleset
-module "outbound-scaleset" {
+# Create the outbound scale set
+module "outbound_scale_set" {
   source = "../../modules/vmss"
 
   location                  = var.location
@@ -129,9 +129,9 @@ module "outbound-scaleset" {
   subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
   subnet_private            = { id = module.vnet.subnet_ids["private"] }
   subnet_public             = { id = module.vnet.subnet_ids["public"] }
-  bootstrap_storage_account = module.outbound-bootstrap.storage_account
-  bootstrap_share_name      = module.outbound-bootstrap.storage_share.name
-  vhd_container             = "${module.outbound-bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.outbound-lb.backend_pool_id
+  bootstrap_storage_account = module.outbound_bootstrap.storage_account
+  bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
+  vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
+  lb_backend_pool_id        = module.outbound_lb.backend_pool_id
   vm_count                  = var.vmseries_count
 }

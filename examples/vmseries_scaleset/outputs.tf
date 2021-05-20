@@ -1,10 +1,10 @@
-output "USERNAME" {
-  description = "PAN Device username"
+output "username" {
+  description = "Initial administrative username to use for VM-Series."
   value       = var.username
 }
 
-output "PASSWORD" {
-  description = "PAN Device password"
+output "password" {
+  description = "Initial administrative password to use for VM-Series."
   value       = random_password.this.result
   sensitive   = true
 }

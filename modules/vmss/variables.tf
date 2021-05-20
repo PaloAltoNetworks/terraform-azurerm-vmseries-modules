@@ -1,9 +1,11 @@
 variable "location" {
-  description = "Region to install VM Series Scale sets and dependencies."
+  description = "Region to install VM-Series and dependencies."
+  type        = string
 }
 
 variable "name_prefix" {
-  description = "Prefix to add to all the object names here"
+  description = "Prefix to add to all the created object names."
+  type        = string
 }
 
 variable "vm_size" {
@@ -14,22 +16,30 @@ variable "vm_size" {
 
 variable "subnet_mgmt" {
   description = "Management subnet."
+  type        = object({ id = string })
 }
 
 variable "subnet_public" {
-  description = "External/public subnet"
+  description = "Public subnet (untrusted)."
+  type        = object({ id = string })
 }
 
 variable "subnet_private" {
-  description = "internal/private subnet"
+  description = "Private subnet (trusted)."
+  type        = object({ id = string })
 }
 
 variable "bootstrap_storage_account" {
   description = "Storage account setup for bootstrapping"
+  type = object({
+    name               = string
+    primary_access_key = string
+  })
 }
 
 variable "bootstrap_share_name" {
   description = "File share for bootstrap config"
+  type        = string
 }
 
 variable "username" {
@@ -58,14 +68,17 @@ variable "img_version" {
 variable "vm_count" {
   description = "Minimum instances per scale set."
   default     = 2
+  type        = number
 }
 
 variable "vhd_container" {
   description = "Storage container for storing VMSS instance VHDs."
+  type        = string
 }
 
 variable "lb_backend_pool_id" {
-  description = "ID Of inbound load balancer backend pool to associate with the VM series firewall"
+  description = "Identifier of the backend pool to associate with the VM series firewall."
+  type        = string
 }
 
 variable "accelerated_networking" {
@@ -122,6 +135,7 @@ variable "name_private_nic_profile" {
 variable "name_private_nic_ip" {
   default = "inbound-nic-fw-private"
 }
+
 variable "name_fw" {
   default = "inbound-fw"
 }
