@@ -42,7 +42,7 @@ module "vnet" {
   subnets = {
     "subnet-mgmt" = {
       address_prefixes       = ["10.110.255.0/24"]
-      network_security_group = "sg-mgmt"
+      network_security_group = "management-security-group"
     }
   }
 }
