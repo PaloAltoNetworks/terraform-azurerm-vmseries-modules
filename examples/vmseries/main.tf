@@ -23,7 +23,7 @@ module "vnet" {
   resource_group_name  = azurerm_resource_group.this.name
   address_space        = ["10.110.0.0/16"]
   network_security_groups = {
-    "sg-mgmt" = {
+    "management-security-group" = {
       rules = {
         "vm-management-rules" = {
           access                     = "Allow"
