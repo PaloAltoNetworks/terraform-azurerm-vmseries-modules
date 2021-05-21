@@ -1,5 +1,5 @@
 resource "azurerm_resource_group" "spoke" {
-  name     = var.spoke_resource_group_name
+  name     = coalesce(var.spoke_resource_group_name, "${var.name_prefix}spoke")
   location = var.location
 }
 
@@ -34,35 +34,19 @@ resource "azurerm_virtual_network_peering" "common" {
   allow_forwarded_traffic   = true
 }
 
-module "spoke_vmseries" {
-  source   = "../../modules/vmseries"
-  for_each = var.vmspoke
+module "spoke" {
+  source                        = "Azure/compute/azurerm"
+  resource_group_name           = azurerm_resource_group.spoke.name
+  vm_os_simple                  = var.spoke_vm_offer
+  vnet_subnet_id                = lookup(module.spoke_vnet.subnet_ids, "private", null)
+  delete_os_disk_on_termination = true
+  vm_hostname                   = var.spoke_vm_name
+  vm_size                       = var.spoke_vm_size
+  nb_public_ip                  = var.nb_public_ip
+  boot_diagnostics              = true
+  enable_ssh_key                = false
+  admin_username                = var.username
+  admin_password                = coalesce(var.password, random_password.this.result)
 
-  resource_group_name       = azurerm_resource_group.spoke.name
-  location                  = var.location
-  name                      = "${var.name_prefix}${each.key}"
-  avset_id                  = null
-  avzone                    = try(each.value.avzone, null)
-  username                  = var.username
-  password                  = coalesce(var.password, random_password.this.result)
-  img_publisher             = var.spoke_vm_publisher
-  img_offer                 = var.spoke_vm_offer
-  img_sku                   = var.spoke_vm_sku
-  img_version               = var.spoke_vm_version
-  vm_size                   = var.spoke_vm_size
-  enable_plan               = false
-  bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap_share_name      = module.bootstrap.storage_share.name
-  interfaces = [
-    {
-      name                = "${each.key}-private"
-      subnet_id           = module.spoke_vnet.subnet_ids["private"]
-      enable_backend_pool = false
-
-      # Optional static private IP
-      private_ip_address = try(each.value.trust_private_ip, null)
-    },
-  ]
-
-  depends_on = [module.bootstrap]
+  depends_on = [azurerm_resource_group.spoke]
 }

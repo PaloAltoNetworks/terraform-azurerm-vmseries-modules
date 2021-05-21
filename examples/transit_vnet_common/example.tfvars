@@ -29,7 +29,6 @@ subnets = {
   "subnet-mgmt" = {
     address_prefixes       = ["10.110.255.0/24"]
     network_security_group = "sg-mgmt"
-    route_table            = "Transit-Management"
   }
   "subnet-private" = {
     address_prefixes       = ["10.110.0.0/24"]
@@ -76,13 +75,9 @@ spoke_address_space        = ["10.113.0.0/16"]
 spoke_subnets = {
   "private" = {
     address_prefixes       = ["10.113.0.0/24"]
-    network_security_group = "sg-allowall"
+    network_security_group = "sg-private"
     route_table            = "route_table_spoke"
   },
-}
-
-vmspoke = {
-  "spoke00" = { avzone = 1 }
 }
 
 spoke_route_tables = {
@@ -100,7 +95,7 @@ spoke_route_tables = {
 peering_spoke_name  = "spoke_peering_example"
 peering_common_name = "common_peering_example"
 spoke_vm_size       = "Standard_DS1_v2"
-spoke_vm_version    = "latest"
-spoke_vm_sku        = "18.04-LTS"
+spoke_vm_name       = "spoke-vm"
 spoke_vm_offer      = "UbuntuServer"
-spoke_vm_publisher  = "Canonical"
+nb_public_ip        = 0
+nb_instances        = 1

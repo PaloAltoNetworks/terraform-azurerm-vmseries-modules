@@ -174,64 +174,72 @@ variable "outbound_lb_name" {
   type        = string
 }
 
-### spoke vnet
+###### Spoke deployment ########
 variable "spoke_resource_group_name" {
-  description = "Name for a created resource group."
-  default     = null
+  description = "Name of the Resource Group to create. If not provided, it will be auto-generated."
+  default     = ""
   type        = string
 }
 
 variable "spoke_virtual_network_name" {
   description = "The name of the spoke VNet to create."
+  default     = "spoke_vnet"
   type        = string
 }
 
 variable "spoke_address_space" {
   description = "The address space used by the spoke virtual network. You can supply more than one address space."
+  default     = ["10.113.0.0/16"]
   type        = list(string)
 }
 
 variable "spoke_route_tables" {
   description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
+  type        = map(any)
 }
 
 variable "spoke_subnets" {
   description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
-}
-
-variable "vmspoke" {
-  description = <<-EOF
-  Map of virtual machines to create to run sample VM. Keys are the individual names, values
-  are the objects containing the attributes unique to that individual virtual machine:
-
-  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). If unspecified, the Availability Set is created instead.
-  EOF
-}
-
-variable "spoke_vm_publisher" {
-  description = "Specifies the publisher of the spoke image."
+  type        = map(any)
 }
 
 variable "spoke_vm_offer" {
   description = "Specifies the offer of the image from the Azure Marketplace"
-}
-
-variable "spoke_vm_sku" {
-  description = "Spoke VM SKU from Azure Marketplace."
-}
-
-variable "spoke_vm_version" {
-  description = "Spoke image version."
+  type        = string
+  default     = "UbuntuServer"
 }
 
 variable "spoke_vm_size" {
   description = "Spoke VM size (type) to be created."
+  type        = string
+}
+
+variable "spoke_vm_name" {
+  description = "The VM name in Spoke Vnet."
+  type        = string
+  default     = "Standard_DS1_v2"
+}
+
+variable "nb_public_ip" {
+  description = "Number of public IPs to assign corresponding to one IP per vm. Set to 0 to not assign any public IP addresses."
+  default     = 0
+  type        = number
+}
+
+variable "nb_instances" {
+  description = "Specify the number of vm instances."
+  default     = 1
+  type        = number
 }
 
 variable "peering_spoke_name" {
   description = "A name definition for peering from spoke vnet to transit vnet."
+  type        = string
+  default     = "spoke_peering_example"
 }
 
 variable "peering_common_name" {
   description = "A name definition for peering from transit vnet to spoke vnet."
+  type        = string
+  default     = "common_peering_example"
 }
