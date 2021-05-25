@@ -30,7 +30,9 @@ resource "azurerm_storage_share_directory" "nonconfig" {
   for_each = toset([
     "content",
     "software",
-  "license"])
+    "plugins",
+    "license"
+  ])
 
   name                 = each.key
   share_name           = azurerm_storage_share.this.name
