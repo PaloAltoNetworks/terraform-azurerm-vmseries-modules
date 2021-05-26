@@ -42,7 +42,8 @@ module "spoke" {
   delete_os_disk_on_termination = true
   vm_hostname                   = var.spoke_vm_name
   vm_size                       = var.spoke_vm_size
-  nb_public_ip                  = var.nb_public_ip
+  nb_public_ip                  = var.spoke_nb_public_ip
+  nb_instances                  = 1
   boot_diagnostics              = true
   enable_ssh_key                = false
   admin_username                = var.username

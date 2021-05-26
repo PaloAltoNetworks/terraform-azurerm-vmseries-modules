@@ -115,11 +115,11 @@ variable "allow_inbound_data_ips" {
 }
 
 variable "route_tables" {
-  description = "Definition of Route Tables to create. Refer to the `vnet` module documentation for more information."
+  description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
 }
 
 variable "subnets" {
-  description = "Definition of Subnets to create. Refer to the `vnet` module documentation for more information."
+  description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
 }
 
 variable "vnet_tags" {
@@ -212,23 +212,17 @@ variable "spoke_vm_offer" {
 variable "spoke_vm_size" {
   description = "Spoke VM size (type) to be created."
   type        = string
+  default     = "Standard_DS1_v2"
 }
 
 variable "spoke_vm_name" {
   description = "The VM name in Spoke Vnet."
   type        = string
-  default     = "Standard_DS1_v2"
 }
 
-variable "nb_public_ip" {
+variable "spoke_nb_public_ip" {
   description = "Number of public IPs to assign corresponding to one IP per vm. Set to 0 to not assign any public IP addresses."
   default     = 0
-  type        = number
-}
-
-variable "nb_instances" {
-  description = "Specify the number of vm instances."
-  default     = 1
   type        = number
 }
 

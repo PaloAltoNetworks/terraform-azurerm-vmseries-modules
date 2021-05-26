@@ -59,7 +59,7 @@ vmseries = {
 }
 
 common_vmseries_version = "9.1.6"
-common_vmseries_sku     = "bundle2"
+common_vmseries_sku     = "bundle1"
 storage_account_name    = "pantfstorage"
 storage_share_name      = "ibbootstrapshare"
 
@@ -86,7 +86,7 @@ spoke_route_tables = {
       "route_4" = {
         address_prefix         = "0.0.0.0/0"
         next_hop_type          = "VirtualAppliance"
-        next_hop_in_ip_address = "10.112.0.100"
+        next_hop_in_ip_address = "10.110.0.21"
       },
     },
   },
@@ -97,5 +97,4 @@ peering_common_name = "common_peering_example"
 spoke_vm_size       = "Standard_DS1_v2"
 spoke_vm_name       = "spoke-vm"
 spoke_vm_offer      = "UbuntuServer"
-nb_public_ip        = 0
-nb_instances        = 1
+spoke_nb_public_ip  = 0
