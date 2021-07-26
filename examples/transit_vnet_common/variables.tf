@@ -159,7 +159,7 @@ variable "common_vmseries_vm_size" {
 variable "common_vmseries_tags" {
   description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "inbound_lb_name" {

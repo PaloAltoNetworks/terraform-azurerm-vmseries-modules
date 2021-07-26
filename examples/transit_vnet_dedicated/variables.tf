@@ -171,7 +171,7 @@ variable "inbound_vmseries_vm_size" {
 variable "inbound_vmseries_tags" {
   description = "A map of tags to be associated with the inbound virtual machines, their interfaces and public IP addresses."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "inbound_lb_name" {
@@ -201,7 +201,7 @@ variable "outbound_vmseries_vm_size" {
 variable "outbound_vmseries_tags" {
   description = "A map of tags to be associated with the outbound virtual machines, their interfaces and public IP addresses."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "outbound_lb_name" {

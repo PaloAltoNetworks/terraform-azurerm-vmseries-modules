@@ -133,7 +133,7 @@ variable "name_application_insights" {
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "identity_type" {
