@@ -1,9 +1,4 @@
-# Configure the Azure provider
-provider "azurerm" {
-  features {}
-}
-
-# Create new Resource Group
+# Create the Resource Group
 resource "azurerm_resource_group" "this" {
   name     = var.resource_group_name
   location = var.location
@@ -46,7 +41,7 @@ module "inbound_lb" {
 locals {
   private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
     subnet_id                     = module.vnet.subnet_ids["private"]
-    private_ip_address_allocation = v.private_ip_address_allocation
+    private_ip_address_allocation = try(v.private_ip_address_allocation, null)
     private_ip_address            = var.olb_private_ip
     rules                         = v.rules
     }
