@@ -55,12 +55,12 @@ variable "panorama_version" {
 }
 
 variable "subnet_names" {
-  type    = list
+  type    = list(any)
   default = ["subnet1"]
 }
 
 variable "subnet_prefixes" {
-  type    = list
+  type    = list(any)
   default = ["10.0.0.0/24"]
 }
 
@@ -75,7 +75,7 @@ variable "vnet_name" {
 }
 
 variable "address_space" {
-  type    = list
+  type    = list(any)
   default = ["10.0.0.0/16"]
 }
 
@@ -84,7 +84,7 @@ variable "tags" {
 }
 
 variable "firewall_mgmt_prefixes" {
-  type    = list
+  type    = list(any)
   default = ["10.0.0.0/24"]
 }
 
