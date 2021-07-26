@@ -59,17 +59,17 @@ variable "address_space" {
 
 variable "network_security_groups" {
   description = "A map of Network Security Groups objects to create."
-  type        = map
+  type        = map(any)
 }
 
 variable "route_tables" {
   description = "A map of objects describing a Route Table."
-  type        = map
+  type        = map(any)
 }
 
 variable "subnets" {
   description = "A map of subnet objects to create within a Virtual Network."
-  type        = map
+  type        = map(any)
 }
 
 variable "lb_public_name" {
