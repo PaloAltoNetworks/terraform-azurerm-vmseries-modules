@@ -53,6 +53,7 @@ resource "azurerm_subnet_network_security_group_association" "public" {
   subnet_id                 = module.vnet.vnet_subnets[0]
 }
 
+# Generate a random password.
 resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
