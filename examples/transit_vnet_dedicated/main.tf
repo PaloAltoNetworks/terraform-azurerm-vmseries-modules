@@ -1,8 +1,10 @@
+# Create the Resource Group.
 resource "azurerm_resource_group" "this" {
   name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries")
   location = var.location
 }
 
+# Generate a random password.
 resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
@@ -12,6 +14,7 @@ resource "random_password" "this" {
   override_special = "_%@"
 }
 
+# Create the network required for the topology.
 module "vnet" {
   source = "../../modules/vnet"
 

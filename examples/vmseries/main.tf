@@ -1,10 +1,10 @@
-# Resource group to hold all resources
+# Resource group to hold all the resources.
 resource "azurerm_resource_group" "this" {
   name     = var.resource_group_name
   location = var.location
 }
 
-# Generate a random password for VM-Series
+# Generate a random password for VM-Series.
 resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
