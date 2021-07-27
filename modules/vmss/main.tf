@@ -1,59 +1,59 @@
-# Base resource group
-resource "azurerm_resource_group" "vmss" {
-  name     = "${var.name_prefix}${var.sep}${var.name_rg}"
-  location = var.location
-}
-
-# inbound
 resource "azurerm_virtual_machine_scale_set" "this" {
-  name                = "${var.name_prefix}${var.sep}${var.name_scale_set}"
-  location            = azurerm_resource_group.vmss.location
-  resource_group_name = azurerm_resource_group.vmss.name
+  name                = "${var.name_prefix}${var.name_scale_set}"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
+  zones               = var.zones
   upgrade_policy_mode = "Manual"
 
   network_profile {
-    name                   = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_profile}"
+    name                   = "${var.name_prefix}${var.name_mgmt_nic_profile}"
     primary                = true
     ip_forwarding          = true
     accelerated_networking = false # unsupported by PAN-OS
 
     ip_configuration {
-      name      = "${var.name_prefix}${var.sep}${var.name_mgmt_nic_ip}"
+      name      = "${var.name_prefix}${var.name_mgmt_nic_ip}"
       primary   = true
       subnet_id = var.subnet_mgmt.id
 
       public_ip_address_configuration {
         idle_timeout      = 4
-        name              = "${var.name_prefix}${var.sep}${var.name_fw_mgmt_pip}"
-        domain_name_label = "${var.name_prefix}${var.sep}${var.name_domain_name_label}"
+        name              = "${var.name_prefix}${var.name_fw_mgmt_pip}"
+        domain_name_label = "${var.name_prefix}${var.name_domain_name_label}"
       }
     }
   }
 
   network_profile {
-    name                   = "${var.name_prefix}${var.sep}${var.name_public_nic_profile}"
+    name                   = "${var.name_prefix}${var.name_private_nic_profile}"
     primary                = false
     ip_forwarding          = true
     accelerated_networking = var.accelerated_networking
 
     ip_configuration {
-      name                                   = "${var.name_prefix}${var.sep}${var.name_public_nic_ip}"
+      name                                   = "${var.name_prefix}${var.name_private_nic_ip}"
       primary                                = false
-      subnet_id                              = var.subnet_public.id
-      load_balancer_backend_address_pool_ids = [var.lb_backend_pool_id]
+      subnet_id                              = var.subnet_private.id
+      load_balancer_backend_address_pool_ids = var.private_backend_pool_id != null ? [var.private_backend_pool_id] : []
     }
   }
 
-  network_profile {
-    name                   = "${var.name_prefix}${var.sep}${var.name_private_nic_profile}"
-    primary                = false
-    ip_forwarding          = true
-    accelerated_networking = var.accelerated_networking
+  dynamic "network_profile" {
+    for_each = var.enable_public_interface ? ["public"] : [/* else none */]
 
-    ip_configuration {
-      name      = "${var.name_prefix}${var.sep}${var.name_private_nic_ip}"
-      primary   = false
-      subnet_id = var.subnet_private.id
+    content {
+      name                   = "${var.name_prefix}${var.name_public_nic_profile}"
+      primary                = false
+      ip_forwarding          = true
+      accelerated_networking = var.accelerated_networking
+
+      ip_configuration {
+        name                                   = "${var.name_prefix}${var.name_public_nic_ip}"
+        primary                                = false
+        subnet_id                              = var.subnet_public.id
+        load_balancer_backend_address_pool_ids = var.public_backend_pool_id != null ? [var.public_backend_pool_id] : []
+      }
     }
   }
 
@@ -74,27 +74,32 @@ resource "azurerm_virtual_machine_scale_set" "this" {
   }
 
   storage_profile_image_reference {
-    publisher = "paloaltonetworks"
-    offer     = "vmseries1"
-    sku       = var.img_sku
-    version   = var.img_version
+    id        = var.custom_image_id
+    publisher = var.custom_image_id == null ? var.img_publisher : null
+    offer     = var.custom_image_id == null ? var.img_offer : null
+    sku       = var.custom_image_id == null ? var.img_sku : null
+    version   = var.custom_image_id == null ? var.img_version : null
   }
 
   sku {
-    capacity = 1
+    capacity = var.vm_count
     name     = var.vm_size
   }
 
   storage_profile_os_disk {
-    create_option  = "FromImage"
-    name           = "${var.name_prefix}-vhd-profile"
-    caching        = "ReadWrite"
-    vhd_containers = [var.vhd_container]
+    create_option     = "FromImage"
+    managed_disk_type = var.managed_disk_type
+    os_type           = "Linux"
+    caching           = "ReadWrite"
   }
 
-  plan {
-    name      = var.img_sku
-    publisher = "paloaltonetworks"
-    product   = "vmseries1"
+  dynamic "plan" {
+    for_each = var.enable_plan ? ["one"] : []
+
+    content {
+      name      = var.img_sku
+      publisher = var.img_publisher
+      product   = var.img_offer
+    }
   }
 }
