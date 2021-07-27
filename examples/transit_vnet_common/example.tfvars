@@ -15,7 +15,7 @@ allow_inbound_mgmt_ips = [
 ]
 
 route_tables = {
-  "udr-private" = {
+  private_route_table = {
     routes = {
       default = {
         address_prefix         = "0.0.0.0/0"
@@ -34,7 +34,7 @@ subnets = {
   "subnet-private" = {
     address_prefixes       = ["10.110.0.0/24"]
     network_security_group = "sg-private"
-    route_table            = "udr-private"
+    route_table            = "private_route_table"
   }
   "subnet-public" = {
     address_prefixes       = ["10.110.129.0/24"]
