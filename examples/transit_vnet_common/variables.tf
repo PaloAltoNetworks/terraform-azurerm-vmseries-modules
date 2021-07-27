@@ -123,8 +123,8 @@ variable "subnets" {
 }
 
 variable "vnet_tags" {
-  description = "A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
-  type        = map(any)
+  description = "Map of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
+  type        = map(string)
   default     = {}
 }
 
@@ -135,17 +135,17 @@ variable "olb_private_ip" {
 }
 
 variable "frontend_ips" {
-  description = "A map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details."
+  description = "Map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details."
 }
 
 variable "common_vmseries_sku" {
-  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
   type        = string
 }
 
 variable "common_vmseries_version" {
-  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "9.1.3"
   type        = string
 }
@@ -157,9 +157,9 @@ variable "common_vmseries_vm_size" {
 }
 
 variable "common_vmseries_tags" {
-  description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
+  description = "Map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
   default     = {}
-  type        = map(any)
+  type        = map(string)
 }
 
 variable "inbound_lb_name" {
