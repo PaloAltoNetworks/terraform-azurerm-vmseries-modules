@@ -3,8 +3,13 @@ variable "location" {
   type        = string
 }
 
+variable "resource_group_name" {
+  description = "Name of the existing resource group where to place the resources created."
+  type        = string
+}
+
 variable "name_prefix" {
-  description = "Prefix to add to all the created object names."
+  description = "A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator."
   type        = string
 }
 
@@ -53,15 +58,49 @@ variable "password" {
   type        = string
 }
 
+variable "zones" {
+  description = "The availability zones to use, for example `[\"1\", \"2\", \"3\"]`. If an empty list, no Availability Zones are used: `[]`."
+  default     = ["1", "2"]
+  type        = list(string)
+}
+
+variable "managed_disk_type" {
+  description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
+  default     = "StandardSSD_LRS"
+  type        = string
+}
+
+variable "custom_image_id" {
+  description = "Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
+  default     = null
+  type        = string
+}
+
+variable "enable_plan" {
+  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
+  default     = true
+  type        = bool
+}
+
+variable "img_publisher" {
+  description = "The Azure Publisher identifier for a image which should be deployed."
+  default     = "paloaltonetworks"
+}
+
+variable "img_offer" {
+  description = "The Azure Offer identifier corresponding to a published image. For `img_version` 9.1.1 or above, use \"vmseries-flex\"; for 9.1.0 or below use \"vmseries1\"."
+  default     = "vmseries-flex"
+}
+
 variable "img_sku" {
-  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
   type        = string
 }
 
 variable "img_version" {
-  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "9.0.4"
+  description = "VM-Series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
+  default     = "9.1.3"
   type        = string
 }
 
@@ -76,9 +115,20 @@ variable "vhd_container" {
   type        = string
 }
 
-variable "lb_backend_pool_id" {
-  description = "Identifier of the backend pool to associate with the VM series firewall."
+variable "private_backend_pool_id" {
+  description = "Identifier of the load balancer backend pool to associate with the private interface of each VM-Series firewall."
   type        = string
+  default     = null
+}
+
+variable "public_backend_pool_id" {
+  description = "Identifier of the load balancer backend pool to associate with the public interface of each VM-Series firewall."
+  type        = string
+  default     = null
+}
+
+variable "enable_public_interface" {
+  default = true
 }
 
 variable "accelerated_networking" {
@@ -87,18 +137,13 @@ variable "accelerated_networking" {
   type        = bool
 }
 
+variable "tags" {
+  default = {}
+}
+
 #  ---   #
 # Naming #
 #  ---   #
-
-# Seperator
-variable "sep" {
-  default = "-"
-}
-
-variable "name_rg" {
-  default = "vmseries-rg"
-}
 
 variable "name_scale_set" {
   default = "inbound-scaleset"

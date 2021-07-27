@@ -1,6 +1,6 @@
 # Create the Resource Group.
 resource "azurerm_resource_group" "this" {
-  name     = var.resource_group_name
+  name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries")
   location = var.location
 }
 
@@ -25,6 +25,24 @@ module "vnet" {
   network_security_groups = var.network_security_groups
   route_tables            = var.route_tables
   subnets                 = var.subnets
+  tags                    = var.vnet_tags
+}
+
+# Allow inbound access to Management subnet.
+resource "azurerm_network_security_rule" "mgmt" {
+  name                        = "vmseries-mgmt-allow-inbound"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = "sg_mgmt"
+  access                      = "Allow"
+  direction                   = "Inbound"
+  priority                    = 1000
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefixes     = var.allow_inbound_mgmt_ips
+  destination_address_prefix  = "*"
+  destination_port_range      = "*"
+
+  depends_on = [module.vnet]
 }
 
 ### LOAD BALANCERS ###
@@ -32,20 +50,12 @@ module "vnet" {
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name                = var.lb_public_name
-  resource_group_name = azurerm_resource_group.this.name
-  location            = var.location
-  frontend_ips        = var.public_frontend_ips
-}
-
-locals {
-  private_frontend_ips = { for k, v in var.private_frontend_ips : k => {
-    subnet_id                     = module.vnet.subnet_ids["private"]
-    private_ip_address_allocation = try(v.private_ip_address_allocation, null)
-    private_ip_address            = var.olb_private_ip
-    rules                         = v.rules
-    }
-  }
+  name                              = var.lb_public_name
+  resource_group_name               = azurerm_resource_group.this.name
+  location                          = var.location
+  frontend_ips                      = var.public_frontend_ips
+  network_security_group_name       = "sg_public"
+  network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
 }
 
 # Create the outbound load balancer
@@ -55,21 +65,32 @@ module "outbound_lb" {
   name                = var.lb_private_name
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
-  frontend_ips        = local.private_frontend_ips
+  frontend_ips = {
+    outbound = {
+      subnet_id                     = lookup(module.vnet.subnet_ids, "private", null)
+      private_ip_address_allocation = "Static"
+      private_ip_address            = var.olb_private_ip
+      rules = {
+        HA_PORTS = {
+          port     = 0
+          protocol = "All"
+        }
+      }
+    }
+  }
 }
 
-
-
 ### BOOTSTRAPPING ###
+
 # Inbound
 module "inbound_bootstrap" {
   source = "../../modules/bootstrap"
 
   resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
-  storage_share_name   = "ibbootstrapshare"
+  storage_share_name   = var.inbound_storage_share_name
   storage_account_name = var.storage_account_name
-  files                = var.files
+  files                = var.inbound_files
 }
 
 # Outbound
@@ -78,10 +99,10 @@ module "outbound_bootstrap" {
 
   resource_group_name      = azurerm_resource_group.this.name
   location                 = var.location
-  storage_share_name       = "obbootstrapshare"
+  storage_share_name       = var.outbound_storage_share_name
   create_storage_account   = false
   existing_storage_account = module.inbound_bootstrap.storage_account.name
-  files                    = var.files
+  files                    = var.outbound_files
 }
 
 # Create a storage container for storing VM disks provisioned via VMSS
@@ -90,15 +111,20 @@ resource "azurerm_storage_container" "this" {
   storage_account_name = module.inbound_bootstrap.storage_account.name
 }
 
-
-
 ### SCALE SETS ###
+
 # Create the inbound scale set
 module "inbound_scale_set" {
   source = "../../modules/vmss"
 
+  resource_group_name       = azurerm_resource_group.this.name
   location                  = var.location
-  name_prefix               = "${var.name_prefix}-inbound"
+  name_prefix               = "${var.name_prefix}inbound"
+  img_sku                   = var.common_vmseries_sku
+  img_version               = var.inbound_vmseries_version
+  tags                      = var.inbound_vmseries_tags
+  vm_size                   = var.inbound_vmseries_vm_size
+  vm_count                  = var.vmseries_count
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
   subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
@@ -107,18 +133,21 @@ module "inbound_scale_set" {
   bootstrap_storage_account = module.inbound_bootstrap.storage_account
   bootstrap_share_name      = module.inbound_bootstrap.storage_share.name
   vhd_container             = "${module.inbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.inbound_lb.backend_pool_id
-  vm_count                  = var.vmseries_count
+  public_backend_pool_id    = module.inbound_lb.backend_pool_id
 }
-
-
 
 # Create the outbound scale set
 module "outbound_scale_set" {
   source = "../../modules/vmss"
 
+  resource_group_name       = azurerm_resource_group.this.name
   location                  = var.location
-  name_prefix               = "${var.name_prefix}-outbound"
+  name_prefix               = "${var.name_prefix}outbound"
+  img_sku                   = var.common_vmseries_sku
+  img_version               = var.outbound_vmseries_version
+  tags                      = var.outbound_vmseries_tags
+  vm_size                   = var.outbound_vmseries_vm_size
+  vm_count                  = var.vmseries_count
   username                  = var.username
   password                  = coalesce(var.password, random_password.this.result)
   subnet_mgmt               = { id = module.vnet.subnet_ids["management"] }
@@ -127,6 +156,5 @@ module "outbound_scale_set" {
   bootstrap_storage_account = module.outbound_bootstrap.storage_account
   bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
   vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
-  lb_backend_pool_id        = module.outbound_lb.backend_pool_id
-  vm_count                  = var.vmseries_count
+  private_backend_pool_id   = module.outbound_lb.backend_pool_id
 }
