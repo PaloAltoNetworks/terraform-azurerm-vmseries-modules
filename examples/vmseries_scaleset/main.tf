@@ -132,8 +132,9 @@ module "inbound_scale_set" {
   subnet_public             = { id = module.vnet.subnet_ids["public"] }
   bootstrap_storage_account = module.inbound_bootstrap.storage_account
   bootstrap_share_name      = module.inbound_bootstrap.storage_share.name
-  vhd_container             = "${module.inbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   public_backend_pool_id    = module.inbound_lb.backend_pool_id
+  create_public_pip         = false
+  create_mgmt_pip           = true
 }
 
 # Create the outbound scale set
@@ -155,6 +156,5 @@ module "outbound_scale_set" {
   subnet_public             = { id = module.vnet.subnet_ids["public"] }
   bootstrap_storage_account = module.outbound_bootstrap.storage_account
   bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
-  vhd_container             = "${module.outbound_bootstrap.storage_account.primary_blob_endpoint}${azurerm_storage_container.this.name}"
   private_backend_pool_id   = module.outbound_lb.backend_pool_id
 }

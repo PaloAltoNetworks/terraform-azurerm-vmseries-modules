@@ -34,6 +34,26 @@ variable "subnet_private" {
   type        = object({ id = string })
 }
 
+variable "create_mgmt_pip" {
+  default = true
+  type    = bool
+}
+
+variable "create_public_pip" {
+  default = true
+  type    = bool
+}
+
+variable "mgmt_pip_domain_name_label" {
+  default = null
+  type    = string
+}
+
+variable "public_pip_domain_name_label" {
+  default = null
+  type    = string
+}
+
 variable "bootstrap_storage_account" {
   description = "Storage account setup for bootstrapping"
   type = object({
@@ -58,20 +78,90 @@ variable "password" {
   type        = string
 }
 
+variable "disable_password_authentication" {
+  description = "If true, disables password-based authentication on VM-Series instances."
+  default     = false
+  type        = bool
+}
+
+variable "encryption_at_host_enabled" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set#encryption_at_host_enabled)."
+  default     = null
+  type        = bool
+}
+
+variable "health_probe_id" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = null
+  type        = string
+}
+
+variable "overprovision" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = false
+  type        = bool
+}
+
+variable "platform_fault_domain_count" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = null
+  type        = number
+}
+
+variable "proximity_placement_group_id" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = null
+  type        = string
+}
+
+variable "scale_in_policy" {
+  description = "Which virtual machines are chosen for removal when a Virtual Machine Scale Set is scaled in. Either `Default`, `NewestVM` and `OldestVM`. See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = null
+  type        = string
+}
+
+variable "single_placement_group" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = null
+  type        = bool
+}
+
+variable "zone_balance" {
+  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
+  default     = true
+  type        = bool
+}
+
 variable "zones" {
   description = "The availability zones to use, for example `[\"1\", \"2\", \"3\"]`. If an empty list, no Availability Zones are used: `[]`."
-  default     = ["1", "2"]
+  default     = ["1", "2", "3"]
   type        = list(string)
 }
 
-variable "managed_disk_type" {
+variable "storage_account_type" {
   description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
   default     = "StandardSSD_LRS"
   type        = string
 }
 
+variable "boot_diagnostics_storage_account_uri" {
+  default = null
+  type    = string
+}
+
+variable "disk_encryption_set_id" {
+  default = null
+  type    = string
+}
+
+variable "use_custom_image" {
+  description = "If true, use `custom_image_id` and ignore the inputs `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` (all these are used only for published images, not custom ones)."
+  default     = false
+  type        = bool
+}
+
 variable "custom_image_id" {
-  description = "Absolute ID of your own Custom Image to be used for creating new VM-Series. If set, the `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
+  description = "Absolute ID of your own Custom Image to be used for creating new VM-Series. The Custom Image is expected to contain PAN-OS software."
   default     = null
   type        = string
 }
@@ -110,11 +200,6 @@ variable "vm_count" {
   type        = number
 }
 
-variable "vhd_container" {
-  description = "Storage container for storing VMSS instance VHDs."
-  type        = string
-}
-
 variable "private_backend_pool_id" {
   description = "Identifier of the load balancer backend pool to associate with the private interface of each VM-Series firewall."
   type        = string
@@ -127,8 +212,10 @@ variable "public_backend_pool_id" {
   default     = null
 }
 
-variable "enable_public_interface" {
-  default = true
+variable "create_public_interface" {
+  description = "If true, create the third network interface for virtual machines."
+  default     = true
+  type        = bool
 }
 
 variable "accelerated_networking" {
@@ -138,7 +225,9 @@ variable "accelerated_networking" {
 }
 
 variable "tags" {
-  default = {}
+  description = "Map of tags to use for all the created resources."
+  default     = {}
+  type        = map(string)
 }
 
 #  ---   #
@@ -146,7 +235,7 @@ variable "tags" {
 #  ---   #
 
 variable "name_scale_set" {
-  default = "inbound-scaleset"
+  default = "scaleset"
 }
 
 variable "name_mgmt_nic_profile" {
@@ -161,8 +250,8 @@ variable "name_fw_mgmt_pip" {
   default = "inbound-fw-mgmt-pip"
 }
 
-variable "name_domain_name_label" {
-  default = "inbound-vm-mgmt"
+variable "name_fw_public_pip" {
+  default = "inbound-fw-mgmt-pip"
 }
 
 variable "name_public_nic_profile" {
@@ -179,8 +268,4 @@ variable "name_private_nic_profile" {
 
 variable "name_private_nic_ip" {
   default = "inbound-nic-fw-private"
-}
-
-variable "name_fw" {
-  default = "inbound-fw"
 }
