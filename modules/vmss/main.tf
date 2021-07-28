@@ -1,96 +1,123 @@
-resource "azurerm_virtual_machine_scale_set" "this" {
-  name                = "${var.name_prefix}${var.name_scale_set}"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  tags                = var.tags
-  zones               = var.zones
-  upgrade_policy_mode = "Manual"
+resource "azurerm_linux_virtual_machine_scale_set" "this" {
+  name                            = "${var.name_prefix}${var.name_scale_set}"
+  location                        = var.location
+  resource_group_name             = var.resource_group_name
+  admin_username                  = var.username
+  admin_password                  = var.disable_password_authentication ? null : var.password
+  disable_password_authentication = var.disable_password_authentication
+  encryption_at_host_enabled      = var.encryption_at_host_enabled
+  health_probe_id                 = var.health_probe_id
+  overprovision                   = var.overprovision
+  platform_fault_domain_count     = var.platform_fault_domain_count
+  proximity_placement_group_id    = var.proximity_placement_group_id
+  scale_in_policy                 = var.scale_in_policy
+  single_placement_group          = var.single_placement_group
+  instances                       = var.vm_count
+  computer_name_prefix            = null
+  sku                             = var.vm_size
+  tags                            = var.tags
+  zones                           = var.zones
+  zone_balance                    = var.zone_balance
+  upgrade_mode                    = "Manual"
+  provision_vm_agent              = false
 
-  network_profile {
-    name                   = "${var.name_prefix}${var.name_mgmt_nic_profile}"
-    primary                = true
-    ip_forwarding          = true
-    accelerated_networking = false # unsupported by PAN-OS
+  custom_data = base64encode(join(
+    ",",
+    [
+      "storage-account=${var.bootstrap_storage_account.name}",
+      "access-key=${var.bootstrap_storage_account.primary_access_key}",
+      "file-share=${var.bootstrap_share_name}",
+      "share-directory=None"
+    ]
+  ))
+
+  network_interface {
+    name                          = "${var.name_prefix}${var.name_mgmt_nic_profile}"
+    primary                       = true
+    enable_ip_forwarding          = true
+    enable_accelerated_networking = false # unsupported by PAN-OS
 
     ip_configuration {
       name      = "${var.name_prefix}${var.name_mgmt_nic_ip}"
       primary   = true
       subnet_id = var.subnet_mgmt.id
 
-      public_ip_address_configuration {
-        idle_timeout      = 4
-        name              = "${var.name_prefix}${var.name_fw_mgmt_pip}"
-        domain_name_label = "${var.name_prefix}${var.name_domain_name_label}"
+      dynamic "public_ip_address" {
+        for_each = var.create_mgmt_pip ? ["one"] : []
+
+        content {
+          name                    = "${var.name_prefix}${var.name_fw_mgmt_pip}"
+          domain_name_label       = var.mgmt_pip_domain_name_label
+          idle_timeout_in_minutes = 4
+        }
       }
     }
   }
 
-  network_profile {
-    name                   = "${var.name_prefix}${var.name_private_nic_profile}"
-    primary                = false
-    ip_forwarding          = true
-    accelerated_networking = var.accelerated_networking
+  network_interface {
+    name                          = "${var.name_prefix}${var.name_private_nic_profile}"
+    primary                       = false
+    enable_ip_forwarding          = true
+    enable_accelerated_networking = var.accelerated_networking
 
     ip_configuration {
       name                                   = "${var.name_prefix}${var.name_private_nic_ip}"
-      primary                                = false
+      primary                                = true
       subnet_id                              = var.subnet_private.id
       load_balancer_backend_address_pool_ids = var.private_backend_pool_id != null ? [var.private_backend_pool_id] : []
     }
   }
 
-  dynamic "network_profile" {
-    for_each = var.enable_public_interface ? ["public"] : [/* else none */]
+  dynamic "network_interface" {
+    for_each = var.create_public_interface ? ["public"] : [/* else none */]
 
     content {
-      name                   = "${var.name_prefix}${var.name_public_nic_profile}"
-      primary                = false
-      ip_forwarding          = true
-      accelerated_networking = var.accelerated_networking
+      name                          = "${var.name_prefix}${var.name_public_nic_profile}"
+      primary                       = false
+      enable_ip_forwarding          = true
+      enable_accelerated_networking = var.accelerated_networking
 
       ip_configuration {
         name                                   = "${var.name_prefix}${var.name_public_nic_ip}"
-        primary                                = false
+        primary                                = true
         subnet_id                              = var.subnet_public.id
         load_balancer_backend_address_pool_ids = var.public_backend_pool_id != null ? [var.public_backend_pool_id] : []
+
+        dynamic "public_ip_address" {
+          for_each = var.create_public_pip ? ["one"] : []
+
+          content {
+            name                    = "${var.name_prefix}${var.name_fw_public_pip}"
+            domain_name_label       = var.public_pip_domain_name_label
+            idle_timeout_in_minutes = 4
+          }
+        }
+
       }
     }
   }
 
-  os_profile {
-    admin_username       = var.username
-    computer_name_prefix = "${var.name_prefix}${var.name_fw}"
-    admin_password       = var.password
-
-    custom_data = join(
-      ",",
-      [
-        "storage-account=${var.bootstrap_storage_account.name}",
-        "access-key=${var.bootstrap_storage_account.primary_access_key}",
-        "file-share=${var.bootstrap_share_name}",
-        "share-directory=None"
-      ]
-    )
+  boot_diagnostics {
+    storage_account_uri = var.boot_diagnostics_storage_account_uri
   }
 
-  storage_profile_image_reference {
-    id        = var.custom_image_id
-    publisher = var.custom_image_id == null ? var.img_publisher : null
-    offer     = var.custom_image_id == null ? var.img_offer : null
-    sku       = var.custom_image_id == null ? var.img_sku : null
-    version   = var.custom_image_id == null ? var.img_version : null
+  identity {
+    type = "SystemAssigned" # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
   }
 
-  sku {
-    capacity = var.vm_count
-    name     = var.vm_size
+  source_image_id = var.custom_image_id
+
+  source_image_reference {
+    publisher = var.use_custom_image ? null : var.img_publisher
+    offer     = var.use_custom_image ? null : var.img_offer
+    sku       = var.use_custom_image ? null : var.img_sku
+    version   = var.use_custom_image ? null : var.img_version
   }
 
-  storage_profile_os_disk {
-    create_option     = "FromImage"
-    managed_disk_type = var.managed_disk_type
-    os_type           = "Linux"
-    caching           = "ReadWrite"
+  os_disk {
+    caching                = "ReadWrite"
+    disk_encryption_set_id = var.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
+    storage_account_type   = var.storage_account_type
   }
 
   dynamic "plan" {
