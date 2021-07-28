@@ -130,3 +130,14 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 }
+
+resource "azurerm_application_insights" "this" {
+  count = var.metrics_retention_in_days != 0 ? 1 : 0
+
+  name                = coalesce(var.name_application_insights, "${var.name_prefix}appinsights")
+  location            = var.location
+  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  application_type    = "other"
+  retention_in_days   = var.metrics_retention_in_days
+  tags                = var.tags
+}

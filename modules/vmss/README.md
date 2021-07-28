@@ -37,6 +37,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
 | [azurerm_linux_virtual_machine_scale_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) | resource |
 
 ## Inputs
@@ -61,7 +62,9 @@ No modules.
 | <a name="input_img_sku"></a> [img\_sku](#input\_img\_sku) | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
 | <a name="input_img_version"></a> [img\_version](#input\_img\_version) | VM-Series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all` | `string` | `"9.1.3"` | no |
 | <a name="input_location"></a> [location](#input\_location) | Region to install VM-Series and dependencies. | `string` | n/a | yes |
+| <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the metrics retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether, which is incompatible with `create_autoscaling`. | `number` | `null` | no |
 | <a name="input_mgmt_pip_domain_name_label"></a> [mgmt\_pip\_domain\_name\_label](#input\_mgmt\_pip\_domain\_name\_label) | n/a | `string` | `null` | no |
+| <a name="input_name_application_insights"></a> [name\_application\_insights](#input\_name\_application\_insights) | Name of the Applications Insights instance to be created. Can be null, in which case a default name is auto-generated. | `string` | `null` | no |
 | <a name="input_name_fw_mgmt_pip"></a> [name\_fw\_mgmt\_pip](#input\_name\_fw\_mgmt\_pip) | n/a | `string` | `"inbound-fw-mgmt-pip"` | no |
 | <a name="input_name_fw_public_pip"></a> [name\_fw\_public\_pip](#input\_name\_fw\_public\_pip) | n/a | `string` | `"inbound-fw-mgmt-pip"` | no |
 | <a name="input_name_mgmt_nic_ip"></a> [name\_mgmt\_nic\_ip](#input\_name\_mgmt\_nic\_ip) | n/a | `string` | `"inbound-nic-fw-mgmt"` | no |
