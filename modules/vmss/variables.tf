@@ -224,6 +224,18 @@ variable "accelerated_networking" {
   type        = bool
 }
 
+variable "metrics_retention_in_days" {
+  description = "Specifies the metrics retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether, which is incompatible with `create_autoscaling`."
+  default     = null
+  type        = number
+}
+
+variable "name_application_insights" {
+  description = "Name of the Applications Insights instance to be created. Can be null, in which case a default name is auto-generated."
+  default     = null
+  type        = string
+}
+
 variable "tags" {
   description = "Map of tags to use for all the created resources."
   default     = {}
