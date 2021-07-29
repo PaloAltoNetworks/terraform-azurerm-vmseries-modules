@@ -1,6 +1,12 @@
 variable "virtual_network_name" {
-  description = "The name of the VNet to create."
+  description = "The name of the Azure Virtual Network."
   type        = string
+}
+
+variable "create_virtual_network" {
+  description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
+  default     = true
+  type        = bool
 }
 
 variable "location" {
