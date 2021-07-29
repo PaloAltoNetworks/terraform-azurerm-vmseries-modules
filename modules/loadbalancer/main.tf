@@ -6,6 +6,7 @@ resource "azurerm_public_ip" "this" {
   location            = var.location
   allocation_method   = "Static"
   sku                 = "Standard"
+  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
 }
 
 data "azurerm_public_ip" "exists" {
@@ -29,6 +30,9 @@ resource "azurerm_lb" "lb" {
       subnet_id                     = frontend_ip_configuration.value.subnet_id
       private_ip_address_allocation = frontend_ip_configuration.value.private_ip_address_allocation
       private_ip_address            = frontend_ip_configuration.value.private_ip_address_allocation == "Static" ? frontend_ip_configuration.value.private_ip_address : null
+      availability_zone             = frontend_ip_configuration.value.availability_zone
+      # Azure error message says: "Networking supports zones only for frontendIpconfigurations which reference a subnet."
+      # Therefore availability_zone null has a very different meaning depending whether subnet_id is null or not.
     }
   }
 }
@@ -40,7 +44,8 @@ locals {
   frontend_ips = { for k, v in var.frontend_ips : k => {
     name                          = k
     public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : try(data.azurerm_public_ip.exists[k].id, null)
-    create_public_ip              = try(v.create_public_ip, null)
+    create_public_ip              = try(v.create_public_ip, false)
+    availability_zone             = try(v.availability_zone, null)
     subnet_id                     = try(v.subnet_id, null)
     private_ip_address_allocation = try(v.private_ip_address_allocation, null)
     private_ip_address            = try(v.private_ip_address, null)

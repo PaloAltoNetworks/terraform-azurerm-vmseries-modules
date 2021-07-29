@@ -6,7 +6,16 @@ resource "azurerm_public_ip" "this" {
   name                = each.value.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  tags                = try(each.value.tags, var.tags)
+  availability_zone = try(
+    each.value.availability_zone,
+    # For the default, first consider using avzone if only possible. Otherwise fall back to enable_zones.
+    var.enable_zones && var.avzone != null && var.avzone != ""
+    ?
+    var.avzone
+    :
+    (var.enable_zones ? "Zone-Redundant" : "No-Zone")
+  )
+  tags = try(each.value.tags, var.tags)
 }
 
 resource "azurerm_network_interface" "this" {
@@ -42,7 +51,7 @@ resource "azurerm_virtual_machine" "this" {
   resource_group_name          = var.resource_group_name
   tags                         = var.tags
   vm_size                      = var.vm_size
-  zones                        = var.avzone != null && var.avzone != "" ? [var.avzone] : null
+  zones                        = var.enable_zones && var.avzone != null && var.avzone != "" ? [var.avzone] : null
   availability_set_id          = var.avset_id
   primary_network_interface_id = azurerm_network_interface.this[0].id
 

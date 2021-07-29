@@ -17,33 +17,33 @@ $ terraform apply
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.58 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.64 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.58 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 2.64.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.1.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap |  |
-| <a name="module_common_vmseries"></a> [common\_vmseries](#module\_common\_vmseries) | ../../modules/vmseries |  |
-| <a name="module_inbound_lb"></a> [inbound\_lb](#module\_inbound\_lb) | ../../modules/loadbalancer |  |
-| <a name="module_outbound_lb"></a> [outbound\_lb](#module\_outbound\_lb) | ../../modules/loadbalancer |  |
-| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet |  |
+| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap | n/a |
+| <a name="module_common_vmseries"></a> [common\_vmseries](#module\_common\_vmseries) | ../../modules/vmseries | n/a |
+| <a name="module_inbound_lb"></a> [inbound\_lb](#module\_inbound\_lb) | ../../modules/loadbalancer | n/a |
+| <a name="module_outbound_lb"></a> [outbound\_lb](#module\_outbound\_lb) | ../../modules/loadbalancer | n/a |
+| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.58/docs/resources/network_security_rule) | resource |
-| [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.58/docs/resources/public_ip) | resource |
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.58/docs/resources/resource_group) | resource |
+| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/network_security_rule) | resource |
+| [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 
 ## Inputs
@@ -57,6 +57,7 @@ $ terraform apply
 | <a name="input_common_vmseries_tags"></a> [common\_vmseries\_tags](#input\_common\_vmseries\_tags) | Map of tags to be associated with the virtual machines, their interfaces and public IP addresses. | `map(string)` | `{}` | no |
 | <a name="input_common_vmseries_version"></a> [common\_vmseries\_version](#input\_common\_vmseries\_version) | VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.1.3"` | no |
 | <a name="input_common_vmseries_vm_size"></a> [common\_vmseries\_vm\_size](#input\_common\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
+| <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones) | If false, all the VM-Series, load balancers and public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones. | `bool` | `true` | no |
 | <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | <a name="input_frontend_ips"></a> [frontend\_ips](#input\_frontend\_ips) | Map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details. | `any` | n/a | yes |
 | <a name="input_inbound_lb_name"></a> [inbound\_lb\_name](#input\_inbound\_lb\_name) | Name of the inbound load balancer (the public-facing one). | `string` | `"lb_inbound"` | no |

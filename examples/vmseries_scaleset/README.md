@@ -29,34 +29,34 @@ terraform destroy -parallelism 1
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.58 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.64 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.58 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 2.64.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.1.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_inbound_bootstrap"></a> [inbound\_bootstrap](#module\_inbound\_bootstrap) | ../../modules/bootstrap |  |
-| <a name="module_inbound_lb"></a> [inbound\_lb](#module\_inbound\_lb) | ../../modules/loadbalancer |  |
-| <a name="module_inbound_scale_set"></a> [inbound\_scale\_set](#module\_inbound\_scale\_set) | ../../modules/vmss |  |
-| <a name="module_outbound_bootstrap"></a> [outbound\_bootstrap](#module\_outbound\_bootstrap) | ../../modules/bootstrap |  |
-| <a name="module_outbound_lb"></a> [outbound\_lb](#module\_outbound\_lb) | ../../modules/loadbalancer |  |
-| <a name="module_outbound_scale_set"></a> [outbound\_scale\_set](#module\_outbound\_scale\_set) | ../../modules/vmss |  |
-| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet |  |
+| <a name="module_inbound_bootstrap"></a> [inbound\_bootstrap](#module\_inbound\_bootstrap) | ../../modules/bootstrap | n/a |
+| <a name="module_inbound_lb"></a> [inbound\_lb](#module\_inbound\_lb) | ../../modules/loadbalancer | n/a |
+| <a name="module_inbound_scale_set"></a> [inbound\_scale\_set](#module\_inbound\_scale\_set) | ../../modules/vmss | n/a |
+| <a name="module_outbound_bootstrap"></a> [outbound\_bootstrap](#module\_outbound\_bootstrap) | ../../modules/bootstrap | n/a |
+| <a name="module_outbound_lb"></a> [outbound\_lb](#module\_outbound\_lb) | ../../modules/loadbalancer | n/a |
+| <a name="module_outbound_scale_set"></a> [outbound\_scale\_set](#module\_outbound\_scale\_set) | ../../modules/vmss | n/a |
+| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.58/docs/resources/resource_group) | resource |
-| [azurerm_storage_container.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.58/docs/resources/storage_container) | resource |
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
+| [azurerm_storage_container.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/storage_container) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 
 ## Inputs

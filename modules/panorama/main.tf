@@ -7,6 +7,7 @@ resource "azurerm_public_ip" "this" {
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"
   sku                 = "Standard"
+  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
 
   tags = var.tags
 }
@@ -80,7 +81,7 @@ resource "azurerm_virtual_machine" "panorama" {
       product   = var.panorama_offer
     }
   }
-  zones = var.avzone != null ? [var.avzone] : null
+  zones = var.enable_zones && var.avzone != null && var.avzone != "" ? [var.avzone] : null
   tags  = var.tags
 }
 
@@ -94,7 +95,10 @@ resource "azurerm_managed_disk" "this" {
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = lookup(each.value, "size", "2048")
-  zones                = [lookup(each.value, "zone", "")]
+  zones = try(
+    [each.value.zone],
+    var.enable_zones && var.avzone != null && var.avzone != "" ? [var.avzone] : null
+  )
 
   tags = var.tags
 }
