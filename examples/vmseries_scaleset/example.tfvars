@@ -1,19 +1,31 @@
-resource_group_name  = "vmss-example-rg"
-location             = "East US"
-name_prefix          = "vmssexample-"
-virtual_network_name = "vmss-example-vnet"
-address_space        = ["10.110.0.0/16"]
+location                     = "East US"
+inbound_resource_group_name  = "example-vmss-inbound"
+outbound_resource_group_name = "example-vmss-outbound"
+virtual_network_name         = "vmss-transit-vnet"
+name_prefix                  = "vmseries-"
+inbound_name_prefix          = "inbound-"
+outbound_name_prefix         = "outbound-"
+lb_private_name              = "outbound-private-ilb"
+lb_public_name               = "inbound-public-elb"
+name_scale_set               = "VMSS" # the suffix
+
+tags = {}
+
+address_space = ["10.110.0.0/16"]
 
 network_security_groups = {
-  sg_mgmt    = {}
-  sg_private = {}
-  sg_public  = {}
+  sg_mgmt         = {}
+  sg_private      = {}
+  sg_pub_inbound  = {}
+  sg_pub_outbound = {}
 }
 
 allow_inbound_mgmt_ips = [
   "191.191.191.191", # Put your own public IP address here, visit "https://ifconfig.me/"
   "10.255.0.0/24",   # Example Panorama access
 ]
+
+allow_inbound_data_ips = []
 
 route_tables = {
   private_route_table = {
@@ -39,7 +51,7 @@ subnets = {
   },
   "inbound_public" = {
     address_prefixes       = ["10.110.129.0/24"]
-    network_security_group = "sg_public"
+    network_security_group = "sg_pub_inbound"
   },
   "outbound_private" = {
     address_prefixes       = ["10.110.1.0/24"] # confirm Ref-Arch scheme
@@ -48,7 +60,7 @@ subnets = {
   },
   "outbound_public" = {
     address_prefixes       = ["10.110.130.0/24"]
-    network_security_group = "sg_private"
+    network_security_group = "sg_pub_outbound"
   },
 }
 
@@ -76,10 +88,10 @@ outbound_vmseries_version = "10.0.6"
 outbound_vmseries_vm_size = "Standard_D3_v2"
 common_vmseries_sku       = "bundle1"
 
-inbound_count_minimum  = 1
-inbound_count_maximum  = 2
-outbound_count_minimum = 1
-outbound_count_maximum = 2
+inbound_count_minimum  = 2
+inbound_count_maximum  = 5
+outbound_count_minimum = 2
+outbound_count_maximum = 5
 
 autoscale_metrics = {
   "DataPlaneCPUUtilizationPct" = {
@@ -90,12 +102,25 @@ autoscale_metrics = {
     scaleout_threshold = 80
     scalein_threshold  = 20
   }
-  # For an easy trigger testing:
+  "panSessionThroughputKbps" = {
+    scaleout_threshold = 1800000 # >80 percent of 2.2G
+    scalein_threshold  = 40000
+  }
+  # # For an easy trigger testing:
   # "panSessionThroughputPps" = {
-  #   scaleout_threshold = 200
-  #   scalein_threshold  = 10
+  #   scaleout_threshold = 1000
+  #   scalein_threshold  = 100
   # }
 }
+
+scaleout_statistic        = "Average"
+scaleout_time_aggregation = "Average"
+scaleout_window_minutes   = 10
+scaleout_cooldown_minutes = 30
+scalein_statistic         = "Max"
+scalein_time_aggregation  = "Average"
+scalein_window_minutes    = 60
+scalein_cooldown_minutes  = 10080
 
 storage_account_name        = "vmssexample20210406"
 inbound_storage_share_name  = "ibbootstrapshare"
