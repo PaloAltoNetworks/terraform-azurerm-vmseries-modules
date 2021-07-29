@@ -12,7 +12,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   proximity_placement_group_id    = var.proximity_placement_group_id
   scale_in_policy                 = var.scale_in_policy
   single_placement_group          = var.single_placement_group
-  instances                       = var.vm_count
+  instances                       = var.autoscale_count_default
   computer_name_prefix            = null
   sku                             = var.vm_size
   tags                            = var.tags
@@ -140,4 +140,115 @@ resource "azurerm_application_insights" "this" {
   application_type    = "other"
   retention_in_days   = var.metrics_retention_in_days
   tags                = var.tags
+}
+
+resource "azurerm_monitor_autoscale_setting" "this" {
+  count = length(var.autoscale_metrics) > 0 ? 1 : 0
+
+  name                = coalesce(var.name_autoscale, "${var.name_prefix}autoscale")
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
+
+  profile {
+    name = "${var.name_prefix}profile"
+
+    capacity {
+      default = var.autoscale_count_default
+      minimum = var.autoscale_count_minimum
+      maximum = var.autoscale_count_maximum
+    }
+
+    dynamic "rule" {
+      for_each = var.autoscale_metrics
+
+      content {
+        metric_trigger {
+          metric_name        = rule.key
+          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : azurerm_application_insights.this[0].id
+          metric_namespace   = "Azure.ApplicationInsights"
+          operator           = "GreaterThanOrEqual"
+          threshold          = rule.value.scaleout_threshold
+
+          statistic        = var.scaleout_statistic
+          time_aggregation = var.scaleout_time_aggregation
+          time_grain       = "PT1M" # PT1M means: Period of Time 1 Minute
+          time_window      = local.scaleout_window
+        }
+
+        scale_action {
+          direction = "Increase"
+          value     = "1"
+          type      = "ChangeCount"
+          cooldown  = local.scaleout_cooldown
+        }
+      }
+    }
+
+    dynamic "rule" {
+      for_each = var.autoscale_metrics
+
+      content {
+        metric_trigger {
+          metric_name        = rule.key
+          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : azurerm_application_insights.this[0].id
+          metric_namespace   = "Azure.ApplicationInsights"
+          operator           = "LessThanOrEqual"
+          threshold          = rule.value.scalein_threshold
+
+          statistic        = var.scalein_statistic
+          time_aggregation = var.scalein_time_aggregation
+          time_grain       = "PT1M"
+          time_window      = local.scalein_window
+        }
+
+        scale_action {
+          direction = "Decrease"
+          value     = "1"
+          type      = "ChangeCount"
+          cooldown  = local.scalein_cooldown
+        }
+      }
+    }
+  }
+
+  notification {
+    email {
+      custom_emails = var.autoscale_notification_emails
+    }
+    dynamic "webhook" {
+      for_each = var.autoscale_webhooks_uris
+
+      content {
+        service_uri = webhook.value
+      }
+    }
+  }
+
+  tags = var.tags
+}
+
+locals {
+  # Azure demands Period of Time 1 day 12 hours and 30 minutes to be written as "PT1D12H30M".
+  # What's worse, time periods "PT61M" and "PT1H1M" are equal to Azure, but inequal to Terraform.
+  # Using solely the number of minutes ("PT61M") causes a bad Terraform apply loop.
+  scaleout_cooldown_minutes = "${var.scaleout_cooldown_minutes % 60}M"
+  scaleout_cooldown_hours   = "${floor(var.scaleout_cooldown_minutes / 60) % 24}H"
+  scaleout_cooldown_days    = "${floor(var.scaleout_cooldown_minutes / (60 * 24))}D"
+  scaleout_cooldown         = "P${local.scaleout_cooldown_days != "0D" ? local.scaleout_cooldown_days : ""}T${local.scaleout_cooldown_hours != "0H" ? local.scaleout_cooldown_hours : ""}${local.scaleout_cooldown_minutes != "0M" ? local.scaleout_cooldown_minutes : ""}"
+
+  scaleout_window_minutes = "${var.scaleout_window_minutes % 60}M"
+  scaleout_window_hours   = "${floor(var.scaleout_window_minutes / 60) % 24}H"
+  scaleout_window_days    = "${floor(var.scaleout_window_minutes / (60 * 24))}D"
+  scaleout_window         = "P${local.scaleout_window_days != "0D" ? local.scaleout_window_days : ""}T${local.scaleout_window_hours != "0H" ? local.scaleout_window_hours : ""}${local.scaleout_window_minutes != "0M" ? local.scaleout_window_minutes : ""}"
+
+  scalein_cooldown_minutes = "${var.scalein_cooldown_minutes % 60}M"
+  scalein_cooldown_hours   = "${floor(var.scalein_cooldown_minutes / 60) % 24}H"
+  scalein_cooldown_days    = "${floor(var.scalein_cooldown_minutes / (60 * 24))}D"
+  scalein_cooldown         = "P${local.scalein_cooldown_days != "0D" ? local.scalein_cooldown_days : ""}T${local.scalein_cooldown_hours != "0H" ? local.scalein_cooldown_hours : ""}${local.scalein_cooldown_minutes != "0M" ? local.scalein_cooldown_minutes : ""}"
+
+  scalein_window_minutes = "${var.scalein_window_minutes % 60}M"
+  scalein_window_hours   = "${floor(var.scalein_window_minutes / 60) % 24}H"
+  scalein_window_days    = "${floor(var.scalein_window_minutes / (60 * 24))}D"
+  scalein_window         = "P${local.scalein_window_days != "0D" ? local.scalein_window_days : ""}T${local.scalein_window_hours != "0H" ? local.scalein_window_hours : ""}${local.scalein_window_minutes != "0M" ? local.scalein_window_minutes : ""}"
 }
