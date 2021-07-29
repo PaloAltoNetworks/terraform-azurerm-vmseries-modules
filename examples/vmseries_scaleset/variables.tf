@@ -1,10 +1,21 @@
-variable "resource_group_name" {
-  description = "Name of the Resource Group to create if `create_resource_group` is true. Name of the pre-existing Resource Group to use otherwise."
+variable "inbound_resource_group_name" {
+  description = "Name of the Resource Group to create if `create_inbound_resource_group` is true. Name of the pre-existing Resource Group to use otherwise."
   type        = string
 }
 
-variable "create_resource_group" {
-  description = "If true, create a new Resource Group."
+variable "create_inbound_resource_group" {
+  description = "If true, create a new Resource Group for inbound VM-Series. Otherwise use a pre-existing group."
+  default     = true
+  type        = bool
+}
+
+variable "outbound_resource_group_name" {
+  description = "Name of the Resource Group to create if `create_outbound_resource_group` is true. Name of the pre-existing Resource Group to use otherwise."
+  type        = string
+}
+
+variable "create_outbound_resource_group" {
+  description = "If true, create a new Resource Group for outbound VM-Series. Otherwise use a pre-existing group."
   default     = true
   type        = bool
 }
@@ -84,14 +95,110 @@ variable "outbound_count_maximum" {
   default     = 2
 }
 
+variable "autoscale_notification_emails" {
+  description = "List of email addresses to notify about autoscaling events."
+  default     = []
+  type        = list(string)
+}
+
 variable "autoscale_metrics" {
-  description = "See the `vmss` module for description."
-  default     = null
+  description = <<-EOF
+  Map of objects, where each key is the metric name to be used for autoscaling.
+  Each value of the map has the attributes `scaleout_threshold` and `scalein_threshold`, which cause the instance count to grow by 1 when metrics are greater or equal, or decrease by 1 when lower or equal, respectively.
+  The thresholds are applied to results of metrics' aggregation over a time window.
+  Example:
+  ```
+  {
+    "DataPlaneCPUUtilizationPct" = {
+      scaleout_threshold = 80
+      scalein_threshold  = 20
+    }
+    "panSessionUtilization" = {
+      scaleout_threshold = 80
+      scalein_threshold  = 20
+    }
+  }
+  ```
+
+  Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
+  EOF
+  default = {
+    "DataPlaneCPUUtilizationPct" = {
+      scaleout_threshold = 80
+      scalein_threshold  = 20
+    }
+    "panSessionUtilization" = {
+      scaleout_threshold = 80
+      scalein_threshold  = 20
+    }
+  }
+}
+
+variable "scaleout_statistic" {
+  description = "Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max."
+  default     = "Max"
+  type        = string
+}
+
+variable "scaleout_time_aggregation" {
+  description = "Specifies how the metric should be combined over the time `scaleout_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total."
+  default     = "Maximum"
+  type        = string
+}
+
+variable "scaleout_window_minutes" {
+  description = <<-EOF
+  This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,
+  it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.
+  Must be between 5 and 720 minutes.
+  EOF
+  default     = 10
+  type        = number
+}
+
+variable "scaleout_cooldown_minutes" {
+  description = "Before each VM number increase, wait `scaleout_window_minutes` plus `scaleout_cooldown_minutes` counting from the last VM number increase."
+  default     = 15
+  type        = number
+}
+
+variable "scalein_statistic" {
+  description = "Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max."
+  default     = "Max"
+  type        = string
+}
+
+variable "scalein_time_aggregation" {
+  description = "Specifies how the metric should be combined over the time `scalein_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total."
+  default     = "Maximum"
+  type        = string
+}
+
+variable "scalein_window_minutes" {
+  description = <<-EOF
+  This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,
+  it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.
+  Must be between 5 and 720 minutes.
+  EOF
+  default     = 15
+  type        = number
+}
+
+variable "scalein_cooldown_minutes" {
+  description = "Azure only considers deleting a VM after this number of minutes has passed since the last VM scaling action. Should be higher or equal to `scalein_window_minutes`. Must be between 1 and 10080 minutes."
+  default     = 2880
+  type        = number
 }
 
 variable "virtual_network_name" {
-  description = "Name of the Virtual Network to create."
+  description = "Name of the Virtual Network."
   type        = string
+}
+
+variable "create_virtual_network" {
+  description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
+  default     = true
+  type        = bool
 }
 
 variable "address_space" {
@@ -196,4 +303,28 @@ variable "outbound_vmseries_tags" {
   description = "Map of tags to be associated with the outbound virtual machines, their interfaces and public IP addresses."
   default     = {}
   type        = map(string)
+}
+
+variable "enable_zones" {
+  description = "If true, Public IP addresses will have `Zone-Redundant` setting, otherwise `No-Zone`. The latter is intended for the regions that do not yet support Availability Zones."
+  default     = true
+}
+
+variable "name_scale_set" {
+  default = "VMSS"
+}
+
+variable "inbound_name_prefix" {}
+
+variable "outbound_name_prefix" {}
+
+variable "panorama_tags" {
+  description = "Predefined tags neccessary for the Panorama `azure` plugin v2 to automatically de-license the VM-Series."
+  default = {
+    PanoramaManaged = "yes"
+  }
+}
+
+variable "tags" {
+  default = {}
 }

@@ -20,3 +20,7 @@ output "metrics_instrumentation_key_outbound" {
   value       = module.outbound_scale_set.metrics_instrumentation_key
   sensitive   = true
 }
+
+output "inbound_frontend_ips" {
+  value = module.inbound_lb.frontend_ip_configs
+}
