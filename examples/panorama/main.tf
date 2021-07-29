@@ -80,37 +80,36 @@ module "panorama" {
   panorama_name       = var.panorama_name
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
-  avzone              = var.avzone // Optional Availability Zone number
+  avzone              = var.avzone
+  enable_zones        = var.enable_zones
+  custom_image_id     = var.custom_image_id
+  panorama_sku        = var.panorama_sku
+  panorama_size       = var.panorama_size
+  panorama_version    = var.panorama_version
+  tags                = var.tags
 
   interface = [ // Only one interface in Panorama VM is supported
     {
       name               = "mgmt"
       subnet_id          = module.vnet.vnet_subnets[0]
-      private_ip_address = var.panorama_private_ip_address // Optional: If not set, use dynamic allocation
-      public_ip          = true                            // (optional|bool,   default: false)
-      public_ip_name     = "public_ip"                     // (optional|string, default: "")
+      private_ip_address = var.panorama_private_ip_address
+      public_ip          = true
+      public_ip_name     = var.panorama_name
     }
   ]
 
   logging_disks = {
     disk_name_1 = {
       size : "2048"
-      zone : "1"
       lun : "1"
     }
     disk_name_2 = {
       size : "2048"
-      zone : "2"
       lun : "2"
     }
   }
 
-  panorama_size               = var.panorama_size
-  custom_image_id             = var.custom_image_id // optional
   username                    = var.username
   password                    = random_password.this.result
-  panorama_sku                = var.panorama_sku
-  panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
-  tags                        = var.tags
 }

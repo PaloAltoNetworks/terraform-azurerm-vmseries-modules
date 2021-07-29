@@ -123,3 +123,8 @@ variable "network_security_base_priority" {
   default     = 1000
   type        = number
 }
+
+variable "enable_zones" {
+  description = "If false, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+}

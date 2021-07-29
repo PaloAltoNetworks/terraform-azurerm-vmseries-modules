@@ -94,6 +94,13 @@ variable "security_group_name" {
 }
 
 variable "avzone" {
-  type    = string
-  default = null
+  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones."
+  type        = string
+  default     = null
+}
+
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
 }

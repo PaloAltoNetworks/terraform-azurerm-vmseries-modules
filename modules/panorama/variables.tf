@@ -9,8 +9,8 @@ variable "resource_group_name" {
 }
 
 variable "avzone" {
+  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones."
   default     = null
-  description = "Optional Availability Zone number."
 }
 
 variable "panorama_size" {
@@ -110,6 +110,12 @@ variable "boot_diagnostic_storage_uri" {
   description = "Existing diagnostic storage uri"
   default     = null
   type        = string
+}
+
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
 }
 
 #  ---   #

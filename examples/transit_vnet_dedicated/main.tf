@@ -54,6 +54,7 @@ resource "azurerm_public_ip" "public" {
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
 }
 
 # The Inbound Load Balancer for handling the traffic from the Internet.
@@ -64,6 +65,7 @@ module "inbound_lb" {
   location                          = var.location
   resource_group_name               = azurerm_resource_group.this.name
   frontend_ips                      = var.frontend_ips
+  enable_zones                      = var.enable_zones
   network_security_group_name       = "sg-public"
   network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
 }
@@ -75,11 +77,13 @@ module "outbound_lb" {
   name                = var.outbound_lb_name
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
+  enable_zones        = var.enable_zones
   frontend_ips = {
     outbound = {
       subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)
       private_ip_address_allocation = "Static"
       private_ip_address            = var.olb_private_ip
+      availability_zone             = var.enable_zones ? null : "No-Zone" # For the regions without AZ support.
       rules = {
         HA_PORTS = {
           port     = 0
@@ -129,6 +133,7 @@ module "inbound_vmseries" {
   img_version               = var.inbound_vmseries_version
   vm_size                   = var.inbound_vmseries_vm_size
   tags                      = var.inbound_vmseries_tags
+  enable_zones              = var.enable_zones
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [
@@ -175,6 +180,7 @@ module "outbound_vmseries" {
   img_version               = var.outbound_vmseries_version
   vm_size                   = var.outbound_vmseries_vm_size
   tags                      = var.outbound_vmseries_tags
+  enable_zones              = var.enable_zones
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [

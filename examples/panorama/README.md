@@ -26,17 +26,17 @@ $ terraform apply
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 2.42 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | 2.70.0 |
+| <a name="provider_random"></a> [random](#provider\_random) | 3.1.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap |  |
-| <a name="module_nsg"></a> [nsg](#module\_nsg) | Azure/network-security-group/azurerm |  |
-| <a name="module_panorama"></a> [panorama](#module\_panorama) | ../../modules/panorama |  |
-| <a name="module_vnet"></a> [vnet](#module\_vnet) | Azure/vnet/azurerm |  |
+| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap | n/a |
+| <a name="module_nsg"></a> [nsg](#module\_nsg) | Azure/network-security-group/azurerm | n/a |
+| <a name="module_panorama"></a> [panorama](#module\_panorama) | ../../modules/panorama | n/a |
+| <a name="module_vnet"></a> [vnet](#module\_vnet) | Azure/vnet/azurerm | n/a |
 
 ## Resources
 
@@ -51,8 +51,9 @@ $ terraform apply
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_address_space"></a> [address\_space](#input\_address\_space) | n/a | `list(string)` | <pre>[<br>  "10.0.0.0/16"<br>]</pre> | no |
-| <a name="input_avzone"></a> [avzone](#input\_avzone) | n/a | `string` | `null` | no |
+| <a name="input_avzone"></a> [avzone](#input\_avzone) | The availability zone to use, for example "1", "2", "3". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones. | `string` | `null` | no |
 | <a name="input_custom_image_id"></a> [custom\_image\_id](#input\_custom\_image\_id) | n/a | `string` | `null` | no |
+| <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones) | If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones. | `bool` | `true` | no |
 | <a name="input_firewall_mgmt_prefixes"></a> [firewall\_mgmt\_prefixes](#input\_firewall\_mgmt\_prefixes) | n/a | `list(string)` | <pre>[<br>  "10.0.0.0/24"<br>]</pre> | no |
 | <a name="input_location"></a> [location](#input\_location) | Region to deploy Panorama into. | `string` | `""` | no |
 | <a name="input_management_ips"></a> [management\_ips](#input\_management\_ips) | A map where the keys are the IP addresses or ranges that are permitted to access the out-of-band management interfaces belonging to firewalls and Panorama devices. The map's values are priorities, integers in the range 102-60000 inclusive. All priorities should be unique. | `map(number)` | n/a | yes |
