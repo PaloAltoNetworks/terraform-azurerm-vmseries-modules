@@ -1,6 +1,12 @@
 variable "resource_group_name" {
-  description = "Name of the Resource Group to create."
+  description = "Name of the Resource Group to create if `create_resource_group` is true. Name of the pre-existing Resource Group to use otherwise."
   type        = string
+}
+
+variable "create_resource_group" {
+  description = "If true, create a new Resource Group."
+  default     = true
+  type        = bool
 }
 
 variable "location" {
@@ -58,9 +64,29 @@ variable "outbound_storage_share_name" {
   type        = string
 }
 
-variable "vmseries_count" {
-  description = "Total number of VM series to deploy per direction (inbound/outbound)."
+variable "inbound_count_minimum" {
+  description = "Minimal number of inbound VM-Series to deploy."
   default     = 1
+}
+
+variable "outbound_count_minimum" {
+  description = "Minimal number of outbound VM-Series to deploy."
+  default     = 1
+}
+
+variable "inbound_count_maximum" {
+  description = "Maximal number of inbound VM-Series to scale out to."
+  default     = 2
+}
+
+variable "outbound_count_maximum" {
+  description = "Maximal number of outbound VM-Series to scale out to."
+  default     = 2
+}
+
+variable "autoscale_metrics" {
+  description = "See the `vmss` module for description."
+  default     = null
 }
 
 variable "virtual_network_name" {
@@ -122,16 +148,12 @@ variable "lb_private_name" {
 }
 
 variable "olb_private_ip" {
-  description = "The private IP address to assign to the outbound load balancer. This IP **must** fall in the `private_subnet` network."
-  default     = "10.110.0.21"
+  description = "The private IP address to assign to the outbound load balancer. This IP **must** fall in the `outbound_private` subnet CIDR."
+  default     = "10.110.1.21"
 }
 
 variable "public_frontend_ips" {
   description = "Map of objects describing frontend IP configurations and rules for the inbound load balancer. Refer to the `loadbalancer` module documentation for more information."
-}
-
-variable "private_frontend_ips" {
-  description = "Map of objects describing frontend IP configurations and rules for the private load balancer. Refer to the `loadbalancer` module documentation for more information."
 }
 
 variable "common_vmseries_sku" {
@@ -142,7 +164,7 @@ variable "common_vmseries_sku" {
 
 variable "inbound_vmseries_version" {
   description = "Inbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "10.0.4"
+  default     = "10.0.6"
   type        = string
 }
 
@@ -160,7 +182,7 @@ variable "inbound_vmseries_tags" {
 
 variable "outbound_vmseries_version" {
   description = "Outbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "10.0.4"
+  default     = "10.0.6"
   type        = string
 }
 
