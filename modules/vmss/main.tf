@@ -54,20 +54,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
-  network_interface {
-    name                          = "${var.name_prefix}${var.name_private_nic_profile}"
-    primary                       = false
-    enable_ip_forwarding          = true
-    enable_accelerated_networking = var.accelerated_networking
-
-    ip_configuration {
-      name                                   = "${var.name_prefix}${var.name_private_nic_ip}"
-      primary                                = true
-      subnet_id                              = var.subnet_private.id
-      load_balancer_backend_address_pool_ids = var.private_backend_pool_id != null ? [var.private_backend_pool_id] : []
-    }
-  }
-
   dynamic "network_interface" {
     for_each = var.create_public_interface ? ["public"] : [/* else none */]
 
@@ -94,6 +80,20 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
         }
 
       }
+    }
+  }
+
+  network_interface {
+    name                          = "${var.name_prefix}${var.name_private_nic_profile}"
+    primary                       = false
+    enable_ip_forwarding          = true
+    enable_accelerated_networking = var.accelerated_networking
+
+    ip_configuration {
+      name                                   = "${var.name_prefix}${var.name_private_nic_ip}"
+      primary                                = true
+      subnet_id                              = var.subnet_private.id
+      load_balancer_backend_address_pool_ids = var.private_backend_pool_id != null ? [var.private_backend_pool_id] : []
     }
   }
 
