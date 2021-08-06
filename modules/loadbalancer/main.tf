@@ -7,6 +7,7 @@ resource "azurerm_public_ip" "this" {
   allocation_method   = "Static"
   sku                 = "Standard"
   availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
+  tags                = var.tags
 }
 
 data "azurerm_public_ip" "exists" {
@@ -21,6 +22,7 @@ resource "azurerm_lb" "lb" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = "Standard"
+  tags                = var.tags
 
   dynamic "frontend_ip_configuration" {
     for_each = local.frontend_ips
