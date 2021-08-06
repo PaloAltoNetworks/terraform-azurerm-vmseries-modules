@@ -128,3 +128,9 @@ variable "enable_zones" {
   description = "If false, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
 }
+
+variable "tags" {
+  description = "Azure tags to apply to the created resources."
+  default     = {}
+  type        = map(string)
+}
