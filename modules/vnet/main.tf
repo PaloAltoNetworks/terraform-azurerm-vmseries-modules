@@ -1,4 +1,6 @@
 resource "azurerm_virtual_network" "this" {
+  count = var.create_virtual_network ? 1 : 0
+
   name                = var.virtual_network_name
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -6,12 +8,23 @@ resource "azurerm_virtual_network" "this" {
   tags                = var.tags
 }
 
+data "azurerm_virtual_network" "this" {
+  count = var.create_virtual_network == false ? 1 : 0
+
+  resource_group_name = var.resource_group_name
+  name                = var.virtual_network_name
+}
+
+locals {
+  virtual_network = var.create_virtual_network ? azurerm_virtual_network.this[0] : data.azurerm_virtual_network.this[0]
+}
+
 resource "azurerm_subnet" "this" {
   for_each = var.subnets
 
   name                 = each.key
   resource_group_name  = var.resource_group_name
-  virtual_network_name = azurerm_virtual_network.this.name
+  virtual_network_name = local.virtual_network.name
   address_prefixes     = each.value.address_prefixes
 }
 
