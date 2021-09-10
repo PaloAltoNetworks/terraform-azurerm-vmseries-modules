@@ -5,8 +5,8 @@ virtual_network_name         = "vmss-transit-vnet"
 name_prefix                  = "vmseries-"
 inbound_name_prefix          = "inbound-"
 outbound_name_prefix         = "outbound-"
-lb_private_name              = "outbound-private-ilb"
-lb_public_name               = "inbound-public-elb"
+outbound_lb_name             = "outbound-private-ilb"
+inbound_lb_name              = "inbound-public-elb"
 name_scale_set               = "VMSS" # the suffix
 
 tags = {}

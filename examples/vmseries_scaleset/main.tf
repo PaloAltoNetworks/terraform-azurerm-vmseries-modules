@@ -82,7 +82,7 @@ resource "azurerm_network_security_rule" "mgmt" {
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name                              = var.lb_public_name
+  name                              = var.inbound_lb_name
   resource_group_name               = local.inbound_resource_group.name
   location                          = var.location
   frontend_ips                      = var.public_frontend_ips
@@ -96,7 +96,7 @@ module "inbound_lb" {
 module "outbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name                = var.lb_private_name
+  name                = var.outbound_lb_name
   resource_group_name = local.outbound_resource_group.name
   location            = var.location
   enable_zones        = var.enable_zones
