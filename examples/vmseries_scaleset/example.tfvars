@@ -113,14 +113,17 @@ autoscale_metrics = {
   # }
 }
 
+# Autoscaling grows:
 scaleout_statistic        = "Average"
 scaleout_time_aggregation = "Average"
 scaleout_window_minutes   = 10
 scaleout_cooldown_minutes = 30
-scalein_statistic         = "Max"
-scalein_time_aggregation  = "Average"
-scalein_window_minutes    = 60
-scalein_cooldown_minutes  = 10080
+
+# Autoscaling shrinks:
+scalein_statistic        = "Max"
+scalein_time_aggregation = "Average"
+scalein_window_minutes   = 60
+scalein_cooldown_minutes = 10080
 
 storage_account_name        = "vmssexample20210406"
 inbound_storage_share_name  = "ibbootstrapshare"
