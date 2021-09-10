@@ -49,8 +49,10 @@ resource "random_password" "this" {
 module "vnet" {
   source = "../../modules/vnet"
 
-  virtual_network_name    = var.virtual_network_name
-  create_virtual_network  = var.create_virtual_network
+  create_virtual_network = var.create_virtual_network
+  virtual_network_name   = var.virtual_network_name
+  # We have two Resource Groups: inbound and outbound. The Virtual Net is used for both the inbound and the outbound
+  # flow, so in which RG to put it in? Just to avoid creating a third RG (common), let's assume we use the inbound RG.
   resource_group_name     = local.inbound_resource_group.name
   location                = var.location
   address_space           = var.address_space
