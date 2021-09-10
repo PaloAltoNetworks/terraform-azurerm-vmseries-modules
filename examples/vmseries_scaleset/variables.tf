@@ -120,7 +120,7 @@ variable "autoscale_metrics" {
   }
   ```
 
-  Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
+  Other possible metrics include `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`.
   EOF
   default = {
     "DataPlaneCPUUtilizationPct" = {
@@ -202,7 +202,7 @@ variable "create_virtual_network" {
 }
 
 variable "address_space" {
-  description = "The address space used by the virtual network. You can supply more than one address space."
+  description = "The address space used by the Virtual Network. You can supply more than one address space."
   type        = list(string)
 }
 
@@ -242,13 +242,13 @@ variable "vnet_tags" {
   default     = {}
 }
 
-variable "lb_public_name" {
+variable "inbound_lb_name" {
   description = "Name of the public-facing load balancer."
   type        = string
   default     = "lb_public"
 }
 
-variable "lb_private_name" {
+variable "outbound_lb_name" {
   description = "Name of the private load balancer."
   type        = string
   default     = "lb_private"
@@ -311,7 +311,8 @@ variable "enable_zones" {
 }
 
 variable "name_scale_set" {
-  default = "VMSS"
+  description = "Name of the virtual machine scale set."
+  default     = "VMSS"
 }
 
 variable "inbound_name_prefix" {}
