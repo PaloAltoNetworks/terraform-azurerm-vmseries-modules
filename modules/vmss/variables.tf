@@ -90,12 +90,6 @@ variable "encryption_at_host_enabled" {
   type        = bool
 }
 
-variable "health_probe_id" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
-  default     = null
-  type        = string
-}
-
 variable "overprovision" {
   description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
   default     = false
