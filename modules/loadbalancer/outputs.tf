@@ -34,3 +34,8 @@ output "frontend_combined_rules" {
   ```
   EOF
 }
+
+output "health_probe" {
+  value       = azurerm_lb_probe.probe
+  description = "The health probe object."
+}
