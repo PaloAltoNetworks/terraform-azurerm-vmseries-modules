@@ -18,12 +18,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   zones                           = var.zones
   zone_balance                    = var.zone_balance
   provision_vm_agent              = false
+
   # Allowing upgrade_mode = "Rolling" would be actually a big architectural change. First of all:
   #
   # Error: `health_probe_id` must be set or a health extension must be specified when `upgrade_mode` is set to "Rolling"
   #
-  # Having that, as visible in the next error message below, Azure requires the first NIC to be the load balanced one.
-  # Azure complains about "inbound-nic-fw-mgmt", which in that case was the primary IP config of the primary NIC:
+  # VM-Series do not have a health extension.
+  # Having health_probe_id, as visible in the next error message below, Azure requires the first NIC to be
+  # the load-balanced one. Azure complains about "inbound-nic-fw-mgmt", which in that case was the primary IP config
+  # of the first NIC:
   #
   # Error: Error creating Linux Virtual Machine Scale Set "inbound-VMSS" (Resource Group "example-vmss-inbound"):
   # compute.VirtualMachineScaleSetsClient#CreateOrUpdate: Failure sending request: StatusCode=0 -- Original Error:
@@ -36,18 +39,19 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   # │    1: resource "azurerm_linux_virtual_machine_scale_set" "this" {
   #
   # Hence mgmt-interface-swap seems to be required on VM-Series, which would need a major overhaul of the
-  # subnet-related inputs. Without mgmt-interface-swap the upgrade_mode = "Rolling" seems impossible.
+  # subnet-related inputs. Without the mgmt-interface-swap, it seems impossible to have upgrade_mode = "Rolling".
   #
   # The phony LB on a management network does not seem a viable solution. For now Azure does not support two internal
   # load balancers per VM. Also, health checking HTTP/SSH on management port would wrongly consider that unconfigured
-  # VM-Series is good to use. Unconfigured VM-Series still shows HTTP/SSH on the management ports. This does not happen
-  # when checking a dataplane interface, because the data only shows HTTP/SSH after the initial commit applies
-  # the management profile.
+  # VM-Series is good to use. Unconfigured VM-Series still shows HTTP/SSH on the management interface. This does not
+  # happen when checking a dataplane interface, because the data only shows HTTP/SSH after the initial commit applies
+  # a specific management profile.
   #
-  # Also the inbound vmss would have the first NIC public, but outbound vmss would have the first NIC private, as
-  # these are the load balanced interfaces respectively.
+  # Also the inbound vmss would have the ethernet1/1 public and ethernet1/2 private, but outbound vmss would have
+  # the ethernet1/1 private and ethernet1/2 public. That ensures the respective LB health probe works on ethernet1/1,
+  # which is the first NIC.
   #
-  # The automatic_instance_repair also does not seem possible for exaclty the same reason:
+  # The automatic_instance_repair also suffers from exactly the same problem:
   # "Automatic repairs not supported for this Virtual Machine Scale Set because a health probe or health extension was not provided."
   upgrade_mode = "Manual"
 
