@@ -181,8 +181,8 @@ module "outbound_vmseries" {
   vm_size                   = var.outbound_vmseries_vm_size
   tags                      = var.outbound_vmseries_tags
   enable_zones              = var.enable_zones
-  bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap_share_name      = module.bootstrap.storage_share.name
+  bootstrap_storage_account = module.outbound_bootstrap.storage_account
+  bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
   interfaces = [
     {
       name                = "${each.key}-mgmt"
