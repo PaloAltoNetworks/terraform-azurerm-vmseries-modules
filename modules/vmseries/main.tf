@@ -77,7 +77,7 @@ resource "azurerm_virtual_machine" "this" {
 
   storage_os_disk {
     create_option     = "FromImage"
-    name              = "${var.name}-vhd"
+    name              = coalesce(var.os_disk_name, "${var.name}-vhd")
     managed_disk_type = var.managed_disk_type
     os_type           = "Linux"
     caching           = "ReadWrite"
