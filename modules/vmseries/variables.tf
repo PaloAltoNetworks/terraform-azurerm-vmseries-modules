@@ -80,8 +80,14 @@ variable "password" {
 }
 
 variable "managed_disk_type" {
-  description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
+  description = "Type of OS Managed Disk to create for the virtual machine. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
   default     = "StandardSSD_LRS"
+  type        = string
+}
+
+variable "os_disk_name" {
+  description = "Optional name of the OS disk to create for the virtual machine. If empty, the name is auto-generated."
+  default     = null
   type        = string
 }
 
