@@ -38,8 +38,9 @@ variable "existing_storage_account" {
 
 variable "files" {
   description = <<-EOF
-  Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as
-  directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}`
+  Map of all files to copy to bucket. The keys are local paths, the values are remote paths.
+  Always use slash `/` as directory separator (unix-like), not the backslash `\`.
+  For example `{"dir/my.txt" = "config/init-cfg.txt"}`
   EOF
   default     = {}
   type        = map(string)
@@ -47,10 +48,10 @@ variable "files" {
 
 variable "files_md5" {
   description = <<-EOF
-  Optional map of MD5 hashes of file contents. Normally the map could be all empty, because all the files that exist
-  before the `terraform apply` will have their hashes auto-calculated. This input is necessary only for the selected
-  files which are created/modified within the same Terraform run as this module. The keys of the map should be identical
-  with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.
+  Optional map of MD5 hashes of file contents.
+  Normally the map could be all empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.
+  This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.
+  The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.
   For example `{"dir/my.txt" = "6f7ce3191b50a58cc13e751a8f7ae3fd"}`
   EOF
   default     = {}
@@ -61,4 +62,10 @@ variable "storage_share_name" {
   description = "Name of storage share to be created that holds `files` for bootstrapping."
   default     = "bootstrapshare"
   type        = string
+}
+
+variable "tags" {
+  description = "Azure tags to apply to the created Storage Account. A map, for example `{ team = \"NetAdmin\", costcenter = \"CIO42\" }`"
+  default     = {}
+  type        = map(string)
 }
