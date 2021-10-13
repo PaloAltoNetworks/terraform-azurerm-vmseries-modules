@@ -8,15 +8,15 @@ and credit will always be given.
 Any serious changes, especially any changes of variables or providers, require the
 `pre-commit` tool. Install the recommended versions:
 
-- pre-commit 2.9.3 - [installation instruction](https://pre-commit.com/#installation) (a Python3 package)
-- terraform-docs 0.12.1 - download the binary from [GitHub releases](https://github.com/terraform-docs/terraform-docs/releases)
-- tflint 0.20.2 - download the binary from [GitHub releases](https://github.com/terraform-linters/tflint/releases)
-- coreutils - required only on macOS (due to use of `realpath`), simply execute `brew install coreutils`
+- pre-commit v2.9.3 - [installation instruction](https://pre-commit.com/#installation) (a Python3 package)
+- terraform-docs v0.15.0 - download the binary from [GitHub releases](https://github.com/terraform-docs/terraform-docs/releases)
+- tflint v0.29.0 - download the binary from [GitHub releases](https://github.com/terraform-linters/tflint/releases)
+- coreutils - required only on macOS, [install Homebrew](https://docs.brew.sh/Installation) and then run `brew install coreutils`
 
-For more details and a Docker-compatible alternative see the [official guide](https://github.com/antonbabenko/pre-commit-terraform#how-to-install) of the author of pre-commit-terraform, Anton Babenko.
+For more details, or for a dockerized pre-commit-terraform, see the [official guide](https://github.com/antonbabenko/pre-commit-terraform#how-to-install).
 
 For these Contributors who prefer *not* to use the recommended git hooks, the command
-to fully update the auto-generated README files and to run formatters/tests:
+to fully update the auto-generated README files and to run formatters/tests is:
 
 ```sh
 pre-commit run -a
