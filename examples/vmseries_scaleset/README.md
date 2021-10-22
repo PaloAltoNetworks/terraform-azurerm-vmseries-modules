@@ -123,7 +123,7 @@ terraform destroy
 | <a name="input_inbound_count_minimum"></a> [inbound\_count\_minimum](#input\_inbound\_count\_minimum) | Minimal number of inbound VM-Series to deploy. | `number` | `1` | no |
 | <a name="input_inbound_files"></a> [inbound\_files](#input\_inbound\_files) | Map of all files to copy to `inbound_storage_share_name`. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | <a name="input_inbound_lb_name"></a> [inbound\_lb\_name](#input\_inbound\_lb\_name) | Name of the public-facing load balancer. | `string` | `"lb_public"` | no |
-| <a name="input_inbound_name_prefix"></a> [inbound\_name\_prefix](#input\_inbound\_name\_prefix) | n/a | `any` | n/a | yes |
+| <a name="input_inbound_name_prefix"></a> [inbound\_name\_prefix](#input\_inbound\_name\_prefix) | n/a | `string` | n/a | yes |
 | <a name="input_inbound_resource_group_name"></a> [inbound\_resource\_group\_name](#input\_inbound\_resource\_group\_name) | Name of the Resource Group to create if `create_inbound_resource_group` is true. Name of the pre-existing Resource Group to use otherwise. | `string` | n/a | yes |
 | <a name="input_inbound_storage_share_name"></a> [inbound\_storage\_share\_name](#input\_inbound\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping inbound VM-Series. | `string` | n/a | yes |
 | <a name="input_inbound_vmseries_tags"></a> [inbound\_vmseries\_tags](#input\_inbound\_vmseries\_tags) | Map of tags to be associated with the inbound virtual machines, their interfaces and public IP addresses. | `map(string)` | `{}` | no |
@@ -133,18 +133,18 @@ terraform destroy
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator. | `string` | `"pantf"` | no |
 | <a name="input_name_scale_set"></a> [name\_scale\_set](#input\_name\_scale\_set) | Name of the virtual machine scale set. | `string` | `"VMSS"` | no |
 | <a name="input_network_security_groups"></a> [network\_security\_groups](#input\_network\_security\_groups) | Map of Network Security Groups to create. Refer to the `vnet` module documentation for more information. | `any` | n/a | yes |
-| <a name="input_olb_private_ip"></a> [olb\_private\_ip](#input\_olb\_private\_ip) | The private IP address to assign to the outbound load balancer. This IP **must** fall in the `outbound_private` subnet CIDR. | `any` | n/a | yes |
+| <a name="input_olb_private_ip"></a> [olb\_private\_ip](#input\_olb\_private\_ip) | The private IP address to assign to the outbound load balancer. This IP **must** fall in the `outbound_private` subnet CIDR. | `string` | n/a | yes |
 | <a name="input_outbound_count_maximum"></a> [outbound\_count\_maximum](#input\_outbound\_count\_maximum) | Maximal number of outbound VM-Series to scale out to. | `number` | `2` | no |
 | <a name="input_outbound_count_minimum"></a> [outbound\_count\_minimum](#input\_outbound\_count\_minimum) | Minimal number of outbound VM-Series to deploy. | `number` | `1` | no |
 | <a name="input_outbound_files"></a> [outbound\_files](#input\_outbound\_files) | Map of all files to copy to `outbound_storage_share_name`. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\`. For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
 | <a name="input_outbound_lb_name"></a> [outbound\_lb\_name](#input\_outbound\_lb\_name) | Name of the private load balancer. | `string` | `"lb_private"` | no |
-| <a name="input_outbound_name_prefix"></a> [outbound\_name\_prefix](#input\_outbound\_name\_prefix) | n/a | `any` | n/a | yes |
+| <a name="input_outbound_name_prefix"></a> [outbound\_name\_prefix](#input\_outbound\_name\_prefix) | n/a | `string` | n/a | yes |
 | <a name="input_outbound_resource_group_name"></a> [outbound\_resource\_group\_name](#input\_outbound\_resource\_group\_name) | Name of the Resource Group to create if `create_outbound_resource_group` is true. Name of the pre-existing Resource Group to use otherwise. | `string` | n/a | yes |
 | <a name="input_outbound_storage_share_name"></a> [outbound\_storage\_share\_name](#input\_outbound\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping outbound VM-Series. | `string` | n/a | yes |
 | <a name="input_outbound_vmseries_tags"></a> [outbound\_vmseries\_tags](#input\_outbound\_vmseries\_tags) | Map of tags to be associated with the outbound virtual machines, their interfaces and public IP addresses. | `map(string)` | `{}` | no |
 | <a name="input_outbound_vmseries_version"></a> [outbound\_vmseries\_version](#input\_outbound\_vmseries\_version) | Outbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"10.0.6"` | no |
 | <a name="input_outbound_vmseries_vm_size"></a> [outbound\_vmseries\_vm\_size](#input\_outbound\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
-| <a name="input_panorama_tags"></a> [panorama\_tags](#input\_panorama\_tags) | Predefined tags neccessary for the Panorama `azure` plugin v2 to automatically de-license the VM-Series. | `map` | <pre>{<br>  "PanoramaManaged": "yes"<br>}</pre> | no |
+| <a name="input_panorama_tags"></a> [panorama\_tags](#input\_panorama\_tags) | Predefined tags neccessary for the Panorama `azure` plugin v2 to automatically de-license the VM-Series. Can be set to empty `{}` when version v2 de-licensing is not used. | `map(string)` | <pre>{<br>  "PanoramaManaged": "yes"<br>}</pre> | no |
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
 | <a name="input_public_frontend_ips"></a> [public\_frontend\_ips](#input\_public\_frontend\_ips) | Map of objects describing frontend IP configurations and rules for the inbound load balancer. Refer to the `loadbalancer` module documentation for more information. | `any` | n/a | yes |
 | <a name="input_route_tables"></a> [route\_tables](#input\_route\_tables) | Map of Route Tables to create. Refer to the `vnet` module documentation for more information. | `any` | n/a | yes |
@@ -158,10 +158,10 @@ terraform destroy
 | <a name="input_scaleout_window_minutes"></a> [scaleout\_window\_minutes](#input\_scaleout\_window\_minutes) | This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,<br>it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.<br>Must be between 5 and 720 minutes. | `number` | `10` | no |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | Map of Subnets to create. Refer to the `vnet` module documentation for more information. | `any` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | n/a | `map` | `{}` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | Azure tags to apply to the created cloud resources. A map, for example `{ team = "NetAdmin", costcenter = "CIO42" }` | `map(string)` | `{}` | no |
 | <a name="input_username"></a> [username](#input\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
 | <a name="input_virtual_network_name"></a> [virtual\_network\_name](#input\_virtual\_network\_name) | Name of the Virtual Network. | `string` | n/a | yes |
-| <a name="input_vnet_tags"></a> [vnet\_tags](#input\_vnet\_tags) | Map of tags to assign to the created virtual network and other network-related resources. By default equals to `inbound_vmseries_tags`. | `map(string)` | `{}` | no |
+| <a name="input_vnet_tags"></a> [vnet\_tags](#input\_vnet\_tags) | Map of extra tags to assign specifically to the created virtual network, security groups, and route tables. The entries from `tags` are applied as well unless overriden. | `map(string)` | `{}` | no |
 
 ## Outputs
 
