@@ -78,21 +78,25 @@ variable "outbound_storage_share_name" {
 variable "inbound_count_minimum" {
   description = "Minimal number of inbound VM-Series to deploy."
   default     = 1
+  type        = number
 }
 
 variable "outbound_count_minimum" {
   description = "Minimal number of outbound VM-Series to deploy."
   default     = 1
+  type        = number
 }
 
 variable "inbound_count_maximum" {
   description = "Maximal number of inbound VM-Series to scale out to."
   default     = 2
+  type        = number
 }
 
 variable "outbound_count_maximum" {
   description = "Maximal number of outbound VM-Series to scale out to."
   default     = 2
+  type        = number
 }
 
 variable "autoscale_notification_emails" {
@@ -237,25 +241,26 @@ variable "subnets" {
 }
 
 variable "vnet_tags" {
-  description = "Map of tags to assign to the created virtual network and other network-related resources. By default equals to `inbound_vmseries_tags`."
-  type        = map(string)
+  description = "Map of extra tags to assign specifically to the created virtual network, security groups, and route tables. The entries from `tags` are applied as well unless overriden."
   default     = {}
+  type        = map(string)
 }
 
 variable "inbound_lb_name" {
   description = "Name of the public-facing load balancer."
-  type        = string
   default     = "lb_public"
+  type        = string
 }
 
 variable "outbound_lb_name" {
   description = "Name of the private load balancer."
-  type        = string
   default     = "lb_private"
+  type        = string
 }
 
 variable "olb_private_ip" {
   description = "The private IP address to assign to the outbound load balancer. This IP **must** fall in the `outbound_private` subnet CIDR."
+  type        = string
 }
 
 variable "public_frontend_ips" {
@@ -307,24 +312,33 @@ variable "outbound_vmseries_tags" {
 variable "enable_zones" {
   description = "If true, Public IP addresses will have `Zone-Redundant` setting, otherwise `No-Zone`. The latter is intended for the regions that do not yet support Availability Zones."
   default     = true
+  type        = bool
 }
 
 variable "name_scale_set" {
   description = "Name of the virtual machine scale set."
   default     = "VMSS"
+  type        = string
 }
 
-variable "inbound_name_prefix" {}
+variable "inbound_name_prefix" {
+  type = string
+}
 
-variable "outbound_name_prefix" {}
+variable "outbound_name_prefix" {
+  type = string
+}
 
 variable "panorama_tags" {
-  description = "Predefined tags neccessary for the Panorama `azure` plugin v2 to automatically de-license the VM-Series."
+  description = "Predefined tags neccessary for the Panorama `azure` plugin v2 to automatically de-license the VM-Series. Can be set to empty `{}` when version v2 de-licensing is not used."
   default = {
     PanoramaManaged = "yes"
   }
+  type = map(string)
 }
 
 variable "tags" {
-  default = {}
+  description = "Azure tags to apply to the created cloud resources. A map, for example `{ team = \"NetAdmin\", costcenter = \"CIO42\" }`"
+  default     = {}
+  type        = map(string)
 }
