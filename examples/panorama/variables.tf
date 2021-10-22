@@ -1,11 +1,11 @@
 variable "location" {
-  description = "Region to deploy Panorama into. If not provided location will be taken from Resource Group."
+  description = "Region to deploy Panorama into."
   default     = ""
   type        = string
 }
 
 variable "resource_group_name" {
-  description = "Name of the Resource Group to use."
+  description = "Name of the Resource Group to create."
   type        = string
 }
 
@@ -55,13 +55,19 @@ variable "panorama_version" {
 }
 
 variable "subnet_names" {
-  type    = list
+  type    = list(string)
   default = ["subnet1"]
 }
 
 variable "subnet_prefixes" {
-  type    = list
+  type    = list(string)
   default = ["10.0.0.0/24"]
+}
+
+variable "panorama_private_ip_address" {
+  description = "Optional static private IP address of Panorama, for example 192.168.11.22. If empty, Panorama uses dynamic assignment."
+  type        = string
+  default     = null
 }
 
 variable "vnet_name" {
@@ -69,16 +75,16 @@ variable "vnet_name" {
 }
 
 variable "address_space" {
-  type    = list
+  type    = list(string)
   default = ["10.0.0.0/16"]
 }
 
 variable "tags" {
-  type = map(any)
+  type = map(string)
 }
 
 variable "firewall_mgmt_prefixes" {
-  type    = list
+  type    = list(string)
   default = ["10.0.0.0/24"]
 }
 
@@ -88,6 +94,13 @@ variable "security_group_name" {
 }
 
 variable "avzone" {
-  type    = string
-  default = null
+  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones."
+  type        = string
+  default     = null
+}
+
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
 }

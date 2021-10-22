@@ -1,8 +1,10 @@
+# Create the Resource Group.
 resource "azurerm_resource_group" "this" {
   name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries")
   location = var.location
 }
 
+# Generate a random password.
 resource "random_password" "this" {
   length           = 16
   min_lower        = 16 - 4
@@ -12,6 +14,7 @@ resource "random_password" "this" {
   override_special = "_%@"
 }
 
+# Create the network required for the topology.
 module "vnet" {
   source = "../../modules/vnet"
 
@@ -25,6 +28,23 @@ module "vnet" {
   tags                    = var.vnet_tags
 }
 
+# Allow inbound access to Management subnet.
+resource "azurerm_network_security_rule" "mgmt" {
+  name                        = "vmseries-mgmt-allow-inbound"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = "sg-mgmt"
+  access                      = "Allow"
+  direction                   = "Inbound"
+  priority                    = 1000
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefixes     = var.allow_inbound_mgmt_ips
+  destination_address_prefix  = "*"
+  destination_port_range      = "*"
+
+  depends_on = [module.vnet]
+}
+
 # Create public IPs for the Internet-facing data interfaces so they could talk outbound.
 resource "azurerm_public_ip" "public" {
   for_each = var.vmseries
@@ -34,16 +54,20 @@ resource "azurerm_public_ip" "public" {
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "Standard"
+  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
 }
 
 # The Inbound Load Balancer for handling the traffic from the Internet.
 module "inbound_lb" {
   source = "../../modules/loadbalancer"
 
-  name                = var.inbound_lb_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  frontend_ips        = var.frontend_ips
+  name                              = var.inbound_lb_name
+  location                          = var.location
+  resource_group_name               = azurerm_resource_group.this.name
+  frontend_ips                      = var.frontend_ips
+  enable_zones                      = var.enable_zones
+  network_security_group_name       = "sg-public"
+  network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
 }
 
 # The Outbound Load Balancer for handling the traffic from the private networks.
@@ -53,11 +77,13 @@ module "outbound_lb" {
   name                = var.outbound_lb_name
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
+  enable_zones        = var.enable_zones
   frontend_ips = {
     outbound = {
       subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)
       private_ip_address_allocation = "Static"
       private_ip_address            = var.olb_private_ip
+      availability_zone             = var.enable_zones ? null : "No-Zone" # For the regions without AZ support.
       rules = {
         HA_PORTS = {
           port     = 0
@@ -75,6 +101,7 @@ module "bootstrap" {
   location             = var.location
   resource_group_name  = azurerm_resource_group.this.name
   storage_account_name = var.storage_account_name
+  storage_share_name   = var.storage_share_name
   files                = var.files
 }
 
@@ -97,6 +124,7 @@ module "common_vmseries" {
   img_sku                   = var.common_vmseries_sku
   vm_size                   = var.common_vmseries_vm_size
   tags                      = var.common_vmseries_tags
+  enable_zones              = var.enable_zones
   bootstrap_storage_account = module.bootstrap.storage_account
   bootstrap_share_name      = module.bootstrap.storage_share.name
   interfaces = [

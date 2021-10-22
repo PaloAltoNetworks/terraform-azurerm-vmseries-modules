@@ -4,9 +4,13 @@ repos:
   hooks:
     - id: terraform_fmt
     - id: terraform_docs
+      # Just avoid "--show providers", because it changes the README each time you do a `terraform init`.
+      args: ['--args=--show=data-sources,footer,header,inputs,modules,outputs,requirements,resources']
     - id: terraform_tflint
       args: [
         --args=--only=terraform_deprecated_interpolation,
         --args=--only=terraform_deprecated_index,
+        --args=--only=terraform_module_pinned_source,
+        --args=--only=terraform_naming_convention,
         --args=--only=terraform_workspace_remote,
       ]

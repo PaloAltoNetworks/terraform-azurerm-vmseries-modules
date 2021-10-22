@@ -1,13 +1,7 @@
-# Greenfield deployment
-provider "azurerm" {
-  version = ">=2.26.0"
-  features {}
-}
-
 resource "azurerm_resource_group" "this" {
   name     = var.resource_group_name
   location = var.location
-  tags     = {}
+  tags     = var.tags
 }
 
 module "vnet" {

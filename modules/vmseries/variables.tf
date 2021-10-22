@@ -15,7 +15,7 @@ variable "name" {
 }
 
 variable "avzone" {
-  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Conflicts with `avset_id`, in which case use `avzone = null`."
+  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Conflicts with `avset_id`, in which case use `avzone = null`."
   default     = "1"
   type        = string
 }
@@ -34,8 +34,9 @@ variable "interfaces" {
 
   - `subnet_id`: Identifier of the existing subnet to use.
   - `lb_backend_pool_id`: Identifier of the existing backend pool of the load balancer to associate.
-  - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default it false.
+  - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default is false.
   - `public_ip_address_id`: Identifier of the existing public IP to associate.
+  - `create_public_ip`: If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
 
   Example:
 
@@ -79,8 +80,14 @@ variable "password" {
 }
 
 variable "managed_disk_type" {
-  description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
+  description = "Type of OS Managed Disk to create for the virtual machine. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
   default     = "StandardSSD_LRS"
+  type        = string
+}
+
+variable "os_disk_name" {
+  description = "Optional name of the OS disk to create for the virtual machine. If empty, the name is auto-generated."
+  default     = null
   type        = string
 }
 
@@ -133,7 +140,7 @@ variable "name_application_insights" {
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
-  type        = map
+  type        = map(any)
 }
 
 variable "identity_type" {
@@ -156,6 +163,12 @@ variable "metrics_retention_in_days" {
 
 variable "accelerated_networking" {
   description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces except the primary one (it is the PAN-OS management interface, which [does not support](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) acceleration)."
+  default     = true
+  type        = bool
+}
+
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
   type        = bool
 }

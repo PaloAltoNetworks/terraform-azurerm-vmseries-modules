@@ -9,8 +9,8 @@ variable "location" {
 }
 
 variable "tags" {
-  description = "A mapping of tags to assign to all of the created resources."
-  type        = map(any)
+  description = "Map of tags to assign to all of the created resources."
+  type        = map(string)
   default     = {}
 }
 
@@ -26,13 +26,13 @@ variable "address_space" {
 
 variable "network_security_groups" {
   description = <<-EOF
-  A map of Network Security Groups objects to create. The key of each entry acts as the Network Security Group name.
-  List of arguments available to define a Network Security Group:
+  Map of Network Security Groups to create. The key of each entry acts as the Network Security Group name.
+  List of available attributes of each Network Security Group entry:
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
   - `rules`: A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
       needs to be unique across all rules in the Network Security Group.
-      List of arguments available to define Network Security Rules:
-      - `priority` : Specifies the priority of the rule. The value can be between 100 and 4096. The priority number must be unique for each rule in the collection. 
+      List of attributes available to define a Network Security Rule:
+      - `priority` : Numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection.
       The lower the priority number, the higher the priority of the rule.
       - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
       - `access` : Specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
@@ -41,7 +41,6 @@ variable "network_security_groups" {
       - `destination_port_range` : Destination Port or Range. Integer or range between `0` and `65535` or `*` to match any.
       - `source_address_prefix` : List of source address prefixes. Tags may not be used.
       - `destination_address_prefix` : CIDR or destination IP range or `*` to match any IP.
-
 
   Example:
   ```
@@ -81,16 +80,16 @@ variable "network_security_groups" {
 
 variable "route_tables" {
   description = <<-EOF
-  A map of objects describing a Route Table. The key of each entry acts as the Route Table name.
-  List of arguments available to define a Route Table:
+  Map of objects describing a Route Table. The key of each entry acts as the Route Table name.
+  List of available attributes of each Route Table entry:
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
-  - `routes` : (Optional) A map of routes within a Route Table.
-    List of arguments available to define a Route:
+  - `routes` : (Optional) Map of routes within the Route Table.
+    List of available attributes of each route entry:
     - `address_prefix` : The destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type` : The type of Azure hop the packet should be sent to.
-    Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
+      Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
     - `next_hop_in_ip_address` : Contains the IP address packets should be forwarded to. 
-    Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
+      Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
 
   Example:
   ```
@@ -123,12 +122,12 @@ variable "route_tables" {
 
 variable "subnets" {
   description = <<-EOF
-  A map of subnet objects to create within a Virtual Network. The key of each entry acts as the subnet name.
-  List of arguments available to define a subnet:
+  Map of subnet objects to create within a virtual network. The key of each entry acts as the subnet name.
+  List of available attributes of each subnet entry:
   - `address_prefixes` : The address prefix to use for the subnet.
-  - `network_security_group_id` : The Network Security Group ID which should be associated with the subnet.
-  - `route_table_id` : The Route Table ID which should be associated with the subnet.
-  - `tags` : (Optional) A mapping of tags to assign to the resource.
+  - `network_security_group_id` : The Network Security Group identifier to associate with the subnet.
+  - `route_table_id` : The Route Table identifier to associate with the subnet.
+  - `tags` : (Optional) Map of tags to assign to the resource.
   
   Example:
   ```

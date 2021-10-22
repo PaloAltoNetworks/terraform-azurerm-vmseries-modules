@@ -93,20 +93,38 @@ variable "address_space" {
 }
 
 variable "network_security_groups" {
-  description = "Definition of Network Security Groups to create. Refer to the `VNet` module documentation for more information."
+  description = "Definition of Network Security Groups to create. Refer to the `vnet` module documentation for more information."
+}
+
+variable "allow_inbound_mgmt_ips" {
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interfaces of VM-Series.
+    If you use Panorama, include its address in the list (as well as the secondary Panorama's).
+  EOF
+  default     = []
+  type        = list(string)
+}
+
+variable "allow_inbound_data_ips" {
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access public data interfaces of VM-Series.
+    If the list is empty, the contents of `allow_inbound_mgmt_ips` are substituted instead.
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "route_tables" {
-  description = "Definition of Route Tables to create. Refer to the `VNet` module documentation for more information."
+  description = "Definition of Route Tables to create. Refer to the `vnet` module documentation for more information."
 }
 
 variable "subnets" {
-  description = "Definition of Subnets to create. Refer to the `VNet` module documentation for more information."
+  description = "Definition of Subnets to create. Refer to the `vnet` module documentation for more information."
 }
 
 variable "vnet_tags" {
-  description = "A mapping of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
-  type        = map(any)
+  description = "Map of tags to assign to the created virtual network and other network-related resources. By default equals to `common_vmseries_tags`."
+  type        = map(string)
   default     = {}
 }
 
@@ -117,17 +135,17 @@ variable "olb_private_ip" {
 }
 
 variable "frontend_ips" {
-  description = "A map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details."
+  description = "Map of objects describing frontend IP configurations and rules for the inbound load balancer. See the [loadbalancer documentation](./modules/loadbalancer/README.md) for details."
 }
 
 variable "common_vmseries_sku" {
-  description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "bundle2"
   type        = string
 }
 
 variable "common_vmseries_version" {
-  description = "VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   default     = "9.1.3"
   type        = string
 }
@@ -139,9 +157,9 @@ variable "common_vmseries_vm_size" {
 }
 
 variable "common_vmseries_tags" {
-  description = "A map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
+  description = "Map of tags to be associated with the virtual machines, their interfaces and public IP addresses."
   default     = {}
-  type        = map
+  type        = map(string)
 }
 
 variable "inbound_lb_name" {
@@ -154,4 +172,10 @@ variable "outbound_lb_name" {
   description = "Name of the outbound load balancer."
   default     = "lb_outbound"
   type        = string
+}
+
+variable "enable_zones" {
+  description = "If false, all the VM-Series, load balancers and public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
 }

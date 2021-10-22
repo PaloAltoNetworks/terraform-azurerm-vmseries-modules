@@ -6,4 +6,10 @@ output "panorama_url" {
 output "panorama_admin_password" {
   description = "Panorama administrator's initial password."
   value       = random_password.this.result
+  sensitive   = true
+}
+
+output "username" {
+  description = "Panorama administrator's initial username."
+  value       = var.username
 }
