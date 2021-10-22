@@ -45,13 +45,13 @@ variable "interfaces" {
     {
       subnet_id            = azurerm_subnet.my_mgmt_subnet.id
       public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
-      enable_ip_frowarding = false
+      enable_ip_forwarding = false
     },
     {
       subnet_id           = azurerm_subnet.my_pub_subnet.id
       lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
-      enable_ip_frowarding = true
+      enable_ip_forwarding = true
     },
   ]
   ```
