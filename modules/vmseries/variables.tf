@@ -37,7 +37,7 @@ variable "interfaces" {
   - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default is false.
   - `public_ip_address_id`: Identifier of the existing public IP to associate.
   - `create_public_ip`: If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `enable_ip_forwarding`: If true, the network interface will not discard packets sent to an IP address other than the one assigned. False disables this and allows the network interface to accept any traffic.
+  - `enable_ip_forwarding`: If true, the network interface will not discard packets sent to an IP address other than the one assigned. False disables this and the network interface only accepts traffic destined to its IP address.
 
   Example:
 
