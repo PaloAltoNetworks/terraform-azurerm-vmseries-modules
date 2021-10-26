@@ -60,7 +60,7 @@ Contributions are welcome across the entire project:
 
 ### Existing Contributors
 
-1. Search the [issues](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules.git/issues/issues) to see if there is an existing issue. If not, open an issue (note the issue ID).
+1. Search the [issues](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules.git/issues) to see if there is an existing issue. If not, open an issue (note the issue ID).
 1. Update from the source repository.
 
    `git pull upstream dev`
