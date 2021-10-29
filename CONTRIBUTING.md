@@ -45,7 +45,7 @@ Contributions are welcome across the entire project:
 
 1. Rebase with the upstream to resolve any potential conflicts.
 
-   `git rebase upstream dev`
+   `git rebase upstream develop`
 
 1. Open a Pull Request and link it to the issue (reference the issue, i.e. "fixes #233")
 
@@ -58,7 +58,7 @@ Contributions are welcome across the entire project:
 1. Search the [issues](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules.git/issues) to see if there is an existing issue. If not, open an issue (note the issue ID).
 1. Update from the source repository.
 
-   `git pull upstream dev`
+   `git pull upstream develop`
 
 1. Create a branch which corresponds to the issue ID created in step 1.
 
@@ -79,7 +79,7 @@ Contributions are welcome across the entire project:
    `git push origin/101-updating-wildfire-templates`
 1. Rebase with the upstream to resolve any potential conflicts.
 
-   `git rebase upstream dev`
+   `git rebase upstream develop`
 
 1. Open a Pull Request and link it to the issue (reference the issue, i.e. "fixes #233")
 
