@@ -118,6 +118,7 @@ resource "azurerm_lb_rule" "lb_rules" {
   backend_port                   = each.value.rule.port
   frontend_ip_configuration_name = each.value.fip.name
   frontend_port                  = each.value.rule.port
+  disable_outbound_snat          = try(each.value.rule.disable_outbound_snat, true)
   enable_floating_ip             = true
 }
 
