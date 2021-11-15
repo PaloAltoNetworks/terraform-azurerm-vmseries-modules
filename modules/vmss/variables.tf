@@ -44,6 +44,11 @@ variable "create_public_pip" {
   type    = bool
 }
 
+variable "public_ip_prefix_id" {
+  default = null
+  type    = string
+}
+
 variable "mgmt_pip_domain_name_label" {
   default = null
   type    = string
