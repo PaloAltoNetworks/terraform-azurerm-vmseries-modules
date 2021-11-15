@@ -83,6 +83,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
           name                    = "${var.name_prefix}${var.name_fw_mgmt_pip}"
           domain_name_label       = var.mgmt_pip_domain_name_label
           idle_timeout_in_minutes = 4
+          public_ip_prefix_id     = var.public_ip_prefix_id
         }
       }
     }
