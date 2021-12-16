@@ -2,6 +2,9 @@
 
 A Terraform module for deploying a virtual machine in Azure cloud. This module intended to be an internal module that can be leveraged during proof of concepts and demos.
 
+You can easily control the linux flavour by passing `UbuntuServer`, `RHEL`, `openSUSE-Leap`, `CentOS`, `Debian`, `CoreOS` and `SLES` as the value to the `vm_os_simple` variable.
+
+
 ## Usage
 
 ```hcl
@@ -11,6 +14,7 @@ module "vm" {
   location            = "Australia East"
   resource_group_name = azurerm_resource_group.this.name
   name                = "linux-vm"
+  vm_os_simple        = "UbuntuServer"
   username            = "foo"
   password            = "Change-Me-007"
   interfaces = [
