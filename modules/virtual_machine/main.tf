@@ -67,7 +67,7 @@ resource "azurerm_virtual_machine" "this" {
     id        = var.custom_image_id
     publisher = var.custom_image_id == null ? coalesce(var.img_publisher, local.img_publisher) : null
     offer     = var.custom_image_id == null ? coalesce(var.img_offer, local.img_offer) : null
-    sku       = var.custom_image_id == null ? coalesce(var.img_sku, local.img_offer) : null
+    sku       = var.custom_image_id == null ? coalesce(var.img_sku, local.img_sku) : null
     version   = var.custom_image_id == null ? var.img_version : null
   }
 

@@ -123,7 +123,7 @@ variable "img_sku" {
 
 variable "img_version" {
   description = "Virtual machine image version - list available for a default `img_offer` with `az vm image list -o table --publisher foo --offer bar --all`"
-  default     = null
+  default     = "latest"
   type        = string
 }
 
@@ -178,4 +178,10 @@ variable "enable_zones" {
   description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
   type        = bool
+}
+
+variable "custom_data" {
+  description = "The custom data to supply to the machine. This can be used as a cloud-init for Linux systems."
+  type        = string
+  default     = null
 }
