@@ -28,27 +28,6 @@ resource "azurerm_subnet" "this" {
   address_prefixes     = each.value.address_prefixes
 }
 
-# resource "azurerm_network_security_group" "this" {
-#   for_each = var.network_security_groups
-
-#   name                = each.key
-#   location            = try(each.value.location, var.location)
-#   resource_group_name = var.resource_group_name
-#   tags                = var.tags
-# }
-
-locals {
-  nsg_rules = flatten([
-    for nsg_name, nsg in var.network_security_groups : [
-      for rule_name, rule in lookup(nsg, "rules", {}) : {
-        nsg_name = nsg_name
-        name     = rule_name
-        rule     = rule
-      }
-    ]
-  ])
-}
-
 resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
