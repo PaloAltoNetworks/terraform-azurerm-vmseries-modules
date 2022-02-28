@@ -55,15 +55,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   # "Automatic repairs not supported for this Virtual Machine Scale Set because a health probe or health extension was not provided."
   upgrade_mode = "Manual"
 
-  custom_data = base64encode(join(
-    ",",
-    [
-      "storage-account=${var.bootstrap_storage_account.name}",
-      "access-key=${var.bootstrap_storage_account.primary_access_key}",
-      "file-share=${var.bootstrap_share_name}",
-      "share-directory=None"
-    ]
-  ))
+  custom_data = base64encode(var.bootstrap_options)
 
   network_interface {
     name                          = "${var.name_prefix}${var.name_mgmt_nic_profile}"
@@ -132,7 +124,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   }
 
   boot_diagnostics {
-    storage_account_uri = var.boot_diagnostics_storage_account_uri
+    storage_account_uri = var.diagnostics_storage_uri
   }
 
   identity {
