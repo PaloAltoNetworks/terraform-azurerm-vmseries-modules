@@ -240,11 +240,18 @@ module "inbound_scale_set" {
   subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
   subnet_private                = { id = module.vnet.subnet_ids["inbound_private"] }
   subnet_public                 = { id = module.vnet.subnet_ids["inbound_public"] }
-  bootstrap_storage_account     = module.inbound_bootstrap.storage_account
-  bootstrap_share_name          = module.inbound_bootstrap.storage_share.name
-  public_backend_pool_id        = module.inbound_lb.backend_pool_id
-  create_mgmt_pip               = false
-  create_public_pip             = false
+  bootstrap_options = (join(",",
+    [
+      "storage-account=${module.inbound_bootstrap.storage_account.name}",
+      "access-key=${module.inbound_bootstrap.storage_account.primary_access_key}",
+      "file-share=${module.inbound_bootstrap.storage_share.name}",
+      "share-directory=None"
+    ]
+  ))
+  public_backend_pool_id  = module.inbound_lb.backend_pool_id
+  create_mgmt_pip         = false
+  create_public_pip       = false
+  diagnostics_storage_uri = module.inbound_bootstrap.storage_account.primary_blob_endpoint
 }
 
 # Create the outbound scale set.
@@ -277,9 +284,16 @@ module "outbound_scale_set" {
   subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
   subnet_private                = { id = module.vnet.subnet_ids["outbound_private"] }
   subnet_public                 = { id = module.vnet.subnet_ids["outbound_public"] }
-  bootstrap_storage_account     = module.outbound_bootstrap.storage_account
-  bootstrap_share_name          = module.outbound_bootstrap.storage_share.name
-  private_backend_pool_id       = module.outbound_lb.backend_pool_id
-  create_mgmt_pip               = false
-  create_public_pip             = false
+  bootstrap_options = (join(",",
+    [
+      "storage-account=${module.outbound_bootstrap.storage_account.name}",
+      "access-key=${module.outbound_bootstrap.storage_account.primary_access_key}",
+      "file-share=${module.outbound_bootstrap.storage_share.name}",
+      "share-directory=None"
+    ]
+  ))
+  private_backend_pool_id = module.outbound_lb.backend_pool_id
+  create_mgmt_pip         = false
+  create_public_pip       = false
+  diagnostics_storage_uri = module.outbound_bootstrap.storage_account.primary_blob_endpoint
 }

@@ -54,19 +54,6 @@ variable "public_pip_domain_name_label" {
   type    = string
 }
 
-variable "bootstrap_storage_account" {
-  description = "Storage account setup for bootstrapping"
-  type = object({
-    name               = string
-    primary_access_key = string
-  })
-}
-
-variable "bootstrap_share_name" {
-  description = "File share for bootstrap config"
-  type        = string
-}
-
 variable "username" {
   description = "Initial administrative username to use for VM-Series."
   default     = "panadmin"
@@ -142,11 +129,6 @@ variable "storage_account_type" {
   description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
   default     = "StandardSSD_LRS"
   type        = string
-}
-
-variable "boot_diagnostics_storage_account_uri" {
-  default = null
-  type    = string
 }
 
 variable "disk_encryption_set_id" {
@@ -399,4 +381,16 @@ variable "name_private_nic_profile" {
 
 variable "name_private_nic_ip" {
   default = "nic-fw-private"
+}
+
+variable "bootstrap_options" {
+  description = "Bootstrap options to pass to VM-Series instance."
+  default     = ""
+  type        = string
+}
+
+variable "diagnostics_storage_uri" {
+  description = "The storage account's blob endpoint to hold diagnostic files."
+  default     = null
+  type        = any
 }
