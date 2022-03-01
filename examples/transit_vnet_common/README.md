@@ -17,7 +17,7 @@ $ terraform apply
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.64 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.97 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
 ## Modules
@@ -34,9 +34,9 @@ $ terraform apply
 
 | Name | Type |
 |------|------|
-| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/network_security_rule) | resource |
-| [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
+| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.97/docs/resources/network_security_rule) | resource |
+| [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.97/docs/resources/public_ip) | resource |
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.97/docs/resources/resource_group) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 
 ## Inputs
