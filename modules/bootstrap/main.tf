@@ -66,7 +66,7 @@ resource "random_id" "this" {
 
   keepers = {
     # Re-randomize on every content/md5 change. It forcibly recreates all users of this random_id.
-    md5 = try(var.files_md5[each.key], md5(file(each.key)))
+    md5 = try(var.files_md5[each.key], filemd5(each.key))
   }
   byte_length = 8
 }
