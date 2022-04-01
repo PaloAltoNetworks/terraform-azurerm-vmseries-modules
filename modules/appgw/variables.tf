@@ -130,7 +130,7 @@ variable "rules" {
         (can(v.probe_path) ? can(v.probe_host) : true)
         || can(v.backend_hostname)
         || try(v.backend_hostname_from_backend, false)
-        ) && !(
+        ) && ! (
         can(v.backend_hostname)
         && try(v.backend_hostname_from_backend, false)
       )
