@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - develop
+      - module_application_gateway
   pull_request:
   schedule:
     - cron: '0 0 1 * *'
