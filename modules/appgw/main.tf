@@ -1,17 +1,17 @@
 locals {
-  # we set the PIP properties based on AppGW tier as they have to match
+  # We set the public IP properties based on AppGW tier as they have to match.
   pip_sku = length(regexall(".*_v2$", var.sku.tier)) > 0 ? "Standard" : "Basic"
 
-  # the allocation method has to match PIP's SKU as well
+  # The allocation method has to match PIP's SKU as well.
   pip_allocation_method = local.pip_sku == "Basic" ? "Dynamic" : "Static"
 
-  # calculate a map of unique frontend ports based on the `listener_port` values defined in `rules` map
-  # a unque set of ports will be created upfront and then referenced in the listener's config
+  # Calculate a map of unique frontend ports based on the `listener_port` values defined in `rules` map.
+  # A unque set of ports will be created upfront and then referenced in the listener's config.
   front_ports_list = distinct([for k, v in var.rules : v.listener_port])
   front_ports_map  = { for v in local.front_ports_list : "${v}-front-port" => v }
 
-  # calculate a flat map of all backend trusted root certificates
-  # root certs are created upfront and then referenced in a single list in the http setting's config
+  # Calculate a flat map of all backend's trusted root certificates.
+  # Root certs are created upfront and then referenced in a single list in the http setting's config.
   root_certs_flat_list = flatten([
     for k, v in var.rules : [
       for name, path in v.backend_root_certs : {
@@ -24,7 +24,6 @@ locals {
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
 }
 
-
 resource "azurerm_public_ip" "this" {
   name                = "${var.name}-pip"
   resource_group_name = var.resource_group_name
@@ -32,7 +31,6 @@ resource "azurerm_public_ip" "this" {
   sku                 = local.pip_sku
   allocation_method   = local.pip_allocation_method
 }
-
 
 resource "azurerm_application_gateway" "this" {
   name                = var.name
@@ -55,6 +53,7 @@ resource "azurerm_application_gateway" "this" {
     public_ip_address_id = azurerm_public_ip.this.id
   }
 
+  # There is only a single backend - the VMSeries private IPs assigned tu untrusted NICs
   backend_address_pool {
     name         = "vmseries"
     ip_addresses = var.vmseries_ips
@@ -67,7 +66,7 @@ resource "azurerm_application_gateway" "this" {
     cipher_suites        = var.ssl_policy_cipher_suites
   }
 
-  # the following block is supported only in v2 Application Gateways
+  # The following block is supported only in v2 Application Gateways.
   dynamic "ssl_profile" {
     for_each = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? var.ssl_profiles : {}
 
@@ -103,6 +102,7 @@ resource "azurerm_application_gateway" "this" {
       interval                                  = try(probe.value.probe_interval, 5)
       timeout                                   = try(probe.value.probe_timeout, 30)
       unhealthy_threshold                       = try(probe.value.probe_treshold, 2)
+
       dynamic "match" {
         for_each = try(probe.value.probe_match_code, null) != null ? { 1 = 1 } : {}
 
@@ -114,6 +114,7 @@ resource "azurerm_application_gateway" "this" {
     }
   }
 
+  # Trust root certs for use with backends. Only for v2 version.
   dynamic "trusted_root_certificate" {
     for_each = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? local.root_certs_map : {}
 
@@ -189,7 +190,7 @@ resource "azurerm_application_gateway" "this" {
       http_listener_name         = "${request_routing_rule.key}-listener"
       backend_address_pool_name  = "vmseries"
       backend_http_settings_name = "${request_routing_rule.key}-httpsettings"
-      # priority                   = request_routing_rule.value.priority
+      priority                   = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(request_routing_rule.value.priority, null) : null
     }
   }
 }
