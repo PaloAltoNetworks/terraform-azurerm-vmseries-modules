@@ -130,7 +130,7 @@ variable "rules" {
         (can(v.probe_path) ? can(v.probe_host) : true)
         || can(v.backend_hostname)
         || try(v.backend_hostname_from_backend, false)
-        ) && ! (
+        ) && !(
         can(v.backend_hostname)
         && try(v.backend_hostname_from_backend, false)
       )
@@ -173,33 +173,7 @@ variable "ssl_policy_min_protocol_version" {
 variable "ssl_policy_cipher_suites" {
   description = <<-EOF
   A List of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. 
-  
-  Possible values are:
-  * TLS_DHE_DSS_WITH_AES_128_CBC_SHA
-  * TLS_DHE_DSS_WITH_AES_128_CBC_SHA256
-  * TLS_DHE_DSS_WITH_AES_256_CBC_SHA
-  * TLS_DHE_DSS_WITH_AES_256_CBC_SHA256
-  * TLS_DHE_RSA_WITH_AES_128_CBC_SHA
-  * TLS_DHE_RSA_WITH_AES_128_GCM_SHA256
-  * TLS_DHE_RSA_WITH_AES_256_CBC_SHA
-  * TLS_DHE_RSA_WITH_AES_256_GCM_SHA384
-  * TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
-  * TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256
-  * TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-  * TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
-  * TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384
-  * TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-  * TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
-  * TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
-  * TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
-  * TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
-  * TLS_RSA_WITH_3DES_EDE_CBC_SHA
-  * TLS_RSA_WITH_AES_128_CBC_SHA
-  * TLS_RSA_WITH_AES_128_CBC_SHA256
-  * TLS_RSA_WITH_AES_128_GCM_SHA256
-  * TLS_RSA_WITH_AES_256_CBC_SHA
-  * TLS_RSA_WITH_AES_256_CBC_SHA256
-  * TLS_RSA_WITH_AES_256_GCM_SHA384
+  For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
   EOF
   default     = null
   type        = list(string)
