@@ -165,7 +165,7 @@ resource "azurerm_application_gateway" "this" {
       frontend_ip_configuration_name = "frontend_ipconfig"
       frontend_port_name             = "${http_listener.value.listener_port}-front-port"
       protocol                       = try(http_listener.value.listener_protocol, "http")
-      host_name                      = ! contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names[0], null) : null
+      host_name                      = !contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names[0], null) : null
       host_names                     = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names, null) : null
       ssl_certificate_name           = try(http_listener.value.ssl_certificate_path, null) != null ? "${http_listener.key}-ssl-cert" : null
       ssl_profile_name               = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.ssl_profile_name, null) : null
