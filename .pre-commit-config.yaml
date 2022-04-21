@@ -1,8 +1,8 @@
 repos:
-- repo: git://github.com/antonbabenko/pre-commit-terraform
+- repo: https://github.com/antonbabenko/pre-commit-terraform
   rev: v1.43.0 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
   hooks:
-    - id: terraform_fmt
+    - id: terraform_fmt 
     - id: terraform_docs
       # Just avoid "--show providers", because it changes the README each time you do a `terraform init`.
       args: ['--args=--show=data-sources,footer,header,inputs,modules,outputs,requirements,resources']
