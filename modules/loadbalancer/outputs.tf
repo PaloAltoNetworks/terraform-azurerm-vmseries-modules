@@ -39,3 +39,7 @@ output "health_probe" {
   value       = azurerm_lb_probe.probe
   description = "The health probe object."
 }
+
+output "load_balancer" {
+  value       = azurerm_lb.lb
+  description = "The load balancer object." 
