@@ -126,6 +126,18 @@ variable "name_application_insights" {
   type        = string
 }
 
+variable "name_log_analytics_workspace" {
+  default     = null
+  description = "Name of the Log Analytics workspace to be created. Can be `null`, in which case a default name is auto-generated."
+  type        = string
+}
+
+variable "application_insights_mode_workspace" {
+  description = "Set Application Insights mode to \"Workspace-based\". If set to `false`, the legacy \"Classic\" mode is used. "
+  default     = true
+  type        = bool
+}
+
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
@@ -146,7 +158,7 @@ variable "identity_ids" {
 
 variable "metrics_retention_in_days" {
   description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether."
-  default     = null
+  default     = 0
   type        = number
 }
 

@@ -113,6 +113,16 @@ resource "azurerm_virtual_machine" "this" {
     identity_ids = var.identity_ids
   }
 }
+resource "azurerm_log_analytics_workspace" "this" {
+  count = var.metrics_retention_in_days != 0 && var.application_insights_mode_workspace ? 1 : 0
+
+  name                = coalesce(var.name_log_analytics_workspace, "${var.name}-workspace")
+  location            = var.location
+  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  retention_in_days   = var.metrics_retention_in_days
+  sku                 = "PerGB2018"
+  tags                = var.tags
+}
 
 resource "azurerm_application_insights" "this" {
   count = var.metrics_retention_in_days != 0 ? 1 : 0
@@ -120,6 +130,7 @@ resource "azurerm_application_insights" "this" {
   name                = coalesce(var.name_application_insights, var.name)
   location            = var.location
   resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  workspace_id        = var.application_insights_mode_workspace ? azurerm_log_analytics_workspace.this[0].id : null
   application_type    = "other"
   retention_in_days   = var.metrics_retention_in_days
   tags                = var.tags

@@ -53,7 +53,13 @@ If your Region doesn't, use an alternative mechanism of Availability Set, which 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.64 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.71 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 2.71 |
 
 ## Modules
 
@@ -64,6 +70,7 @@ No modules.
 | Name | Type |
 |------|------|
 | [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
+| [azurerm_log_analytics_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
 | [azurerm_network_interface.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface) | resource |
 | [azurerm_network_interface_backend_address_pool_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association) | resource |
 | [azurerm_public_ip.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
@@ -74,6 +81,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_accelerated_networking"></a> [accelerated\_networking](#input\_accelerated\_networking) | Enable Azure accelerated networking (SR-IOV) for all network interfaces except the primary one (it is the PAN-OS management interface, which [does not support](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) acceleration). | `bool` | `true` | no |
+| <a name="input_application_insights_mode_workspace"></a> [application\_insights\_mode\_workspace](#input\_application\_insights\_mode\_workspace) | Set Application Insights mode to "Workspace-based". If set to `false`, the legacy "Classic" mode is used. | `bool` | `true` | no |
 | <a name="input_avset_id"></a> [avset\_id](#input\_avset\_id) | The identifier of the Availability Set to use. When using this variable, set `avzone = null`. | `string` | `null` | no |
 | <a name="input_avzone"></a> [avzone](#input\_avzone) | The availability zone to use, for example "1", "2", "3". Ignored if `enable_zones` is false. Conflicts with `avset_id`, in which case use `avzone = null`. | `string` | `"1"` | no |
 | <a name="input_bootstrap_options"></a> [bootstrap\_options](#input\_bootstrap\_options) | Bootstrap options to pass to VM-Series instance. | `string` | `""` | no |
@@ -90,9 +98,10 @@ No modules.
 | <a name="input_interfaces"></a> [interfaces](#input\_interfaces) | List of the network interface specifications.<br>The first should be the Management network interface, which does not participate in data filtering.<br>The remaining ones are the dataplane interfaces.<br><br>- `subnet_id`: Identifier of the existing subnet to use.<br>- `lb_backend_pool_id`: Identifier of the existing backend pool of the load balancer to associate.<br>- `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default is false.<br>- `public_ip_address_id`: Identifier of the existing public IP to associate.<br>- `create_public_ip`: If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.<br>- `enable_ip_forwarding`: If true, the network interface will not discard packets sent to an IP address other than the one assigned. False disables this and the network interface only accepts traffic destined to its IP address.<br><br>Example:<pre>[<br>  {<br>    subnet_id            = azurerm_subnet.my_mgmt_subnet.id<br>    public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id<br>  },<br>  {<br>    subnet_id           = azurerm_subnet.my_pub_subnet.id<br>    lb_backend_pool_id  = module.inbound_lb.backend_pool_id<br>    enable_backend_pool = true<br>  },<br>]</pre> | `any` | n/a | yes |
 | <a name="input_location"></a> [location](#input\_location) | Region where to deploy VM-Series and dependencies. | `string` | n/a | yes |
 | <a name="input_managed_disk_type"></a> [managed\_disk\_type](#input\_managed\_disk\_type) | Type of OS Managed Disk to create for the virtual machine. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs. | `string` | `"StandardSSD_LRS"` | no |
-| <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether. | `number` | `null` | no |
+| <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether. | `number` | `0` | no |
 | <a name="input_name"></a> [name](#input\_name) | Hostname of the VM-Series virtual machine. | `string` | `"fw00"` | no |
 | <a name="input_name_application_insights"></a> [name\_application\_insights](#input\_name\_application\_insights) | Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
+| <a name="input_name_log_analytics_workspace"></a> [name\_log\_analytics\_workspace](#input\_name\_log\_analytics\_workspace) | Name of the Log Analytics workspace to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
 | <a name="input_os_disk_name"></a> [os\_disk\_name](#input\_os\_disk\_name) | Optional name of the OS disk to create for the virtual machine. If empty, the name is auto-generated. | `string` | `null` | no |
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for VM-Series. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm). | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the existing resource group where to place the resources created. | `string` | n/a | yes |
