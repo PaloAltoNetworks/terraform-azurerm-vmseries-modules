@@ -1,11 +1,13 @@
+# Location
 variable "location" {
   description = "Region to deploy Panorama into."
   type        = string
 }
 
-variable "resource_group_name" {
-  description = "The name of the existing resource group where to place all the resources created by this module."
-  type        = string
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and all created public IPs default not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
 }
 
 variable "avzone" {
@@ -23,6 +25,23 @@ variable "avzones" {
   type        = list(string)
 }
 
+# Naming
+variable "panorama_name" {
+  description = "The Panorama common name."
+  type        = string
+}
+
+variable "os_disk_name" {
+  description = "The name of OS disk. The name is auto-generated when not provided."
+  default     = null
+  type        = string
+}
+variable "resource_group_name" {
+  description = "The name of the existing resource group where to place all the resources created by this module."
+  type        = string
+}
+
+# Instance settings
 variable "panorama_size" {
   description = "Virtual Machine size."
   default     = "Standard_D5_v2"
@@ -69,6 +88,13 @@ variable "panorama_offer" {
   type        = string
 }
 
+variable "custom_image_id" {
+  description = "Absolute ID of your own Custom Image to be used for creating Panorama. If set, the `username`, `password`, `panorama_version`, `panorama_publisher`, `panorama_offer`, `panorama_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
+  default     = null
+  type        = string
+}
+
+# Networking
 variable "interface" {
   description = <<-EOF
   A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
@@ -87,59 +113,35 @@ variable "interface" {
   EOF
 }
 
+# Storage
 variable "logging_disks" {
-  type        = map(any)
-  default     = {}
   description = <<-EOF
-   A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zones, lun }. 
-   The size value is provided in GB. The recommended size for additional(optional) disks should be at least 2TB (2048 GB). Example:
+   A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zone, lun }. 
+   The size value is provided in GB. The recommended size for additional (optional) disks is at least 2TB (2048 GB). Example:
+
   ```
   {
-    disk_name_1 = {
+    logs-1 = {
       size: "2048"
       zone: "1"
       lun: "1"
     }
-    disk_name_2 = {
+    logs-2 = {
       size: "2048"
       zone: "2"
       lun: "2"
     }
   }
   ```
+
   EOF
+  default     = {}
+  type        = map(any)
 }
 
-variable "custom_image_id" {
-  description = "Absolute ID of your own Custom Image to be used for creating Panorama. If set, the `username`, `password`, `panorama_version`, `panorama_publisher`, `panorama_offer`, `panorama_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
-  default     = null
-  type        = string
-}
 
 variable "boot_diagnostic_storage_uri" {
   description = "Existing diagnostic storage uri"
-  default     = null
-  type        = string
-}
-
-variable "enable_zones" {
-  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
-  default     = true
-  type        = bool
-}
-
-#  ---   #
-# Naming #
-#  ---   #
-
-variable "panorama_name" {
-  description = "The Panorama common name."
-  default     = "panorama"
-  type        = string
-}
-
-variable "os_disk_name" {
-  description = "The name of OS disk. The name is auto-generated when not provided."
   default     = null
   type        = string
 }

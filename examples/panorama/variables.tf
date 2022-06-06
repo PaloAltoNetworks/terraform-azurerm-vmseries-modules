@@ -18,10 +18,7 @@ variable "storage_account_name" {
   type        = string
 }
 
-variable "panorama_name" {
-  type    = string
-  default = "panorama"
-}
+variable "panorama_name" {}
 
 variable "panorama_size" {
   type    = string
