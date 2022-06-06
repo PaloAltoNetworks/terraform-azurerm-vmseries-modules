@@ -133,7 +133,7 @@ variable "img_version" {
 
 variable "vm_os_simple" {
   description = "Allows user to specify a simple name for the OS required and auto populate the publisher, offer, sku parameters"
-  default     = null
+  default     = "UbuntuServer"
   type        = string
 }
 
