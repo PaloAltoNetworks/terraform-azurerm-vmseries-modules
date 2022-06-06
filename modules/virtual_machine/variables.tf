@@ -9,8 +9,7 @@ variable "resource_group_name" {
 }
 
 variable "name" {
-  description = "Hostname of the virtual machine."
-  default     = "fw00"
+  description = "Virtual machine instance name."
   type        = string
 }
 
