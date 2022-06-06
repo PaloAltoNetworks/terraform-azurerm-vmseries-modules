@@ -98,6 +98,7 @@ variable "custom_image_id" {
 variable "interface" {
   description = <<-EOF
   A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
+
   ```
   [
     {
@@ -110,7 +111,9 @@ variable "interface" {
     }
   ]
   ```
+
   EOF
+  type        = list(any)
 }
 
 # Storage
