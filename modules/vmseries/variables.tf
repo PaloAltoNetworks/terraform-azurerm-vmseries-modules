@@ -162,6 +162,18 @@ variable "enable_zones" {
   type        = bool
 }
 
+variable "bootstrap_options" {
+  description = "Bootstrap options to pass to VM-Series instance."
+  default     = ""
+  type        = string
+}
+
+variable "diagnostics_storage_uri" {
+  description = "The storage account's blob endpoint to hold diagnostic files."
+  default     = null
+  type        = string
+}
+
 variable "avzones" {
   description = <<-EOF
   After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
