@@ -4,53 +4,35 @@ resource "azurerm_resource_group" "this" {
   tags     = {}
 }
 
+# Create the network required for the topology.
 module "vnet" {
-  source = "Azure/vnet/azurerm"
+  source = "../../modules/vnet"
 
-  resource_group_name = azurerm_resource_group.this.name
-  vnet_name           = var.vnet_name
-  address_space       = var.address_space
-  subnet_prefixes     = var.subnet_prefixes
-  subnet_names        = var.subnet_names
-  tags                = var.tags
-
-  depends_on = [azurerm_resource_group.this]
-}
-
-module "nsg" {
-  source = "Azure/network-security-group/azurerm"
-
-  resource_group_name     = azurerm_resource_group.this.name
+  virtual_network_name    = var.vnet_name
   location                = var.location
-  security_group_name     = var.security_group_name
-  source_address_prefixes = keys(var.management_ips)
+  resource_group_name     = azurerm_resource_group.this.name
+  address_space           = var.address_space
+  network_security_groups = var.network_security_groups
+  route_tables            = {}
+  subnets                 = var.subnets
   tags                    = var.tags
-  predefined_rules = [
-    { name = "SSH" },
-    { name = "HTTPS" },
-  ]
-
-  custom_rules = [
-    for i, prefix in var.firewall_mgmt_prefixes :
-    {
-      name                   = "allow-vmseries${i}-to-panorama"
-      description            = "Allow VM-Series devices to connect to Panorama."
-      direction              = "Inbound"
-      access                 = "Allow"
-      protocol               = "*"
-      source_port_range      = "*"
-      destination_port_range = "*"
-      source_address_prefix  = prefix
-      priority               = 100 + i
-    }
-  ]
-
-  depends_on = [azurerm_resource_group.this]
 }
 
-resource "azurerm_subnet_network_security_group_association" "public" {
-  network_security_group_id = module.nsg.network_security_group_id
-  subnet_id                 = module.vnet.vnet_subnets[0]
+# Allow inbound access to Management subnet.
+resource "azurerm_network_security_rule" "mgmt" {
+  name                        = "vmseries-mgmt-allow-inbound"
+  resource_group_name         = azurerm_resource_group.this.name
+  network_security_group_name = "network_security_group_1"
+  access                      = "Allow"
+  direction                   = "Inbound"
+  priority                    = 1000
+  protocol                    = "*"
+  source_port_range           = "*"
+  source_address_prefixes     = var.allow_inbound_mgmt_ips
+  destination_address_prefix  = "*"
+  destination_port_range      = "*"
+
+  depends_on = [module.vnet]
 }
 
 # Generate a random password.
@@ -81,6 +63,7 @@ module "panorama" {
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
   avzone              = var.avzone
+  avzones             = var.avzones
   enable_zones        = var.enable_zones
   custom_image_id     = var.custom_image_id
   panorama_sku        = var.panorama_sku
@@ -88,10 +71,11 @@ module "panorama" {
   panorama_version    = var.panorama_version
   tags                = var.tags
 
-  interface = [ // Only one interface in Panorama VM is supported
+  interface = [
+    // Only one interface in Panorama VM is supported
     {
       name               = "mgmt"
-      subnet_id          = module.vnet.vnet_subnets[0]
+      subnet_id          = lookup(module.vnet.subnet_ids, "management", null)
       private_ip_address = var.panorama_private_ip_address
       public_ip          = true
       public_ip_name     = var.panorama_name

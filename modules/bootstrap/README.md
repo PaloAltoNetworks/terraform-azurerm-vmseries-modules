@@ -56,7 +56,7 @@ resource "local_file" "this" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.42 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
 ## Modules

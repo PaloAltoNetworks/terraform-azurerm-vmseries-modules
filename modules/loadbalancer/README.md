@@ -62,7 +62,7 @@ module "outbound_lb" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.64 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7.0 |
 
 ## Modules
 
@@ -84,6 +84,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_avzones"></a> [avzones](#input\_avzones) | After provider version 3.x you need to specify in which availability zone(s) you want to place IP.<br>ie: for zone-redundant with 3 availability zone in current region value will be:<pre>["1","2","3"]</pre> | `list(string)` | `[]` | no |
 | <a name="input_backend_name"></a> [backend\_name](#input\_backend\_name) | The name of the backend pool to create. If an empty name is provided, it will be auto-generated.<br>All the frontends of the load balancer always use the same single backend. | `string` | `""` | no |
 | <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones) | If false, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones. | `bool` | `true` | no |
 | <a name="input_frontend_ips"></a> [frontend\_ips](#input\_frontend\_ips) | A map of objects describing LB frontend IP configurations. Used for both public or private load balancers. <br>Keys of the map are the names of the created load balancers.<br><br>Public LB<br><br>- `create_public_ip` : Optional. Set to `true` to create a public IP.<br>- `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.<br>- `public_ip_resource_group` : Ignored if `create_public_ip` is `true` or if `public_ip_name` is null. The name of the resource group which holds `public_ip_name`.<br><br>Example<pre>frontend_ips = {<br>  pip_existing = {<br>    create_public_ip         = false<br>    public_ip_name           = "my_ip"<br>    public_ip_resource_group = "my_rg_name"<br>    rules = {<br>      HTTP = {<br>        port         = 80<br>        protocol     = "Tcp"<br>      }<br>    }<br>  }<br>}</pre>Private LB<br><br>- `subnet_id` : Identifier of an existing subnet.<br>- `private_ip_address_allocation` : Type of private allocation: `Static` or `Dynamic`.<br>- `private_ip_address` : If `Static`, the private IP address.<br><br>Example<pre>frontend_ips = {<br>  internal_fe = {<br>    subnet_id                     = azurerm_subnet.this.id<br>    private_ip_address_allocation = "Static"<br>    private_ip_address            = "192.168.0.10"<br>    rules = {<br>      HA_PORTS = {<br>        port         = 0<br>        protocol     = "All"<br>      }<br>    }<br>  }<br>}</pre> | `any` | n/a | yes |

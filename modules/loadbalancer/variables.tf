@@ -134,3 +134,13 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  EOF
+  default     = []
+  type        = list(string)
+}

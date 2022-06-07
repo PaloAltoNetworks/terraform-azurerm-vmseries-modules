@@ -89,6 +89,7 @@ module "inbound_lb" {
   location                          = var.location
   frontend_ips                      = var.public_frontend_ips
   enable_zones                      = var.enable_zones
+  avzones                           = var.avzones
   tags                              = merge(var.tags, var.panorama_tags)
   network_security_group_name       = "sg_pub_inbound"
   network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
@@ -103,6 +104,7 @@ module "outbound_lb" {
   location            = var.location
   enable_zones        = var.enable_zones
   tags                = merge(var.tags, var.panorama_tags)
+  avzones             = var.avzones
   frontend_ips = {
     outbound = {
       subnet_id                     = lookup(module.vnet.subnet_ids, "outbound_private", null)
@@ -134,7 +136,7 @@ resource "azurerm_public_ip" "outbound" {
   resource_group_name = local.outbound_resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
+  zones               = var.enable_zones ? var.avzones : null
   tags                = var.tags
 }
 
@@ -169,7 +171,7 @@ resource "azurerm_public_ip" "mgmt" {
   resource_group_name = local.inbound_resource_group.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
+  zones               = var.enable_zones ? var.avzones : null
   tags                = var.tags
 }
 

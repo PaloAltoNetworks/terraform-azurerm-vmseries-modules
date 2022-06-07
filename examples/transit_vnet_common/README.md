@@ -17,7 +17,7 @@ $ terraform apply
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.64 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 3.7.0 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
 ## Modules
@@ -34,9 +34,9 @@ $ terraform apply
 
 | Name | Type |
 |------|------|
-| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/network_security_rule) | resource |
-| [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
+| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/network_security_rule) | resource |
+| [azurerm_public_ip.public](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/public_ip) | resource |
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/resource_group) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 
 ## Inputs
@@ -46,6 +46,7 @@ $ terraform apply
 | <a name="input_address_space"></a> [address\_space](#input\_address\_space) | The address space used by the virtual network. You can supply more than one address space. | `list(string)` | n/a | yes |
 | <a name="input_allow_inbound_data_ips"></a> [allow\_inbound\_data\_ips](#input\_allow\_inbound\_data\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access public data interfaces of VM-Series.<br>If the list is empty, the contents of `allow_inbound_mgmt_ips` are substituted instead. | `list(string)` | `[]` | no |
 | <a name="input_allow_inbound_mgmt_ips"></a> [allow\_inbound\_mgmt\_ips](#input\_allow\_inbound\_mgmt\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interfaces of VM-Series.<br>If you use Panorama, include its address in the list (as well as the secondary Panorama's). | `list(string)` | `[]` | no |
+| <a name="input_avzones"></a> [avzones](#input\_avzones) | After provider version 3.x you need to specify in which availability zone(s) you want to place IP.<br>ie: for zone-redundant with 3 availability zone in current region value will be:<pre>["1","2","3"]</pre>Use command<pre>az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'</pre>to see how many AZ is<br>in current region. | `list(string)` | `[]` | no |
 | <a name="input_common_vmseries_sku"></a> [common\_vmseries\_sku](#input\_common\_vmseries\_sku) | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
 | <a name="input_common_vmseries_tags"></a> [common\_vmseries\_tags](#input\_common\_vmseries\_tags) | Map of tags to be associated with the virtual machines, their interfaces and public IP addresses. | `map(string)` | `{}` | no |
 | <a name="input_common_vmseries_version"></a> [common\_vmseries\_version](#input\_common\_vmseries\_version) | VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"9.1.3"` | no |

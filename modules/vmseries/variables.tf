@@ -128,7 +128,7 @@ variable "img_sku" {
 
 variable "img_version" {
   description = "VM-series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
-  default     = "9.1.3"
+  default     = "10.1.0"
   type        = string
 }
 
@@ -172,4 +172,14 @@ variable "enable_zones" {
   description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
   type        = bool
+}
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  EOF
+  default     = []
+  type        = list(string)
 }

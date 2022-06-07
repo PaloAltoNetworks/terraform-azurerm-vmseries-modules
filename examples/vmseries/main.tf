@@ -29,7 +29,7 @@ module "vnet" {
           access                     = "Allow"
           direction                  = "Inbound"
           priority                   = 100
-          protocol                   = "TCP"
+          protocol                   = "Tcp"
           source_port_range          = "*"
           source_address_prefixes    = var.allow_inbound_mgmt_ips
           destination_address_prefix = "*"
@@ -57,6 +57,8 @@ module "vmseries" {
   username            = var.username
   password            = random_password.this.result
   img_sku             = var.common_vmseries_sku
+  img_version         = var.vm_series_version
+  avzones             = var.avzones
   interfaces = [
     {
       name             = "myfw-mgmt"
@@ -64,4 +66,15 @@ module "vmseries" {
       create_public_ip = true
     },
   ]
+}
+
+# The storage account for VM-Series initialization.
+module "bootstrap" {
+  source = "../../modules/bootstrap"
+
+  location             = var.location
+  resource_group_name  = azurerm_resource_group.this.name
+  storage_account_name = var.storage_account_name
+  storage_share_name   = var.storage_share_name
+  files                = var.files
 }
