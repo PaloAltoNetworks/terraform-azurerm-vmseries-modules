@@ -42,6 +42,12 @@ module "panorama" {
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.64 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
 
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 2.64 |
+
 ## Modules
 
 No modules.
