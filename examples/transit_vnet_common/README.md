@@ -24,7 +24,7 @@ $ terraform apply
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.97 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 3.7.0 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.0 |
 
 ## Modules
