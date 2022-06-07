@@ -42,6 +42,7 @@ resource "random_password" "this" {
   min_numeric      = 1
   min_special      = 1
   min_upper        = 1
+  special          = true
   override_special = "_%@"
 }
 

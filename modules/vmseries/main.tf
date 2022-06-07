@@ -82,15 +82,7 @@ resource "azurerm_virtual_machine" "this" {
     computer_name  = var.name
     admin_username = var.username
     admin_password = var.password
-    custom_data = var.bootstrap_share_name == null ? null : join(
-      ",",
-      [
-        "storage-account=${var.bootstrap_storage_account.name}",
-        "access-key=${var.bootstrap_storage_account.primary_access_key}",
-        "file-share=${var.bootstrap_share_name}",
-        "share-directory=None"
-      ]
-    )
+    custom_data    = var.bootstrap_options
   }
 
   os_profile_linux_config {
@@ -100,11 +92,11 @@ resource "azurerm_virtual_machine" "this" {
   # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
   # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
   dynamic "boot_diagnostics" {
-    for_each = var.bootstrap_storage_account != null ? ["one"] : []
+    for_each = var.diagnostics_storage_uri != null ? ["one"] : []
 
     content {
       enabled     = true
-      storage_uri = var.bootstrap_storage_account.primary_blob_endpoint
+      storage_uri = var.diagnostics_storage_uri
     }
   }
 

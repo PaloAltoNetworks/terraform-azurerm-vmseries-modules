@@ -1,6 +1,6 @@
 # Create the Resource Group.
 resource "azurerm_resource_group" "this" {
-  name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries")
+  name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries-transit-vnet-dedicated")
   location = var.location
 }
 
@@ -11,6 +11,7 @@ resource "random_password" "this" {
   min_numeric      = 1
   min_special      = 1
   min_upper        = 1
+  special          = true
   override_special = "_%@"
 }
 
@@ -125,19 +126,24 @@ module "inbound_vmseries" {
 
   for_each = var.inbound_vmseries
 
-  location                  = var.location
-  resource_group_name       = azurerm_resource_group.this.name
-  name                      = "${var.name_prefix}${each.key}"
-  avzone                    = try(each.value.avzone, 1)
-  username                  = var.username
-  password                  = coalesce(var.password, random_password.this.result)
-  img_sku                   = var.common_vmseries_sku
-  img_version               = var.inbound_vmseries_version
-  vm_size                   = var.inbound_vmseries_vm_size
-  tags                      = var.inbound_vmseries_tags
-  enable_zones              = var.enable_zones
-  bootstrap_storage_account = module.bootstrap.storage_account
-  bootstrap_share_name      = module.bootstrap.storage_share.name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  name                = "${var.name_prefix}${each.key}"
+  avzone              = try(each.value.avzone, 1)
+  username            = var.username
+  password            = coalesce(var.password, random_password.this.result)
+  img_sku             = var.common_vmseries_sku
+  img_version         = var.inbound_vmseries_version
+  vm_size             = var.inbound_vmseries_vm_size
+  tags                = var.inbound_vmseries_tags
+  enable_zones        = var.enable_zones
+  bootstrap_options = join(",",
+    [
+      "storage-account=${module.bootstrap.storage_account.name}",
+      "access-key=${module.bootstrap.storage_account.primary_access_key}",
+      "file-share=${module.bootstrap.storage_share.name}",
+      "share-directory=None"
+  ])
   interfaces = [
     {
       name                = "${each.key}-mgmt"
@@ -161,6 +167,8 @@ module "inbound_vmseries" {
     },
   ]
 
+  diagnostics_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
+
   depends_on = [module.bootstrap]
 }
 
@@ -172,19 +180,24 @@ module "outbound_vmseries" {
 
   for_each = var.outbound_vmseries
 
-  location                  = var.location
-  resource_group_name       = azurerm_resource_group.this.name
-  name                      = "${var.name_prefix}${each.key}"
-  avzone                    = try(each.value.avzone, 1)
-  username                  = var.username
-  password                  = coalesce(var.password, random_password.this.result)
-  img_sku                   = var.common_vmseries_sku
-  img_version               = var.outbound_vmseries_version
-  vm_size                   = var.outbound_vmseries_vm_size
-  tags                      = var.outbound_vmseries_tags
-  enable_zones              = var.enable_zones
-  bootstrap_storage_account = module.outbound_bootstrap.storage_account
-  bootstrap_share_name      = module.outbound_bootstrap.storage_share.name
+  location            = var.location
+  resource_group_name = azurerm_resource_group.this.name
+  name                = "${var.name_prefix}${each.key}"
+  avzone              = try(each.value.avzone, 1)
+  username            = var.username
+  password            = coalesce(var.password, random_password.this.result)
+  img_sku             = var.common_vmseries_sku
+  img_version         = var.outbound_vmseries_version
+  vm_size             = var.outbound_vmseries_vm_size
+  tags                = var.outbound_vmseries_tags
+  enable_zones        = var.enable_zones
+  bootstrap_options = join(",",
+    [
+      "storage-account=${module.outbound_bootstrap.storage_account.name}",
+      "access-key=${module.outbound_bootstrap.storage_account.primary_access_key}",
+      "file-share=${module.outbound_bootstrap.storage_share.name}",
+      "share-directory=None"
+  ])
   interfaces = [
     {
       name                = "${each.key}-mgmt"
@@ -208,6 +221,8 @@ module "outbound_vmseries" {
       private_ip_address = try(each.value.trust_private_ip, null)
     },
   ]
+
+  diagnostics_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
 
   depends_on = [module.outbound_bootstrap]
 }
