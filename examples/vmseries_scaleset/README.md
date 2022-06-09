@@ -70,8 +70,15 @@ terraform destroy
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.64 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.71 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.0 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.71 |
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.0 |
 
 ## Modules
 
@@ -89,21 +96,21 @@ terraform destroy
 
 | Name | Type |
 |------|------|
-| [azurerm_nat_gateway.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway) | resource |
-| [azurerm_nat_gateway.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway) | resource |
-| [azurerm_nat_gateway_public_ip_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway_public_ip_association) | resource |
-| [azurerm_nat_gateway_public_ip_association.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway_public_ip_association) | resource |
-| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/network_security_rule) | resource |
-| [azurerm_public_ip.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
-| [azurerm_public_ip.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
-| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
-| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
-| [azurerm_subnet_nat_gateway_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_subnet_nat_gateway_association.outbound_private](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_subnet_nat_gateway_association.outbound_public](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_nat_gateway.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/nat_gateway) | resource |
+| [azurerm_nat_gateway.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/nat_gateway) | resource |
+| [azurerm_nat_gateway_public_ip_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/nat_gateway_public_ip_association) | resource |
+| [azurerm_nat_gateway_public_ip_association.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/nat_gateway_public_ip_association) | resource |
+| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/network_security_rule) | resource |
+| [azurerm_public_ip.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/public_ip) | resource |
+| [azurerm_public_ip.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/public_ip) | resource |
+| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/resource_group) | resource |
+| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/resource_group) | resource |
+| [azurerm_subnet_nat_gateway_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_subnet_nat_gateway_association.outbound_private](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_subnet_nat_gateway_association.outbound_public](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/resources/subnet_nat_gateway_association) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/data-sources/resource_group) | data source |
-| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/data-sources/resource_group) | data source |
+| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/data-sources/resource_group) | data source |
+| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.71/docs/data-sources/resource_group) | data source |
 
 ## Inputs
 

@@ -27,7 +27,13 @@ module "vmss" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.26 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 2.71 |
+
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 2.71 |
 
 ## Modules
 
@@ -39,6 +45,7 @@ No modules.
 |------|------|
 | [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
 | [azurerm_linux_virtual_machine_scale_set.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set) | resource |
+| [azurerm_log_analytics_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
 | [azurerm_monitor_autoscale_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_autoscale_setting) | resource |
 
 ## Inputs
@@ -46,6 +53,8 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_accelerated_networking"></a> [accelerated\_networking](#input\_accelerated\_networking) | If true, enable Azure accelerated networking (SR-IOV) for all dataplane network interfaces. [Requires](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) PAN-OS 9.0 or higher. The PAN-OS management interface (nic0) is never accelerated, whether this variable is true or false. | `bool` | `true` | no |
+| <a name="input_application_insights_name"></a> [application\_insights\_name](#input\_application\_insights\_name) | Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
+| <a name="input_application_insights_workspace_mode"></a> [application\_insights\_workspace\_mode](#input\_application\_insights\_workspace\_mode) | Set Application Insights mode to "Workspace-based". If set to `false`, the legacy "Classic" mode is used. | `bool` | `true` | no |
 | <a name="input_autoscale_count_default"></a> [autoscale\_count\_default](#input\_autoscale\_count\_default) | The minimum number of instances that should be present in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the metrics to the thresholds. | `number` | `2` | no |
 | <a name="input_autoscale_count_maximum"></a> [autoscale\_count\_maximum](#input\_autoscale\_count\_maximum) | The maximum number of instances that should be present in the scale set. | `number` | `5` | no |
 | <a name="input_autoscale_count_minimum"></a> [autoscale\_count\_minimum](#input\_autoscale\_count\_minimum) | The minimum number of instances that should be present in the scale set. | `number` | `2` | no |
@@ -53,6 +62,7 @@ No modules.
 | <a name="input_autoscale_notification_emails"></a> [autoscale\_notification\_emails](#input\_autoscale\_notification\_emails) | List of email addresses to notify about autoscaling events. | `list(string)` | `[]` | no |
 | <a name="input_autoscale_webhooks_uris"></a> [autoscale\_webhooks\_uris](#input\_autoscale\_webhooks\_uris) | Map where each key is an arbitrary identifier and each value is a webhook URI. The URIs receive autoscaling events. | `map(string)` | `{}` | no |
 | <a name="input_bootstrap_options"></a> [bootstrap\_options](#input\_bootstrap\_options) | Bootstrap options to pass to VM-Series instance. | `string` | `""` | no |
+| <a name="input_create_application_insights"></a> [create\_application\_insights](#input\_create\_application\_insights) | Enable usage of the Application Insights. The default vailue is set to 'true'. | `bool` | `true` | no |
 | <a name="input_create_mgmt_pip"></a> [create\_mgmt\_pip](#input\_create\_mgmt\_pip) | n/a | `bool` | `true` | no |
 | <a name="input_create_public_interface"></a> [create\_public\_interface](#input\_create\_public\_interface) | If true, create the third network interface for virtual machines. | `bool` | `true` | no |
 | <a name="input_create_public_pip"></a> [create\_public\_pip](#input\_create\_public\_pip) | n/a | `bool` | `true` | no |
@@ -67,6 +77,8 @@ No modules.
 | <a name="input_img_sku"></a> [img\_sku](#input\_img\_sku) | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
 | <a name="input_img_version"></a> [img\_version](#input\_img\_version) | VM-Series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all` | `string` | `"9.1.3"` | no |
 | <a name="input_location"></a> [location](#input\_location) | Region to install VM-Series and dependencies. | `string` | n/a | yes |
+| <a name="input_log_analytics_workspace_name"></a> [log\_analytics\_workspace\_name](#input\_log\_analytics\_workspace\_name) | Name of the Log Analytics workspace to be created. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
+| <a name="input_log_analytics_workspace_sku"></a> [log\_analytics\_workspace\_sku](#input\_log\_analytics\_workspace\_sku) | Azure Log Analytics Workspace mode SKU. The default value is set to "PerGB2018" | `string` | `"PerGB2018"` | no |
 | <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the metrics retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether, which is incompatible with `create_autoscaling`. | `number` | `null` | no |
 | <a name="input_mgmt_pip_domain_name_label"></a> [mgmt\_pip\_domain\_name\_label](#input\_mgmt\_pip\_domain\_name\_label) | n/a | `string` | `null` | no |
 | <a name="input_mgmt_pip_prefix_id"></a> [mgmt\_pip\_prefix\_id](#input\_mgmt\_pip\_prefix\_id) | Public IP address prefix id to use for management interface. | `string` | `null` | no |
