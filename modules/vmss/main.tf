@@ -158,12 +158,24 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   }
 }
 
+resource "azurerm_log_analytics_workspace" "this" {
+  count = var.create_application_insights && var.application_insights_workspace_mode ? 1 : 0
+
+  name                = coalesce(var.log_analytics_workspace_name, "${var.name_prefix}-workspace")
+  location            = var.location
+  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  retention_in_days   = var.metrics_retention_in_days
+  sku                 = var.log_analytics_workspace_sku
+  tags                = var.tags
+}
+
 resource "azurerm_application_insights" "this" {
-  count = var.metrics_retention_in_days != 0 ? 1 : 0
+  count = var.create_application_insights ? 1 : 0
 
   name                = coalesce(var.name_application_insights, "${var.name_prefix}appinsights")
   location            = var.location
   resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  workspace_id        = var.application_insights_workspace_mode ? azurerm_log_analytics_workspace.this[0].id : null
   application_type    = "other"
   retention_in_days   = var.metrics_retention_in_days
   tags                = var.tags

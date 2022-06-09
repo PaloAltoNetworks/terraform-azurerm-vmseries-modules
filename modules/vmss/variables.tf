@@ -400,3 +400,33 @@ variable "diagnostics_storage_uri" {
   default     = null
   type        = any
 }
+
+variable "create_application_insights" {
+  description = "Enable usage of the Application Insights. The default vailue is set to 'true'."
+  default     = true
+  type        = bool
+}
+
+variable "application_insights_name" {
+  description = "Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated."
+  default     = null
+  type        = string
+}
+
+variable "application_insights_workspace_mode" {
+  description = "Set Application Insights mode to \"Workspace-based\". If set to `false`, the legacy \"Classic\" mode is used. "
+  default     = true
+  type        = bool
+}
+
+variable "log_analytics_workspace_name" {
+  description = "Name of the Log Analytics workspace to be created. Can be `null`, in which case a default name is auto-generated."
+  default     = null
+  type        = string
+}
+
+variable "log_analytics_workspace_sku" {
+  description = "Azure Log Analytics Workspace mode SKU. The default value is set to \"PerGB2018\""
+  default     = "PerGB2018"
+  type        = string
+}

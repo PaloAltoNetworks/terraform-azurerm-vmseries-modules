@@ -120,22 +120,34 @@ variable "img_version" {
   type        = string
 }
 
-variable "name_application_insights" {
-  default     = null
+variable "create_application_insights" {
+  description = "Enable usage of the Application Insights. The default vailue is set to 'true'."
+  default     = true
+  type        = bool
+}
+
+variable "application_insights_name" {
   description = "Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated."
-  type        = string
-}
-
-variable "name_log_analytics_workspace" {
   default     = null
-  description = "Name of the Log Analytics workspace to be created. Can be `null`, in which case a default name is auto-generated."
   type        = string
 }
 
-variable "application_insights_mode_workspace" {
+variable "application_insights_workspace_mode" {
   description = "Set Application Insights mode to \"Workspace-based\". If set to `false`, the legacy \"Classic\" mode is used. "
   default     = true
   type        = bool
+}
+
+variable "log_analytics_workspace_name" {
+  description = "Name of the Log Analytics workspace to be created. Can be `null`, in which case a default name is auto-generated."
+  default     = null
+  type        = string
+}
+
+variable "log_analytics_workspace_sku" {
+  description = "Azure Log Analytics Workspace mode SKU. The default value is set to \"PerGB2018\""
+  default     = "PerGB2018"
+  type        = string
 }
 
 variable "tags" {
@@ -157,8 +169,8 @@ variable "identity_ids" {
 }
 
 variable "metrics_retention_in_days" {
-  description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether."
-  default     = 0
+  description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 30 days."
+  default     = null
   type        = number
 }
 
