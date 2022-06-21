@@ -29,13 +29,6 @@ $ terraform apply
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 2.42 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.1 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 2.42 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.0 |
-
 ## Modules
 
 | Name | Source | Version |
