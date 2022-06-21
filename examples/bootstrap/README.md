@@ -39,12 +39,6 @@ terraform destroy
 |------|---------|
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.64 |
 
-## Providers
-
-| Name | Version |
-|------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.64 |
-
 ## Modules
 
 | Name | Source | Version |
