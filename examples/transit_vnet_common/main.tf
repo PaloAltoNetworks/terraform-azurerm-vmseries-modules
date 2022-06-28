@@ -86,7 +86,7 @@ module "outbound_lb" {
       subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)
       private_ip_address_allocation = "Static"
       private_ip_address            = var.olb_private_ip
-      zones                         = var.enable_zones ? null : var.avzones # For the regions without AZ support.
+      zones                         = var.enable_zones ? var.avzones : null # For the regions without AZ support.
       rules = {
         HA_PORTS = {
           port     = 0

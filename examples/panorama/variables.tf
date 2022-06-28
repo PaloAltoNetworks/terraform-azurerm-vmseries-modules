@@ -156,8 +156,7 @@ variable "network_security_groups" {
 
 variable "allow_inbound_mgmt_ips" {
   description = <<-EOF
-    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interfaces of VM-Series.
-    If you use Panorama, include its address in the list (as well as the secondary Panorama's).
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interface of Panorama.
   EOF
   type        = list(string)
 }

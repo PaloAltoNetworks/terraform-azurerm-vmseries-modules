@@ -74,7 +74,7 @@ outbound_vmseries_version = "10.1.5"
 outbound_vmseries_vm_size = "Standard_D3_v2"
 
 common_vmseries_sku         = "bundle1"
-storage_account_name        = "pantfstoragepimiel"
+storage_account_name        = "pantfstorage"
 inbound_storage_share_name  = "ibbootstrapshare"
 outbound_storage_share_name = "obbootstrapshare"
 

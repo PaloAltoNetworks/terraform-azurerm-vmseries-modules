@@ -50,6 +50,25 @@ variable "frontend_ips" {
     }
   }
   ```
+
+  Zone usage
+
+  You can specifies a list of Availability Zones in which the IP Address for this Load Balancer should be located.
+
+  - `zones` : Specify in which zones you want to create frontend IP address. Pass list with zone coverage, ie: `["1","2","3"]`
+
+  Example
+
+  ```
+  frontend_ips = {
+    internal = {
+      subnet_id                     = azurerm_subnet.this.id
+      private_ip_address_allocation = "Static"
+      private_ip_address            = "192.168.0.10"
+      zones                         = ["1","2","3"]
+    }
+  }
+  ```
   EOF
 }
 
