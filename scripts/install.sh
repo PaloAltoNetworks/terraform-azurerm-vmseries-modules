@@ -10,7 +10,7 @@ set -euo pipefail
 
 cd "$(dirname $0)"
 
-curl -sL https://github.com/terraform-docs/terraform-docs/releases/download/v0.15.0/terraform-docs-v0.15.0-linux-amd64.tar.gz > terraform-docs.tar.gz    & \
+curl -sL https://github.com/terraform-docs/terraform-docs/releases/download/v0.16.0/terraform-docs-v0.16.0-linux-amd64.tar.gz > terraform-docs.tar.gz    & \
 curl -sL https://github.com/tfsec/tfsec/releases/download/v0.34.0/tfsec-linux-amd64 > tfsec    & \
 curl -sL https://github.com/terraform-linters/tflint/releases/download/v0.29.0/tflint_linux_amd64.zip > tflint.zip    & \
 # curl -sL https://releases.hashicorp.com/terraform/0.12.29/terraform_0.12.29_linux_amd64.zip > terraform-0.12.29.zip    & \
