@@ -25,3 +25,41 @@ variable "common_vmseries_sku" {
   description = "VM-Series SKU, for example `bundle1`, or `bundle2`. If it is `byol`, the VM-Series starts unlicensed."
   type        = string
 }
+
+variable "vm_series_version" {
+  description = "VMSeries PanOS Version"
+  default     = "10.1.0"
+  type        = string
+}
+
+variable "storage_account_name" {
+  description = <<-EOF
+  Default name of the storage account to create.
+  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+  EOF
+  default     = "pantfstorage"
+  type        = string
+}
+
+variable "files" {
+  description = "Map of all files to copy to bucket. The keys are local paths, the values are remote paths. Always use slash `/` as directory separator (unix-like), not the backslash `\\`. For example `{\"dir/my.txt\" = \"config/init-cfg.txt\"}`"
+  default     = {}
+  type        = map(string)
+}
+
+variable "storage_share_name" {
+  description = "Name of storage share to be created that holds `files` for bootstrapping."
+  type        = string
+}
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  Use command ```az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'``` to see how many AZ is
+  in current region.
+  EOF
+  default     = []
+  type        = list(string)
+}
