@@ -275,7 +275,7 @@ variable "common_vmseries_sku" {
 
 variable "inbound_vmseries_version" {
   description = "Inbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "10.0.6"
+  default     = "10.1.0"
   type        = string
 }
 
@@ -293,7 +293,7 @@ variable "inbound_vmseries_tags" {
 
 variable "outbound_vmseries_version" {
   description = "Outbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "10.0.6"
+  default     = "10.1.0"
   type        = string
 }
 
@@ -341,4 +341,16 @@ variable "tags" {
   description = "Azure tags to apply to the created cloud resources. A map, for example `{ team = \"NetAdmin\", costcenter = \"CIO42\" }`"
   default     = {}
   type        = map(string)
+}
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  Use command ```az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'``` to see how many AZ is
+  in current region.
+  EOF
+  default     = []
+  type        = list(string)
 }

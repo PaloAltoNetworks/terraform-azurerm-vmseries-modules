@@ -6,16 +6,8 @@ resource "azurerm_public_ip" "this" {
   name                = each.value.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  availability_zone = try(
-    each.value.availability_zone,
-    # For the default, first consider using avzone if only possible. Otherwise fall back to enable_zones.
-    var.enable_zones && var.avzone != null && var.avzone != ""
-    ?
-    var.avzone
-    :
-    (var.enable_zones ? "Zone-Redundant" : "No-Zone")
-  )
-  tags = try(each.value.tags, var.tags)
+  zones               = var.enable_zones ? var.avzones : null
+  tags                = try(each.value.tags, var.tags)
 }
 
 resource "azurerm_network_interface" "this" {
@@ -31,7 +23,7 @@ resource "azurerm_network_interface" "this" {
   ip_configuration {
     name                          = "primary"
     subnet_id                     = var.interfaces[count.index].subnet_id
-    private_ip_address_allocation = try(var.interfaces[count.index].private_ip_address, null) != null ? "static" : "dynamic"
+    private_ip_address_allocation = try(var.interfaces[count.index].private_ip_address, null) != null ? "Static" : "Dynamic"
     private_ip_address            = try(var.interfaces[count.index].private_ip_address, null)
     public_ip_address_id          = try(azurerm_public_ip.this[count.index].id, var.interfaces[count.index].public_ip_address_id, null)
   }

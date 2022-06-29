@@ -71,3 +71,5 @@ files = {
   "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
   "files/init-cfg.txt" = "config/init-cfg.txt"
 }
+
+avzones = ["1", "2", "3"]

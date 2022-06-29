@@ -67,6 +67,8 @@ resource "azurerm_network_security_rule" "this" {
   source_address_prefixes      = lookup(each.value.rule, "source_address_prefixes", null)
   destination_address_prefix   = lookup(each.value.rule, "destination_address_prefix", null)
   destination_address_prefixes = lookup(each.value.rule, "destination_address_prefixes", null)
+
+  depends_on = [azurerm_network_security_group.this]
 }
 
 resource "azurerm_route_table" "this" {

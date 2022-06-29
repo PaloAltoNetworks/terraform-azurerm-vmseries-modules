@@ -82,9 +82,9 @@ public_frontend_ips = {
 
 olb_private_ip = "10.110.0.21"
 
-inbound_vmseries_version  = "10.0.6"
+inbound_vmseries_version  = "10.1.5"
 inbound_vmseries_vm_size  = "Standard_D3_v2"
-outbound_vmseries_version = "10.0.6"
+outbound_vmseries_version = "10.1.5"
 outbound_vmseries_vm_size = "Standard_D3_v2"
 common_vmseries_sku       = "bundle1"
 
@@ -125,7 +125,7 @@ scalein_time_aggregation = "Average"
 scalein_window_minutes   = 60
 scalein_cooldown_minutes = 10080
 
-storage_account_name        = "vmssexample20210406"
+storage_account_name        = "vmssexample"
 inbound_storage_share_name  = "ibbootstrapshare"
 outbound_storage_share_name = "obbootstrapshare"
 
@@ -138,3 +138,5 @@ outbound_files = {
   # "outbound_files/authcodes"    = "license/authcodes" # this line is only needed for common_vmseries_sku  = "byol"
   "outbound_files/init-cfg.txt" = "config/init-cfg.txt"
 }
+
+avzones = ["1", "2", "3"]

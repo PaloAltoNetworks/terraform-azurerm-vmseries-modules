@@ -3,7 +3,7 @@ output "panorama_url" {
   value       = "https://${module.panorama.mgmt_ip_address}"
 }
 
-output "panorama_admin_password" {
+output "password" {
   description = "Panorama administrator's initial password."
   value       = random_password.this.result
   sensitive   = true
