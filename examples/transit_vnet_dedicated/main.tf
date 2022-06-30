@@ -113,11 +113,13 @@ module "outbound_bootstrap" {
   source = "../../modules/bootstrap"
 
   # location               = var.location
-  resource_group_name      = azurerm_resource_group.this.name
-  create_storage_account   = false
-  existing_storage_account = module.bootstrap.storage_account.name
-  storage_share_name       = var.outbound_storage_share_name
-  files                    = var.outbound_files
+  resource_group_name    = azurerm_resource_group.this.name
+  create_storage_account = false
+  storage_account_name   = module.bootstrap.storage_account.name
+  storage_share_name     = var.outbound_storage_share_name
+  files                  = var.outbound_files
+
+  depends_on = [module.bootstrap]
 }
 
 # Inbound VM-Series for handling inbound traffic from the Internet.
