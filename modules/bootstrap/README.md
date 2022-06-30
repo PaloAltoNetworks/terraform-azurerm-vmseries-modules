@@ -7,7 +7,9 @@ The module does *not* configure the bootstrap images, licenses, or configuration
 
 ## Usage
 
-See the examples/vm-series directory.
+For usage examples see:
+* [examples/bootstrap](../../examples/bootstrap/README.md)
+* [example/vmseries](../../examples/vmseries/README.md).
 
 ## Known Limitations
 
@@ -76,8 +78,7 @@ No modules.
 |------|------|
 | [azurerm_storage_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account) | resource |
 | [azurerm_storage_share.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share) | resource |
-| [azurerm_storage_share_directory.config](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory) | resource |
-| [azurerm_storage_share_directory.nonconfig](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory) | resource |
+| [azurerm_storage_share_directory.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory) | resource |
 | [azurerm_storage_share_file.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_file) | resource |
 | [random_id.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [azurerm_storage_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account) | data source |
@@ -86,16 +87,17 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account) | If true, create a Storage Account and ignore `existing_storage_account`. | `bool` | `true` | no |
-| <a name="input_existing_storage_account"></a> [existing\_storage\_account](#input\_existing\_storage\_account) | Name of the existing Storage Account object to use. Ignored when `create_storage_account` is true. | `string` | `null` | no |
-| <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths.<br>Always use slash `/` as directory separator (unix-like), not the backslash `\`.<br>For example `{"dir/my.txt" = "config/init-cfg.txt"}` | `map(string)` | `{}` | no |
-| <a name="input_files_md5"></a> [files\_md5](#input\_files\_md5) | Optional map of MD5 hashes of file contents.<br>Normally the map could be all empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.<br>This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.<br>The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.<br>For example `{"dir/my.txt" = "6f7ce3191b50a58cc13e751a8f7ae3fd"}` | `map(string)` | `{}` | no |
-| <a name="input_location"></a> [location](#input\_location) | Region to deploy vm-series bootstrap resources. Ignored when using an `existing_storage_account`. | `string` | `null` | no |
+| <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account) | If `true`, create a Storage Account. | `bool` | `true` | no |
+| <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths.<br>Always use slash `/` as directory separator (unix-like), not the backslash `\`.<br>Example:<pre>files = {<br>  "dir/my.txt" = "config/init-cfg.txt"<br>}</pre> | `map(string)` | `{}` | no |
+| <a name="input_files_md5"></a> [files\_md5](#input\_files\_md5) | Optional map of MD5 hashes of file contents.<br>Normally the map could be all empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.<br>This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.<br>The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.<br><br>Example:<pre>files_md5 = {<br>    "dir/my.txt" = "6f7ce3191b50a58cc13e751a8f7ae3fd"<br>}</pre> | `map(string)` | `{}` | no |
+| <a name="input_location"></a> [location](#input\_location) | Region to deploy bootstrap resources. Ignored when `create_storage_account` is set to `false`. | `string` | `null` | no |
 | <a name="input_min_tls_version"></a> [min\_tls\_version](#input\_min\_tls\_version) | The minimum supported TLS version for the storage account. | `string` | `"TLS1_2"` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
-| <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account, if creating it. Ignored when `existing_storage_account` object is non-null.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
-| <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping. | `string` | `"bootstrapshare"` | no |
-| <a name="input_tags"></a> [tags](#input\_tags) | Azure tags to apply to the created Storage Account. A map, for example `{ team = "NetAdmin", costcenter = "CIO42" }` | `map(string)` | `{}` | no |
+| <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Name of the Storage Account, either a new or an existing one (depending on the value of `create_storage_account`).<br><br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
+| <a name="input_storage_share_access_tier"></a> [storage\_share\_access\_tier](#input\_storage\_share\_access\_tier) | Access tier for the File Share. | `string` | `"Cool"` | no |
+| <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage File Share to be created that holds `files` for bootstrapping. | `string` | `"bootstrapshare"` | no |
+| <a name="input_storage_share_quota"></a> [storage\_share\_quota](#input\_storage\_share\_quota) | Maximum size of a File Share. | `number` | `50` | no |
+| <a name="input_tags"></a> [tags](#input\_tags) | A map of Azure tags to apply to the created Storage Account.<br><br>Example:<pre>tags = {<br>  team       = "NetAdmin"<br>  costcenter = "CIO42"<br>}</pre> | `map(string)` | `{}` | no |
 
 ## Outputs
 
