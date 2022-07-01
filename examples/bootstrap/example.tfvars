@@ -1,6 +1,6 @@
-resource_group_name        = "example-rg"
-location                   = "West US"
-storage_account_name       = "examplebootstrap"
+resource_group_name = "example-rg"
+location            = "West US"
+# storage_account_name       = "examplebootstrap"
 inbound_storage_share_name = "inboundbootstrap"
 obew_storage_share_name    = "obewbootstrap"
 

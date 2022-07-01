@@ -13,7 +13,6 @@ variable "storage_account_name" {
   Name of the Storage Account to create.
   The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length and may include only numbers and lowercase letters.
   EOF
-  default     = "pantfstorage"
   type        = string
 }
 

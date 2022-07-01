@@ -10,8 +10,11 @@ variable "storage_account_name" {
 
   The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
   EOF
-  default     = "pantfstorage"
   type        = string
+  validation {
+    condition     = can(regex("^[a-z0-9]{3,24}$", var.storage_account_name))
+    error_message = "A Storage Account name must be between 3 and 24 characters, only lower case letters and numbers are allowed."
+  }
 }
 
 variable "resource_group_name" {
@@ -66,7 +69,6 @@ variable "files_md5" {
 
 variable "storage_share_name" {
   description = "Name of storage File Share to be created that holds `files` for bootstrapping."
-  default     = "bootstrapshare"
   type        = string
 }
 
@@ -83,17 +85,7 @@ variable "storage_share_access_tier" {
 }
 
 variable "tags" {
-  description = <<-EOF
-  A map of Azure tags to apply to the created Storage Account.
-
-  Example: 
-  ```
-  tags = {
-    team       = "NetAdmin"
-    costcenter = "CIO42"
-  }
-  ```
-  EOF
+  description = "A map of tags to be associated with the resources created."
   default     = {}
   type        = map(string)
 }
