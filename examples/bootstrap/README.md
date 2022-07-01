@@ -63,7 +63,7 @@ terraform destroy
 | <a name="input_obew_files"></a> [obew\_files](#input\_obew\_files) | Map of all files to copy to a File Share. This represents files for OBEW firewall.<br><br>The keys are local paths, values - remote paths. Always use slash `/` as directory separator (unix-like). | `map(string)` | `{}` | no |
 | <a name="input_obew_storage_share_name"></a> [obew\_storage\_share\_name](#input\_obew\_storage\_share\_name) | Name of Storage Share that will host files for bootstrapping a firewall protecting OBEW traffic. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
-| <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Name of the Storage Account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
+| <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Name of the Storage Account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length and may include only numbers and lowercase letters. | `string` | n/a | yes |
 
 ## Outputs
 
