@@ -55,6 +55,7 @@ module "bootstrap" {
   resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
   storage_account_name = var.storage_account_name
+  storage_share_name   = var.storage_share_name
 }
 
 module "panorama" {
