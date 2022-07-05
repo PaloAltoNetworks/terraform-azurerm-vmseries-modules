@@ -58,6 +58,18 @@ variable "interfaces" {
   EOF
 }
 
+variable "bootstrap_storage_account" {
+  description = "Existing storage account object for bootstrapping and for holding small-sized boot diagnostics. Usually the object is passed from a bootstrap module's output."
+  default     = null
+  type        = any
+}
+
+variable "bootstrap_share_name" {
+  description = "Azure File Share holding the bootstrap data. Should reside on `bootstrap_storage_account`. Bootstrapping is omitted if `bootstrap_share_name` is left at null."
+  default     = null
+  type        = string
+}
+
 variable "username" {
   description = "Initial administrative username to use for VM-Series. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
   type        = string
@@ -160,16 +172,4 @@ variable "enable_zones" {
   description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
   type        = bool
-}
-
-variable "bootstrap_options" {
-  description = "Bootstrap options to pass to VM-Series instance."
-  default     = ""
-  type        = string
-}
-
-variable "diagnostics_storage_uri" {
-  description = "The storage account's blob endpoint to hold diagnostic files."
-  default     = null
-  type        = string
 }
