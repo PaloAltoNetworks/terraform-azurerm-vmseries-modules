@@ -25,7 +25,7 @@ resource "azurerm_network_interface" "this" {
   location                      = var.location
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = count.index == 0 ? false : var.accelerated_networking # for interface 0 it is unsupported by PAN-OS
-  enable_ip_forwarding          = count.index == 0 ? false : true                       # for interface 0 use false per Reference Arch
+  enable_ip_forwarding          = true
   tags                          = try(var.interfaces[count.index].tags, var.tags)
 
   ip_configuration {
