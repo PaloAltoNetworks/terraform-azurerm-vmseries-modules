@@ -70,14 +70,14 @@ terraform destroy
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 3.7.0 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 2.64 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 3.7.0 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 2.64 |
 | <a name="provider_random"></a> [random](#provider\_random) | ~> 3.1 |
 
 ## Modules
@@ -96,21 +96,21 @@ terraform destroy
 
 | Name | Type |
 |------|------|
-| [azurerm_nat_gateway.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway) | resource |
-| [azurerm_nat_gateway.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway) | resource |
-| [azurerm_nat_gateway_public_ip_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway_public_ip_association) | resource |
-| [azurerm_nat_gateway_public_ip_association.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway_public_ip_association) | resource |
-| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/network_security_rule) | resource |
-| [azurerm_public_ip.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/public_ip) | resource |
-| [azurerm_public_ip.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/public_ip) | resource |
-| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/resource_group) | resource |
-| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/resource_group) | resource |
-| [azurerm_subnet_nat_gateway_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_subnet_nat_gateway_association.outbound_private](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_subnet_nat_gateway_association.outbound_public](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_nat_gateway.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway) | resource |
+| [azurerm_nat_gateway.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway) | resource |
+| [azurerm_nat_gateway_public_ip_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway_public_ip_association) | resource |
+| [azurerm_nat_gateway_public_ip_association.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/nat_gateway_public_ip_association) | resource |
+| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/network_security_rule) | resource |
+| [azurerm_public_ip.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
+| [azurerm_public_ip.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/public_ip) | resource |
+| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
+| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/resource_group) | resource |
+| [azurerm_subnet_nat_gateway_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_subnet_nat_gateway_association.outbound_private](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_subnet_nat_gateway_association.outbound_public](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/resources/subnet_nat_gateway_association) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/data-sources/resource_group) | data source |
-| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/data-sources/resource_group) | data source |
+| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/data-sources/resource_group) | data source |
+| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/2.64/docs/data-sources/resource_group) | data source |
 
 ## Inputs
 
@@ -121,7 +121,6 @@ terraform destroy
 | <a name="input_allow_inbound_mgmt_ips"></a> [allow\_inbound\_mgmt\_ips](#input\_allow\_inbound\_mgmt\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interfaces of VM-Series.<br>If you use Panorama, include its address in the list (as well as the secondary Panorama's). | `list(string)` | `[]` | no |
 | <a name="input_autoscale_metrics"></a> [autoscale\_metrics](#input\_autoscale\_metrics) | Map of objects, where each key is the metric name to be used for autoscaling.<br>Each value of the map has the attributes `scaleout_threshold` and `scalein_threshold`, which cause the instance count to grow by 1 when metrics are greater or equal, or decrease by 1 when lower or equal, respectively.<br>The thresholds are applied to results of metrics' aggregation over a time window.<br>Example:<pre>{<br>  "DataPlaneCPUUtilizationPct" = {<br>    scaleout_threshold = 80<br>    scalein_threshold  = 20<br>  }<br>  "panSessionUtilization" = {<br>    scaleout_threshold = 80<br>    scalein_threshold  = 20<br>  }<br>}</pre>Other possible metrics include `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`. | `map` | <pre>{<br>  "DataPlaneCPUUtilizationPct": {<br>    "scalein_threshold": 20,<br>    "scaleout_threshold": 80<br>  },<br>  "panSessionUtilization": {<br>    "scalein_threshold": 20,<br>    "scaleout_threshold": 80<br>  }<br>}</pre> | no |
 | <a name="input_autoscale_notification_emails"></a> [autoscale\_notification\_emails](#input\_autoscale\_notification\_emails) | List of email addresses to notify about autoscaling events. | `list(string)` | `[]` | no |
-| <a name="input_avzones"></a> [avzones](#input\_avzones) | After provider version 3.x you need to specify in which availability zone(s) you want to place IP.<br>ie: for zone-redundant with 3 availability zone in current region value will be:<pre>["1","2","3"]</pre>Use command<pre>az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'</pre>to see how many AZ is<br>in current region. | `list(string)` | `[]` | no |
 | <a name="input_common_vmseries_sku"></a> [common\_vmseries\_sku](#input\_common\_vmseries\_sku) | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
 | <a name="input_create_inbound_resource_group"></a> [create\_inbound\_resource\_group](#input\_create\_inbound\_resource\_group) | If true, create a new Resource Group for inbound VM-Series. Otherwise use a pre-existing group. | `bool` | `true` | no |
 | <a name="input_create_outbound_resource_group"></a> [create\_outbound\_resource\_group](#input\_create\_outbound\_resource\_group) | If true, create a new Resource Group for outbound VM-Series. Otherwise use a pre-existing group. | `bool` | `true` | no |
@@ -135,7 +134,7 @@ terraform destroy
 | <a name="input_inbound_resource_group_name"></a> [inbound\_resource\_group\_name](#input\_inbound\_resource\_group\_name) | Name of the Resource Group to create if `create_inbound_resource_group` is true. Name of the pre-existing Resource Group to use otherwise. | `string` | n/a | yes |
 | <a name="input_inbound_storage_share_name"></a> [inbound\_storage\_share\_name](#input\_inbound\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping inbound VM-Series. | `string` | n/a | yes |
 | <a name="input_inbound_vmseries_tags"></a> [inbound\_vmseries\_tags](#input\_inbound\_vmseries\_tags) | Map of tags to be associated with the inbound virtual machines, their interfaces and public IP addresses. | `map(string)` | `{}` | no |
-| <a name="input_inbound_vmseries_version"></a> [inbound\_vmseries\_version](#input\_inbound\_vmseries\_version) | Inbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"10.1.0"` | no |
+| <a name="input_inbound_vmseries_version"></a> [inbound\_vmseries\_version](#input\_inbound\_vmseries\_version) | Inbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"10.0.6"` | no |
 | <a name="input_inbound_vmseries_vm_size"></a> [inbound\_vmseries\_vm\_size](#input\_inbound\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 | <a name="input_location"></a> [location](#input\_location) | The Azure region to use. | `string` | `"Australia Central"` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator. | `string` | `"pantf"` | no |
@@ -150,7 +149,7 @@ terraform destroy
 | <a name="input_outbound_resource_group_name"></a> [outbound\_resource\_group\_name](#input\_outbound\_resource\_group\_name) | Name of the Resource Group to create if `create_outbound_resource_group` is true. Name of the pre-existing Resource Group to use otherwise. | `string` | n/a | yes |
 | <a name="input_outbound_storage_share_name"></a> [outbound\_storage\_share\_name](#input\_outbound\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping outbound VM-Series. | `string` | n/a | yes |
 | <a name="input_outbound_vmseries_tags"></a> [outbound\_vmseries\_tags](#input\_outbound\_vmseries\_tags) | Map of tags to be associated with the outbound virtual machines, their interfaces and public IP addresses. | `map(string)` | `{}` | no |
-| <a name="input_outbound_vmseries_version"></a> [outbound\_vmseries\_version](#input\_outbound\_vmseries\_version) | Outbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"10.1.0"` | no |
+| <a name="input_outbound_vmseries_version"></a> [outbound\_vmseries\_version](#input\_outbound\_vmseries\_version) | Outbound VM-series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"10.0.6"` | no |
 | <a name="input_outbound_vmseries_vm_size"></a> [outbound\_vmseries\_vm\_size](#input\_outbound\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | `"Standard_D3_v2"` | no |
 | <a name="input_panorama_tags"></a> [panorama\_tags](#input\_panorama\_tags) | Predefined tags neccessary for the Panorama `azure` plugin v2 to automatically de-license the VM-Series. Can be set to empty `{}` when version v2 de-licensing is not used. | `map(string)` | <pre>{<br>  "PanoramaManaged": "yes"<br>}</pre> | no |
 | <a name="input_password"></a> [password](#input\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |

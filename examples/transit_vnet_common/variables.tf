@@ -178,15 +178,3 @@ variable "enable_zones" {
   default     = true
   type        = bool
 }
-
-variable "avzones" {
-  description = <<-EOF
-  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-  ie: for zone-redundant with 3 availability zone in current region value will be:
-  ```["1","2","3"]```
-  Use command ```az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'``` to see how many AZ is
-  in current region.
-  EOF
-  default     = []
-  type        = list(string)
-}

@@ -116,7 +116,7 @@ variable "img_sku" {
 
 variable "img_version" {
   description = "VM-series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
-  default     = "10.1.0"
+  default     = "9.1.3"
   type        = string
 }
 
@@ -172,14 +172,4 @@ variable "diagnostics_storage_uri" {
   description = "The storage account's blob endpoint to hold diagnostic files."
   default     = null
   type        = string
-}
-
-variable "avzones" {
-  description = <<-EOF
-  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-  ie: for zone-redundant with 3 availability zone in current region value will be:
-  ```["1","2","3"]```
-  EOF
-  default     = []
-  type        = list(string)
 }

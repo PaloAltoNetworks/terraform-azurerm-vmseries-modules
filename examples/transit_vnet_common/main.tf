@@ -55,7 +55,7 @@ resource "azurerm_public_ip" "public" {
   resource_group_name = azurerm_resource_group.this.name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = var.enable_zones ? var.avzones : null
+  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
 }
 
 # The Inbound Load Balancer for handling the traffic from the Internet.
@@ -67,7 +67,6 @@ module "inbound_lb" {
   resource_group_name               = azurerm_resource_group.this.name
   frontend_ips                      = var.frontend_ips
   enable_zones                      = var.enable_zones
-  avzones                           = var.avzones
   network_security_group_name       = "sg-public"
   network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
 }
@@ -80,13 +79,12 @@ module "outbound_lb" {
   location            = var.location
   resource_group_name = azurerm_resource_group.this.name
   enable_zones        = var.enable_zones
-  avzones             = var.avzones
   frontend_ips = {
     outbound = {
       subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)
       private_ip_address_allocation = "Static"
       private_ip_address            = var.olb_private_ip
-      zones                         = var.enable_zones ? var.avzones : null # For the regions without AZ support.
+      availability_zone             = var.enable_zones ? null : "No-Zone" # For the regions without AZ support.
       rules = {
         HA_PORTS = {
           port     = 0

@@ -1,5 +1,4 @@
 # Create a public IP for management
-
 resource "azurerm_public_ip" "this" {
   count = var.interface[0].public_ip == true ? 1 : 0
 
@@ -8,7 +7,7 @@ resource "azurerm_public_ip" "this" {
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = var.enable_zones ? var.avzones : null
+  availability_zone   = var.enable_zones ? "Zone-Redundant" : "No-Zone"
 
   tags = var.tags
 }
@@ -23,7 +22,7 @@ resource "azurerm_network_interface" "this" {
   ip_configuration {
     name                          = var.interface[0].name
     subnet_id                     = var.interface[0].subnet_id
-    private_ip_address_allocation = lookup(var.interface[0], "private_ip_address", null) != null ? "Static" : "Dynamic"
+    private_ip_address_allocation = lookup(var.interface[0], "private_ip_address", null) != null ? "static" : "dynamic"
     private_ip_address            = lookup(var.interface[0], "private_ip_address", null) != null ? var.interface[0].private_ip_address : null
     public_ip_address_id          = lookup(var.interface[0], "public_ip", false) ? azurerm_public_ip.this[0].id : null
   }
@@ -96,9 +95,9 @@ resource "azurerm_managed_disk" "this" {
   storage_account_type = "Standard_LRS"
   create_option        = "Empty"
   disk_size_gb         = lookup(each.value, "size", "2048")
-  zone = try(
-    each.value.zone,
-    var.enable_zones && var.avzone != null && var.avzone != "" ? var.avzone : null
+  zones = try(
+    [each.value.zone],
+    var.enable_zones && var.avzone != null && var.avzone != "" ? [var.avzone] : null
   )
 
   tags = var.tags

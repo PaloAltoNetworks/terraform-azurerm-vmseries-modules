@@ -51,11 +51,11 @@ route_tables = {
     routes = {
       "route_1" = {
         address_prefix = "10.110.0.0/16"
-        next_hop_type  = "VnetLocal"
+        next_hop_type  = "vnetlocal"
       },
       "route_2" = {
         address_prefix = "10.111.0.0/16"
-        next_hop_type  = "VnetLocal"
+        next_hop_type  = "vnetlocal"
       },
     }
   },
