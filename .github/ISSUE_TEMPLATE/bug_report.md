@@ -46,7 +46,6 @@ assignees: ''
 
 ## Your Environment
 
-<!--- Include the output of `terraform version` and other relevant details about -->
-<!--- the environment you experienced the bug in -->
+<!--- Include as many relevant details about the environment you experienced the bug in -->
 
 
