@@ -1,7 +1,7 @@
-location                     = "East US 2"
+location                     = "East US"
 inbound_resource_group_name  = "example-vmss-inbound"
 outbound_resource_group_name = "example-vmss-outbound"
-virtual_network_name         = "vnet-vmseries"
+virtual_network_name         = "vmss-transit-vnet"
 name_prefix                  = "vmseries-"
 inbound_name_prefix          = "inbound-"
 outbound_name_prefix         = "outbound-"
@@ -33,7 +33,7 @@ route_tables = {
       default = {
         address_prefix         = "0.0.0.0/0"
         next_hop_type          = "VirtualAppliance"
-        next_hop_in_ip_address = "10.110.0.21"
+        next_hop_in_ip_address = "10.110.1.21"
       }
     }
   }
@@ -44,23 +44,23 @@ subnets = {
     address_prefixes       = ["10.110.255.0/24"]
     network_security_group = "sg_mgmt"
   },
-  "outbound_private" = {
+  "inbound_private" = {
     address_prefixes       = ["10.110.0.0/24"]
     network_security_group = "sg_private"
     route_table            = "private_route_table"
   },
-  "inbound_private" = {
-    address_prefixes       = ["10.110.1.0/24"] # optional subnet
+  "inbound_public" = {
+    address_prefixes       = ["10.110.129.0/24"]
+    network_security_group = "sg_pub_inbound"
+  },
+  "outbound_private" = {
+    address_prefixes       = ["10.110.1.0/24"] # confirm Ref-Arch scheme
     network_security_group = "sg_private"
     route_table            = "private_route_table"
   },
   "outbound_public" = {
-    address_prefixes       = ["10.110.129.0/24"]
+    address_prefixes       = ["10.110.130.0/24"]
     network_security_group = "sg_pub_outbound"
-  },
-  "inbound_public" = {
-    address_prefixes       = ["10.110.130.0/24"] # optional subnet
-    network_security_group = "sg_pub_inbound"
   },
 }
 
@@ -80,7 +80,7 @@ public_frontend_ips = {
   }
 }
 
-olb_private_ip = "10.110.0.21"
+olb_private_ip = "10.110.1.21"
 
 inbound_vmseries_version  = "10.0.6"
 inbound_vmseries_vm_size  = "Standard_D3_v2"

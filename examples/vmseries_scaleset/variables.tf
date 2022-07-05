@@ -256,6 +256,7 @@ variable "outbound_lb_name" {
 
 variable "olb_private_ip" {
   description = "The private IP address to assign to the outbound load balancer. This IP **must** fall in the `outbound_private` subnet CIDR."
+  default     = "10.110.1.21"
 }
 
 variable "public_frontend_ips" {
