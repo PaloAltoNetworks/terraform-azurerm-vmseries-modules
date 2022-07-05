@@ -15,8 +15,8 @@ For copyright and license see the LICENSE file.
 
 This repository has the following directory structure:
 
-* `modules` - this directory contains several standalone, reusable, production-grade Terraform modules. Each module is individually documented.
-* `examples` - this directory shows examples of different ways to combine the modules contained in the
+* [modules](./modules): This directory contains several standalone, reusable, production-grade Terraform modules. Each module is individually documented.
+* [examples](./examples): This directory shows examples of different ways to combine the modules contained in the
   `modules` directory.
 
 ## Compatibility
@@ -28,18 +28,18 @@ Terraform version to be 0.12.29 across most of the modules.
 ## Versioning
 
 These modules follow the principles of [Semantic Versioning](http://semver.org/). You can find each new release,
-along with the changelog, on the GitHub [Releases](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/releases) page.
+along with the changelog, on the GitHub [Releases](../../releases) page.
 
 ## Getting Help
 
-If you have found a bug, please report it. The preferred way is to create a new issue on the [GitHub issue page](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/issues).
+If you have found a bug, please report it. The preferred way is to create a new issue on the [GitHub issue page](../../issues).
 
 For consulting support, please contact services-sales@paloaltonetworks.com or your Palo Alto Networks account manager.
 
 ## Contributing
 
 Contributions are welcome, and they are greatly appreciated! Every little bit helps,
-and credit will always be given. Please follow our [contributing guide](https://github.com/PaloAltoNetworks/terraform-best-practices/blob/main/CONTRIBUTING.md).
+and credit will always be given. Please follow our [contributing guide](./CONTRIBUTING.md).
 
 <!-- ## Who maintains these modules?
 
