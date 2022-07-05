@@ -49,12 +49,6 @@ variable "mgmt_pip_domain_name_label" {
   type    = string
 }
 
-variable "mgmt_pip_prefix_id" {
-  description = "Public IP address prefix id to use for management interface."
-  default     = null
-  type        = string
-}
-
 variable "public_pip_domain_name_label" {
   default = null
   type    = string

@@ -69,7 +69,6 @@ No modules.
 | <a name="input_location"></a> [location](#input\_location) | Region to install VM-Series and dependencies. | `string` | n/a | yes |
 | <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the metrics retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether, which is incompatible with `create_autoscaling`. | `number` | `null` | no |
 | <a name="input_mgmt_pip_domain_name_label"></a> [mgmt\_pip\_domain\_name\_label](#input\_mgmt\_pip\_domain\_name\_label) | n/a | `string` | `null` | no |
-| <a name="input_mgmt_pip_prefix_id"></a> [mgmt\_pip\_prefix\_id](#input\_mgmt\_pip\_prefix\_id) | Public IP address prefix id to use for management interface. | `string` | `null` | no |
 | <a name="input_name_application_insights"></a> [name\_application\_insights](#input\_name\_application\_insights) | Name of the Applications Insights instance to be created. Can be null, in which case a default name is auto-generated. | `string` | `null` | no |
 | <a name="input_name_autoscale"></a> [name\_autoscale](#input\_name\_autoscale) | Name of the Autoscale Settings to be created. Can be null, in which case a default name is auto-generated. | `string` | `null` | no |
 | <a name="input_name_fw_mgmt_pip"></a> [name\_fw\_mgmt\_pip](#input\_name\_fw\_mgmt\_pip) | n/a | `string` | `"fw-mgmt-pip"` | no |
