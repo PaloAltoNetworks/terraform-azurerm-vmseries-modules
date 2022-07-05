@@ -108,7 +108,7 @@ pre-commit run -a
 
 This command does not commit/add/push any changes to Git. It only changes local files.
 
-The first `git commit` attempt can show it is possible to show "terraform-docs: Failed". This is expected behavior, which occurs due to the `pre-commit` git hook. Simply look at `git status` and it should show changes to the `README.md` file. Issue `git add README.md` and then re-attempt `git commit`. It should pass.
+The first time `pre-commit` is run, it is possible to show "FAILED" if any docs were updated. This is expected behavior. Simply run `pre-commit` again and it should pass. Once all pre-commit tests pass, make another commit to check in those changes and push.
 
 ## Coding Standards
 
