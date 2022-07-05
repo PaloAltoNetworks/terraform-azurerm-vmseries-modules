@@ -21,13 +21,13 @@
 .terrascan
 # Terraform dot files
 .terraform
-.terraform.lock.hcl
 .terraformrc
 **/.terraform/*
 .terraform.d
 *.tfstate
 *.tfstate.*
 .vscode
+.idea
 .idea
 
 # Palo auth codes
