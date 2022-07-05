@@ -15,8 +15,6 @@ allow_inbound_mgmt_ips = [
   "10.255.0.0/24",   # Example Panorama access
 ]
 
-olb_private_ip = "10.110.0.21"
-
 route_tables = {
   private_route_table = {
     routes = {

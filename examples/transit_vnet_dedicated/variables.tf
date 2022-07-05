@@ -141,6 +141,7 @@ variable "vnet_tags" {
 
 variable "olb_private_ip" {
   description = "The private IP address to assign to the outbound load balancer. This IP **must** fall in the `private_subnet` network."
+  default     = "10.110.0.21"
   type        = string
 }
 
