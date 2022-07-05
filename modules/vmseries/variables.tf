@@ -37,7 +37,6 @@ variable "interfaces" {
   - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default is false.
   - `public_ip_address_id`: Identifier of the existing public IP to associate.
   - `create_public_ip`: If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `enable_ip_forwarding`: If true, the network interface will not discard packets sent to an IP address other than the one assigned. False disables this and allows the network interface to accept any traffic.
 
   Example:
 
@@ -46,11 +45,13 @@ variable "interfaces" {
     {
       subnet_id            = azurerm_subnet.my_mgmt_subnet.id
       public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
+      enable_ip_forwarding = false
     },
     {
       subnet_id           = azurerm_subnet.my_pub_subnet.id
       lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
+      enable_ip_forwarding = true
     },
   ]
   ```
