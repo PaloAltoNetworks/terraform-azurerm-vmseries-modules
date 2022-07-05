@@ -17,13 +17,16 @@ Contributions are welcome across the entire project:
 ### New Contributors
 
 1. Search the [issues](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules.git/issues) to see if there is an existing issue. If not, open an issue (note the issue ID).
-
 1. Fork the repository to your personal namespace (only need to do this once).
+
+   ![fork](docs/images/fork.png)
 
 1. Clone the repo from your personal namespace.
 
    `git clone https://github.com/{username}/terraform-azurerm-vmseries-modules.git`
    Ensure that `{username}` is _your_ user name.
+
+   ![clone](docs/images/clone.png)
 
 1. Add the source repository as an upsteam.
 
@@ -49,6 +52,8 @@ Contributions are welcome across the entire project:
 
 1. Open a Pull Request and link it to the issue (reference the issue, i.e. "fixes #233")
 
+   ![pr](docs/images/pr.png)
+
 1. Once the PR has been merged, delete your local branch
 
    `git branch -D 101-updating-wildfire-templates`
@@ -66,10 +71,8 @@ Contributions are welcome across the entire project:
    `git checkout -b 101-updating-wildfire-templates`
 
 1. Make any changes, and ensure the commit messages are clear and consistent (reference the issue ID and type of change in all commit messages)
-
-1. [Test](#testing) the changes (preferably add tests for any code changes)
-
-1. Document the changes (update the README and any other relevant documents)
+1. [Test](#testing) the changes (preferably add tests for any code changes and ensure that all Python code conforms to PEP8 and passes pylint)
+1. Document the changes (update the README and any other relevant documents and include PEP257 docstrings for any new functions in any Python code)
 
 1. Run the `pre-commit` script. See the [tools](#tools) section for more information.
    *NOTE* If making changes that will update the Terraform docs, this will need to be run twice.
@@ -82,6 +85,8 @@ Contributions are welcome across the entire project:
    `git rebase upstream dev`
 
 1. Open a Pull Request and link it to the issue (reference the issue, i.e. "fixes #233")
+
+   ![pr](docs/images/pr.png)
 
 1. Once the PR has been merged, delete your local branch
 
