@@ -24,8 +24,6 @@ pre-commit run -a
 
 This command does not commit/add/push any changes to Git. It only changes local files.
 
-The first time `pre-commit` is run, it is possible to show "FAILED" if any docs were updated. This is expected behavior. Simply run `pre-commit` again and it should pass. Once all pre-commit tests pass, make another commit to check in those changes and push.
-
 ## Coding Standards
 
 Please follow the [Terraform conventions](https://github.com/PaloAltoNetworks/terraform-best-practices/blob/master/README.md).
