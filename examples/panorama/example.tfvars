@@ -1,8 +1,9 @@
 location             = "East US"
 tags                 = { environment = "dev" }
+panorama_name        = "example-panorama"
 resource_group_name  = "example-rg"
-vnet_name            = "example-vnet"
 storage_account_name = "examplestorage"
+vnet_name            = "example-vnet"
 enable_zones         = true
 address_space        = ["10.112.0.0/16"]
 panorama_version     = "10.1.5"
