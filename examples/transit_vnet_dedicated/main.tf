@@ -112,7 +112,6 @@ module "bootstrap" {
 module "outbound_bootstrap" {
   source = "../../modules/bootstrap"
 
-  # location               = var.location
   resource_group_name    = azurerm_resource_group.this.name
   create_storage_account = false
   storage_account_name   = module.bootstrap.storage_account.name
