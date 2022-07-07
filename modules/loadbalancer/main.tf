@@ -77,7 +77,7 @@ locals {
   input_rules = { for v in local.input_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 
   # Now, the outputs to be returned by the module. First, calculate the raw IP addresses.
-  output_ips = { for _, v in azurerm_lb.lb.frontend_ip_configuration : v.name => coalesce(try(data.azurerm_public_ip.exists[v.name].ip_address, azurerm_public_ip.this[v.name].ip_address, v.private_ip_address)) }
+  output_ips = { for _, v in azurerm_lb.lb.frontend_ip_configuration : v.name => try(data.azurerm_public_ip.exists[v.name].ip_address, azurerm_public_ip.this[v.name].ip_address, v.private_ip_address) }
 
   # A more rich output combines the raw IP addresses with more attributes.
   # As the later NSGs demand that troublesome numerical `priority` attribute, we

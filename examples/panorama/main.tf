@@ -85,11 +85,11 @@ module "panorama" {
   ]
 
   logging_disks = {
-    disk_name_1 = {
+    logs-1 = {
       size : "2048"
       lun : "1"
     }
-    disk_name_2 = {
+    logs-2 = {
       size : "2048"
       lun : "2"
     }

@@ -9,8 +9,7 @@ variable "resource_group_name" {
 }
 
 variable "name" {
-  description = "Hostname of the virtual machine."
-  default     = "fw00"
+  description = "Virtual machine instance name."
   type        = string
 }
 
@@ -29,24 +28,29 @@ variable "avset_id" {
 variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
-  The first should be the Management network interface, which does not participate in data filtering.
-  The remaining ones are the dataplane interfaces.
-
-  - `subnet_id`: Identifier of the existing subnet to use.
-  - `lb_backend_pool_id`: Identifier of the existing backend pool of the load balancer to associate.
-  - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default is false.
-  - `public_ip_address_id`: Identifier of the existing public IP to associate.
-  - `create_public_ip`: If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
+  Options for an interface object:
+  - `name`                 - (required|string) Interface name.
+  - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
+  - `private_ip_address`   - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
+  - `public_ip_address_id` - (optional|string) Identifier of an existing public IP to associate.
+  - `create_public_ip`     - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
+  - `availability_zone`    - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
+  - `enable_ip_forwarding` - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
+  - `enable_backend_pool`  - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
+  - `lb_backend_pool_id`   - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
+  - `tags`                 - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
 
   Example:
 
   ```
   [
     {
+      name                 = "mgmt"
       subnet_id            = azurerm_subnet.my_mgmt_subnet.id
       public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
     },
     {
+      name                = "public"
       subnet_id           = azurerm_subnet.my_pub_subnet.id
       lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
@@ -129,7 +133,7 @@ variable "img_version" {
 
 variable "vm_os_simple" {
   description = "Allows user to specify a simple name for the OS required and auto populate the publisher, offer, sku parameters"
-  default     = null
+  default     = "UbuntuServer"
   type        = string
 }
 
