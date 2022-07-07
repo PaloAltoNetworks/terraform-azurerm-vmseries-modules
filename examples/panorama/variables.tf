@@ -18,7 +18,7 @@ variable "storage_account_name" {
 }
 
 variable "storage_share_name" {
-  description = "Name of storage File Share to be created that holds `files` for bootstrapping."
+  description = "Name of storage File Share to be created that will hold Panorama's boot diagnostics."
   type        = string
 }
 
