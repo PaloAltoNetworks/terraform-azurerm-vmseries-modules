@@ -3,7 +3,7 @@
 This Terraform example uses the [Palo Alto Networks Bootstrap module](../../modules/bootstrap/README.md) to deploy a Storage Account and dependencies required
 to [bootstrap a VM-Series firewall in Azure](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-the-vm-series-firewall-in-azure).
 
-This example covers creation of a single Storage Account with two File Shares: one for Next Generation Firewalls handling inbound traffic and one for firewalls handling OBEW (outbound-east-west) traffic.
+This example covers creation of a single Storage Account with two File Shares: one for Next Generation Firewalls handling inbound traffic and one for firewalls handling outbound and east-west (OBEW) traffic.
 
 The following resources will be deployed when using the provided example:
 * 1 [Resource Group](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/manage-resource-groups-portal#what-is-a-resource-group)
