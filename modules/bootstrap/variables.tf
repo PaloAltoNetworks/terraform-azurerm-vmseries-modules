@@ -68,8 +68,18 @@ variable "files_md5" {
 }
 
 variable "storage_share_name" {
-  description = "Name of storage File Share to be created that holds `files` for bootstrapping."
+  description = <<-EOF
+  Name of a storage File Share to be created that will hold `files` used for bootstrapping.
+  For rules defining a valid name see [Microsoft documentation](https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Shares--Directories--Files--and-Metadata#share-names).
+  EOF
   type        = string
+  validation {
+    condition = alltrue([
+      can(regex("^[a-z0-9](-?[a-z0-9])+$", var.storage_share_name)),
+      can(regex("^([a-z0-9-]){3,63}$", var.storage_share_name))
+    ])
+    error_message = "A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL schema."
+  }
 }
 
 variable "storage_share_quota" {
