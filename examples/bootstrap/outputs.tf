@@ -23,7 +23,7 @@ output "storage_share_names" {
 }
 
 output "storage_share_ids" {
-  description = "Identifier of the File Share within Azure Storage."
+  description = "Identifiers of the File Shares within Azure Storage."
   value = {
     inbound = module.inbound_bootstrap.storage_share.id
     obew    = module.obew_bootstrap.storage_share.id
