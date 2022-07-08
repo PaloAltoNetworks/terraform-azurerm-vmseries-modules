@@ -15,7 +15,7 @@ output "primary_access_key" {
 }
 
 output "storage_share_names" {
-  description = "Name of the File Share within Azure Storage."
+  description = "Names of the File Shares within Azure Storage."
   value = {
     inbound = module.inbound_bootstrap.storage_share.name
     obew    = module.obew_bootstrap.storage_share.name
