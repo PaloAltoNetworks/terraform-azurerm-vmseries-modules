@@ -13,6 +13,12 @@ variable "name" {
   type        = string
 }
 
+variable "managed_identities" {
+  description = "An existing user-assigned managed identity, which Application Gateway uses to retrieve certificates from Key Vault."
+  default     = null
+  type        = list(string)
+}
+
 variable "sku" {
   description = "Sku of the Application Gateway. Check Microsoft documentation for possible values,their combinations and limitations."
   default = {

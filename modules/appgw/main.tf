@@ -43,6 +43,15 @@ resource "azurerm_application_gateway" "this" {
     capacity = var.sku.capacity
   }
 
+  dynamic "identity" {
+    for_each = var.managed_identities != null ? [1] : []
+
+    content {
+      type         = "UserAssigned"
+      identity_ids = var.managed_identities
+    }
+  }
+
   gateway_ip_configuration {
     name      = "appgw_ip_config"
     subnet_id = var.subnet_id
@@ -95,7 +104,7 @@ resource "azurerm_application_gateway" "this" {
     content {
       name                                      = "${probe.key}-probe"
       path                                      = probe.value.probe_path
-      protocol                                  = try(probe.value.backend_protocol, "http")
+      protocol                                  = try(probe.value.backend_protocol, "Http")
       host                                      = try(probe.value.probe_host, null)
       pick_host_name_from_backend_http_settings = try(probe.value.probe_host, null) == null ? true : false
       port                                      = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(probe.value.probe_port, null) : null
@@ -130,7 +139,7 @@ resource "azurerm_application_gateway" "this" {
     content {
       name                                = "${backend_http_settings.key}-httpsettings"
       port                                = try(backend_http_settings.value.backend_port, 80)
-      protocol                            = try(backend_http_settings.value.backend_protocol, "http")
+      protocol                            = try(backend_http_settings.value.backend_protocol, "Http")
       pick_host_name_from_backend_address = try(backend_http_settings.value.backend_hostname_from_backend, null)
       host_name                           = try(backend_http_settings.value.backend_hostname, null)
       path                                = try(backend_http_settings.value.backend_path, null)
@@ -148,12 +157,13 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "ssl_certificate" {
-    for_each = { for k, v in var.rules : k => v if try(v.ssl_certificate_path, null) != null }
+    for_each = { for k, v in var.rules : k => v if try(v.ssl_certificate_path, v.ssl_certificate_vault_id, null) != null }
 
     content {
-      name     = "${ssl_certificate.key}-ssl-cert"
-      data     = filebase64(ssl_certificate.value.ssl_certificate_path)
-      password = ssl_certificate.value.ssl_certificate_pass
+      name                = "${ssl_certificate.key}-ssl-cert"
+      data                = try(filebase64(ssl_certificate.value.ssl_certificate_path), null)
+      password            = try(ssl_certificate.value.ssl_certificate_pass, null)
+      key_vault_secret_id = try(ssl_certificate.value.ssl_certificate_vault_id, null)
     }
   }
 
@@ -164,10 +174,10 @@ resource "azurerm_application_gateway" "this" {
       name                           = "${http_listener.key}-listener"
       frontend_ip_configuration_name = "frontend_ipconfig"
       frontend_port_name             = "${http_listener.value.listener_port}-front-port"
-      protocol                       = try(http_listener.value.listener_protocol, "http")
+      protocol                       = try(http_listener.value.listener_protocol, "Http")
       host_name                      = !contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names[0], null) : null
       host_names                     = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names, null) : null
-      ssl_certificate_name           = try(http_listener.value.ssl_certificate_path, null) != null ? "${http_listener.key}-ssl-cert" : null
+      ssl_certificate_name           = try(http_listener.value.ssl_certificate_path, http_listener.value.ssl_certificate_vault_id, null) != null ? "${http_listener.key}-ssl-cert" : null
       ssl_profile_name               = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.ssl_profile_name, null) : null
 
       dynamic "custom_error_configuration" {
