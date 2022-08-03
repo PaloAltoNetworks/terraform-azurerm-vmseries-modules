@@ -206,16 +206,10 @@ variable "accelerated_networking" {
   type        = bool
 }
 
-variable "metrics_retention_in_days" {
-  description = "Specifies the metrics retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether, which is incompatible with `create_autoscaling`."
+variable "app_insights_settings" {
+  description = "A map of the Application Insights related parameters. Full description available under [vmseries/README.md](../../modules/vmseries/README.md#input_app_insights_settings)"
   default     = null
-  type        = number
-}
-
-variable "name_application_insights" {
-  description = "Name of the Applications Insights instance to be created. Can be null, in which case a default name is auto-generated."
-  default     = null
-  type        = string
+  type        = map(any)
 }
 
 variable "name_autoscale" {
@@ -275,16 +269,7 @@ variable "autoscale_metrics" {
 
   Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
   EOF
-  default = {
-    "DataPlaneCPUUtilizationPct" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-    "panSessionUtilization" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-  }
+  default     = {}
 }
 
 variable "scaleout_statistic" {

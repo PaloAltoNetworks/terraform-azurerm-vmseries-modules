@@ -244,6 +244,7 @@ module "inbound_scale_set" {
   subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
   subnet_private                = { id = module.vnet.subnet_ids["inbound_private"] }
   subnet_public                 = { id = module.vnet.subnet_ids["inbound_public"] }
+  app_insights_settings         = var.app_insights_settings
   bootstrap_options = (join(",",
     [
       "storage-account=${module.inbound_bootstrap.storage_account.name}",
@@ -288,6 +289,7 @@ module "outbound_scale_set" {
   subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
   subnet_private                = { id = module.vnet.subnet_ids["outbound_private"] }
   subnet_public                 = { id = module.vnet.subnet_ids["outbound_public"] }
+  app_insights_settings         = var.app_insights_settings
   bootstrap_options = (join(",",
     [
       "storage-account=${module.outbound_bootstrap.storage_account.name}",
