@@ -31,13 +31,14 @@ $ terraform apply
 
 | Name | Source | Version |
 |------|--------|---------|
+| <a name="module_appgw"></a> [appgw](#module\_appgw) | ../../modules/appgw | n/a |
 | <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
 
 ## Resources
 
 | Name | Type |
 |------|------|
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/resource_group) | resource |
+| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/data-sources/resource_group) | data source |
 
 ## Inputs
 
@@ -54,13 +55,5 @@ $ terraform apply
 
 ## Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_network_security_group_ids"></a> [network\_security\_group\_ids](#output\_network\_security\_group\_ids) | The identifiers of the created Network Security Groups. |
-| <a name="output_resource_group_id"></a> [resource\_group\_id](#output\_resource\_group\_id) | The identifier of the Resource Group. |
-| <a name="output_resource_group_location"></a> [resource\_group\_location](#output\_resource\_group\_location) | The location of the Resource Group. |
-| <a name="output_resource_group_name"></a> [resource\_group\_name](#output\_resource\_group\_name) | The name of the Resource Group. |
-| <a name="output_route_table_id"></a> [route\_table\_id](#output\_route\_table\_id) | The identifier of the created Route Tables. |
-| <a name="output_subnet_ids"></a> [subnet\_ids](#output\_subnet\_ids) | The identifiers of the created Subnets. |
-| <a name="output_virtual_network_id"></a> [virtual\_network\_id](#output\_virtual\_network\_id) | The identifier of the created Virtual Network. |
+No outputs.
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

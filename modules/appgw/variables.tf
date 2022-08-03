@@ -14,7 +14,11 @@ variable "name" {
 }
 
 variable "managed_identities" {
-  description = "An existing user-assigned managed identity, which Application Gateway uses to retrieve certificates from Key Vault."
+  description = <<-EOF
+  A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
+
+  These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault.
+  EOF
   default     = null
   type        = list(string)
 }
@@ -118,10 +122,13 @@ variable "rules" {
     
     - `ssl_certificate_path`
       - example value: "cert/path"
-      - a path to a certificate in `.pfx` format. Required only for `https` listeners
+      - a path to a certificate in `.pfx` format. Required only for `https` listeners. Mutually exclusive with `ssl_certificate_vault_id`
     - `ssl_certificate_pass`
       - example value: "cert_password"
       - a matching password for the certificate specified in `ssl_certificate_path`
+    - `ssl_certificate_vault_id`
+      - example value: "https://key.vault.azure.net/secrets/cert/bb1391bba15042a59adaea584a8208e8"
+      - an ID of a certificate stored in a Azure Key Vault, mutually exclusive with `ssl_certificate_path`. Requires `managed_identities`. The identity(ties) used has to have at least `GET` access to Key Vault's secrets
     ```
   EOF
   validation {

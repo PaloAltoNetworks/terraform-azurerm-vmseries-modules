@@ -48,7 +48,8 @@ module "appgw" {
       probe_theshold = 2
 
       ssl_certificate_vault_id = "https://fosix-kv.vault.azure.net/secrets/fosix-cert/bb1391bba15042a59adaea584a8208e8"
-
+      ssl_certificate_path     = "files/self_signed.pfx"
+      ssl_certificate_pass     = "123qweasd"
     }
   }
 }
