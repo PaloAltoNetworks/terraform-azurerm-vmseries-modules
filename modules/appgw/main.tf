@@ -5,20 +5,20 @@ locals {
   # The allocation method has to match PIP's SKU as well.
   pip_allocation_method = local.pip_sku == "Basic" ? "Dynamic" : "Static"
 
-  # Calculate a map of unique frontend ports based on the `listener_port` values defined in `rules` map.
+  # Calculate a map of unique frontend ports based on the `listener.port` values defined in `rules` map.
   # A unque set of ports will be created upfront and then referenced in the listener's config.
-  front_ports_list = distinct([for k, v in var.rules : v.listener_port])
+  front_ports_list = distinct([for k, v in var.rules : v.listener.port])
   front_ports_map  = { for v in local.front_ports_list : "${v}-front-port" => v }
 
   # Calculate a flat map of all backend's trusted root certificates.
   # Root certs are created upfront and then referenced in a single list in the http setting's config.
   root_certs_flat_list = flatten([
     for k, v in var.rules : [
-      for name, path in v.backend_root_certs : {
+      for name, path in v.backend.root_certs : {
         name = "${k}-${name}"
         path = path
       }
-    ] if try(v.backend_root_certs, null) != null
+    ] if can(v.backend.root_certs)
   ])
 
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
@@ -62,7 +62,7 @@ resource "azurerm_application_gateway" "this" {
     public_ip_address_id = azurerm_public_ip.this.id
   }
 
-  # There is only a single backend - the VMSeries private IPs assigned tu untrusted NICs
+  # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
   backend_address_pool {
     name         = "vmseries"
     ip_addresses = var.vmseries_ips
@@ -99,25 +99,26 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "probe" {
-    for_each = { for k, v in var.rules : k => v if try(v.probe_path, null) != null }
+    for_each = { for k, v in var.rules : k => v if can(v.probe.path) }
 
     content {
-      name                                      = "${probe.key}-probe"
-      path                                      = probe.value.probe_path
-      protocol                                  = try(probe.value.backend_protocol, "Http")
-      host                                      = try(probe.value.probe_host, null)
-      pick_host_name_from_backend_http_settings = try(probe.value.probe_host, null) == null ? true : false
-      port                                      = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(probe.value.probe_port, null) : null
-      interval                                  = try(probe.value.probe_interval, 5)
-      timeout                                   = try(probe.value.probe_timeout, 30)
-      unhealthy_threshold                       = try(probe.value.probe_treshold, 2)
+      name = "${probe.key}-probe"
+      path = probe.value.probe.path
+      # protocol                                  = try(probe.value.backend.protocol, "Http")
+      protocol                                  = try(probe.value.backend.protocol, "Http")
+      host                                      = try(probe.value.probe.host, null)
+      pick_host_name_from_backend_http_settings = !can(probe.value.probe.host)
+      port                                      = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(probe.value.probe.port, null) : null
+      interval                                  = try(probe.value.probe.interval, 5)
+      timeout                                   = try(probe.value.probe.timeout, 30)
+      unhealthy_threshold                       = try(probe.value.probe.threshold, 2)
 
       dynamic "match" {
-        for_each = try(probe.value.probe_match_code, null) != null ? { 1 = 1 } : {}
+        for_each = can(probe.value.probe.match_code) ? { 1 = 1 } : {}
 
         content {
-          status_code = probe.value.probe_match_code
-          body        = try(probe.value.probe_match_body, null)
+          status_code = probe.value.probe.match_code
+          body        = try(probe.value.probe.match_body, null)
         }
       }
     }
@@ -134,36 +135,32 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "backend_http_settings" {
-    for_each = var.rules
+    for_each = { for k, v in var.rules : k => v if !can(v.redirect.type) }
 
     content {
       name                                = "${backend_http_settings.key}-httpsettings"
-      port                                = try(backend_http_settings.value.backend_port, 80)
-      protocol                            = try(backend_http_settings.value.backend_protocol, "Http")
-      pick_host_name_from_backend_address = try(backend_http_settings.value.backend_hostname_from_backend, null)
-      host_name                           = try(backend_http_settings.value.backend_hostname, null)
-      path                                = try(backend_http_settings.value.backend_path, null)
-      request_timeout                     = try(backend_http_settings.value.backend_timeout, 60)
-      probe_name                          = try(backend_http_settings.value.probe_path, null) != null ? "${backend_http_settings.key}-probe" : null
-      cookie_based_affinity               = try(backend_http_settings.value.cookie_based_affinity, "Enabled")
-      affinity_cookie_name                = try(backend_http_settings.value.affinity_cookie_name, null)
-      trusted_root_certificate_names = contains(["Standard_v2", "WAF_v2"], var.sku.tier) && try(backend_http_settings.value.backend_root_certs, null) != null ? (
-        [
-          for k, v in backend_http_settings.value.backend_root_certs : "${backend_http_settings.key}-${k}"
-        ]) : (
-        null
-      )
+      port                                = try(backend_http_settings.value.backend.port, 80)
+      protocol                            = try(backend_http_settings.value.backend.protocol, "Http")
+      pick_host_name_from_backend_address = try(backend_http_settings.value.backend.hostname_from_backend, null)
+      host_name                           = try(backend_http_settings.value.backend.hostname, null)
+      path                                = try(backend_http_settings.value.backend.path, null)
+      request_timeout                     = try(backend_http_settings.value.backend.timeout, 60)
+      probe_name                          = can(backend_http_settings.value.probe.path) ? "${backend_http_settings.key}-probe" : null
+      cookie_based_affinity               = try(backend_http_settings.value.backend.cookie_based_affinity, "Enabled")
+      affinity_cookie_name                = try(backend_http_settings.value.backend.affinity_cookie_name, null)
+      trusted_root_certificate_names = contains(["Standard_v2", "WAF_v2"], var.sku.tier) && can(backend_http_settings.value.backend.root_certs) ? (
+      [for k, v in backend_http_settings.value.backend.root_certs : "${backend_http_settings.key}-${k}"]) : null
     }
   }
 
   dynamic "ssl_certificate" {
-    for_each = { for k, v in var.rules : k => v if try(v.ssl_certificate_path, v.ssl_certificate_vault_id, null) != null }
+    for_each = { for k, v in var.rules : k => v if try(v.listener.ssl_certificate_path, v.listener.ssl_certificate_vault_id, null) != null }
 
     content {
       name                = "${ssl_certificate.key}-ssl-cert"
-      data                = try(filebase64(ssl_certificate.value.ssl_certificate_path), null)
-      password            = try(ssl_certificate.value.ssl_certificate_pass, null)
-      key_vault_secret_id = try(ssl_certificate.value.ssl_certificate_vault_id, null)
+      data                = try(filebase64(ssl_certificate.value.listener.ssl_certificate_path), null)
+      password            = try(ssl_certificate.value.listener.ssl_certificate_pass, null)
+      key_vault_secret_id = try(ssl_certificate.value.listener.ssl_certificate_vault_id, null)
     }
   }
 
@@ -173,15 +170,15 @@ resource "azurerm_application_gateway" "this" {
     content {
       name                           = "${http_listener.key}-listener"
       frontend_ip_configuration_name = "frontend_ipconfig"
-      frontend_port_name             = "${http_listener.value.listener_port}-front-port"
-      protocol                       = try(http_listener.value.listener_protocol, "Http")
-      host_name                      = !contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names[0], null) : null
-      host_names                     = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.host_names, null) : null
-      ssl_certificate_name           = try(http_listener.value.ssl_certificate_path, http_listener.value.ssl_certificate_vault_id, null) != null ? "${http_listener.key}-ssl-cert" : null
+      frontend_port_name             = "${http_listener.value.listener.port}-front-port"
+      protocol                       = try(http_listener.value.listener.protocol, "Http")
+      host_name                      = !contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.listener.host_names[0], null) : null
+      host_names                     = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.listener.host_names, null) : null
+      ssl_certificate_name           = try(http_listener.value.listener.ssl_certificate_path, http_listener.value.listener.ssl_certificate_vault_id, null) != null ? "${http_listener.key}-ssl-cert" : null
       ssl_profile_name               = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(http_listener.value.ssl_profile_name, null) : null
 
       dynamic "custom_error_configuration" {
-        for_each = try(http_listener.value.custom_error_pages, null) != null ? http_listener.value.custom_error_pages : {}
+        for_each = try(http_listener.value.listener.custom_error_pages, {})
 
         content {
           status_code           = custom_error_configuration.key
@@ -195,12 +192,29 @@ resource "azurerm_application_gateway" "this" {
     for_each = var.rules
 
     content {
-      name                       = "${request_routing_rule.key}-rule"
-      rule_type                  = "Basic"
-      http_listener_name         = "${request_routing_rule.key}-listener"
-      backend_address_pool_name  = "vmseries"
-      backend_http_settings_name = "${request_routing_rule.key}-httpsettings"
-      priority                   = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(request_routing_rule.value.priority, null) : null
+      name      = "${request_routing_rule.key}-rule"
+      rule_type = "Basic"
+      priority  = contains(["Standard_v2", "WAF_v2"], var.sku.tier) ? try(request_routing_rule.value.priority, null) : null
+
+      http_listener_name = "${request_routing_rule.key}-listener"
+
+      backend_address_pool_name  = can(request_routing_rule.value.redirect.type) ? null : "vmseries"
+      backend_http_settings_name = can(request_routing_rule.value.redirect.type) ? null : "${request_routing_rule.key}-httpsettings"
+
+      redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? "${request_routing_rule.key}-redirect" : null
+    }
+  }
+
+  dynamic "redirect_configuration" {
+    for_each = { for k, v in var.rules : k => v if can(v.redirect.type) }
+
+    content {
+      name                 = "${redirect_configuration.key}-redirect"
+      redirect_type        = redirect_configuration.value.redirect.type
+      target_listener_name = try(redirect_configuration.value.redirect.target_listener_name, null)
+      target_url           = try(redirect_configuration.value.redirect.target_url, null)
+      include_path         = try(redirect_configuration.value.redirect.include_path, null)
+      include_query_string = try(redirect_configuration.value.redirect.include_query_string, null)
     }
   }
 }
