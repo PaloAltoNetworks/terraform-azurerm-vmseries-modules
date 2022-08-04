@@ -102,9 +102,8 @@ resource "azurerm_application_gateway" "this" {
     for_each = { for k, v in var.rules : k => v if can(v.probe.path) }
 
     content {
-      name = "${probe.key}-probe"
-      path = probe.value.probe.path
-      # protocol                                  = try(probe.value.backend.protocol, "Http")
+      name                                      = "${probe.key}-probe"
+      path                                      = probe.value.probe.path
       protocol                                  = try(probe.value.backend.protocol, "Http")
       host                                      = try(probe.value.probe.host, null)
       pick_host_name_from_backend_http_settings = !can(probe.value.probe.host)
@@ -114,7 +113,7 @@ resource "azurerm_application_gateway" "this" {
       unhealthy_threshold                       = try(probe.value.probe.threshold, 2)
 
       dynamic "match" {
-        for_each = can(probe.value.probe.match_code) ? { 1 = 1 } : {}
+        for_each = can(probe.value.probe.match_code) ? [1] : []
 
         content {
           status_code = probe.value.probe.match_code

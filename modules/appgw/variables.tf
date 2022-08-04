@@ -52,106 +52,40 @@ variable "rules" {
     A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. 
     A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. 
 
-    For maximum and minimum values for particular protperties please refer to Microsoft documentation.
+    For maximum and minimum values for particular properties please refer to Microsoft documentation.
 
-    The following properties are available:
+    The following general properties are available:
 
-    ```
-    - `listener_protocol`
-      - example value: "http" 
-      - description: listener protocol, this can be `http` or `https`, defaults to `http`
-    - `host_names`
-      - example value: ["www.example.net"]
-      - list of host header values this rule should react on, this creates a Multi-Site listener, for V1 Application Gateways only 1st item from the list is being used as V1 does not support multiple host headers
-    - `custom_error_configuration`
-      - example value: `{ HttpStatus403 = "http://error.com/403/page.html", HttpStatus502 = "http://error.com/502/page.html" }`
-      - a map that contains ULRs to custom error pages. Keys in this map are not custom, they reflect the actual properties used by the provider. URLs are only customizable and they have to contain the protocol and have to point directly to an HTML file. Both are optional, so only one can be specified.
-    
-    - `backend_port`
-      - example value: `80`
-      - port on which the backend is actually listening, defaults to `80`
-    - `backend_protocol`
-      - example value: "http"
-      - protocol for the backend service, this can be `http` or `https`, defaults to `http`
-    - `backend_hostname_from_backend`
-      - example value: `true`
-      - override host header with backend's host name, defaults to `false`, mutually exclusive with `backend_hostname`. When both are not set the host header of the original request remains unchainged. At least one has to be specified if the `probe_host` is not set. When both (`backend_hostname` and `backend_hostname_from_backend` are set the module acts like non of them is set
-    - `backend_hostname`
-      - example value: "host.name
-      - override host header with a custom host name, when not set defaults to the host header of the original request, mutually exclusive with `backend_hostname_from_backend` (see above)
-    - `backend_timeout`
-      - example value: 60
-      - timeout for backend's response in seconds, default to 60s
-    - `backend_path`
-      - example value: "/path"
-      - path prefix, in case we need to shift the url path for the backend, optinal, can be omited
-    - `cookie_based_affinity`
-      - example value: "Enabled"
-      - cookie based routing, defaults to `Enabled`
-    - `affinity_cookie_name`
-      - example value: "SomeCookieName"
-      - name of the affinity cookie, defaults to Azure default name
-    - `backend_root_certs`
-      - example value: `{ some_root_cert = "./files/self_signed.crt" }`
-      - (v2 only) a map of custom root certificates used to sign backend's certificate.
-    
-    - `probe_path`
-      - example value: "/healthcheck"
-      - url for the health check endpoint, this property controls if the custom probe is created or not. If this is not set, http settings will have the property `Use custom probe` set to `No`
-    - `probe_host`
-      - example value: "www.example.com"
-      - host header for the health check probe, when omited sets the `Pick host name from backend HTTP settings` to `Yes`. Cannot be omited when `backend_hostname` nor `backend_hostname_from_backend` are not set.
-    - `probe_port`
-      - example value: `80`
-      - (v2 only) port for the health check, defaults to default protocol port
-    - `probe_interval`
-      - example value: 2
-      - probe interval in seconds, defaults to 5
-    - `probe_timeout`
-      - example value: 30
-      - probe timeout in seconds, defaults to 30
-    - `probe_theshold`
-      - example value: 2
-      - number of failed probes until the bakckend is marked as down, defaults to 2
-    - `probe_match_code`
-      - example value: [200]
-      - a list of acceptible http response codes. `probe_match_code` controls the custom match condition for a health probe, if not set, it disables the custom match conditions.
-    - `probe_match_body`
-      - example value: ""
-      - a snippet of the backend response that can be matched for health check conditions, defaults to an empty string
-    
-    - `ssl_certificate_path`
-      - example value: "cert/path"
-      - a path to a certificate in `.pfx` format. Required only for `https` listeners. Mutually exclusive with `ssl_certificate_vault_id`
-    - `ssl_certificate_pass`
-      - example value: "cert_password"
-      - a matching password for the certificate specified in `ssl_certificate_path`
-    - `ssl_certificate_vault_id`
-      - example value: "https://key.vault.azure.net/secrets/cert/bb1391bba15042a59adaea584a8208e8"
-      - an ID of a certificate stored in a Azure Key Vault, mutually exclusive with `ssl_certificate_path`. Requires `managed_identities`. The identity(ties) used has to have at least `GET` access to Key Vault's secrets
-    ```
+    * priority - (optional fot v1 gateways only) rule's priority
+    * listener - provides general listener setting like port, protocol, error pages, etc (for details see below)
+    * backend - (optional) complete http settings configuration (for details see below)
+    * probe - (optional) health check probe configuration (for details see below)
+    * redirect - (optional) mutually exclusive with backend and probe, creates a redirect rule (for details see below)
+
+    Details on each of the properties can be found [here](#rules-property-explained).
   EOF
-  validation {
-    # The following conditions are checked:
-    # - at least one of `backend_hostname` or `backend_hostname_from_backend` is set when we define a probe w/o setting `probe_host`
-    # - and
-    # - we do not set `backend_hostname` and `backend_hostname_from_backend` at the same time
-    # - and
-    # - for v2 all rules have or do not have `priority` set. We cannot have a mix of rules with priority set or not.
-    condition = (alltrue([
-      for k, v in var.rules : (
-        (can(v.probe_path) ? can(v.probe_host) : true)
-        || can(v.backend_hostname)
-        || try(v.backend_hostname_from_backend, false)
-        ) && !(
-        can(v.backend_hostname)
-        && try(v.backend_hostname_from_backend, false)
-      )
-      ])) && (alltrue([
-      for k, v in var.rules : can(v.priority)
-    ]))
-    error_message = "Please check one of the rules for following configuration issues: \n - one cannot have a probe w/o a host name specified having at the same time http settings that do not override a host header \n - one cannot set a backend host name and force the http settings to set the host header to a backend's hostname at the same time \n - for v2 tiers one cannot use `priority` in a subset of rules; you have to specify it in either all or none."
-  }
+
+  # validation {
+  #   # The following conditions are checked:
+  #   # - at least one of `backend_hostname` or `backend_hostname_from_backend` is set when we define a probe w/o setting `probe_host`
+  #   # - and
+  #   # - we do not set `backend_hostname` and `backend_hostname_from_backend` at the same time
+  #   # - and
+  #   # - for v2 all rules have or do not have `priority` set. We cannot have a mix of rules with priority set or not.
+  #   condition = (alltrue([
+  #     for k, v in var.rules : (
+  #       (can(v.probe_path) ? can(v.probe_host) : true)
+  #       || can(v.backend_hostname)
+  #       || try(v.backend_hostname_from_backend, false)
+  #       ) && !(
+  #       can(v.backend_hostname)
+  #       && try(v.backend_hostname_from_backend, false)
+  #     )
+  #     ])) && (alltrue([
+  #     for k, v in var.rules : can(v.priority)
+  #   ]))
+  #   error_message = "Please check one of the rules for following configuration issues: \n - one cannot have a probe w/o a host name specified having at the same time http settings that do not override a host header \n - one cannot set a backend host name and force the http settings to set the host header to a backend's hostname at the same time \n - for v2 tiers one cannot use `priority` in a subset of rules; you have to specify it in either all or none."
+  # }
   type = any
 }
 

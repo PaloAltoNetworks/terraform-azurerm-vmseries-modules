@@ -30,26 +30,54 @@ module "appgw" {
   # }
   vmseries_ips = ["1.1.1.1", "2.2.2.2"]
   rules = {
-    "ssl-kv-app" = {
-      # listener_port     = 80
-      # listener_protocol = "Http"
-      listener_port     = 443
-      listener_protocol = "Https"
-      host_names        = ["www.fosix.com"]
-
+    "plain-app" = {
       priority = 1
 
-      probe_host     = "www.example.com"
-      probe_protocol = "Http"
-      probe_path     = "/"
-      probe_port     = 80
-      probe_interval = 2
-      probe_timeout  = 30
-      probe_theshold = 2
+      listener = {
+        port       = 80
+        protocol   = "Http"
+        host_names = ["www.fosix.com"]
+      }
 
-      ssl_certificate_vault_id = "https://fosix-kv.vault.azure.net/secrets/fosix-cert/bb1391bba15042a59adaea584a8208e8"
-      ssl_certificate_path     = "files/self_signed.pfx"
-      ssl_certificate_pass     = "123qweasd"
+      redirect = {
+        type                 = "Temporary"
+        target_listener_name = "ssl-kv-app-listener"
+        include_path         = true
+        include_query_string = true
+      }
+    }
+    "ssl-kv-app" = {
+      priority = 2
+
+      listener = {
+        port                     = 443
+        protocol                 = "Https"
+        host_names               = ["www.fosix.com"]
+        ssl_certificate_vault_id = "https://fosix-kv.vault.azure.net/secrets/fosix-cert/bb1391bba15042a59adaea584a8208e8"
+      }
+
+      backend = {
+        hostname = "www.fosix.com"
+        port     = 8443
+        protocol = "Https"
+        root_certs = {
+          fw = "files/CA.pem"
+        }
+      }
+
+      probe = {
+        path      = "/"
+        port      = 443
+        interval  = 10
+        timeout   = 60
+        threshold = 5
+      }
+    }
+    "minimum" = {
+      priority = 3
+      listener = {
+        port = 8080
+      }
     }
   }
 }
