@@ -164,7 +164,11 @@ Properties for a rule are described below.
 
 ## Usage
 
-It requires that Firewalls and a dedicated subnet are set up already.
+### General
+
+Module requires that Firewalls and a dedicated subnet are set up already.
+
+An example invocation with a minium set of rules (at least one rule is required):
 
 ```hcl
 module "appgw" {
@@ -181,27 +185,166 @@ module "appgw" {
   }
   vmseries_ips = ["x.x.x.x", "x.x.x.x"]
   rules = {
-    "example-http-app" = {
-      listener_port         = 80
-      listener_protocol     = "http"
-      host_names            = ["www.example.net"]
-      cookie_based_affinity = "Disabled"
-
-      backend_port     = 80
-      backend_protocol = "http"
-      backend_timeout  = 60
-      backend_path     = "/path"
-
+    minimum" = {
       priority = 1
+      listener = {
+        port = 8080
+      }
+    }
+  }
+}
+```
 
-      probe_host       = "www.example.com"
-      probe_protocol   = "http"
-      probe_path       = "/"
-      probe_port       = 80
-      probe_interval   = 2
-      probe_timeout    = 30
-      probe_theshold   = 2
-      probe_match_code = [200]
+### `rules` property examples
+
+The `rules` property is quite flexible, there several limitations, though. Their origin comes from the Application Gateway rather than the code itself. Their are:
+
+* `priority` property is required for all Application Gateways v2
+* `listener.port` has to be specified at minimum to create a valid rule
+* `listener.port` has to be unique between rules unless `listener.host_names` is used
+* a health check probe has to have a host header specified, this is done by either setting the header directly in `probe.host` property, or by inheriting it from http backend setting (one of `backend.hostname_from_backend` or `backend.hostname` has to be set)
+* when creating a redirect rule `backend` and `probe` cannot be set
+* the probe has to use the same protocol as the associated http backend settings, different port can be used, though
+
+The examples below are meant to show most common use cases and to serve as a base for more complex rules.
+
+* [SSL termination with a redirect from HTTP to HTTPS](#ssl-termination-with-a-redirect-from-http-to-https)
+* [Multiple websites hosted on a single port](#multiple-websites-hosted-on-a-single-port)
+
+#### SSL termination with a redirect from HTTP to HTTPS
+
+This rule redirects all `http` traffic to a `https` listener. The ssl certificate is taken from an Azure Key Vault service.
+
+```hcl
+rules = {
+  "http-2-https" = {
+    priority = 1
+
+    listener = {
+      port = 80
+    }
+
+    redirect = {
+      type                 = "Permanent"
+      target_listener_name = "https-listener"
+      include_path         = true
+      include_query_string = true
+    }
+  }
+  "https" = {
+    priority = 2
+
+    listener = {
+      port                     = 443
+      protocol                 = "Https"
+      ssl_certificate_vault_id = "https://kv.vault.azure.net/secrets/cert/bb1391bba15042a59adaea584a8208e8"
+    }
+  }
+}
+```
+
+#### Multiple websites hosted on a single port
+
+For simplicity `http` traffic is configured only. This rule demonstrates how to split hostname based traffic to different ports on a Firewall.
+
+```hcl
+rules = {
+  "application-1" = {
+    priority = 1
+
+    listener = {
+      port       = 80
+      host_names = ["www.app_1.com"]
+    }
+
+    backend = {
+      port = 8080
+    }
+  }
+  "application-2" = {
+    priority = 2
+
+    listener = {
+      port       = 80
+      host_names = ["www.app_2.com"]
+    }
+
+    backend = {
+      port = 8081
+    }
+  }
+}
+```
+
+#### Probing a Firewall availability in an HA pair
+
+In a typical HA scenario the probe is set to check the Management Service exposed on a public interface. The example below shows how to achieve that.
+
+```hcl
+rules = {
+  "application-1" = {
+    priority = 1
+
+    listener = {
+      port = 80
+    }
+
+    backend = {
+      port = 8080
+    }
+
+    port = {
+      path       = "/"
+      port       = 80
+      host       = "127.0.0.1"
+      match_code = [301]
+    }
+  }
+}
+```
+
+#### Rewriting HTTP headers
+
+This is a simple rule used to terminate SSL traffic. However the application behind the Firewall has two limitations:
+
+1. it expects the protocol to be still HTTPS, to achieve that we set the `X-Forwarded-Proto` header
+1. it expects that the `X-Forwarded-For` does not include ports (which is default for an Application Gateway).
+
+We also use an SSL certificate stored in a file instead of an Azure Key Vault.
+
+```hcl
+rules = {
+  "application-1" = {
+    priority = 1
+
+    listener = {
+      port     = 443
+      protocol = "Https"
+      ssl_certificate_path = "./files/certificate.pfx"
+      ssl_certificate_pass = "password"
+    }
+
+    probe = {
+      path = "/php/login.php"
+      port = 80
+      host = "127.0.0.1"
+    }
+
+    rewrite_sets = {
+      "xff-strip-port" = {
+        sequence = 100
+        request_header = {
+          name  = "X-Forwarded-For"
+          value = "{var_add_x_forwarded_for_proxy}"
+        }
+      }
+      "xfp-https" = {
+        sequence = 200
+        request_header = {
+          name  = "X-Forwarded-Proto"
+          value = "https"
+        }
+      }
     }
   }
 }
@@ -240,7 +383,7 @@ No modules.
 | <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities) | A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.<br><br>These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault. | `list(string)` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the Application Gateway. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of an existing resource group. | `string` | n/a | yes |
-| <a name="input_rules"></a> [rules](#input\_rules) | A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. <br>A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. <br><br>For maximum and minimum values for particular properties please refer to Microsoft documentation.<br><br>The following general properties are available:<br><br>* priority - (optional fot v1 gateways only) rule's priority<br>* listener - provides general listener setting like port, protocol, error pages, etc (for details see below)<br>* backend - (optional) complete http settings configuration (for details see below)<br>* probe - (optional) health check probe configuration (for details see below)<br>* redirect - (optional) mutually exclusive with backend and probe, creates a redirect rule (for details see below)<br><br>Details on each of the properties can be found [here](#rules-property-explained). | `any` | n/a | yes |
+| <a name="input_rules"></a> [rules](#input\_rules) | A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. <br>A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. <br><br>Details on configuration can be found [here](#rules-property-explained). | `any` | n/a | yes |
 | <a name="input_sku"></a> [sku](#input\_sku) | Sku of the Application Gateway. Check Microsoft documentation for possible values,their combinations and limitations. | <pre>object({<br>    name     = string<br>    tier     = string<br>    capacity = number<br>  })</pre> | <pre>{<br>  "capacity": 2,<br>  "name": "Standard_v2",<br>  "tier": "Standard_v2"<br>}</pre> | no |
 | <a name="input_ssl_policy_cipher_suites"></a> [ssl\_policy\_cipher\_suites](#input\_ssl\_policy\_cipher\_suites) | A List of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. <br>For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites). | `list(string)` | `null` | no |
 | <a name="input_ssl_policy_min_protocol_version"></a> [ssl\_policy\_min\_protocol\_version](#input\_ssl\_policy\_min\_protocol\_version) | Minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`. <br>Possible values are: `TLSv1_0`, `TLSv1_1` or `TLSv1_2`. | `string` | `null` | no |
