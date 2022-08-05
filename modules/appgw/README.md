@@ -210,6 +210,8 @@ The examples below are meant to show most common use cases and to serve as a bas
 
 * [SSL termination with a redirect from HTTP to HTTPS](#ssl-termination-with-a-redirect-from-http-to-https)
 * [Multiple websites hosted on a single port](#multiple-websites-hosted-on-a-single-port)
+* [Probing a Firewall availability in an HA pair](#probing-a-firewall-availability-in-an-ha-pair)
+* [Rewriting HTTP headers](#rewriting-http-headers)
 
 #### SSL termination with a redirect from HTTP to HTTPS
 
