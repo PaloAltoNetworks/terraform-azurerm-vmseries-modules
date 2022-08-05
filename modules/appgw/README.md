@@ -41,11 +41,11 @@ As you can see in the `target_listener_name` property, all Application Gateway c
 For each application one can configure the following properties:
 
 * `priority` - (optional fot v1 gateways only) rule's priority
-* `xff_strip_port` - (optional, for v2 gateways only) enables a rewrite rule set that strips the port number from X-Forwarded-For header
 * [`listener`](#property-listener) - provides general listener setting like port, protocol, error pages, etc
 * [`backend`](#property-backend) - (optional) complete http settings configuration
 * [`probe`](#property-probe) - (optional) health check probe configuration
 * [`redirect`](#property-redirect) - (optional) mutually exclusive with backend and probe, creates a redirect rule
+* [`rewrite_sets`](#property-rewrite-sets) - (optional) a set of rewrite rules to modify response and request headers
 
 For details on each of them (except for `priority`) see below.
 
@@ -117,7 +117,7 @@ One can decide on the port used by the probe but the protocol is always aligned 
 
 ### property: redirect
 
-Configures a rule that only redirects traffic (traffic matched by this rules never reaches the Firewalls). Hence it is mutally exclusive with `backend` and `probe` properties.
+Configures a rule that only redirects traffic (traffic matched by this rules never reaches the Firewalls). Hence it is mutually exclusive with `backend` and `probe` properties.
 
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
@@ -126,6 +126,41 @@ Configures a rule that only redirects traffic (traffic matched by this rules nev
 | `target_url` | a URL to which traffic will be redirected | `string` | `null` | no, mutually exclusive with `target_listener_name` |
 | `include_path` | decides whether to include the path in the redirected Url | `bool` | `false` | no |
 | `include_query_string` | decides whether to include the query string in the redirected Url | `bool` | `false` | no |
+
+### property: rewrite_sets
+
+Creates rewrite rules used to modify the HTTP response and request headers. A set of rewrite rules cannot be shared between applications. For details on building the rules refer to [Microsoft's documentation](https://docs.microsoft.com/azure/application-gateway/rewrite-http-headers).
+
+The whole property is a map, where the key is the rule name and the value is a map of rule's properties. Example of a rule that strips a port number from the X-Forwarded-For header:
+
+```hcl
+rewrite_sets = {
+  "xff-strip-port" = {
+    sequence = 100
+    request_header = {
+      name  = "X-Forwarded-For"
+      value = "{var_add_x_forwarded_for_proxy}"
+    }
+  }
+}
+```
+
+Properties for a rule are described below.
+
+| Name | Description | Type | Default | Required |
+| --- | --- | --- | --- | --- |
+| `sequence` | a rule priority | `number` | n/a | yes |
+| `condition` | a map of pre-conditions for a rule | `map` | `null` | no |
+| `condition.variable` | a variable of the condition, see [Microsoft's documentation](https://docs.microsoft.com/azure/application-gateway/rewrite-http-headers#server-variables) for details | `string` | `null` | yes |
+| `condition.pattern` | a fix string or a regular expression to evaluate the condition | `string` | `null` | yes |
+| `condition.ignore_case` | case in-sensitive comparison | `bool` | `false` | no |
+| `condition.negate` | negate the condition | `bool` | `false` | no |
+| `request_header` | a map properties required to modify a request header | `map` | `null` | no |
+| `request_header.name` | the header name | `string` | `null` | yes |
+| `request_header.value` | the header value | `string` | `null` | yes |
+| `response_header` | a map properties required to modify a response header | `map` | `null` | no |
+| `response_header.name` | the header name | `string` | `null` | yes |
+| `response_header.value` | the header value | `string` | `null` | yes |
 
 ## Usage
 

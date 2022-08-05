@@ -49,7 +49,8 @@ module "appgw" {
     "ssl-kv-app" = {
       priority = 2
 
-      xff_strip_port = true
+      # xff_strip_port = true
+      # xfp_https      = true
 
       listener = {
         port                     = 443
@@ -73,6 +74,23 @@ module "appgw" {
         interval  = 10
         timeout   = 60
         threshold = 5
+      }
+
+      rewrite_sets = {
+        "xff-strip-port" = {
+          sequence = 100
+          request_header = {
+            name  = "X-Forwarded-For"
+            value = "{var_add_x_forwarded_for_proxy}"
+          }
+        }
+        "xfp-https" = {
+          sequence = 200
+          request_header = {
+            name  = "X-Forwarded-Proto"
+            value = "https"
+          }
+        }
       }
     }
     "minimum" = {

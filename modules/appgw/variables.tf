@@ -52,18 +52,7 @@ variable "rules" {
     A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. 
     A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. 
 
-    For maximum and minimum values for particular properties please refer to Microsoft documentation.
-
-    The following general properties are available:
-
-    * priority - (optional, for v2 gateways only) rule's priority
-    * xff_strip_port - (optional, for v2 gateways only) enables a rewrite rule set that strips the port number from X-Forwarded-For header
-    * listener - provides general listener setting like port, protocol, error pages, etc (for details see below)
-    * backend - (optional) complete http settings configuration (for details see below)
-    * probe - (optional) health check probe configuration (for details see below)
-    * redirect - (optional) mutually exclusive with backend and probe, creates a redirect rule (for details see below)
-
-    Details on each of the properties can be found [here](#rules-property-explained).
+    Details on configuration can be found [here](#rules-property-explained).
   EOF
 
   # validation {

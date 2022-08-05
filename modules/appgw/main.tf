@@ -187,6 +187,62 @@ resource "azurerm_application_gateway" "this" {
     }
   }
 
+  dynamic "redirect_configuration" {
+    for_each = { for k, v in var.rules : k => v if can(v.redirect.type) }
+
+    content {
+      name                 = "${redirect_configuration.key}-redirect"
+      redirect_type        = redirect_configuration.value.redirect.type
+      target_listener_name = try(redirect_configuration.value.redirect.target_listener_name, null)
+      target_url           = try(redirect_configuration.value.redirect.target_url, null)
+      include_path         = try(redirect_configuration.value.redirect.include_path, null)
+      include_query_string = try(redirect_configuration.value.redirect.include_query_string, null)
+    }
+  }
+
+  dynamic "rewrite_rule_set" {
+    for_each = { for k, v in var.rules : k => v if can(v.rewrite_sets) }
+
+    content {
+      name = "${rewrite_rule_set.key}-rewrite-set"
+
+      dynamic "rewrite_rule" {
+        for_each = rewrite_rule_set.value.rewrite_sets
+
+        content {
+          name          = rewrite_rule.key
+          rule_sequence = rewrite_rule.value.sequence
+
+          dynamic "condition" {
+            for_each = can(rewrite_rule.value.condition) ? [1] : []
+            content {
+              variable    = rewrite_rule.value.condition.variable
+              pattern     = rewrite_rule.value.condition.pattern
+              ignore_case = try(rewrite_rule.value.condition.ignore_case, null)
+              negate      = try(rewrite_rule.value.condition.negate, null)
+            }
+          }
+
+          dynamic "request_header_configuration" {
+            for_each = can(rewrite_rule.value.request_header) ? [1] : []
+            content {
+              header_name  = rewrite_rule.value.request_header.name
+              header_value = rewrite_rule.value.request_header.value
+            }
+          }
+
+          dynamic "response_header_configuration" {
+            for_each = can(rewrite_rule.value.response_header) ? [1] : []
+            content {
+              header_name  = rewrite_rule.value.response_header.name
+              header_value = rewrite_rule.value.response_header.value
+            }
+          }
+        }
+      }
+    }
+  }
+
   dynamic "request_routing_rule" {
     for_each = var.rules
 
@@ -202,56 +258,8 @@ resource "azurerm_application_gateway" "this" {
 
       redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? "${request_routing_rule.key}-redirect" : null
 
-      rewrite_rule_set_name = try(request_routing_rule.value.xff_strip_port, false) ? "${request_routing_rule.key}-rewrite-set" : null
+      rewrite_rule_set_name = can(request_routing_rule.value.rewrite_sets) ? "${request_routing_rule.key}-rewrite-set" : null
     }
   }
 
-  dynamic "redirect_configuration" {
-    for_each = { for k, v in var.rules : k => v if can(v.redirect.type) }
-
-    content {
-      name                 = "${redirect_configuration.key}-redirect"
-      redirect_type        = redirect_configuration.value.redirect.type
-      target_listener_name = try(redirect_configuration.value.redirect.target_listener_name, null)
-      target_url           = try(redirect_configuration.value.redirect.target_url, null)
-      include_path         = try(redirect_configuration.value.redirect.include_path, null)
-      include_query_string = try(redirect_configuration.value.redirect.include_query_string, null)
-    }
-  }
-
-  dynamic "rewrite_rule_set" {
-    for_each = { for k, v in var.rules : k => v if try(v.xff_strip_port, false) }
-
-    content {
-      name = "${rewrite_rule_set.key}-rewrite-set"
-
-      dynamic "rewrite_rule" {
-        for_each = try(rewrite_rule_set.value.xff_strip_port, false) ? [1] : []
-
-        content {
-          name          = "xff-strip-port"
-          rule_sequence = 1
-          request_header_configuration {
-            header_name  = "X-Forwarded-For"
-            header_value = "{var_add_x_forwarded_for_proxy}"
-          }
-        }
-      }
-    }
-  }
-
-
-  # rewrite_rule_set {
-  #   name = "xff-tf"
-  #   rewrite_rule {
-  #     name          = "xff"
-  #     rule_sequence = 1
-  #     # condition     = {}
-  #     request_header_configuration {
-  #       header_name  = "X-Forwarded-For"
-  #       header_value = "{var_add_x_forwarded_for_proxy}"
-  #     }
-  #     # response_header_configuration = {}
-  #   }
-  # }
 }
