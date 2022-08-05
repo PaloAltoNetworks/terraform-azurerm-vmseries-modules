@@ -64,6 +64,12 @@ variable "enable_plan" {
   type        = bool
 }
 
+variable "panorama_disk_type" {
+  description = "Specifies the type of managed disk to create. Possible values are either Standard_LRS, StandardSSD_LRS, Premium_LRS or UltraSSD_LRS."
+  default     = "Standard_LRS"
+  type        = string
+}
+
 variable "panorama_sku" {
   description = "Panorama SKU."
   default     = "byol"

@@ -55,7 +55,7 @@ resource "azurerm_virtual_machine" "panorama" {
     name              = coalesce(var.os_disk_name, "${var.panorama_name}-disk")
     caching           = "ReadWrite"
     create_option     = "FromImage"
-    managed_disk_type = "Standard_LRS"
+    managed_disk_type = var.panorama_disk_type
   }
 
   os_profile {

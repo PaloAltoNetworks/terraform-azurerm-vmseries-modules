@@ -67,6 +67,7 @@ module "panorama" {
   avzones             = var.avzones
   enable_zones        = var.enable_zones
   custom_image_id     = var.custom_image_id
+  panorama_disk_type  = var.panorama_disk_type
   panorama_sku        = var.panorama_sku
   panorama_size       = var.panorama_size
   panorama_version    = var.panorama_version

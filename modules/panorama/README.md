@@ -76,6 +76,7 @@ No modules.
 | <a name="input_location"></a> [location](#input\_location) | Region to deploy Panorama into. | `string` | n/a | yes |
 | <a name="input_logging_disks"></a> [logging\_disks](#input\_logging\_disks) | A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zone, lun }. <br> The size value is provided in GB. The recommended size for additional (optional) disks is at least 2TB (2048 GB). Example:<pre>{<br>  logs-1 = {<br>    size: "2048"<br>    zone: "1"<br>    lun: "1"<br>  }<br>  logs-2 = {<br>    size: "2048"<br>    zone: "2"<br>    lun: "2"<br>  }<br>}</pre> | `map(any)` | `{}` | no |
 | <a name="input_os_disk_name"></a> [os\_disk\_name](#input\_os\_disk\_name) | The name of OS disk. The name is auto-generated when not provided. | `string` | `null` | no |
+| <a name="input_panorama_disk_type"></a> [panorama\_disk\_type](#input\_panorama\_disk\_type) | Specifies the type of managed disk to create. Possible values are either Standard\_LRS, StandardSSD\_LRS, Premium\_LRS or UltraSSD\_LRS. | `string` | `"Standard_LRS"` | no |
 | <a name="input_panorama_name"></a> [panorama\_name](#input\_panorama\_name) | The Panorama common name. | `string` | n/a | yes |
 | <a name="input_panorama_offer"></a> [panorama\_offer](#input\_panorama\_offer) | Panorama offer. | `string` | `"panorama"` | no |
 | <a name="input_panorama_publisher"></a> [panorama\_publisher](#input\_panorama\_publisher) | Panorama Publisher. | `string` | `"paloaltonetworks"` | no |

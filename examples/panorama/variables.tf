@@ -36,6 +36,11 @@ variable "username" {
   default     = "panadmin"
 }
 
+variable "panorama_disk_type" {
+  type    = string
+  default = "Standard_LRS"
+}
+
 variable "panorama_sku" {
   type    = string
   default = "byol"
