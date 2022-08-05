@@ -40,11 +40,12 @@ As you can see in the `target_listener_name` property, all Application Gateway c
 
 For each application one can configure the following properties:
 
-* priority - (optional fot v1 gateways only) rule's priority
-* [listener](#property-listener) - provides general listener setting like port, protocol, error pages, etc
-* [backend](#property-backend) - (optional) complete http settings configuration
-* [probe](#property-probe) - (optional) health check probe configuration
-* [redirect](#property-redirect) - (optional) mutually exclusive with backend and probe, creates a redirect rule
+* `priority` - (optional fot v1 gateways only) rule's priority
+* `xff_strip_port` - (optional, for v2 gateways only) enables a rewrite rule set that strips the port number from X-Forwarded-For header
+* [`listener`](#property-listener) - provides general listener setting like port, protocol, error pages, etc
+* [`backend`](#property-backend) - (optional) complete http settings configuration
+* [`probe`](#property-probe) - (optional) health check probe configuration
+* [`redirect`](#property-redirect) - (optional) mutually exclusive with backend and probe, creates a redirect rule
 
 For details on each of them (except for `priority`) see below.
 

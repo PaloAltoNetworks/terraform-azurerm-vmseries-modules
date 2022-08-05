@@ -201,6 +201,8 @@ resource "azurerm_application_gateway" "this" {
       backend_http_settings_name = can(request_routing_rule.value.redirect.type) ? null : "${request_routing_rule.key}-httpsettings"
 
       redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? "${request_routing_rule.key}-redirect" : null
+
+      rewrite_rule_set_name = try(request_routing_rule.value.xff_strip_port, false) ? "${request_routing_rule.key}-rewrite-set" : null
     }
   }
 
@@ -216,4 +218,40 @@ resource "azurerm_application_gateway" "this" {
       include_query_string = try(redirect_configuration.value.redirect.include_query_string, null)
     }
   }
+
+  dynamic "rewrite_rule_set" {
+    for_each = { for k, v in var.rules : k => v if try(v.xff_strip_port, false) }
+
+    content {
+      name = "${rewrite_rule_set.key}-rewrite-set"
+
+      dynamic "rewrite_rule" {
+        for_each = try(rewrite_rule_set.value.xff_strip_port, false) ? [1] : []
+
+        content {
+          name          = "xff-strip-port"
+          rule_sequence = 1
+          request_header_configuration {
+            header_name  = "X-Forwarded-For"
+            header_value = "{var_add_x_forwarded_for_proxy}"
+          }
+        }
+      }
+    }
+  }
+
+
+  # rewrite_rule_set {
+  #   name = "xff-tf"
+  #   rewrite_rule {
+  #     name          = "xff"
+  #     rule_sequence = 1
+  #     # condition     = {}
+  #     request_header_configuration {
+  #       header_name  = "X-Forwarded-For"
+  #       header_value = "{var_add_x_forwarded_for_proxy}"
+  #     }
+  #     # response_header_configuration = {}
+  #   }
+  # }
 }

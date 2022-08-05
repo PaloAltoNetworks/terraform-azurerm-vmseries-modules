@@ -49,6 +49,8 @@ module "appgw" {
     "ssl-kv-app" = {
       priority = 2
 
+      xff_strip_port = true
+
       listener = {
         port                     = 443
         protocol                 = "Https"

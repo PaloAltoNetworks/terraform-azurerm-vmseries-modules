@@ -56,7 +56,8 @@ variable "rules" {
 
     The following general properties are available:
 
-    * priority - (optional fot v1 gateways only) rule's priority
+    * priority - (optional, for v2 gateways only) rule's priority
+    * xff_strip_port - (optional, for v2 gateways only) enables a rewrite rule set that strips the port number from X-Forwarded-For header
     * listener - provides general listener setting like port, protocol, error pages, etc (for details see below)
     * backend - (optional) complete http settings configuration (for details see below)
     * probe - (optional) health check probe configuration (for details see below)
