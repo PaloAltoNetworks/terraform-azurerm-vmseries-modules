@@ -300,10 +300,9 @@ rules = {
     }
 
     port = {
-      path       = "/"
+      path       = "/php/login.php"
       port       = 80
       host       = "127.0.0.1"
-      match_code = [301]
     }
   }
 }
@@ -330,10 +329,12 @@ rules = {
       ssl_certificate_pass = "password"
     }
 
+    backend = {
+      hostname_from_backend = true
+    }
+
     probe = {
       path = "/php/login.php"
-      port = 80
-      host = "127.0.0.1"
     }
 
     rewrite_sets = {
