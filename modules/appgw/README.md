@@ -1,12 +1,14 @@
 # Palo Alto Networks VNet Module for Azure
 
-A terraform module for deploying an Application Gateway. The module is designed to be dedicated to the FW, hence it supports only one backend - the NGFWs.
+A terraform module for deploying an Application Gateway. The module is dedicated to work with the Next Generation Firewalls, hence it supports only one backend.
+
+In the center of module's configuration is the `rules` property. See the the [Rules property explained](#rules-property-explained) and [`rules` property examples](#rules-property-examples) topics for more details.
 
 ## Rules property explained
 
-The `rules` property combines configuration for several Application Gateway components and groups them by a logical application. In other words, an application defines a listener, http settings, health check probe or redirect rules. Those are always unique for an application, meaning that you cannot share them between application definitions. Most of the settings are optional and depend on a use case. The only one that is required is the listener port (for v2 Gateways a rule priority is a must since 2022 AzureRM API updates).
+The `rules` property combines configuration for several Application Gateway components and groups them by a logical application. In other words an application defines a listener, http settings, health check probe, redirect rules or rewrite rule sets (some fo them are mutually exclusive, check details on each of them below). Those are always unique for an application, meaning that you cannot share them between application definitions. Most of the settings are optional and depend on a use case. The only one that is required is the listener port (for v2 Gateways a rule priority is a must since 2022 AzureRM API updates).
 
-In general `rules` property is a map where a key is the logical application name and value is a set of properties, like below (AppGWv2 example):
+In general `rules` property is a map where key is the logical application name and value is a set of properties, like below (AppGWv2 example):
 
 ```hcl
 rules = {
@@ -34,16 +36,16 @@ rules = {
 }
 ```
 
-The example above is a setup where the AppGW serves only as a reverse proxy terminating SSL connections (by default all traffic sent to the backend pool is sent to port 80, plain text). It also redirects all http communication sent to port 80 to https on port 443.
+The example above is a setup where the AppGW serves only as a reverse proxy terminating SSL connections (by default all traffic sent to the backend pool is sent to port 80, plain text). It also redirects all http communication sent to listener port 80 to https on port 443.
 
 As you can see in the `target_listener_name` property, all Application Gateway component created for an application are prefixed with the application name (so the key value).
 
 For each application one can configure the following properties:
 
-* `priority` - (optional fot v1 gateways only) rule's priority
+* `priority` - (required for v2 gateways) rule's priority
 * [`listener`](#property-listener) - provides general listener setting like port, protocol, error pages, etc
-* [`backend`](#property-backend) - (optional) complete http settings configuration
-* [`probe`](#property-probe) - (optional) health check probe configuration
+* [`backend`](#property-backend) - (optional) complete backend http settings configuration
+* [`probe`](#property-probe) - (optional) backend health check probe configuration
 * [`redirect`](#property-redirect) - (optional) mutually exclusive with backend and probe, creates a redirect rule
 * [`rewrite_sets`](#property-rewrite-sets) - (optional) a set of rewrite rules to modify response and request headers
 
@@ -51,16 +53,16 @@ For details on each of them (except for `priority`) see below.
 
 ### property: listener
 
-Configures the listener, frontend port and, optionally, the SSL Certificate component that will be used by the listener (required for `https` listeners). The following properties are available:
+Configures the listener, frontend port and (optionally) the SSL Certificate component that will be used by the listener (required for `https` listeners). The following properties are available:
 
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
 | `port` | a port number | `number` | n/a | yes |
 | `protocol` | either `Http` or `Https` (case sensitive) | `string` | `"Http"` | no |
 | `host_names` | host header values this rule should react on, this creates a Multi-Site listener, for V1 Application Gateways only 1st item from the list is being used as V1 does not support multiple host headers | `list(string)` | `null` | no |
-| `ssl_certificate_path` | a path to a certificate in `.pfx` format | `string` | `null` | yes, if protocol == `https`, mutually exclusive with `ssl_certificate_vault_id` |
-| `ssl_certificate_pass` | a matching password for the certificate specified in `ssl_certificate_path` | `string` | `null` | yes, if protocol == `https`, mutually exclusive with `ssl_certificate_vault_id` |
-| `ssl_certificate_vault_id` | an ID of a certificate stored in a Azure Key Vault, requires `managed_identities` property, the identity(-ties) used has to have at least `GET` access to Key Vault's secrets | `string` | `null` | yes, if protocol == `https`, mutually exclusive with `ssl_certificate_path` |
+| `ssl_certificate_path` | a path to a certificate in `.pfx` format | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_vault_id` |
+| `ssl_certificate_pass` | a password matching the certificate specified in `ssl_certificate_path` | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_vault_id` |
+| `ssl_certificate_vault_id` | an ID of a certificate stored in an Azure Key Vault, requires `managed_identities` property, the identity(-ties) used have to have at least `GET` access to Key Vault's secrets | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_path` |
 | `custom_error_pages` | a map that contains ULRs for custom error pages, for more information see below | `map` | `null` | no |
 
 The `custom_error_pages` map has the following format:
@@ -72,29 +74,31 @@ custom_error_pages = {
 }
 ```
 
-Keys can have values only like the ones above. Both are optional though. Only the error page path is customizable and it has to point to a HTML file.
+Keys can have values only like the ones above. Both are optional though. Only the error page path is customizable and it has to point to an HTML file.
 
 ### property: backend
 
-Configures the backend's http setting, so any port and protocol properties for a connection between an Application Gateway and the actual Firewalls. Following properties are available:
+Configures the backend's http settings, so port and protocol properties for a connection between an Application Gateway and the actual Firewall. Following properties are available:
 
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
-| `port` | port on which the backend is actually listening | `number` | `80` | no |
+| `port` | port on which the backend is listening | `number` | `80` | no |
 | `protocol` | protocol for the backend service, this can be `Http` or `Https` | `string` | `"Http"` | no |
-| `hostname_from_backend` | override host header with backend's host name, when both are not set the host header of the original request remains unchanged, has to be specified if the `probe_host` is not set | `bool` | `false` | no, mutually exclusive with `hostname` |
-| `hostname` | override host header with a custom host name, when not set defaults to the host header of the original request | `string` | `null` | no, mutually exclusive with `hostname_from_backend` (see above) |
+| `hostname_from_backend` | override request host header with backend's host name | `bool` | `false` | no, mutually exclusive with `hostname` |
+| `hostname` | override request host header with a custom host name | `string` | `null` | no, mutually exclusive with `hostname_from_backend` |
 | `path` | path prefix, in case we need to shift the url path for the backend | `string` | `null` | no |
 | `timeout` | timeout for backend's response in seconds | `number` | `60` | no |
 | `cookie_based_affinity` | cookie based routing | `string` | `"Enabled"` | no |
 | `affinity_cookie_name` | name of the affinity cookie, when skipped defaults to Azure's default name | `string` | `null` | no |
 | `root_certs` | (v2 only) for https traffic only, a map of custom root certificates used to sign backend's certificate (see below) | `map` | `null` | no |
 
+When `hostname_from_backend` nor `hostname` is not set the request's host header is not changed. This requires that the health check probe's (if used) `host` property is set (Application Gateway limitation). However, if one of this properties is set you can skip probe's `host` property - the host header will be inherited from the backend's http settings.
+
 The `root_certs` map has the following format:
 
 ```hcl
 root_certs = {
-  some_root_cert = "./files/ca.crt"
+  root_cert_name = "./files/ca.crt"
 }
 ```
 
@@ -106,7 +110,7 @@ One can decide on the port used by the probe but the protocol is always aligned 
 
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
-| `path` | url for the health check endpoint, this property controls if the custom probe is created or not, if this is not set, http settings will have the property `Use custom probe` set to `No` | `string` | `null` | no |
+| `path` | url for the health check endpoint, this property controls if the custom probe is created or not, if this is not set, http settings will have the property `Use custom probe` set to `No` | `string` | `null` | yes to enable a probe |
 | `host` | host header for the health check probe, when omitted sets the `Pick host name from backend HTTP settings` to `Yes`, cannot be skipped when `backend.hostname` or `backend.hostname_from_backend` are not set | `string` | `null` | no |
 | `port` | (v2 only) port for the health check, defaults to default protocol port | `number` | n/a | no |
 | `interval` | probe interval in seconds | `nubmer` | `5` | no |
@@ -131,7 +135,7 @@ Configures a rule that only redirects traffic (traffic matched by this rules nev
 
 Creates rewrite rules used to modify the HTTP response and request headers. A set of rewrite rules cannot be shared between applications. For details on building the rules refer to [Microsoft's documentation](https://docs.microsoft.com/azure/application-gateway/rewrite-http-headers).
 
-The whole property is a map, where the key is the rule name and the value is a map of rule's properties. Example of a rule that strips a port number from the X-Forwarded-For header:
+The whole property is a map, where key is the rule name and value is a map of rule's properties. Example of a rule that strips a port number from the X-Forwarded-For header:
 
 ```hcl
 rewrite_sets = {
@@ -156,11 +160,11 @@ Properties for a rule are described below.
 | `condition.ignore_case` | case in-sensitive comparison | `bool` | `false` | no |
 | `condition.negate` | negate the condition | `bool` | `false` | no |
 | `request_header` | a map properties required to modify a request header | `map` | `null` | no |
-| `request_header.name` | the header name | `string` | `null` | yes |
-| `request_header.value` | the header value | `string` | `null` | yes |
+| `request_header.name` | header name | `string` | `null` | yes |
+| `request_header.value` | header value | `string` | `null` | yes |
 | `response_header` | a map properties required to modify a response header | `map` | `null` | no |
-| `response_header.name` | the header name | `string` | `null` | yes |
-| `response_header.value` | the header value | `string` | `null` | yes |
+| `response_header.name` | header name | `string` | `null` | yes |
+| `response_header.value` | header value | `string` | `null` | yes |
 
 ## Usage
 
@@ -168,13 +172,13 @@ Properties for a rule are described below.
 
 Module requires that Firewalls and a dedicated subnet are set up already.
 
-An example invocation with a minium set of rules (at least one rule is required):
+An example invocation (assuming usage of other Palo Alto's Azure modules) with a minium set of rules (at least one rule is required):
 
 ```hcl
 module "appgw" {
   source = "../modules/appgw"
 
-  name                = "example-public-appgw"
+  name                = "appgw"
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
   subnet_id           = module.security_vnet.subnet_ids["subnet-appgw"]
@@ -183,7 +187,7 @@ module "appgw" {
     tier     = "Standard"
     capacity = 2
   }
-  vmseries_ips = ["x.x.x.x", "x.x.x.x"]
+  vmseries_ips = [for k, v in module.vmseries : v.interfaces[1].private_ip_address]
   rules = {
     minimum" = {
       priority = 1
@@ -197,14 +201,14 @@ module "appgw" {
 
 ### `rules` property examples
 
-The `rules` property is quite flexible, there several limitations, though. Their origin comes from the Application Gateway rather than the code itself. Their are:
+The `rules` property is quite flexible, there are several limitations though. Their origin comes from the Application Gateway rather than the code itself. They are:
 
 * `priority` property is required for all Application Gateways v2
 * `listener.port` has to be specified at minimum to create a valid rule
 * `listener.port` has to be unique between rules unless `listener.host_names` is used
 * a health check probe has to have a host header specified, this is done by either setting the header directly in `probe.host` property, or by inheriting it from http backend setting (one of `backend.hostname_from_backend` or `backend.hostname` has to be set)
 * when creating a redirect rule `backend` and `probe` cannot be set
-* the probe has to use the same protocol as the associated http backend settings, different port can be used, though
+* the probe has to use the same protocol as the associated http backend settings, different port can be used though
 
 The examples below are meant to show most common use cases and to serve as a base for more complex rules.
 
@@ -247,7 +251,7 @@ rules = {
 
 #### Multiple websites hosted on a single port
 
-For simplicity `http` traffic is configured only. This rule demonstrates how to split hostname based traffic to different ports on a Firewall.
+This rule demonstrates how to split hostname based traffic to different ports on a Firewall. For simplicity `http` traffic is configured only.
 
 ```hcl
 rules = {
