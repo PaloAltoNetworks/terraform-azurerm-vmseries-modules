@@ -1,6 +1,6 @@
 # Palo Alto Networks VNet Module for Azure
 
-A terraform module for deploying an Application Gateway. The module is dedicated to work with the Next Generation Firewalls, hence it supports only one backend.
+A terraform module for deploying an Application Gateway v2. The module is dedicated to work with the Next Generation Firewalls, hence it supports only one backend. It supports only v2 and WAF v2 Gateways.
 
 In the center of module's configuration is the `rules` property. See the the [Rules property explained](#rules-property-explained) and [`rules` property examples](#rules-property-examples) topics for more details.
 
@@ -42,7 +42,7 @@ As you can see in the `target_listener_name` property, all Application Gateway c
 
 For each application one can configure the following properties:
 
-* `priority` - (required for v2 gateways) rule's priority
+* `priority` - rule's priority
 * [`listener`](#property-listener) - provides general listener setting like port, protocol, error pages, etc
 * [`backend`](#property-backend) - (optional) complete backend http settings configuration
 * [`probe`](#property-probe) - (optional) backend health check probe configuration
@@ -182,14 +182,12 @@ module "appgw" {
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
   subnet_id           = module.security_vnet.subnet_ids["subnet-appgw"]
-  sku = {
-    name     = "Standard_Medium"
-    tier     = "Standard"
-    capacity = 2
-  }
+  capacity            = 2
+
   vmseries_ips = [for k, v in module.vmseries : v.interfaces[1].private_ip_address]
+  
   rules = {
-    minimum" = {
+    "minimum" = {
       priority = 1
       listener = {
         port = 8080

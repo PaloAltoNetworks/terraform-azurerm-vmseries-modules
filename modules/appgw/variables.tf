@@ -23,18 +23,32 @@ variable "managed_identities" {
   type        = list(string)
 }
 
-variable "sku" {
-  description = "Sku of the Application Gateway. Check Microsoft documentation for possible values,their combinations and limitations."
-  default = {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
-    capacity = 2
-  }
-  type = object({
-    name     = string
-    tier     = string
-    capacity = number
-  })
+variable "waf_enabled" {
+  description = "Enables WAF Application Gateway."
+  default     = "false"
+  type        = bool
+}
+
+variable "capacity" {
+  description = <<-EOF
+  A number of Application Gateway instances. A value bewteen 1 and 125.
+
+  This property is not used when autoscaling is enabled.
+  EOF
+  default     = 2
+  type        = number
+}
+
+variable "capacity_min" {
+  description = "When set enables autoscaling and becomes the minimum capacity."
+  default     = null
+  type        = number
+}
+
+variable "capacity_max" {
+  description = "Optional, maximum capacity for autoscaling."
+  default     = null
+  type        = number
 }
 
 variable "subnet_id" {

@@ -23,12 +23,13 @@ module "appgw" {
   location            = var.location
   subnet_id           = module.vnet.subnet_ids["appgw"]
   managed_identities  = ["/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/fosix-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/fosix-mid"]
-  # sku = {
-  #   name     = "Standard_Medium"
-  #   tier     = "Standard"
-  #   capacity = 2
-  # }
-  vmseries_ips = ["1.1.1.1", "2.2.2.2"]
+  capacity            = 2
+  # capacity_min        = 1
+  # capacity_max        = 10
+
+
+  # vmseries_ips = ["1.1.1.1", "2.2.2.2"]
+  vmseries_ips = ["20.69.233.42", "20.81.233.117"]
   rules = {
     "application-1" = {
       priority = 1
@@ -43,13 +44,11 @@ module "appgw" {
       }
 
       # backend = {
-      #   port     = 80
-      #   protocol = "Http"
+      #   hostname_from_backend = true
       # }
 
       probe = {
         path = "/php/login.php"
-        port = 80
         host = "127.0.0.1"
       }
 
