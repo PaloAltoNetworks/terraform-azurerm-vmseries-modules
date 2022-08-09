@@ -2,13 +2,13 @@
 
 A terraform module for deploying an Application Gateway v2. The module is dedicated to work with the Next Generation Firewalls, hence it supports only one backend. It supports only v2 and WAF v2 Gateways.
 
-In the center of module's configuration is the `rules` property. See the the [Rules property explained](#rules-property-explained) and [`rules` property examples](#rules-property-examples) topics for more details.
+In the center of module's configuration is the `rules` property. See the the [rules property explained](#rules-property-explained) and [`rules` property examples](#rules-property-examples) topics for more details.
 
 ## Rules property explained
 
-The `rules` property combines configuration for several Application Gateway components and groups them by a logical application. In other words an application defines a listener, http settings, health check probe, redirect rules or rewrite rule sets (some fo them are mutually exclusive, check details on each of them below). Those are always unique for an application, meaning that you cannot share them between application definitions. Most of the settings are optional and depend on a use case. The only one that is required is the listener port (for v2 Gateways a rule priority is a must since 2022 AzureRM API updates).
+The `rules` property combines configuration for several Application Gateway components and groups them by a logical application. In other words an application defines a listener, http settings, health check probe, redirect rules or rewrite rule sets (some fo them are mutually exclusive, check details on each of them below). Those are always unique for an application, meaning that you cannot share them between application definitions. Most of settings are optional and depend on a use case. The only one that is required is the listener port and the priority of the rule.
 
-In general `rules` property is a map where key is the logical application name and value is a set of properties, like below (AppGWv2 example):
+In general `rules` property is a map where key is the logical application name and value is a set of properties, like below:
 
 ```hcl
 rules = {
@@ -36,20 +36,20 @@ rules = {
 }
 ```
 
-The example above is a setup where the AppGW serves only as a reverse proxy terminating SSL connections (by default all traffic sent to the backend pool is sent to port 80, plain text). It also redirects all http communication sent to listener port 80 to https on port 443.
+The example above is a setup where the Application Gateway serves only as a reverse proxy terminating SSL connections (by default all traffic sent to the backend pool is sent to port 80, plain text). It also redirects all http communication sent to listener port 80 to https on port 443.
 
 As you can see in the `target_listener_name` property, all Application Gateway component created for an application are prefixed with the application name (so the key value).
 
 For each application one can configure the following properties:
 
 * `priority` - rule's priority
-* [`listener`](#property-listener) - provides general listener setting like port, protocol, error pages, etc
+* [`listener`](#property-listener) - provides general listener settings like port, protocol, error pages, etc
 * [`backend`](#property-backend) - (optional) complete backend http settings configuration
 * [`probe`](#property-probe) - (optional) backend health check probe configuration
-* [`redirect`](#property-redirect) - (optional) mutually exclusive with backend and probe, creates a redirect rule
-* [`rewrite_sets`](#property-rewrite-sets) - (optional) a set of rewrite rules to modify response and request headers
+* [`redirect`](#property-redirect) - (optional) mutually exclusive with `backend` and `probe`, creates a redirect rule
+* [`rewrite_sets`](#property-rewrite-sets) - (optional) a set of rewrite rules used to modify response and request headers.
 
-For details on each of them (except for `priority`) see below.
+For details on each of them (except for `priority`) check the topics below.
 
 ### property: listener
 
@@ -59,7 +59,7 @@ Configures the listener, frontend port and (optionally) the SSL Certificate comp
 | --- | --- | --- | --- | --- |
 | `port` | a port number | `number` | n/a | yes |
 | `protocol` | either `Http` or `Https` (case sensitive) | `string` | `"Http"` | no |
-| `host_names` | host header values this rule should react on, this creates a Multi-Site listener, for V1 Application Gateways only 1st item from the list is being used as V1 does not support multiple host headers | `list(string)` | `null` | no |
+| `host_names` | host header values this rule should react on, this creates a Multi-Site listener | `list(string)` | `null` | no |
 | `ssl_certificate_path` | a path to a certificate in `.pfx` format | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_vault_id` |
 | `ssl_certificate_pass` | a password matching the certificate specified in `ssl_certificate_path` | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_vault_id` |
 | `ssl_certificate_vault_id` | an ID of a certificate stored in an Azure Key Vault, requires `managed_identities` property, the identity(-ties) used have to have at least `GET` access to Key Vault's secrets | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_path` |
@@ -74,7 +74,7 @@ custom_error_pages = {
 }
 ```
 
-Keys can have values only like the ones above. Both are optional though. Only the error page path is customizable and it has to point to an HTML file.
+Keys can have values of `HttpStatus403` and `HttpStatus502` only. Both are optional. Only the error page path is customizable and it has to point to an HTML file.
 
 ### property: backend
 
@@ -90,7 +90,7 @@ Configures the backend's http settings, so port and protocol properties for a co
 | `timeout` | timeout for backend's response in seconds | `number` | `60` | no |
 | `cookie_based_affinity` | cookie based routing | `string` | `"Enabled"` | no |
 | `affinity_cookie_name` | name of the affinity cookie, when skipped defaults to Azure's default name | `string` | `null` | no |
-| `root_certs` | (v2 only) for https traffic only, a map of custom root certificates used to sign backend's certificate (see below) | `map` | `null` | no |
+| `root_certs` | for https traffic only, a map of custom root certificates used to sign backend's certificate (see below) | `map` | `null` | no |
 
 When `hostname_from_backend` nor `hostname` is not set the request's host header is not changed. This requires that the health check probe's (if used) `host` property is set (Application Gateway limitation). However, if one of this properties is set you can skip probe's `host` property - the host header will be inherited from the backend's http settings.
 
@@ -106,11 +106,11 @@ root_certs = {
 
 Configures a health check probe. A probe is fully customizable, meaning that one decides what should be probed, the FW or an application behind it.
 
-One can decide on the port used by the probe but the protocol is always aligned to the one set in http settings.
+One can decide on the port used by the probe but the protocol is always aligned to the one set in http settings (Application Gateway limitation).
 
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
-| `path` | url for the health check endpoint, this property controls if the custom probe is created or not, if this is not set, http settings will have the property `Use custom probe` set to `No` | `string` | `null` | yes to enable a probe |
+| `path` | url for the health check endpoint, this property controls if the custom probe is created or not; if this is not set, http settings will have the property `Use custom probe` set to `No` | `string` | `null` | yes to enable a probe |
 | `host` | host header for the health check probe, when omitted sets the `Pick host name from backend HTTP settings` to `Yes`, cannot be skipped when `backend.hostname` or `backend.hostname_from_backend` are not set | `string` | `null` | no |
 | `port` | (v2 only) port for the health check, defaults to default protocol port | `number` | n/a | no |
 | `interval` | probe interval in seconds | `nubmer` | `5` | no |
@@ -135,7 +135,7 @@ Configures a rule that only redirects traffic (traffic matched by this rules nev
 
 Creates rewrite rules used to modify the HTTP response and request headers. A set of rewrite rules cannot be shared between applications. For details on building the rules refer to [Microsoft's documentation](https://docs.microsoft.com/azure/application-gateway/rewrite-http-headers).
 
-The whole property is a map, where key is the rule name and value is a map of rule's properties. Example of a rule that strips a port number from the X-Forwarded-For header:
+The whole property is a map, where key is the rule name and value is a map of rule's properties. Example of a rule that strips a port number from the `X-Forwarded-For` header:
 
 ```hcl
 rewrite_sets = {
@@ -175,17 +175,17 @@ Module requires that Firewalls and a dedicated subnet are set up already.
 An example invocation (assuming usage of other Palo Alto's Azure modules) with a minium set of rules (at least one rule is required):
 
 ```hcl
-module "appgw" {
-  source = "../modules/appgw"
+module "Application Gateway" {
+  source = "../modules/Application Gateway"
 
-  name                = "appgw"
+  name                = "Application Gateway"
   resource_group_name = azurerm_resource_group.this.name
   location            = var.location
-  subnet_id           = module.security_vnet.subnet_ids["subnet-appgw"]
+  subnet_id           = module.security_vnet.subnet_ids["subnet-Application Gateway"]
   capacity            = 2
 
   vmseries_ips = [for k, v in module.vmseries : v.interfaces[1].private_ip_address]
-  
+
   rules = {
     "minimum" = {
       priority = 1
@@ -201,10 +201,10 @@ module "appgw" {
 
 The `rules` property is quite flexible, there are several limitations though. Their origin comes from the Application Gateway rather than the code itself. They are:
 
-* `priority` property is required for all Application Gateways v2
+* `priority` property is required since 2021-08-01 AzureRM API update
 * `listener.port` has to be specified at minimum to create a valid rule
-* `listener.port` has to be unique between rules unless `listener.host_names` is used
-* a health check probe has to have a host header specified, this is done by either setting the header directly in `probe.host` property, or by inheriting it from http backend setting (one of `backend.hostname_from_backend` or `backend.hostname` has to be set)
+* `listener.port` has to be unique between rules unless `listener.host_names` is used (all rules sharing a port have to have `listener.host_names` specified)
+* a health check probe has to have a host header specified, this is done by either setting the header directly in `probe.host` property, or by inheriting it from http backend settings (one of `backend.hostname_from_backend` or `backend.hostname` has to be set)
 * when creating a redirect rule `backend` and `probe` cannot be set
 * the probe has to use the same protocol as the associated http backend settings, different port can be used though
 
@@ -315,6 +315,11 @@ This is a simple rule used to terminate SSL traffic. However the application beh
 
 We also use an SSL certificate stored in a file instead of an Azure Key Vault.
 
+NOTICE, there are some defaults used in this config:
+
+* `backend` has no `port` or `protocol` specified - this means `80` and `Http` are used respectively.
+* `probe` has no `port` or `host` specified - this means port `80` is used (default port for protocol, which is inherited from backend's protocol) and host headers are inherited from backen's host headers.
+
 ```hcl
 rules = {
   "application-1" = {
@@ -384,19 +389,25 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_capacity"></a> [capacity](#input\_capacity) | A number of Application Gateway instances. A value bewteen 1 and 125.<br><br>This property is not used when autoscaling is enabled. | `number` | `2` | no |
+| <a name="input_capacity_max"></a> [capacity\_max](#input\_capacity\_max) | Optional, maximum capacity for autoscaling. | `number` | `null` | no |
+| <a name="input_capacity_min"></a> [capacity\_min](#input\_capacity\_min) | When set enables autoscaling and becomes the minimum capacity. | `number` | `null` | no |
+| <a name="input_enable_http2"></a> [enable\_http2](#input\_enable\_http2) | Enable HTTP2 on the Application Gateway. | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Location to place the Application Gateway in. | `string` | n/a | yes |
 | <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities) | A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.<br><br>These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault. | `list(string)` | `null` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the Application Gateway. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of an existing resource group. | `string` | n/a | yes |
 | <a name="input_rules"></a> [rules](#input\_rules) | A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. <br>A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. <br><br>Details on configuration can be found [here](#rules-property-explained). | `any` | n/a | yes |
-| <a name="input_sku"></a> [sku](#input\_sku) | Sku of the Application Gateway. Check Microsoft documentation for possible values,their combinations and limitations. | <pre>object({<br>    name     = string<br>    tier     = string<br>    capacity = number<br>  })</pre> | <pre>{<br>  "capacity": 2,<br>  "name": "Standard_v2",<br>  "tier": "Standard_v2"<br>}</pre> | no |
 | <a name="input_ssl_policy_cipher_suites"></a> [ssl\_policy\_cipher\_suites](#input\_ssl\_policy\_cipher\_suites) | A List of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. <br>For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites). | `list(string)` | `null` | no |
 | <a name="input_ssl_policy_min_protocol_version"></a> [ssl\_policy\_min\_protocol\_version](#input\_ssl\_policy\_min\_protocol\_version) | Minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`. <br>Possible values are: `TLSv1_0`, `TLSv1_1` or `TLSv1_2`. | `string` | `null` | no |
 | <a name="input_ssl_policy_name"></a> [ssl\_policy\_name](#input\_ssl\_policy\_name) | Name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application Gateway each time terraform code is run. Therefore this property is omited in the code for `Custom` policies. <br><br>For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default. | `string` | `"AppGwSslPolicy20150501"` | no |
 | <a name="input_ssl_policy_type"></a> [ssl\_policy\_type](#input\_ssl\_policy\_type) | Type of an SSL policy. Possible values are `Predefined` or `Custom`.<br>If the value is `Custom` the following values are mandatory: `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`. | `string` | `"Predefined"` | no |
-| <a name="input_ssl_profiles"></a> [ssl\_profiles](#input\_ssl\_profiles) | **Application Gateway v2 only.**<br><br>A map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property. <br><br>The structure of the map is as follows:<pre>{<br>  profile_name = {<br>    ssl_policy_type                 = string<br>    ssl_policy_min_protocol_version = string<br>    ssl_policy_cipher_suites        = list<br>  }<br>}</pre>For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply. The only difference is that you cannot name an SSL policy inside an SSL profile. | `map(any)` | `{}` | no |
+| <a name="input_ssl_profiles"></a> [ssl\_profiles](#input\_ssl\_profiles) | A map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property. <br><br>The structure of the map is as follows:<pre>{<br>  profile_name = {<br>    ssl_policy_type                 = string<br>    ssl_policy_min_protocol_version = string<br>    ssl_policy_cipher_suites        = list<br>  }<br>}</pre>For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply. The only difference is that you cannot name an SSL policy inside an SSL profile. | `map(any)` | `{}` | no |
 | <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id) | An ID of a subnet that will host the Application Gateway. Keep in mind that this subnet can contain only AppGWs and only of the same type. | `string` | n/a | yes |
+| <a name="input_tags"></a> [tags](#input\_tags) | Azure tags to apply to the created resources. | `map(string)` | `{}` | no |
 | <a name="input_vmseries_ips"></a> [vmseries\_ips](#input\_vmseries\_ips) | IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway. | `list(string)` | n/a | yes |
+| <a name="input_waf_enabled"></a> [waf\_enabled](#input\_waf\_enabled) | Enables WAF Application Gateway. This only sets the SKU. This module does not support WAF rules configuration. | `bool` | `"false"` | no |
+| <a name="input_zones"></a> [zones](#input\_zones) | A list of zones the Application Gateway should be available in.<br><br>NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to a single zone or zone-redundant (so available in all zones in a region). <br>Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during next `terraform apply` as there will be difference between the state and the actual configuration.<br><br>For details on zones currently available in a region of your choice refer to [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).<br><br>Example:<pre>zones = ["1","2","3"]</pre> | `list(string)` | `null` | no |
 
 ## Outputs
 

@@ -26,7 +26,10 @@ module "appgw" {
   capacity            = 2
   # capacity_min        = 1
   # capacity_max        = 10
-
+  zones        = ["1"]
+  enable_http2 = true
+  tags         = var.tags
+  waf_enabled  = true
 
   # vmseries_ips = ["1.1.1.1", "2.2.2.2"]
   vmseries_ips = ["20.69.233.42", "20.81.233.117"]

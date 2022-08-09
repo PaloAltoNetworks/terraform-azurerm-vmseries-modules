@@ -8,6 +8,24 @@ variable "location" {
   type        = string
 }
 
+variable "zones" {
+  description = <<-EOF
+  A list of zones the Application Gateway should be available in.
+
+  NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to a single zone or zone-redundant (so available in all zones in a region). 
+  Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during next `terraform apply` as there will be difference between the state and the actual configuration.
+
+  For details on zones currently available in a region of your choice refer to [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
+
+  Example:
+  ```
+  zones = ["1","2","3"]
+  ```
+  EOF
+  default     = null
+  type        = list(string)
+}
+
 variable "name" {
   description = "Name of the Application Gateway."
   type        = string
@@ -24,7 +42,7 @@ variable "managed_identities" {
 }
 
 variable "waf_enabled" {
-  description = "Enables WAF Application Gateway."
+  description = "Enables WAF Application Gateway. This only sets the SKU. This module does not support WAF rules configuration."
   default     = "false"
   type        = bool
 }
@@ -49,6 +67,12 @@ variable "capacity_max" {
   description = "Optional, maximum capacity for autoscaling."
   default     = null
   type        = number
+}
+
+variable "enable_http2" {
+  description = "Enable HTTP2 on the Application Gateway."
+  default     = false
+  type        = bool
 }
 
 variable "subnet_id" {
@@ -132,8 +156,6 @@ variable "ssl_policy_cipher_suites" {
 
 variable "ssl_profiles" {
   description = <<-EOF
-  **Application Gateway v2 only.**
-  
   A map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property. 
 
   The structure of the map is as follows:
@@ -150,4 +172,10 @@ variable "ssl_profiles" {
   EOF
   default     = {}
   type        = map(any)
+}
+
+variable "tags" {
+  description = "Azure tags to apply to the created resources."
+  default     = {}
+  type        = map(string)
 }

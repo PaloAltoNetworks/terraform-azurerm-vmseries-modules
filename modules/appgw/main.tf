@@ -22,14 +22,20 @@ resource "azurerm_public_ip" "this" {
   name                = "${var.name}-pip"
   resource_group_name = var.resource_group_name
   location            = var.location
-  sku                 = "Standard"
-  allocation_method   = "Static"
+
+  sku               = "Standard"
+  allocation_method = "Static"
+  zones             = var.zones
+  tags              = var.tags
 }
 
 resource "azurerm_application_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
+  zones               = var.zones
+  enable_http2        = var.enable_http2
+  tags                = var.tags
 
   sku {
     name     = var.waf_enabled ? "WAF_v2" : "Standard_v2"
