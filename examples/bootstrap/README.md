@@ -72,6 +72,6 @@ terraform destroy
 | <a name="output_primary_access_key"></a> [primary\_access\_key](#output\_primary\_access\_key) | The primary access key for the Azure Storage Account. |
 | <a name="output_storage_account_id"></a> [storage\_account\_id](#output\_storage\_account\_id) | Identifier of the Azure Storage Account object used for the Bootstrap. |
 | <a name="output_storage_account_name"></a> [storage\_account\_name](#output\_storage\_account\_name) | Name of the Azure Storage Account object used for the Bootstrap. |
-| <a name="output_storage_share_ids"></a> [storage\_share\_ids](#output\_storage\_share\_ids) | Identifier of the File Share within Azure Storage. |
-| <a name="output_storage_share_names"></a> [storage\_share\_names](#output\_storage\_share\_names) | Name of the File Share within Azure Storage. |
+| <a name="output_storage_share_ids"></a> [storage\_share\_ids](#output\_storage\_share\_ids) | Identifiers of the File Shares within Azure Storage. |
+| <a name="output_storage_share_names"></a> [storage\_share\_names](#output\_storage\_share\_names) | Names of the File Shares within Azure Storage. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
