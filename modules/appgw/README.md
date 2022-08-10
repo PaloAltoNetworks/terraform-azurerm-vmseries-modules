@@ -6,7 +6,7 @@ In the center of module's configuration is the `rules` property. See the the [ru
 
 ## Rules property explained
 
-The `rules` property combines configuration for several Application Gateway components and groups them by a logical application. In other words an application defines a listener, http settings, health check probe, redirect rules or rewrite rule sets (some fo them are mutually exclusive, check details on each of them below). Those are always unique for an application, meaning that you cannot share them between application definitions. Most of settings are optional and depend on a use case. The only one that is required is the listener port and the priority of the rule.
+The `rules` property combines configuration for several Application Gateway components and groups them by a logical application. In other words an application defines a listener, http settings, health check probe, redirect rules, rewrite rule sets or url path maps (some fo them are mutually exclusive, check details on each of them below). Those are always unique for an application, meaning that you cannot share them between application definitions. Most of settings are optional and depend on a use case. The only one that is required is the listener port and the priority of the rule.
 
 In general `rules` property is a map where key is the logical application name and value is a set of properties, like below:
 
@@ -48,6 +48,7 @@ For each application one can configure the following properties:
 * [`probe`](#property-probe) - (optional) backend health check probe configuration
 * [`redirect`](#property-redirect) - (optional) mutually exclusive with `backend` and `probe`, creates a redirect rule
 * [`rewrite_sets`](#property-rewrite-sets) - (optional) a set of rewrite rules used to modify response and request headers.
+* [`url_path_maps`](#property-urlpathmaps) - (optional) a map of URL paths with their routing configuration - creates a rule of `PathBasedRouting` type (if not specified the rule is of `Basic` type)
 
 For details on each of them (except for `priority`) check the topics below.
 
@@ -166,6 +167,19 @@ Properties for a rule are described below.
 | `response_header.name` | header name | `string` | `null` | yes |
 | `response_header.value` | header value | `string` | `null` | yes |
 
+### property: url_path_maps
+
+Triggers creation of a `PathBasedRouting` rule for an application. It's a map where key is a name of a routing configuration for a specific path and value contains the actual configuration.
+
+| Name | Description | Type | Default | Required |
+| --- | --- | --- | --- | --- |
+| `path` | a URL path that will be matched for this configuration | `string` | n/a | yes |
+| `backend` | a [backend](#property-backend) configuration like specified above | `map` | `null` | no, mutually exclusive with `redirect` |
+| `probe` | a [probe](#property-probe) configuration like specified above | `map` | `null` | no, mutually exclusive with `redirect` |
+| `redirect` | a [redirect](#property-redirect) configuration like specified above | `map` | `null` | no, mutually exclusive with `backend` and `probe` |
+
+As one can see the only specific setting is `path`. The rest of configuration is similar to a regular application configuration. For each path a pair backend settings and probe or a redirect configuration is created.
+
 ## Usage
 
 ### General
@@ -214,6 +228,7 @@ The examples below are meant to show most common use cases and to serve as a bas
 * [Multiple websites hosted on a single port](#multiple-websites-hosted-on-a-single-port)
 * [Probing a Firewall availability in an HA pair](#probing-a-firewall-availability-in-an-ha-pair)
 * [Rewriting HTTP headers](#rewriting-http-headers)
+* [Path based configuration](#path-based-configuration)
 
 #### SSL termination with a redirect from HTTP to HTTPS
 
@@ -353,6 +368,60 @@ rules = {
         request_header = {
           name  = "X-Forwarded-Proto"
           value = "https"
+        }
+      }
+    }
+  }
+}
+```
+
+#### Path based configuration
+
+Here we show a configuration for a 'complex' application. This means that under different paths we have different applications. The host header remains the same. Each application is served on the Firewall under a different port. We use path based routing to split the traffic on an Application Gateway.
+
+Notice, that the general backend configuration serves as a 'catch-all' rule, while each path has it's own dedicated backend, probe or redirect configuration block.
+
+```hcl
+rules = {
+  "complex-application" = {
+    priority = 1
+    listener = {
+      port       = 80
+      host_names = ["www.complex.app"]
+    }
+    backend = {
+      port = 8080
+    }
+    probe = {
+      path = "/healthcheck"
+      host = "127.0.0.1"
+    }
+    url_path_maps = {
+      "menu" = {
+        path = "/api/menu/"
+        backend = {
+          port = 8081
+        }
+        probe = {
+          path = "/api/menu/healthcheck"
+          host = "127.0.0.1"
+        }
+      }
+      "header" = {
+        path = "/api/header/"
+        backend = {
+          port = 8082
+        }
+        probe = {
+          path = "/api/header/healthcheck"
+          host = "127.0.0.1"
+        }
+      }
+      "old_url_fix" = {
+        path = "/old/app/path/"
+        redirect = {
+          type       = "Permanent"
+          target_url = "https://www.complex.app"
         }
       }
     }

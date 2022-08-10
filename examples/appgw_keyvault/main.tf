@@ -34,42 +34,45 @@ module "appgw" {
   # vmseries_ips = ["1.1.1.1", "2.2.2.2"]
   vmseries_ips = ["20.69.233.42", "20.81.233.117"]
   rules = {
-    "application-1" = {
+    "complex-application" = {
       priority = 1
       listener = {
-        port                     = 443
-        protocol                 = "Https"
-        ssl_certificate_vault_id = "https://fosix-kv.vault.azure.net/secrets/fosix-cert/bb1391bba15042a59adaea584a8208e8"
+        port       = 80
+        host_names = ["www.complex.app"]
+      }
+      backend = {
+        port = 8080
       }
       probe = {
-        path = "/php/login.php"
+        path = "/healthcheck"
         host = "127.0.0.1"
       }
-    }
-    tmp = {
-      priority = 2
-      listener = {
-        port = 80
-      }
       url_path_maps = {
-        "backend_app_1" = {
-          path = "/path/1/"
+        "menu" = {
+          path = "/api/menu/"
           backend = {
             port = 8081
           }
           probe = {
-            path = "/php/login.php"
+            path = "/api/menu/healthcheck"
             host = "127.0.0.1"
           }
         }
-        "backend_app_2" = {
-          path = "/path/2/"
+        "header" = {
+          path = "/api/header/"
           backend = {
             port = 8082
           }
           probe = {
-            path = "/php/login.php"
+            path = "/api/header/healthcheck"
             host = "127.0.0.1"
+          }
+        }
+        "old_url_fix" = {
+          path = "/old/app/path/"
+          redirect = {
+            type       = "Permanent"
+            target_url = "https://www.complex.app"
           }
         }
       }
