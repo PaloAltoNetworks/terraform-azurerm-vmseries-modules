@@ -36,38 +36,40 @@ module "appgw" {
   rules = {
     "application-1" = {
       priority = 1
-
       listener = {
-        port     = 443
-        protocol = "Https"
-        # ssl_certificate_path = "./files/self_signed.pfx"
-        # ssl_certificate_pass = "password"
+        port                     = 443
+        protocol                 = "Https"
         ssl_certificate_vault_id = "https://fosix-kv.vault.azure.net/secrets/fosix-cert/bb1391bba15042a59adaea584a8208e8"
-
       }
-
-      # backend = {
-      #   hostname_from_backend = true
-      # }
-
       probe = {
         path = "/php/login.php"
         host = "127.0.0.1"
       }
-
-      rewrite_sets = {
-        "xff-strip-port" = {
-          sequence = 100
-          request_header = {
-            name  = "X-Forwarded-For"
-            value = "{var_add_x_forwarded_for_proxy}"
+    }
+    tmp = {
+      priority = 2
+      listener = {
+        port = 80
+      }
+      url_path_maps = {
+        "backend_app_1" = {
+          path = "/path/1/"
+          backend = {
+            port = 8081
+          }
+          probe = {
+            path = "/php/login.php"
+            host = "127.0.0.1"
           }
         }
-        "xfp-https" = {
-          sequence = 200
-          request_header = {
-            name  = "X-Forwarded-Proto"
-            value = "https"
+        "backend_app_2" = {
+          path = "/path/2/"
+          backend = {
+            port = 8082
+          }
+          probe = {
+            path = "/php/login.php"
+            host = "127.0.0.1"
           }
         }
       }
