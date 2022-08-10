@@ -1,12 +1,13 @@
-data "azurerm_resource_group" "this" {
-  name = var.resource_group_name
+resource "azurerm_resource_group" "this" {
+  name     = var.resource_group_name
+  location = var.location
 }
 
 module "vnet" {
   source = "../../modules/vnet"
 
   virtual_network_name    = var.virtual_network_name
-  resource_group_name     = data.azurerm_resource_group.this.name
+  resource_group_name     = azurerm_resource_group.this.name
   location                = var.location
   address_space           = var.address_space
   network_security_groups = var.network_security_groups
@@ -18,21 +19,17 @@ module "vnet" {
 module "appgw" {
   source = "../../modules/appgw"
 
-  name                = "fosix-appgw"
-  resource_group_name = data.azurerm_resource_group.this.name
+  name                = "appgw"
+  resource_group_name = azurerm_resource_group.this.name
   location            = var.location
   subnet_id           = module.vnet.subnet_ids["appgw"]
-  managed_identities  = ["/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/fosix-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/fosix-mid"]
   capacity            = 2
-  # capacity_min        = 1
-  # capacity_max        = 10
-  zones        = ["1"]
-  enable_http2 = true
-  tags         = var.tags
-  waf_enabled  = true
+  zones               = ["1"]
+  enable_http2        = true
+  tags                = var.tags
+  waf_enabled         = true
 
-  # vmseries_ips = ["1.1.1.1", "2.2.2.2"]
-  vmseries_ips = ["20.69.233.42", "20.81.233.117"]
+  vmseries_ips = ["1.1.1.1"]
   rules = {
     "complex-application" = {
       priority = 1
