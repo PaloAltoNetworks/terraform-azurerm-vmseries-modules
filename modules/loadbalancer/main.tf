@@ -12,10 +12,13 @@ locals {
     }
   }
 
+  # A list of all rules: outbound and inbound
+  all_rules = merge(var.frontend_ips, var.outbound_rules)
+
   # Frontend ip configurations, no rules, only PIPs.
   # The `if` statement is to avoid errors in LB configuration when re-using a PIP created by some other rule.
   frontend_ip_configurations = {
-    for k, v in merge(var.frontend_ips, var.outbound_rules) : k => {
+    for k, v in local.all_rules : k => {
       name                          = k
       public_ip_address_id          = try(v.create_public_ip, false) ? azurerm_public_ip.this[k].id : try(data.azurerm_public_ip.exists[k].id, null)
       create_public_ip              = try(v.create_public_ip, false)
@@ -24,10 +27,7 @@ locals {
       private_ip_address_allocation = try(v.private_ip_address_allocation, null)
       private_ip_address            = try(v.private_ip_address, null)
     }
-    if(
-      try(v.create_public_ip, false)
-      || (!try(v.create_public_ip, false) && !can(merge(var.frontend_ips, var.outbound_rules)[v.public_ip_name]))
-    )
+    if try(v.create_public_ip, false) || !can(local.all_rules[v.public_ip_name])
   }
 
   # Terraform for_each unfortunately requires a single-dimensional map, but we have
@@ -73,7 +73,7 @@ locals {
 
 
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in merge(var.frontend_ips, var.outbound_rules) :
+  for_each = { for k, v in local.all_rules :
   k => v if try(v.create_public_ip, false) }
 
   name                = each.key
@@ -86,7 +86,7 @@ resource "azurerm_public_ip" "this" {
 }
 
 data "azurerm_public_ip" "exists" {
-  for_each = { for k, v in merge(var.frontend_ips, var.outbound_rules) :
+  for_each = { for k, v in local.all_rules :
   k => v if try(v.public_ip_name, null) != null }
 
   name                = each.value.public_ip_name
