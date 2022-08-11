@@ -2,7 +2,10 @@
 name: Validate examples against variety of TF versions
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - tf_validate_ver
+  # workflow_dispatch:
 
 jobs: 
   validate:
