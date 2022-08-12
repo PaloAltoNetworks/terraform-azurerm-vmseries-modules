@@ -1,39 +1,73 @@
 ---
-name: Validate examples against variety of TF versions
+name: Validate examples and modules against variety of TF versions
 
 on:
-  push:
-    branches:
-      - tf_validate_ver
-  # workflow_dispatch:
+  # push:
+  #   branch:
+  #     - develop
+  workflow_dispatch:
+
+env:
+  # tf_versions needs to be a string of TF versions we would like to test against
+  # versions have to be space delimited
+  tf_versions: 0.15.0 1.0.0 1.2.0
 
 jobs: 
-  validate:
+  prerequisites:
+    name: get a list of modules to check
+    runs-on: ubuntu-latest
+    outputs:
+      modules: ${{ steps.preqs.outputs.modules }}
+      examples: ${{ steps.preqs.outputs.examples }}
+      tf_versions: ${{ steps.preqs.outputs.tf_versions }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+      - name: set outputs
+        id: preqs
+        run: |
+          echo "::set-output name=modules::$(find modules -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1 | jq -R -s -c 'split("\n")[:-1]')"
+          echo "::set-output name=examples::$(find examples -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1 | jq -R -s -c 'split("\n")[:-1]')"
+          echo "::set-output name=tf_versions::$(echo ${tf_versions}| tr " " "\n" | jq -R -s -c 'split("\n")[:-1]')"
+
+  modules:
+    needs: [prerequisites]
+    name: validate modules
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tf_versions: ${{ fromJson(needs.prerequisites.outputs.tf_versions) }}
+        modules: ${{ fromJson(needs.prerequisites.outputs.modules) }}
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+      - name: setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: ${{ matrix.tf_versions }}
+      - name: run modules validation
+        run: |
+          cd "$GITHUB_WORKSPACE/${{ matrix.modules }}"
+          terraform init -backend=false
+          terraform validate
+
+  examples:
+    needs: [prerequisites]
     name: validate examples
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        tf_version: 
-          - '0.15.0'
-          - '1.0.0'
-          - '1.2.0'
-
+        tf_versions: ${{ fromJson(needs.prerequisites.outputs.tf_versions) }}
+        examples: ${{ fromJson(needs.prerequisites.outputs.examples) }}
     steps:
       - name: checkout code
         uses: actions/checkout@v3
-      
       - name: setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: ${{ matrix.tf_version }}
-
-      - name: run validation
+          terraform_version: ${{ matrix.tf_versions }}
+      - name: run examples validation
         run: |
-          cd "$GITHUB_WORKSPACE"
-          for dir in $(find examples -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1);
-          do
-            echo "Processing directory: $dir"
-            cd "$GITHUB_WORKSPACE/$dir"
-            terraform init -backend=false
-            terraform validate
-          done
+          cd "$GITHUB_WORKSPACE/${{ matrix.examples }}"
+          terraform init -backend=false
+          terraform validate
