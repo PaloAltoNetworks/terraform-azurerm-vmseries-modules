@@ -19,7 +19,7 @@ rules = {
     }
     redirect = {
       type                 = "Temporary"
-      target_listener_name = "application_1-listener"
+      target_listener_name = "application_1"
       include_path         = true
       include_query_string = true
     }
@@ -38,7 +38,7 @@ rules = {
 
 The example above is a setup where the Application Gateway serves only as a reverse proxy terminating SSL connections (by default all traffic sent to the backend pool is sent to port 80, plain text). It also redirects all http communication sent to listener port 80 to https on port 443.
 
-As you can see in the `target_listener_name` property, all Application Gateway component created for an application are prefixed with the application name (so the key value).
+As you can see in the `target_listener_name` property, all Application Gateway component created for an application are equal to the application name (so the key value).
 
 For each application one can configure the following properties:
 
@@ -61,6 +61,7 @@ Configures the listener, frontend port and (optionally) the SSL Certificate comp
 | `port` | a port number | `number` | n/a | yes |
 | `protocol` | either `Http` or `Https` (case sensitive) | `string` | `"Http"` | no |
 | `host_names` | host header values this rule should react on, this creates a Multi-Site listener | `list(string)` | `null` | no |
+| `ssl_profile_name` | a name (key) of an SSL Profile defined in `ssl_profiles` property | `string` | `null` | no |
 | `ssl_certificate_path` | a path to a certificate in `.pfx` format | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_vault_id` |
 | `ssl_certificate_pass` | a password matching the certificate specified in `ssl_certificate_path` | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_vault_id` |
 | `ssl_certificate_vault_id` | an ID of a certificate stored in an Azure Key Vault, requires `managed_identities` property, the identity(-ties) used have to have at least `GET` access to Key Vault's secrets | `string` | `null` | yes if `protocol == "Https"`, mutually exclusive with `ssl_certificate_path` |
@@ -127,7 +128,7 @@ Configures a rule that only redirects traffic (traffic matched by this rules nev
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
 | `type` | this property triggers creation of a redirect rule, possible values are: `Permanent`, `Temporary`, `Found` and `SeeOther` | `string` | `null` | no |
-| `target_listener_name` | a name of an existing listener to which traffic will be redirected, this is basically a name of a rule suffixed with `-listener` | `string` | `null` | no, mutually exclusive with `target_url` |
+| `target_listener_name` | a name of an existing listener to which traffic will be redirected, this is basically a name of a rule | `string` | `null` | no, mutually exclusive with `target_url` |
 | `target_url` | a URL to which traffic will be redirected | `string` | `null` | no, mutually exclusive with `target_listener_name` |
 | `include_path` | decides whether to include the path in the redirected Url | `bool` | `false` | no |
 | `include_query_string` | decides whether to include the query string in the redirected Url | `bool` | `false` | no |
@@ -245,7 +246,7 @@ rules = {
 
     redirect = {
       type                 = "Permanent"
-      target_listener_name = "https-listener"
+      target_listener_name = "https"
       include_path         = true
       include_query_string = true
     }
@@ -312,7 +313,7 @@ rules = {
       port = 8080
     }
 
-    port = {
+    probe = {
       path       = "/php/login.php"
       port       = 80
       host       = "127.0.0.1"
@@ -434,7 +435,7 @@ rules = {
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.15, < 2.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7 |
 
 ## Providers
@@ -468,7 +469,7 @@ No modules.
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of an existing resource group. | `string` | n/a | yes |
 | <a name="input_rules"></a> [rules](#input\_rules) | A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. <br>A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. <br><br>Details on configuration can be found [here](#rules-property-explained). | `any` | n/a | yes |
 | <a name="input_ssl_policy_cipher_suites"></a> [ssl\_policy\_cipher\_suites](#input\_ssl\_policy\_cipher\_suites) | A List of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. <br>For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites). | `list(string)` | `null` | no |
-| <a name="input_ssl_policy_min_protocol_version"></a> [ssl\_policy\_min\_protocol\_version](#input\_ssl\_policy\_min\_protocol\_version) | Minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`. <br>Possible values are: `TLSv1_0`, `TLSv1_1` or `TLSv1_2`. | `string` | `null` | no |
+| <a name="input_ssl_policy_min_protocol_version"></a> [ssl\_policy\_min\_protocol\_version](#input\_ssl\_policy\_min\_protocol\_version) | Minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`. <br><br>Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2` or `null` (only to be used with a `Predefined` policy). | `string` | `null` | no |
 | <a name="input_ssl_policy_name"></a> [ssl\_policy\_name](#input\_ssl\_policy\_name) | Name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application Gateway each time terraform code is run. Therefore this property is omited in the code for `Custom` policies. <br><br>For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default. | `string` | `"AppGwSslPolicy20150501"` | no |
 | <a name="input_ssl_policy_type"></a> [ssl\_policy\_type](#input\_ssl\_policy\_type) | Type of an SSL policy. Possible values are `Predefined` or `Custom`.<br>If the value is `Custom` the following values are mandatory: `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`. | `string` | `"Predefined"` | no |
 | <a name="input_ssl_profiles"></a> [ssl\_profiles](#input\_ssl\_profiles) | A map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property. <br><br>The structure of the map is as follows:<pre>{<br>  profile_name = {<br>    ssl_policy_type                 = string<br>    ssl_policy_min_protocol_version = string<br>    ssl_policy_cipher_suites        = list<br>  }<br>}</pre>For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply. The only difference is that you cannot name an SSL policy inside an SSL profile. | `map(any)` | `{}` | no |

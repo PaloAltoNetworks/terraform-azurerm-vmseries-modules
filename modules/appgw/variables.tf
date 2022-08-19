@@ -139,7 +139,8 @@ variable "ssl_policy_name" {
 variable "ssl_policy_min_protocol_version" {
   description = <<-EOF
   Minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`. 
-  Possible values are: `TLSv1_0`, `TLSv1_1` or `TLSv1_2`.
+
+  Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2` or `null` (only to be used with a `Predefined` policy).
   EOF
   default     = null
   type        = string

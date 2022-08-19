@@ -28,48 +28,50 @@ module "appgw" {
   enable_http2        = true
   tags                = var.tags
   waf_enabled         = true
+  ssl_policy_type     = "Predefined"
+  ssl_policy_name     = "AppGwSslPolicy20170401"
+
+  ssl_profiles = {
+    "tls1.2" = {
+      ssl_policy_type = "Predefined"
+      ssl_policy_name = "AppGwSslPolicy20220101S"
+    }
+  }
 
   vmseries_ips = ["1.1.1.1"]
   rules = {
-    "complex-application" = {
+    "application-1" = {
       priority = 1
+
       listener = {
-        port       = 80
-        host_names = ["www.complex.app"]
+        port                 = 443
+        protocol             = "Https"
+        ssl_certificate_path = "./files/self_signed.pfx"
+        ssl_certificate_pass = "123qweasd"
+        ssl_profile_name     = "tls1.2"
       }
+
       backend = {
-        port = 8080
+        hostname_from_backend = true
       }
+
       probe = {
-        path = "/healthcheck"
-        host = "127.0.0.1"
+        path = "/php/login.php"
       }
-      url_path_maps = {
-        "menu" = {
-          path = "/api/menu/"
-          backend = {
-            port = 8081
-          }
-          probe = {
-            path = "/api/menu/healthcheck"
-            host = "127.0.0.1"
+
+      rewrite_sets = {
+        "xff-strip-port" = {
+          sequence = 100
+          request_header = {
+            name  = "X-Forwarded-For"
+            value = "{var_add_x_forwarded_for_proxy}"
           }
         }
-        "header" = {
-          path = "/api/header/"
-          backend = {
-            port = 8082
-          }
-          probe = {
-            path = "/api/header/healthcheck"
-            host = "127.0.0.1"
-          }
-        }
-        "old_url_fix" = {
-          path = "/old/app/path/"
-          redirect = {
-            type       = "Permanent"
-            target_url = "https://www.complex.app"
+        "xfp-https" = {
+          sequence = 200
+          request_header = {
+            name  = "X-Forwarded-Proto"
+            value = "https"
           }
         }
       }
