@@ -93,7 +93,7 @@ resource "azurerm_managed_disk" "this" {
   name                 = "${var.panorama_name}-disk-${each.key}"
   location             = var.location
   resource_group_name  = var.resource_group_name
-  storage_account_type = "Standard_LRS"
+  storage_account_type = lookup(each.value, "disk_type", "Standard_LRS")
   create_option        = "Empty"
   disk_size_gb         = lookup(each.value, "size", "2048")
   zone = try(
