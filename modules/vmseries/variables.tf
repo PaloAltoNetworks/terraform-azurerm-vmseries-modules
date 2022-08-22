@@ -25,6 +25,16 @@ variable "avzone" {
   type        = string
 }
 
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  EOF
+  default     = []
+  type        = list(string)
+}
+
 variable "avset_id" {
   description = "The identifier of the Availability Set to use. When using this variable, set `avzone = null`."
   default     = null
@@ -178,14 +188,4 @@ variable "diagnostics_storage_uri" {
   description = "The storage account's blob endpoint to hold diagnostic files."
   default     = null
   type        = string
-}
-
-variable "avzones" {
-  description = <<-EOF
-  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-  ie: for zone-redundant with 3 availability zone in current region value will be:
-  ```["1","2","3"]```
-  EOF
-  default     = []
-  type        = list(string)
 }
