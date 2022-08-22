@@ -13,10 +13,26 @@ variable "name" {
   type        = string
 }
 
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
+}
+
 variable "avzone" {
   description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Conflicts with `avset_id`, in which case use `avzone = null`."
   default     = "1"
   type        = string
+}
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "avset_id" {
@@ -174,12 +190,6 @@ variable "identity_ids" {
 
 variable "accelerated_networking" {
   description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces"
-  default     = true
-  type        = bool
-}
-
-variable "enable_zones" {
-  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
   type        = bool
 }
