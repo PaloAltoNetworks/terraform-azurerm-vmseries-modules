@@ -71,7 +71,7 @@ variable "panorama_disk_type" {
 
   validation {
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], var.panorama_disk_type)
-    error_message = "Panorama disk type need to be one of list Standard_LR, StandardSSD_LRS, Premium_LRS, UltraSSD_LRS"
+    error_message = "Panorama disk type need to be one of list Standard_LR, StandardSSD_LRS, Premium_LRS, UltraSSD_LRS."
   }
 }
 
