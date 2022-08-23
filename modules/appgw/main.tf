@@ -237,28 +237,28 @@ resource "azurerm_application_gateway" "this" {
           rule_sequence = rewrite_rule.value.sequence
 
           dynamic "condition" {
-            for_each = can(rewrite_rule.value.condition) ? [1] : []
+            for_each = try(rewrite_rule.value.conditions, [])
             content {
-              variable    = rewrite_rule.value.condition.variable
-              pattern     = rewrite_rule.value.condition.pattern
-              ignore_case = try(rewrite_rule.value.condition.ignore_case, null)
-              negate      = try(rewrite_rule.value.condition.negate, null)
+              variable    = condition.key
+              pattern     = condition.value.pattern
+              ignore_case = try(condition.value.ignore_case, null)
+              negate      = try(condition.value.negate, null)
             }
           }
 
           dynamic "request_header_configuration" {
-            for_each = can(rewrite_rule.value.request_header) ? [1] : []
+            for_each = try(rewrite_rule.value.request_headers, [])
             content {
-              header_name  = rewrite_rule.value.request_header.name
-              header_value = rewrite_rule.value.request_header.value
+              header_name  = request_header_configuration.key
+              header_value = request_header_configuration.value
             }
           }
 
           dynamic "response_header_configuration" {
-            for_each = can(rewrite_rule.value.response_header) ? [1] : []
+            for_each = try(rewrite_rule.value.response_headers, [])
             content {
-              header_name  = rewrite_rule.value.response_header.name
-              header_value = rewrite_rule.value.response_header.value
+              header_name  = response_header_configuration.key
+              header_value = response_header_configuration.value
             }
           }
         }

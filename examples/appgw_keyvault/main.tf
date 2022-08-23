@@ -62,16 +62,23 @@ module "appgw" {
       rewrite_sets = {
         "xff-strip-port" = {
           sequence = 100
-          request_header = {
-            name  = "X-Forwarded-For"
-            value = "{var_add_x_forwarded_for_proxy}"
+          conditions = {
+            "var_client_ip" = {
+              pattern     = "1.1.1.1"
+              ignore_case = true
+            }
+            "http_resp_X-Forwarded-Proto" = {
+              pattern     = "https"
+              ignore_case = true
+              negate      = true
+            }
           }
-        }
-        "xfp-https" = {
-          sequence = 200
-          request_header = {
-            name  = "X-Forwarded-Proto"
-            value = "https"
+          request_headers = {
+            "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
+            "X-Forwarded-Proto" = "https"
+          }
+          response_headers = {
+            "X-Forwarded-Proto" = "http"
           }
         }
       }

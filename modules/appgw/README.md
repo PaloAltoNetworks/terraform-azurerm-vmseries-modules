@@ -144,8 +144,7 @@ rewrite_sets = {
   "xff-strip-port" = {
     sequence = 100
     request_header = {
-      name  = "X-Forwarded-For"
-      value = "{var_add_x_forwarded_for_proxy}"
+      "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
     }
   }
 }
@@ -156,17 +155,41 @@ Properties for a rule are described below.
 | Name | Description | Type | Default | Required |
 | --- | --- | --- | --- | --- |
 | `sequence` | a rule priority | `number` | n/a | yes |
-| `condition` | a map of pre-conditions for a rule | `map` | `null` | no |
-| `condition.variable` | a variable of the condition, see [Microsoft's documentation](https://docs.microsoft.com/azure/application-gateway/rewrite-http-headers#server-variables) for details | `string` | `null` | yes |
-| `condition.pattern` | a fix string or a regular expression to evaluate the condition | `string` | `null` | yes |
-| `condition.ignore_case` | case in-sensitive comparison | `bool` | `false` | no |
-| `condition.negate` | negate the condition | `bool` | `false` | no |
-| `request_header` | a map properties required to modify a request header | `map` | `null` | no |
-| `request_header.name` | header name | `string` | `null` | yes |
-| `request_header.value` | header value | `string` | `null` | yes |
-| `response_header` | a map properties required to modify a response header | `map` | `null` | no |
-| `response_header.name` | header name | `string` | `null` | yes |
-| `response_header.value` | header value | `string` | `null` | yes |
+| `conditions` | a map of pre-conditions for a rule, for details see [property: rewrite_sets.conditions](#property-rewritesetsconditions) | `map` | `null` | no |
+| `request_headers` | a key-value map of request headers to modify, where a key is the header name and the value is the new value (to delete a header set the value to an empty string) | `map` | `null` | no |
+| `response_headers` | a key-value map of response headers to modify, where a key is the header name and the value is the new value (to delete a header set the value to an empty string) | `map` | `null` | no |
+
+#### property: rewrite_sets.conditions
+
+This is a map where the key is a variable that will be checked and value is a set of properties describing the actual condition. 
+
+For details on the variables see [Microsoft's documentation](https://docs.microsoft.com/azure/application-gateway/rewrite-http-headers#server-variables). But generally value of this variable brakes into 3 scenarios controlled by a prefix:
+
+* `var_` - the condition is based on a server variable, the variable name follows the prefix
+* `http_req_` - a request header condition, the header name follows the prefix
+* `http_resp` - a response header condition, the header name follows the prefix.
+
+Example:
+
+```hcl
+conditions = {
+  "var_client_ip" = {
+    pattern     = "1.1.1.1"
+    ignore_case = true
+  }
+  "http_req_X-Forwarded-Proto" = {
+    pattern     = "https"
+    ignore_case = true
+    negate      = true
+  }
+}
+```
+
+| Name | Description | Type | Default | Required |
+| --- | --- | --- | --- | --- |
+| `conditions.pattern` | a fix string or a regular expression to evaluate the condition | `string` | `null` | yes |
+| `conditions.ignore_case` | case in-sensitive comparison | `bool` | `false` | no |
+| `conditions.negate` | negate the condition | `bool` | `false` | no |
 
 ### property: url_path_maps
 
@@ -359,16 +382,16 @@ rules = {
     rewrite_sets = {
       "xff-strip-port" = {
         sequence = 100
-        request_header = {
-          name  = "X-Forwarded-For"
-          value = "{var_add_x_forwarded_for_proxy}"
+        conditions = {
+          "http_resp_X-Forwarded-Proto" = {
+            pattern     = "https"
+            ignore_case = true
+            negate      = true
+          }
         }
-      }
-      "xfp-https" = {
-        sequence = 200
-        request_header = {
-          name  = "X-Forwarded-Proto"
-          value = "https"
+        request_headers = {
+          "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
+          "X-Forwarded-Proto" = "https"
         }
       }
     }
