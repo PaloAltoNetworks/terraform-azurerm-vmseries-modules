@@ -64,6 +64,17 @@ variable "enable_plan" {
   type        = bool
 }
 
+variable "panorama_disk_type" {
+  description = "Specifies the type of managed disk to create. Possible values are either Standard_LRS, StandardSSD_LRS, Premium_LRS or UltraSSD_LRS."
+  default     = "Standard_LRS"
+  type        = string
+
+  validation {
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], var.panorama_disk_type)
+    error_message = "Panorama disk type need to be one of list Standard_LR, StandardSSD_LRS, Premium_LRS, UltraSSD_LRS."
+  }
+}
+
 variable "panorama_sku" {
   description = "Panorama SKU."
   default     = "byol"
@@ -133,6 +144,7 @@ variable "logging_disks" {
       size: "2048"
       zone: "2"
       lun: "2"
+      disk_type: "StandardSSD_LRS"
     }
   }
   ```
