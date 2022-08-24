@@ -17,7 +17,7 @@ runs:
     - name: run validation for ${{ inputs.path }}
       run: |
         cd "$GITHUB_WORKSPACE"/${{ inputs.path }}
-        pwd
+        terraform -version
         terraform init -backend=false
         terraform validate
       shell: bash

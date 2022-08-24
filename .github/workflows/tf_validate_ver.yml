@@ -1,5 +1,6 @@
 ---
-name: Validate examples and modules against variety of TF versions
+name: TF Validate
+# description: Validate examples and modules against variety of TF versions
 
 on:
   workflow_dispatch:
@@ -7,11 +8,12 @@ on:
 env:
   # tf_versions needs to be a string of TF versions we would like to test against
   # versions have to be space delimited
-  tf_versions: 0.15.0 1.0.0 1.2.0
+  # when providing only major.minor version the latest patch level will be used
+  tf_versions: 0.15 1.0 1.1 1.2
 
 jobs: 
   prerequisites:
-    name: get a list of modules to check
+    name: gather prerequisites
     runs-on: ubuntu-latest
     outputs:
       modules: ${{ steps.preqs.outputs.modules }}
@@ -23,8 +25,8 @@ jobs:
       - name: set outputs
         id: preqs
         run: |
-          echo "::set-output name=modules::$(find modules -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1 | jq -R -s -c 'split("\n")[:-1]')"
-          echo "::set-output name=examples::$(find examples -type d -not \( -name ".?*" \) -maxdepth 1 -mindepth 1 | jq -R -s -c 'split("\n")[:-1]')"
+          echo "::set-output name=modules::$(find modules -maxdepth 1 -mindepth 1 -type d -not \( -name ".?*" \) | jq -R -s -c 'split("\n")[:-1]')"
+          echo "::set-output name=examples::$(find examples -maxdepth 1 -mindepth 1 -type d -not \( -name ".?*" \) | jq -R -s -c 'split("\n")[:-1]')"
           echo "::set-output name=tf_versions::$(echo ${tf_versions}| tr " " "\n" | jq -R -s -c 'split("\n")[:-1]')"
 
   modules:
