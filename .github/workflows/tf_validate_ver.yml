@@ -2,9 +2,6 @@
 name: Validate examples and modules against variety of TF versions
 
 on:
-  # push:
-  #   branch:
-  #     - develop
   workflow_dispatch:
 
 env:
@@ -32,42 +29,33 @@ jobs:
 
   modules:
     needs: [prerequisites]
-    name: validate modules
     runs-on: ubuntu-latest
     strategy:
       matrix:
         tf_versions: ${{ fromJson(needs.prerequisites.outputs.tf_versions) }}
         modules: ${{ fromJson(needs.prerequisites.outputs.modules) }}
+    name: '${{ matrix.modules }}@${{ matrix.tf_versions }}'
     steps:
       - name: checkout code
         uses: actions/checkout@v3
-      - name: setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: run validation
+        uses: ./.github/actions/validate_tf
         with:
-          terraform_version: ${{ matrix.tf_versions }}
-      - name: run modules validation
-        run: |
-          cd "$GITHUB_WORKSPACE/${{ matrix.modules }}"
-          terraform init -backend=false
-          terraform validate
-
+          path: ${{ matrix.modules }}
+          tf_version: ${{ matrix.tf_versions }}
   examples:
     needs: [prerequisites]
-    name: validate examples
     runs-on: ubuntu-latest
     strategy:
       matrix:
         tf_versions: ${{ fromJson(needs.prerequisites.outputs.tf_versions) }}
         examples: ${{ fromJson(needs.prerequisites.outputs.examples) }}
+    name: '${{ matrix.examples }}@${{ matrix.tf_versions }}'
     steps:
       - name: checkout code
         uses: actions/checkout@v3
-      - name: setup Terraform
-        uses: hashicorp/setup-terraform@v2
+      - name: run validation
+        uses: ./.github/actions/validate_tf
         with:
-          terraform_version: ${{ matrix.tf_versions }}
-      - name: run examples validation
-        run: |
-          cd "$GITHUB_WORKSPACE/${{ matrix.examples }}"
-          terraform init -backend=false
-          terraform validate
+          path: ${{ matrix.examples }}
+          tf_version: ${{ matrix.tf_versions }}
