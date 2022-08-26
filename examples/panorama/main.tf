@@ -55,6 +55,7 @@ module "bootstrap" {
   resource_group_name  = azurerm_resource_group.this.name
   location             = var.location
   storage_account_name = var.storage_account_name
+  storage_share_name   = var.storage_share_name
 }
 
 module "panorama" {
@@ -67,6 +68,7 @@ module "panorama" {
   avzones             = var.avzones
   enable_zones        = var.enable_zones
   custom_image_id     = var.custom_image_id
+  panorama_disk_type  = var.panorama_disk_type
   panorama_sku        = var.panorama_sku
   panorama_size       = var.panorama_size
   panorama_version    = var.panorama_version
@@ -84,11 +86,11 @@ module "panorama" {
   ]
 
   logging_disks = {
-    disk_name_1 = {
+    logs-1 = {
       size : "2048"
       lun : "1"
     }
-    disk_name_2 = {
+    logs-2 = {
       size : "2048"
       lun : "2"
     }

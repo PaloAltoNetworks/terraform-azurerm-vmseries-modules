@@ -61,7 +61,7 @@ module "outbound_lb" {
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.15, < 2.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7.0 |
 
 ## Providers
@@ -80,6 +80,7 @@ No modules.
 |------|------|
 | [azurerm_lb.lb](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb) | resource |
 | [azurerm_lb_backend_address_pool.lb_backend](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool) | resource |
+| [azurerm_lb_outbound_rule.outb_rules](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_outbound_rule) | resource |
 | [azurerm_lb_probe.probe](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe) | resource |
 | [azurerm_lb_rule.lb_rules](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule) | resource |
 | [azurerm_network_security_rule.allow_inbound_ips](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) | resource |
@@ -100,6 +101,7 @@ No modules.
 | <a name="input_network_security_base_priority"></a> [network\_security\_base\_priority](#input\_network\_security\_base\_priority) | The base number from which the auto-generated priorities of the NSG rules grow.<br>Ignored if `network_security_group_name` is empty or if `network_security_allow_source_ips` is empty. | `number` | `1000` | no |
 | <a name="input_network_security_group_name"></a> [network\_security\_group\_name](#input\_network\_security\_group\_name) | Name of the pre-existing Network Security Group (NSG) where to add auto-generated rules, each of which allows traffic through one rule of a frontend of this load balancer.<br>User is responsible to associate the NSG with the load balancer's subnet, the module only supplies the rules.<br>If empty, user is responsible for configuring an NSG separately, possibly using the `frontend_combined_rules` output. | `string` | `null` | no |
 | <a name="input_network_security_resource_group_name"></a> [network\_security\_resource\_group\_name](#input\_network\_security\_resource\_group\_name) | Name of the Resource Group where the `network_security_group_name` resides. If empty, defaults to `resource_group_name`. | `string` | `""` | no |
+| <a name="input_outbound_rules"></a> [outbound\_rules](#input\_outbound\_rules) | A map of objects describing LB outbound rules.<br><br>The key is the name of a rule. If `create_public_ip` is set to `true` this will also be a name of the Public IP that will be created and used by the rule.<br><br>This property controls also `disable_outbound_snat` property of the `azurerm_lb_rule` resource. If `outbound_rules` is present `disable_outbound_snat` is set to `true` to switch the backend pool to use the outbound rules for outgoing traffic instead of the default route. When absent (or empty) - `disable_outbound_snat` is set to `false`.<br><br>Following properties are available:<br><br>- `create_public_ip` : Optional. Set to `true` to create a public IP.<br>- `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.<br>- `public_ip_resource_group` : Ignored if `create_public_ip` is `true` or if `public_ip_name` is null. The name of the resource group which holds `public_ip_name`. When skipped Load Balancer's Resource Group will be used.<br>- `protocol` : Protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted.<br>- `allocated_outbound_ports` : Number of ports allocated per instance. Defaults to `1024`.<br>- `enable_tcp_reset` : Ignored when `protocol` is set to `Udp`, defaults to `False` (Azure defaults).<br>- `idle_timeout_in_minutes` : Ignored when `protocol` is set to `Udp`. TCP connection timeout in case the connection is idle. Defaults to 4 minutes (Azure defaults).<br><br>Example:<pre>outbound_rules = {<br>  "outbound_tcp" = {<br>    create_public_ip         = true<br>    protocol                 = "Tcp"<br>    allocated_outbound_ports = 2048<br>    enable_tcp_reset         = true<br>    idle_timeout_in_minutes  = 10<br>  }<br>}</pre> | `any` | `{}` | no |
 | <a name="input_probe_name"></a> [probe\_name](#input\_probe\_name) | The name of the load balancer probe. | `string` | `""` | no |
 | <a name="input_probe_port"></a> [probe\_port](#input\_probe\_port) | Health check port number of the load balancer probe. | `string` | `"80"` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of a pre-existing Resource Group to place the resources in. | `string` | n/a | yes |

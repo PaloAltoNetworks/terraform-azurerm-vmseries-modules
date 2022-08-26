@@ -9,15 +9,30 @@ variable "resource_group_name" {
 }
 
 variable "name" {
-  description = "Hostname of the VM-Series virtual machine."
-  default     = "fw00"
+  description = "VM-Series instance name."
   type        = string
+}
+
+variable "enable_zones" {
+  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
+  default     = true
+  type        = bool
 }
 
 variable "avzone" {
   description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Conflicts with `avset_id`, in which case use `avzone = null`."
   default     = "1"
   type        = string
+}
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+  ie: for zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "avset_id" {
@@ -29,25 +44,31 @@ variable "avset_id" {
 variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
-  The first should be the Management network interface, which does not participate in data filtering.
+  The first should be the management interface, which does not participate in data filtering.
   The remaining ones are the dataplane interfaces.
-
-  - `subnet_id`: Identifier of the existing subnet to use.
-  - `lb_backend_pool_id`: Identifier of the existing backend pool of the load balancer to associate.
-  - `enable_backend_pool`: If false, ignore `lb_backend_pool_id`. Default is false.
-  - `public_ip_address_id`: Identifier of the existing public IP to associate.
-  - `create_public_ip`: If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `enable_ip_forwarding`: If true, the network interface will not discard packets sent to an IP address other than the one assigned. False disables this and the network interface only accepts traffic destined to its IP address.
+  Options for an interface object:
+  - `name`                 - (required|string) Interface name.
+  - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
+  - `private_ip_address`   - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
+  - `public_ip_address_id` - (optional|string) Identifier of an existing public IP to associate.
+  - `create_public_ip`     - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
+  - `availability_zone`    - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
+  - `enable_ip_forwarding` - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
+  - `enable_backend_pool`  - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
+  - `lb_backend_pool_id`   - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
+  - `tags`                 - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
 
   Example:
 
   ```
   [
     {
+      name                 = "fw-mgmt"
       subnet_id            = azurerm_subnet.my_mgmt_subnet.id
       public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
     },
     {
+      name                = "fw-public"
       subnet_id           = azurerm_subnet.my_pub_subnet.id
       lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
@@ -56,6 +77,7 @@ variable "interfaces" {
   ```
 
   EOF
+  type        = list(any)
 }
 
 variable "username" {
@@ -156,10 +178,16 @@ variable "accelerated_networking" {
   type        = bool
 }
 
-variable "enable_zones" {
-  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
-  default     = true
-  type        = bool
+variable "bootstrap_options" {
+  description = "Bootstrap options to pass to VM-Series instance."
+  default     = ""
+  type        = string
+}
+
+variable "diagnostics_storage_uri" {
+  description = "The storage account's blob endpoint to hold diagnostic files."
+  default     = null
+  type        = string
 }
 
 variable "bootstrap_options" {

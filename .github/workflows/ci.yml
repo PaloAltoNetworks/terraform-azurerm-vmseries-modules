@@ -39,8 +39,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 0.13.7
-
+          terraform_version: 0.15.0
       - name: terraform validate
         run: |
           cd "$GITHUB_WORKSPACE"

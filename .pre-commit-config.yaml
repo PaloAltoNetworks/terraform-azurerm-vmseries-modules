@@ -14,7 +14,7 @@ repos:
           --args=--only=terraform_workspace_remote,
         ]
   - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '2.0.1075'
+    rev: '2.1.98'
     hooks:
     - id: checkov
       verbose: true
