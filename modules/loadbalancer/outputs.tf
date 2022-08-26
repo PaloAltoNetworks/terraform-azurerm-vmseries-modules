@@ -1,14 +1,15 @@
 output "backend_pool_id" {
-  description = "The identifier of the backend pool."
   value       = azurerm_lb_backend_address_pool.lb_backend.id
+  description = "The identifier of the backend pool."
 }
 
 output "frontend_ip_configs" {
-  description = "Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise."
   value       = local.output_ips
+  description = "Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise."
 }
 
 output "frontend_combined_rules" {
+  value       = local.output_rules
   description = <<-EOF
   Map of all rules of all load balancer's frontends combined.
   The map entries are intended to be easily convertible into NSG rules, hence each entry
@@ -32,10 +33,9 @@ output "frontend_combined_rules" {
   }
   ```
   EOF
-  value       = local.output_rules
 }
 
 output "health_probe" {
-  description = "The health probe object."
   value       = azurerm_lb_probe.probe
+  description = "The health probe object."
 }

@@ -103,11 +103,6 @@ variable "allow_inbound_mgmt_ips" {
   EOF
   default     = []
   type        = list(string)
-
-  validation {
-    condition     = length(var.allow_inbound_mgmt_ips) > 0
-    error_message = "At least one address has to be specified."
-  }
 }
 
 variable "allow_inbound_data_ips" {

@@ -71,41 +71,6 @@ variable "frontend_ips" {
   ```
   EOF
 }
-variable "outbound_rules" {
-  description = <<-EOF
-  A map of objects describing LB outbound rules.
-
-  The key is the name of a rule. If `create_public_ip` is set to `true` this will also be a name of the Public IP that will be created and used by the rule.
-
-  This property controls also `disable_outbound_snat` property of the `azurerm_lb_rule` resource. If `outbound_rules` is present `disable_outbound_snat` is set to `true` to switch the backend pool to use the outbound rules for outgoing traffic instead of the default route. When absent (or empty) - `disable_outbound_snat` is set to `false`.
-
-  Following properties are available:
-
-  - `create_public_ip` : Optional. Set to `true` to create a public IP.
-  - `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.
-  - `public_ip_resource_group` : Ignored if `create_public_ip` is `true` or if `public_ip_name` is null. The name of the resource group which holds `public_ip_name`. When skipped Load Balancer's Resource Group will be used.
-  - `protocol` : Protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted.
-  - `allocated_outbound_ports` : Number of ports allocated per instance. Defaults to `1024`.
-  - `enable_tcp_reset` : Ignored when `protocol` is set to `Udp`, defaults to `False` (Azure defaults).
-  - `idle_timeout_in_minutes` : Ignored when `protocol` is set to `Udp`. TCP connection timeout in case the connection is idle. Defaults to 4 minutes (Azure defaults).
-
-  Example:
-
-  ```
-  outbound_rules = {
-    "outbound_tcp" = {
-      create_public_ip         = true
-      protocol                 = "Tcp"
-      allocated_outbound_ports = 2048
-      enable_tcp_reset         = true
-      idle_timeout_in_minutes  = 10
-    }
-  }
-  ```
-  EOF
-  default     = {}
-  type        = any
-}
 
 variable "resource_group_name" {
   description = "Name of a pre-existing Resource Group to place the resources in."

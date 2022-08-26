@@ -14,15 +14,14 @@ variable "storage_account_name" {
   Default name of the storage account to create.
   The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
   EOF
+  default     = "pantfstorage"
   type        = string
 }
 
-variable "storage_share_name" {
-  description = "Name of storage File Share to be created that will hold Panorama's boot diagnostics."
-  type        = string
+variable "panorama_name" {
+  type    = string
+  default = "panorama"
 }
-
-variable "panorama_name" {}
 
 variable "panorama_size" {
   type    = string
@@ -38,11 +37,6 @@ variable "username" {
   description = "Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
   type        = string
   default     = "panadmin"
-}
-
-variable "panorama_disk_type" {
-  type    = string
-  default = "Standard_LRS"
 }
 
 variable "panorama_sku" {

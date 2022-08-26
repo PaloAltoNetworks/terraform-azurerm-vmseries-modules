@@ -203,13 +203,11 @@ module "inbound_bootstrap" {
 module "outbound_bootstrap" {
   source = "../../modules/bootstrap"
 
-  resource_group_name    = local.inbound_resource_group.name
-  create_storage_account = false
-  storage_account_name   = module.inbound_bootstrap.storage_account.name
-  storage_share_name     = var.outbound_storage_share_name
-  files                  = var.outbound_files
-
-  depends_on = [module.inbound_bootstrap]
+  resource_group_name      = local.inbound_resource_group.name
+  create_storage_account   = false
+  existing_storage_account = module.inbound_bootstrap.storage_account.name
+  storage_share_name       = var.outbound_storage_share_name
+  files                    = var.outbound_files
 }
 
 ### SCALE SETS ###
