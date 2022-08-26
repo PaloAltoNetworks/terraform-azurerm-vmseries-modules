@@ -3,7 +3,6 @@ locals {
   # This is an inbound rule setting, applicable to all inbound rules.
   disable_outbound_snat = length(var.outbound_rules) > 0
 
-
   # Recalculate the main input map, taking into account whether the boolean condition is true/false.
   frontend_ips = {
     for k, v in var.frontend_ips : k => {

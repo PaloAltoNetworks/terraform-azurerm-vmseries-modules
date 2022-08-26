@@ -99,3 +99,9 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
+
+variable "tags" {
+  description = "Azure tags to apply to the created Storage Account. A map, for example `{ team = \"NetAdmin\", costcenter = \"CIO42\" }`"
+  default     = {}
+  type        = map(string)
+}
