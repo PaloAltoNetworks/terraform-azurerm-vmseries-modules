@@ -389,7 +389,7 @@ variable "name_private_nic_ip" {
   default = "nic-fw-private"
 }
 
-variable "bootstrap_options_azure" {
+variable "bootstrap_options" {
   description = <<-EOF
   Bootstrap options to pass to VM-Series instance.
 
@@ -407,7 +407,7 @@ variable "bootstrap_options_azure" {
   # default = "wrong=option"
   validation {
     condition = alltrue([
-      for v in var.bootstrap_options_azure == "" ? [] : split(";", var.bootstrap_options_azure) :
+      for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
       contains(
         ["type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key"],
         split("=", v)[0]
