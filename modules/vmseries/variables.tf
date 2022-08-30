@@ -190,10 +190,8 @@ variable "bootstrap_options" {
 
   For more details on bootstrapping see documentation: https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components
   EOF
+  default     = ""
   type        = string
-  # default = ""
-  default = "hostname=fqdn;type=dhcp-client"
-  # default = "wrong=option"
   validation {
     condition = alltrue([
       for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
