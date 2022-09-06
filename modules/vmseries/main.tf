@@ -86,7 +86,14 @@ resource "azurerm_virtual_machine" "this" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = false
+    disable_password_authentication = var.password == null ? true : false
+    dynamic "ssh_keys" {
+      for_each = var.ssh_key != null ? ["one"] : []
+      content {
+        key_data = var.ssh_key
+        path     = join("", ["/home/", "${var.username}", "/.ssh/authorized_keys"])
+      }
+    }
   }
 
   # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.

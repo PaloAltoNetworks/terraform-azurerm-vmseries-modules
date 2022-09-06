@@ -86,7 +86,14 @@ variable "username" {
 }
 
 variable "password" {
-  description = "Initial administrative password to use for VM-Series. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  description = "Initial administrative password to use for VM-Series. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  default     = null
+  type        = string
+}
+
+variable "ssh_key" {
+  description = "Initial administrative SSH public key that allows for a key-pair authentication. If the `password` variable is also set, VM-Series will accept both authentication methods."
+  default     = null
   type        = string
 }
 
