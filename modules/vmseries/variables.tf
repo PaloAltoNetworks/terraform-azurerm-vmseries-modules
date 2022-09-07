@@ -179,9 +179,29 @@ variable "accelerated_networking" {
 }
 
 variable "bootstrap_options" {
-  description = "Bootstrap options to pass to VM-Series instance."
+  description = <<-EOF
+  Bootstrap options to pass to VM-Series instance.
+
+  Proper syntax is a string of semicolon separated properties.
+  Example:
+    bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+
+  A list of available properties: type, ip-address, default-gateway, netmask, ipv6-address, ipv6-default-gateway, hostname, panorama-server, panorama-server-2, tplname, dgname, dns-primary, dns-secondary, vm-auth-key, op-command-modes, op-cmd-dpdk-pkt-io, plugin-op-commands, dhcp-send-hostname, dhcp-send-client-id, dhcp-accept-server-hostname, dhcp-accept-server-domain, auth-key.
+
+  For more details on bootstrapping see documentation: https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components
+  EOF
   default     = ""
   type        = string
+  validation {
+    condition = alltrue([
+      for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
+      contains(
+        ["type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key"],
+        split("=", v)[0]
+      )
+    ])
+    error_message = "Error in validating bootstrap_options, for details see variable description."
+  }
 }
 
 variable "diagnostics_storage_uri" {
