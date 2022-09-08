@@ -8,23 +8,71 @@ variable "location" {
   type        = string
 }
 
+variable "zones" {
+  description = <<-EOF
+  A list of zones the Application Gateway should be available in.
+
+  NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to a single zone or zone-redundant (so available in all zones in a region). 
+  Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during next `terraform apply` as there will be difference between the state and the actual configuration.
+
+  For details on zones currently available in a region of your choice refer to [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
+
+  Example:
+  ```
+  zones = ["1","2","3"]
+  ```
+  EOF
+  default     = null
+  type        = list(string)
+}
+
 variable "name" {
   description = "Name of the Application Gateway."
   type        = string
 }
 
-variable "sku" {
-  description = "Sku of the Application Gateway. Check Microsoft documentation for possible values,their combinations and limitations."
-  default = {
-    name     = "Standard_v2"
-    tier     = "Standard_v2"
-    capacity = 2
-  }
-  type = object({
-    name     = string
-    tier     = string
-    capacity = number
-  })
+variable "managed_identities" {
+  description = <<-EOF
+  A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
+
+  These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault.
+  EOF
+  default     = null
+  type        = list(string)
+}
+
+variable "waf_enabled" {
+  description = "Enables WAF Application Gateway. This only sets the SKU. This module does not support WAF rules configuration."
+  default     = "false"
+  type        = bool
+}
+
+variable "capacity" {
+  description = <<-EOF
+  A number of Application Gateway instances. A value bewteen 1 and 125.
+
+  This property is not used when autoscaling is enabled.
+  EOF
+  default     = 2
+  type        = number
+}
+
+variable "capacity_min" {
+  description = "When set enables autoscaling and becomes the minimum capacity."
+  default     = null
+  type        = number
+}
+
+variable "capacity_max" {
+  description = "Optional, maximum capacity for autoscaling."
+  default     = null
+  type        = number
+}
+
+variable "enable_http2" {
+  description = "Enable HTTP2 on the Application Gateway."
+  default     = false
+  type        = bool
 }
 
 variable "subnet_id" {
@@ -42,103 +90,30 @@ variable "rules" {
     A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. 
     A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. 
 
-    For maximum and minimum values for particular protperties please refer to Microsoft documentation.
-
-    The following properties are available:
-
-    ```
-    - `listener_protocol`
-      - example value: "http" 
-      - description: listener protocol, this can be `http` or `https`, defaults to `http`
-    - `host_names`
-      - example value: ["www.example.net"]
-      - list of host header values this rule should react on, this creates a Multi-Site listener, for V1 Application Gateways only 1st item from the list is being used as V1 does not support multiple host headers
-    - `custom_error_configuration`
-      - example value: `{ HttpStatus403 = "http://error.com/403/page.html", HttpStatus502 = "http://error.com/502/page.html" }`
-      - a map that contains ULRs to custom error pages. Keys in this map are not custom, they reflect the actual properties used by the provider. URLs are only customizable and they have to contain the protocol and have to point directly to an HTML file. Both are optional, so only one can be specified.
-    
-    - `backend_port`
-      - example value: `80`
-      - port on which the backend is actually listening, defaults to `80`
-    - `backend_protocol`
-      - example value: "http"
-      - protocol for the backend service, this can be `http` or `https`, defaults to `http`
-    - `backend_hostname_from_backend`
-      - example value: `true`
-      - override host header with backend's host name, defaults to `false`, mutually exclusive with `backend_hostname`. When both are not set the host header of the original request remains unchainged. At least one has to be specified if the `probe_host` is not set. When both (`backend_hostname` and `backend_hostname_from_backend` are set the module acts like non of them is set
-    - `backend_hostname`
-      - example value: "host.name
-      - override host header with a custom host name, when not set defaults to the host header of the original request, mutually exclusive with `backend_hostname_from_backend` (see above)
-    - `backend_timeout`
-      - example value: 60
-      - timeout for backend's response in seconds, default to 60s
-    - `backend_path`
-      - example value: "/path"
-      - path prefix, in case we need to shift the url path for the backend, optinal, can be omited
-    - `cookie_based_affinity`
-      - example value: "Enabled"
-      - cookie based routing, defaults to `Enabled`
-    - `affinity_cookie_name`
-      - example value: "SomeCookieName"
-      - name of the affinity cookie, defaults to Azure default name
-    - `backend_root_certs`
-      - example value: `{ some_root_cert = "./files/self_signed.crt" }`
-      - (v2 only) a map of custom root certificates used to sign backend's certificate.
-    
-    - `probe_path`
-      - example value: "/healthcheck"
-      - url for the health check endpoint, this property controls if the custom probe is created or not. If this is not set, http settings will have the property `Use custom probe` set to `No`
-    - `probe_host`
-      - example value: "www.example.com"
-      - host header for the health check probe, when omited sets the `Pick host name from backend HTTP settings` to `Yes`. Cannot be omited when `backend_hostname` nor `backend_hostname_from_backend` are not set.
-    - `probe_port`
-      - example value: `80`
-      - (v2 only) port for the health check, defaults to default protocol port
-    - `probe_interval`
-      - example value: 2
-      - probe interval in seconds, defaults to 5
-    - `probe_timeout`
-      - example value: 30
-      - probe timeout in seconds, defaults to 30
-    - `probe_theshold`
-      - example value: 2
-      - number of failed probes until the bakckend is marked as down, defaults to 2
-    - `probe_match_code`
-      - example value: [200]
-      - a list of acceptible http response codes. `probe_match_code` controls the custom match condition for a health probe, if not set, it disables the custom match conditions.
-    - `probe_match_body`
-      - example value: ""
-      - a snippet of the backend response that can be matched for health check conditions, defaults to an empty string
-    
-    - `ssl_certificate_path`
-      - example value: "cert/path"
-      - a path to a certificate in `.pfx` format. Required only for `https` listeners
-    - `ssl_certificate_pass`
-      - example value: "cert_password"
-      - a matching password for the certificate specified in `ssl_certificate_path`
-    ```
+    Details on configuration can be found [here](#rules-property-explained).
   EOF
-  validation {
-    # The following conditions are checked:
-    # - at least one of `backend_hostname` or `backend_hostname_from_backend` is set when we define a probe w/o setting `probe_host`
-    # - and
-    # - we do not set `backend_hostname` and `backend_hostname_from_backend` at the same time
-    # - and
-    # - for v2 all rules have or do not have `priority` set. We cannot have a mix of rules with priority set or not.
-    condition = (alltrue([
-      for k, v in var.rules : (
-        (can(v.probe_path) ? can(v.probe_host) : true)
-        || can(v.backend_hostname)
-        || try(v.backend_hostname_from_backend, false)
-        ) && !(
-        can(v.backend_hostname)
-        && try(v.backend_hostname_from_backend, false)
-      )
-      ])) && (alltrue([
-      for k, v in var.rules : can(v.priority)
-    ]))
-    error_message = "Please check one of the rules for following configuration issues: \n - one cannot have a probe w/o a host name specified having at the same time http settings that do not override a host header \n - one cannot set a backend host name and force the http settings to set the host header to a backend's hostname at the same time \n - for v2 tiers one cannot use `priority` in a subset of rules; you have to specify it in either all or none."
-  }
+
+  # validation {
+  #   # The following conditions are checked:
+  #   # - at least one of `backend_hostname` or `backend_hostname_from_backend` is set when we define a probe w/o setting `probe_host`
+  #   # - and
+  #   # - we do not set `backend_hostname` and `backend_hostname_from_backend` at the same time
+  #   # - and
+  #   # - for v2 all rules have or do not have `priority` set. We cannot have a mix of rules with priority set or not.
+  #   condition = (alltrue([
+  #     for k, v in var.rules : (
+  #       (can(v.probe_path) ? can(v.probe_host) : true)
+  #       || can(v.backend_hostname)
+  #       || try(v.backend_hostname_from_backend, false)
+  #       ) && !(
+  #       can(v.backend_hostname)
+  #       && try(v.backend_hostname_from_backend, false)
+  #     )
+  #     ])) && (alltrue([
+  #     for k, v in var.rules : can(v.priority)
+  #   ]))
+  #   error_message = "Please check one of the rules for following configuration issues: \n - one cannot have a probe w/o a host name specified having at the same time http settings that do not override a host header \n - one cannot set a backend host name and force the http settings to set the host header to a backend's hostname at the same time \n - for v2 tiers one cannot use `priority` in a subset of rules; you have to specify it in either all or none."
+  # }
   type = any
 }
 
@@ -164,7 +139,8 @@ variable "ssl_policy_name" {
 variable "ssl_policy_min_protocol_version" {
   description = <<-EOF
   Minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`. 
-  Possible values are: `TLSv1_0`, `TLSv1_1` or `TLSv1_2`.
+
+  Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2` or `null` (only to be used with a `Predefined` policy).
   EOF
   default     = null
   type        = string
@@ -181,8 +157,6 @@ variable "ssl_policy_cipher_suites" {
 
 variable "ssl_profiles" {
   description = <<-EOF
-  **Application Gateway v2 only.**
-  
   A map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property. 
 
   The structure of the map is as follows:
@@ -199,4 +173,10 @@ variable "ssl_profiles" {
   EOF
   default     = {}
   type        = map(any)
+}
+
+variable "tags" {
+  description = "Azure tags to apply to the created resources."
+  default     = {}
+  type        = map(string)
 }
