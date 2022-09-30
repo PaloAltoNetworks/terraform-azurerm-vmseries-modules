@@ -184,7 +184,7 @@ variable "bootstrap_options" {
     condition = alltrue([
       for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
       contains(
-        ["type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key"],
+        ["storage-account", "access-key", "file-share", "share-directory", "type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key", "vm-series-auto-registration-pin-value", "vm-series-auto-registration-pin-id"],
         split("=", v)[0]
       )
     ])
@@ -200,16 +200,37 @@ variable "diagnostics_storage_uri" {
 
 variable "app_insights_settings" {
   description = <<-EOF
-  A map of the Application Insights related parameters. If the variable is not defined, the App Insights will not be created (default behavior). When defined as empty map `{}`, App Insights will be created based on the default parameters.
-  Application Insights variable list:
-  - `name`:                     - (optional|string) Name of the Applications Insights instance. Can be `null`, in which case a default name is auto-generated.
-  - `workspace_mode`            - (optional|bool)   Mode of the Application Insigths. If `true`, the \"Workspace-based\" mode is used. With `false`, the mode is set to legacy \"Classic\" (Azure support for classic AI mode will end on Feb 29th 2024). Default is `true`.
+  A map of the Application Insights related parameters.
+  
+  If the variable is:
+  - not defined - Application Insights will not be created (default behavior)
+  - defined as empty map `{}` - Application Insights will be created based on the default parameters
+  - defined as a map - Application Insights will be created with the defined properties, for any skipped - a default value will be used.
+
+  Available properties are:
+  - `name`                      - (optional|string) Name of the Applications Insights instance. Can be `null`, in which case a default name is auto-generated.
+  - `workspace_mode`            - (optional|bool)   Application Insights mode. If `true` (default), the "Workspace-based" mode is used. With `false`, the mode is set to legacy "Classic".
   - `metrics_retention_in_days` - (optional|number) Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90.
   - `log_analytics_name`        - (optional|string) The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated.
-  - `log_analytics_sku`         - (optional|string) Azure Log Analytics Workspace mode SKU. The default value is set to \"PerGB2018\".
+  - `log_analytics_sku`         - (optional|string) Azure Log Analytics Workspace mode SKU. The default value is set to "PerGB2018". For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model)
+
+  NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions.
+
+  NOTICE. Since upgrade to provider 3.x when destroying infrastructure with a classic Application Insights a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state and it prevents resource group deletion.
+
+  A workaround is to set the following provider configuration:
+  
+  ```
+  provider "azurerm" {
+    features {
+      resource_group {
+        prevent_deletion_if_contains_resources = false
+      }
+    }
+  }
 
   Example:
-
+  
   ```
     {
         name                      = "AppInsights"

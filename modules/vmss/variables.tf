@@ -207,7 +207,12 @@ variable "accelerated_networking" {
 }
 
 variable "app_insights_settings" {
-  description = "A map of the Application Insights related parameters. Full description available under [vmseries/README.md](../../modules/vmseries/README.md#input_app_insights_settings)"
+  description = <<-EOF
+  A map of the Application Insights related parameters. Full configuration description available under [vmseries/README.md](../../modules/vmseries/README.md#input_app_insights_settings)
+
+  NOTICE. Even if you keep this property set to `null` but set up the `autoscale_metrics` property Application Insights will be created as it is required to gather Palo Alto's autoscaling specific metrics.
+  ```
+  EOF
   default     = null
   type        = map(any)
 }
@@ -377,7 +382,7 @@ variable "name_private_nic_ip" {
 variable "bootstrap_options" {
   description = <<-EOF
   Bootstrap options to pass to VM-Series instance.
-
+  
   Proper syntax is a string of semicolon separated properties.
   Example:
     bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
@@ -392,7 +397,7 @@ variable "bootstrap_options" {
     condition = alltrue([
       for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
       contains(
-        ["type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key"],
+        ["storage-account", "access-key", "file-share", "share-directory", "type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key", "vm-series-auto-registration-pin-value", "vm-series-auto-registration-pin-id"],
         split("=", v)[0]
       )
     ])
