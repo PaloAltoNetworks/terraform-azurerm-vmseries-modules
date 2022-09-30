@@ -38,14 +38,6 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
 }
 
 resource "azurerm_virtual_machine" "this" {
-  lifecycle {
-    # We either use a password or an ssh key.
-    precondition {
-      condition     = var.password != null || var.ssh_key != null
-      error_message = "You have to specify either a password or an ssh key."
-    }
-  }
-
   name                         = var.name
   location                     = var.location
   resource_group_name          = var.resource_group_name
