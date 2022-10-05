@@ -126,16 +126,8 @@ variable "autoscale_metrics" {
 
   Other possible metrics include `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`.
   EOF
-  default = {
-    "DataPlaneCPUUtilizationPct" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-    "panSessionUtilization" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-  }
+
+  default = {}
 }
 
 variable "scaleout_statistic" {
@@ -358,4 +350,10 @@ variable "avzones" {
   EOF
   default     = []
   type        = list(string)
+}
+
+variable "app_insights_settings" {
+  description = "A map of the Application Insights related parameters. Full description available under [vmseries/README.md](../../modules/vmseries/README.md#input_app_insights_settings)"
+  default     = null
+  type        = map(any)
 }

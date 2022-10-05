@@ -142,12 +142,6 @@ variable "img_version" {
   type        = string
 }
 
-variable "name_application_insights" {
-  default     = null
-  description = "Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated."
-  type        = string
-}
-
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
@@ -164,12 +158,6 @@ variable "identity_ids" {
   description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine#identity_ids)."
   default     = null
   type        = list(string)
-}
-
-variable "metrics_retention_in_days" {
-  description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether."
-  default     = null
-  type        = number
 }
 
 variable "accelerated_networking" {
@@ -208,4 +196,51 @@ variable "diagnostics_storage_uri" {
   description = "The storage account's blob endpoint to hold diagnostic files."
   default     = null
   type        = string
+}
+
+variable "app_insights_settings" {
+  description = <<-EOF
+  A map of the Application Insights related parameters.
+  
+  If the variable is:
+  - not defined - Application Insights will not be created (default behavior)
+  - defined as empty map `{}` - Application Insights will be created based on the default parameters
+  - defined as a map - Application Insights will be created with the defined properties, for any skipped - a default value will be used.
+
+  Available properties are:
+  - `name`                      - (optional|string) Name of the Applications Insights instance. Can be `null`, in which case a default name is auto-generated.
+  - `workspace_mode`            - (optional|bool)   Application Insights mode. If `true` (default), the "Workspace-based" mode is used. With `false`, the mode is set to legacy "Classic".
+  - `metrics_retention_in_days` - (optional|number) Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90.
+  - `log_analytics_name`        - (optional|string) The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated.
+  - `log_analytics_sku`         - (optional|string) Azure Log Analytics Workspace mode SKU. The default value is set to "PerGB2018". For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model)
+
+  NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions.
+
+  NOTICE. Since upgrade to provider 3.x when destroying infrastructure with a classic Application Insights a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state and it prevents resource group deletion.
+
+  A workaround is to set the following provider configuration:
+  
+  ```
+  provider "azurerm" {
+    features {
+      resource_group {
+        prevent_deletion_if_contains_resources = false
+      }
+    }
+  }
+
+  Example:
+  
+  ```
+    {
+        name                      = "AppInsights"
+        workspace_mode            = true
+        metrics_retention_in_days = 30
+        log_analytics_name        = "LogAnalyticsName"
+        log_analytics_sku         = "PerGB2018"
+    }
+  ```
+  EOF
+  default     = null
+  type        = map(any)
 }

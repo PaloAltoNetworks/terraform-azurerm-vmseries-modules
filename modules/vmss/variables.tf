@@ -206,16 +206,15 @@ variable "accelerated_networking" {
   type        = bool
 }
 
-variable "metrics_retention_in_days" {
-  description = "Specifies the metrics retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether, which is incompatible with `create_autoscaling`."
-  default     = null
-  type        = number
-}
+variable "app_insights_settings" {
+  description = <<-EOF
+  A map of the Application Insights related parameters. Full configuration description available under [vmseries/README.md](../../modules/vmseries/README.md#input_app_insights_settings)
 
-variable "name_application_insights" {
-  description = "Name of the Applications Insights instance to be created. Can be null, in which case a default name is auto-generated."
+  NOTICE. Even if you keep this property set to `null` but set up the `autoscale_metrics` property Application Insights will be created as it is required to gather Palo Alto's autoscaling specific metrics.
+  ```
+  EOF
   default     = null
-  type        = string
+  type        = map(any)
 }
 
 variable "name_autoscale" {
@@ -275,16 +274,7 @@ variable "autoscale_metrics" {
 
   Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
   EOF
-  default = {
-    "DataPlaneCPUUtilizationPct" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-    "panSessionUtilization" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-  }
+  default     = {}
 }
 
 variable "scaleout_statistic" {
