@@ -72,9 +72,9 @@ resource "azurerm_virtual_machine" "panorama" {
   os_profile_linux_config {
     disable_password_authentication = var.password == null ? true : false
     dynamic "ssh_keys" {
-      for_each = var.ssh_key != null ? ["one"] : []
+      for_each = var.ssh_key
       content {
-        key_data = var.ssh_key
+        key_data = ssh_keys.value
         path     = "/home/${var.username}/.ssh/authorized_keys"
       }
     }

@@ -92,9 +92,22 @@ variable "password" {
 }
 
 variable "ssh_key" {
-  description = "Initial administrative SSH public key that allows for a key-pair authentication. If the `password` variable is also set, VM-Series will accept both authentication methods."
-  default     = null
-  type        = string
+  description = <<-EOF
+  A list of initial administrative SSH public keys that allow key-pair authentication.
+  
+  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
+
+  ```
+  [
+    file("/path/to/public/keys/key_1.pub"),
+    file("/path/to/public/keys/key_2.pub")
+  ]
+  ```
+  
+  If the `password` variable is also set, VM-Series will accept both authentication methods.
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "managed_disk_type" {
