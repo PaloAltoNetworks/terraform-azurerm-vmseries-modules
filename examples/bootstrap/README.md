@@ -32,6 +32,7 @@ terraform destroy
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.15, < 2.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.4.3 |
 
 ## Providers
 
