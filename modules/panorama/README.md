@@ -40,7 +40,7 @@ module "panorama" {
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.4.3 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.4 |
 
 ## Providers
 
