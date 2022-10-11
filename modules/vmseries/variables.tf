@@ -91,7 +91,7 @@ variable "password" {
   type        = string
 }
 
-variable "ssh_key" {
+variable "ssh_keys" {
   description = <<-EOF
   A list of initial administrative SSH public keys that allow key-pair authentication.
   
