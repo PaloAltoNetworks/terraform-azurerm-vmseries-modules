@@ -124,7 +124,7 @@ variable "route_tables" {
   }
   ```
   EOF
-  default = {}
+  default     = {}
 }
 
 variable "subnets" {
