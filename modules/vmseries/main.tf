@@ -86,7 +86,14 @@ resource "azurerm_virtual_machine" "this" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = false
+    disable_password_authentication = var.password == null ? true : false
+    dynamic "ssh_keys" {
+      for_each = var.ssh_keys
+      content {
+        key_data = ssh_keys.value
+        path     = "/home/${var.username}/.ssh/authorized_keys"
+      }
+    }
   }
 
   # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
@@ -106,13 +113,25 @@ resource "azurerm_virtual_machine" "this" {
   }
 }
 
-resource "azurerm_application_insights" "this" {
-  count = var.metrics_retention_in_days != 0 ? 1 : 0
+resource "azurerm_log_analytics_workspace" "this" {
+  count = var.app_insights_settings != null && try(var.app_insights_settings.workspace_mode, true) ? 1 : 0
 
-  name                = coalesce(var.name_application_insights, var.name)
+  name                = try(var.app_insights_settings.log_analytics_name, "${var.name}-Workspace")
   location            = var.location
   resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  retention_in_days   = try(var.app_insights_settings.metrics_retention_in_days, null)
+  sku                 = try(var.app_insights_settings.log_analytics_sku, "PerGB2018")
+  tags                = var.tags
+}
+
+resource "azurerm_application_insights" "this" {
+  count = var.app_insights_settings != null ? 1 : 0
+
+  name                = try(var.app_insights_settings.name, "${var.name}-AppInsights")
+  location            = var.location
+  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
+  workspace_id        = try(var.app_insights_settings.workspace_mode, true) ? azurerm_log_analytics_workspace.this[0].id : null
   application_type    = "other"
-  retention_in_days   = var.metrics_retention_in_days
+  retention_in_days   = try(var.app_insights_settings.metrics_retention_in_days, null)
   tags                = var.tags
 }

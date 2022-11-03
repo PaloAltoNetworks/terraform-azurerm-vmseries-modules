@@ -140,6 +140,7 @@ resource "azurerm_lb_rule" "lb_rules" {
   frontend_port                  = each.value.rule.port
   enable_floating_ip             = true
   disable_outbound_snat          = local.disable_outbound_snat
+  load_distribution              = try(each.value.rule.session_persistence, null)
 }
 
 resource "azurerm_lb_outbound_rule" "outb_rules" {

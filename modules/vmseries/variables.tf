@@ -86,8 +86,28 @@ variable "username" {
 }
 
 variable "password" {
-  description = "Initial administrative password to use for VM-Series. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  description = "Initial administrative password to use for VM-Series. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  default     = null
   type        = string
+}
+
+variable "ssh_keys" {
+  description = <<-EOF
+  A list of initial administrative SSH public keys that allow key-pair authentication.
+  
+  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
+
+  ```
+  [
+    file("/path/to/public/keys/key_1.pub"),
+    file("/path/to/public/keys/key_2.pub")
+  ]
+  ```
+  
+  If the `password` variable is also set, VM-Series will accept both authentication methods.
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "managed_disk_type" {
@@ -142,12 +162,6 @@ variable "img_version" {
   type        = string
 }
 
-variable "name_application_insights" {
-  default     = null
-  description = "Name of the Applications Insights instance to be created. Can be `null`, in which case a default name is auto-generated."
-  type        = string
-}
-
 variable "tags" {
   description = "A map of tags to be associated with the resources created."
   default     = {}
@@ -166,12 +180,6 @@ variable "identity_ids" {
   type        = list(string)
 }
 
-variable "metrics_retention_in_days" {
-  description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Defaults to 90. A special value 0 disables creation of Application Insights altogether."
-  default     = null
-  type        = number
-}
-
 variable "accelerated_networking" {
   description = "Enable Azure accelerated networking (SR-IOV) for all network interfaces except the primary one (it is the PAN-OS management interface, which [does not support](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) acceleration)."
   default     = true
@@ -179,13 +187,80 @@ variable "accelerated_networking" {
 }
 
 variable "bootstrap_options" {
-  description = "Bootstrap options to pass to VM-Series instance."
+  description = <<-EOF
+  Bootstrap options to pass to VM-Series instance.
+
+  Proper syntax is a string of semicolon separated properties.
+  Example:
+    bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+
+  A list of available properties: storage-account, access-key, file-share, share-directory, type, ip-address, default-gateway, netmask, ipv6-address, ipv6-default-gateway, hostname, panorama-server, panorama-server-2, tplname, dgname, dns-primary, dns-secondary, vm-auth-key, op-command-modes, op-cmd-dpdk-pkt-io, plugin-op-commands, dhcp-send-hostname, dhcp-send-client-id, dhcp-accept-server-hostname, dhcp-accept-server-domain, auth-key, vm-series-auto-registration-pin-value, vm-series-auto-registration-pin-id.
+
+  For more details on bootstrapping see documentation: https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components
+  EOF
   default     = ""
   type        = string
+  validation {
+    condition = alltrue([
+      for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
+      contains(
+        ["storage-account", "access-key", "file-share", "share-directory", "type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key", "vm-series-auto-registration-pin-value", "vm-series-auto-registration-pin-id"],
+        split("=", v)[0]
+      )
+    ])
+    error_message = "Error in validating bootstrap_options, for details see variable description."
+  }
 }
 
 variable "diagnostics_storage_uri" {
   description = "The storage account's blob endpoint to hold diagnostic files."
   default     = null
   type        = string
+}
+
+variable "app_insights_settings" {
+  description = <<-EOF
+  A map of the Application Insights related parameters.
+  
+  If the variable is:
+  - not defined - Application Insights will not be created (default behavior)
+  - defined as empty map `{}` - Application Insights will be created based on the default parameters
+  - defined as a map - Application Insights will be created with the defined properties, for any skipped - a default value will be used.
+
+  Available properties are:
+  - `name`                      - (optional|string) Name of the Applications Insights instance. Can be `null`, in which case a default name is auto-generated.
+  - `workspace_mode`            - (optional|bool)   Application Insights mode. If `true` (default), the "Workspace-based" mode is used. With `false`, the mode is set to legacy "Classic".
+  - `metrics_retention_in_days` - (optional|number) Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90.
+  - `log_analytics_name`        - (optional|string) The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated.
+  - `log_analytics_sku`         - (optional|string) Azure Log Analytics Workspace mode SKU. The default value is set to "PerGB2018". For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model)
+
+  NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions.
+
+  NOTICE. Since upgrade to provider 3.x when destroying infrastructure with a classic Application Insights a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state and it prevents resource group deletion.
+
+  A workaround is to set the following provider configuration:
+  
+  ```
+  provider "azurerm" {
+    features {
+      resource_group {
+        prevent_deletion_if_contains_resources = false
+      }
+    }
+  }
+
+  Example:
+  
+  ```
+    {
+        name                      = "AppInsights"
+        workspace_mode            = true
+        metrics_retention_in_days = 30
+        log_analytics_name        = "LogAnalyticsName"
+        log_analytics_sku         = "PerGB2018"
+    }
+  ```
+  EOF
+  default     = null
+  type        = map(any)
 }

@@ -69,6 +69,31 @@ variable "frontend_ips" {
     }
   }
   ```
+
+  Session persistence/Load distribution
+
+  By default the Load Balancer uses a 5 tuple hash to map traffic to available servers. This can be controlled using `session_persistence` property defined inside a role. Available values are:
+
+  - `Default` : this is the 5 tuple hash - this method is also used when no property is defined
+  - `SourceIP` : a 2 tuple hash is used
+  - `SourceIPProtocol` : a 3 tuple hash is used
+
+  Example
+
+  ```
+    frontend_ips = {
+      rule_1 = {
+        create_public_ip = true
+        rules = {
+          HTTP = {
+            port     = 80
+            protocol = "Tcp"
+            session_persistence = "SourceIP"
+          }
+        }
+      }
+    }
+  ```
   EOF
 }
 variable "outbound_rules" {

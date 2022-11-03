@@ -70,15 +70,13 @@ terraform destroy
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | = 3.7.0 |
-| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.1 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | = 3.7.0 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.1 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+| <a name="provider_random"></a> [random](#provider\_random) | n/a |
 
 ## Modules
 
@@ -96,21 +94,21 @@ terraform destroy
 
 | Name | Type |
 |------|------|
-| [azurerm_nat_gateway.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway) | resource |
-| [azurerm_nat_gateway.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway) | resource |
-| [azurerm_nat_gateway_public_ip_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway_public_ip_association) | resource |
-| [azurerm_nat_gateway_public_ip_association.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/nat_gateway_public_ip_association) | resource |
-| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/network_security_rule) | resource |
-| [azurerm_public_ip.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/public_ip) | resource |
-| [azurerm_public_ip.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/public_ip) | resource |
-| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/resource_group) | resource |
-| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/resource_group) | resource |
-| [azurerm_subnet_nat_gateway_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_subnet_nat_gateway_association.outbound_private](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/subnet_nat_gateway_association) | resource |
-| [azurerm_subnet_nat_gateway_association.outbound_public](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_nat_gateway.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nat_gateway) | resource |
+| [azurerm_nat_gateway.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nat_gateway) | resource |
+| [azurerm_nat_gateway_public_ip_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nat_gateway_public_ip_association) | resource |
+| [azurerm_nat_gateway_public_ip_association.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/nat_gateway_public_ip_association) | resource |
+| [azurerm_network_security_rule.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule) | resource |
+| [azurerm_public_ip.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
+| [azurerm_public_ip.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip) | resource |
+| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
+| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
+| [azurerm_subnet_nat_gateway_association.mgmt](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_subnet_nat_gateway_association.outbound_private](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_nat_gateway_association) | resource |
+| [azurerm_subnet_nat_gateway_association.outbound_public](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet_nat_gateway_association) | resource |
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/data-sources/resource_group) | data source |
-| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/3.7.0/docs/data-sources/resource_group) | data source |
+| [azurerm_resource_group.inbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
+| [azurerm_resource_group.outbound](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 
 ## Inputs
 
@@ -119,7 +117,8 @@ terraform destroy
 | <a name="input_address_space"></a> [address\_space](#input\_address\_space) | The address space used by the Virtual Network. You can supply more than one address space. | `list(string)` | n/a | yes |
 | <a name="input_allow_inbound_data_ips"></a> [allow\_inbound\_data\_ips](#input\_allow\_inbound\_data\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access public data interfaces of VM-Series.<br>If the list is empty, the contents of `allow_inbound_mgmt_ips` are substituted instead. | `list(string)` | `[]` | no |
 | <a name="input_allow_inbound_mgmt_ips"></a> [allow\_inbound\_mgmt\_ips](#input\_allow\_inbound\_mgmt\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interfaces of VM-Series.<br>If you use Panorama, include its address in the list (as well as the secondary Panorama's). | `list(string)` | `[]` | no |
-| <a name="input_autoscale_metrics"></a> [autoscale\_metrics](#input\_autoscale\_metrics) | Map of objects, where each key is the metric name to be used for autoscaling.<br>Each value of the map has the attributes `scaleout_threshold` and `scalein_threshold`, which cause the instance count to grow by 1 when metrics are greater or equal, or decrease by 1 when lower or equal, respectively.<br>The thresholds are applied to results of metrics' aggregation over a time window.<br>Example:<pre>{<br>  "DataPlaneCPUUtilizationPct" = {<br>    scaleout_threshold = 80<br>    scalein_threshold  = 20<br>  }<br>  "panSessionUtilization" = {<br>    scaleout_threshold = 80<br>    scalein_threshold  = 20<br>  }<br>}</pre>Other possible metrics include `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`. | `map` | <pre>{<br>  "DataPlaneCPUUtilizationPct": {<br>    "scalein_threshold": 20,<br>    "scaleout_threshold": 80<br>  },<br>  "panSessionUtilization": {<br>    "scalein_threshold": 20,<br>    "scaleout_threshold": 80<br>  }<br>}</pre> | no |
+| <a name="input_app_insights_settings"></a> [app\_insights\_settings](#input\_app\_insights\_settings) | A map of the Application Insights related parameters. Full description available under [vmseries/README.md](../../modules/vmseries/README.md#input\_app\_insights\_settings) | `map(any)` | `null` | no |
+| <a name="input_autoscale_metrics"></a> [autoscale\_metrics](#input\_autoscale\_metrics) | Map of objects, where each key is the metric name to be used for autoscaling.<br>Each value of the map has the attributes `scaleout_threshold` and `scalein_threshold`, which cause the instance count to grow by 1 when metrics are greater or equal, or decrease by 1 when lower or equal, respectively.<br>The thresholds are applied to results of metrics' aggregation over a time window.<br>Example:<pre>{<br>  "DataPlaneCPUUtilizationPct" = {<br>    scaleout_threshold = 80<br>    scalein_threshold  = 20<br>  }<br>  "panSessionUtilization" = {<br>    scaleout_threshold = 80<br>    scalein_threshold  = 20<br>  }<br>}</pre>Other possible metrics include `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`. | `map` | `{}` | no |
 | <a name="input_autoscale_notification_emails"></a> [autoscale\_notification\_emails](#input\_autoscale\_notification\_emails) | List of email addresses to notify about autoscaling events. | `list(string)` | `[]` | no |
 | <a name="input_avzones"></a> [avzones](#input\_avzones) | After provider version 3.x you need to specify in which availability zone(s) you want to place IP.<br>ie: for zone-redundant with 3 availability zone in current region value will be:<pre>["1","2","3"]</pre>Use command<pre>az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'</pre>to see how many AZ is<br>in current region. | `list(string)` | `[]` | no |
 | <a name="input_common_vmseries_sku"></a> [common\_vmseries\_sku](#input\_common\_vmseries\_sku) | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"bundle2"` | no |
