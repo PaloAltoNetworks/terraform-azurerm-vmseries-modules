@@ -70,23 +70,23 @@ jobs:
           soft_fail: true
           quiet: true # display only failed checks
 
-  release:
-    name: release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [validate]
-    runs-on: ubuntu-latest
+  # release:
+  #   name: release
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   needs: [validate]
+  #   runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v2
 
-      - name: Create release and publish
-        id: release
-        uses: cycjimmy/semantic-release-action@v2
-        with:
-          semantic_version: 17.4.2
-          extra_plugins: |
-            conventional-changelog-conventionalcommits@^4.5.0
-            @semantic-release/git@^9.0.0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #     - name: Create release and publish
+  #       id: release
+  #       uses: cycjimmy/semantic-release-action@v2
+  #       with:
+  #         semantic_version: 17.4.2
+  #         extra_plugins: |
+  #           conventional-changelog-conventionalcommits@^4.5.0
+  #           @semantic-release/git@^9.0.0
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
