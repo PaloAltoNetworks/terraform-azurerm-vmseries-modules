@@ -1,0 +1,23 @@
+name: Release CI
+run-name: "Continous Release"
+
+
+permissions:
+  contents: write
+  issues: read
+
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 1 * * 4' # this means every Thursday @1am UTC
+
+jobs:
+  release_wrkflw:
+    name: Do release
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@v0.2.1
+    secrets: inherit
+    with:
+      cloud: azure
+      max_parallel: 10
+      tf_version: 0.15 1.0 1.1 1.2 1.3

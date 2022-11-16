@@ -1,0 +1,21 @@
+# DESCRIPTION:
+#  A workflow used to verify if PR titles matches conventional commits strategy.
+# END
+
+name: Lint PR Title
+run-name: "Lint PR - (#${{ github.event.number }}) ${{ github.event.pull_request.title }}"
+
+permissions:
+  pull-requests: read
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - edited
+      - synchronize
+
+jobs:
+  lint_pr_title:
+    name: Lint PR
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/lint_pr_title.yml@v0
