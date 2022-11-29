@@ -27,13 +27,13 @@ module "vmss" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.21 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.7 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.21 |
 
 ## Modules
 
@@ -96,6 +96,7 @@ No modules.
 | <a name="input_public_backend_pool_id"></a> [public\_backend\_pool\_id](#input\_public\_backend\_pool\_id) | Identifier of the load balancer backend pool to associate with the public interface of each VM-Series firewall. | `string` | `null` | no |
 | <a name="input_public_pip_domain_name_label"></a> [public\_pip\_domain\_name\_label](#input\_public\_pip\_domain\_name\_label) | n/a | `string` | `null` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the existing resource group where to place the resources created. | `string` | n/a | yes |
+| <a name="input_scale_in_force_deletion"></a> [scale\_in\_force\_deletion](#input\_scale\_in\_force\_deletion) | When set to `true` will force delete machines selected for removal by the `scale_in_policy`. | `bool` | `false` | no |
 | <a name="input_scale_in_policy"></a> [scale\_in\_policy](#input\_scale\_in\_policy) | Which virtual machines are chosen for removal when a Virtual Machine Scale Set is scaled in. Either:<br><br>- `Default`, which, baring the availability zone usage and fault domain usage, deletes VM with the highest-numbered instance id,<br>- `NewestVM`, which, baring the availability zone usage, deletes VM with the newest creation time,<br>- `OldestVM`, which, baring the availability zone usage, deletes VM with the oldest creation time. | `string` | `null` | no |
 | <a name="input_scalein_cooldown_minutes"></a> [scalein\_cooldown\_minutes](#input\_scalein\_cooldown\_minutes) | Azure only considers deleting a VM after this number of minutes has passed since the last VM scaling action. Should be higher or equal to `scalein_window_minutes`. Must be between 1 and 10080 minutes. | `number` | `2880` | no |
 | <a name="input_scalein_statistic"></a> [scalein\_statistic](#input\_scalein\_statistic) | Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max. | `string` | `"Max"` | no |
