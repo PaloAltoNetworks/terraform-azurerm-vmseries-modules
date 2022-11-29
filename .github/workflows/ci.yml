@@ -39,7 +39,7 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v1
         with:
-          terraform_version: 0.15.0
+          terraform_version: '1.0.0'
       - name: terraform validate
         run: |
           cd "$GITHUB_WORKSPACE"
@@ -57,10 +57,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.8
+      - name: Set up Python
         uses: actions/setup-python@v1
         with:
-          python-version: 3.8
+          python-version: '3.10'
       - name: Test with Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master
