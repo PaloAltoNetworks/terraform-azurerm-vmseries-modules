@@ -61,8 +61,10 @@ resource "azurerm_network_security_rule" "this" {
   direction                    = each.value.rule.direction
   access                       = each.value.rule.access
   protocol                     = each.value.rule.protocol
-  source_port_range            = each.value.rule.source_port_range
-  destination_port_range       = each.value.rule.destination_port_range
+  source_port_range            = lookup(each.value.rule, "source_port_range", null)
+  source_port_ranges           = lookup(each.value.rule, "source_port_ranges", null)
+  destination_port_range       = lookup(each.value.rule, "destination_port_range", null)
+  destination_port_ranges      = lookup(each.value.rule, "destination_port_ranges", null)
   source_address_prefix        = lookup(each.value.rule, "source_address_prefix", null)
   source_address_prefixes      = lookup(each.value.rule, "source_address_prefixes", null)
   destination_address_prefix   = lookup(each.value.rule, "destination_address_prefix", null)
