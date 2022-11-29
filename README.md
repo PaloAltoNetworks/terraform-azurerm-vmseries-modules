@@ -17,7 +17,8 @@ This repository has the following directory structure:
 
 * `modules` - this directory contains several standalone, reusable, production-grade Terraform modules. Each module is individually documented.
 * `examples` - this directory shows examples of different ways to combine the modules contained in the
-  `modules` directory.
+  `modules` directory. \
+  Notice, **this code should NOT be used directly in production**. It might contain examples of sensitive data that normally should not be kept in a repository.
 
 ## Compatibility
 

@@ -89,6 +89,7 @@ variable "password" {
   description = "Initial administrative password to use for VM-Series. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
   default     = null
   type        = string
+  sensitive   = true
 }
 
 variable "ssh_keys" {
@@ -200,6 +201,7 @@ variable "bootstrap_options" {
   EOF
   default     = ""
   type        = string
+  sensitive   = true
 }
 
 variable "diagnostics_storage_uri" {
