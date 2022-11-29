@@ -3,6 +3,14 @@ variable "frontend_ips" {
   A map of objects describing LB frontend IP configurations. Used for both public or private load balancers. 
   Keys of the map are the names of the created load balancers.
 
+  Each frontend IP configuration can have multiple rules assigned. They are defined in a map called `rules`. A key in this map is the name of the rule, while value is the actual rule configuration. To understand this structure please see examples below.
+  Here is a list of properties supported for each rule:
+
+  - `protocol` : required, communication protocol, either 'Tcp', 'Udp' or 'All'.
+  - `port` : required, communication port, this is both the front- and the backend port.
+  - `floating_ip` : optional, defaults to `true`, enables floating IP for this rule.
+  - `session_persistence` : optional, defaults to 5 tuple (Azure default), see `Session persistence/Load distribution` below for details.
+
   Public LB
 
   - `create_public_ip` : Optional. Set to `true` to create a public IP.
