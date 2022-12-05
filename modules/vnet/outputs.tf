@@ -6,7 +6,7 @@ output "virtual_network_id" {
 output "subnet_ids" {
   description = "The identifiers of the created Subnets."
   value = {
-    for k, v in azurerm_subnet.this : k => v.id
+    for k, v in local.subnets : k => v.id
   }
 }
 

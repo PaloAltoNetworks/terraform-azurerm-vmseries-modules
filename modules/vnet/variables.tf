@@ -9,6 +9,12 @@ variable "create_virtual_network" {
   type        = bool
 }
 
+variable "create_subnets" {
+  description = "If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets."
+  default     = true
+  type        = bool
+}
+
 variable "location" {
   description = "Location of the resources that will be deployed."
   type        = string
@@ -129,12 +135,14 @@ variable "route_tables" {
 
 variable "subnets" {
   description = <<-EOF
-  Map of subnet objects to create within a virtual network. The key of each entry acts as the subnet name.
+  Map of subnet objects to create within a virtual network. If `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
+  
+  The key of each entry acts as the subnet name.
   List of available attributes of each subnet entry:
-  - `address_prefixes` : The address prefix to use for the subnet.
+  - `address_prefixes` : The address prefix to use for the subnet. Only required when a subnet will be created.
   - `network_security_group_id` : The Network Security Group identifier to associate with the subnet.
   - `route_table_id` : The Route Table identifier to associate with the subnet.
-  - `tags` : (Optional) Map of tags to assign to the resource.
+  - `tags` : (Optional) Map of tags to assign to the resource. Only required when a subnet will be created.
   
   Example:
   ```
