@@ -20,7 +20,7 @@ locals {
 }
 
 resource "azurerm_subnet" "this" {
-  for_each = var.create_subnets ? var.subnets : {}
+  for_each = { for k, v in var.subnets : k => v if var.create_subnets }
 
   name                 = each.key
   resource_group_name  = var.resource_group_name
@@ -29,7 +29,7 @@ resource "azurerm_subnet" "this" {
 }
 
 data "azurerm_subnet" "this" {
-  for_each = var.create_subnets == false ? var.subnets : {}
+  for_each = { for k, v in var.subnets : k => v if var.create_subnets == false }
 
   name                 = each.key
   resource_group_name  = var.resource_group_name
