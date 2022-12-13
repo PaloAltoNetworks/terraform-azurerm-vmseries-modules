@@ -20,12 +20,24 @@ locals {
 }
 
 resource "azurerm_subnet" "this" {
-  for_each = var.subnets
+  for_each = { for k, v in var.subnets : k => v if var.create_subnets }
 
   name                 = each.key
   resource_group_name  = var.resource_group_name
   virtual_network_name = local.virtual_network.name
   address_prefixes     = each.value.address_prefixes
+}
+
+data "azurerm_subnet" "this" {
+  for_each = { for k, v in var.subnets : k => v if var.create_subnets == false }
+
+  name                 = each.key
+  resource_group_name  = var.resource_group_name
+  virtual_network_name = local.virtual_network.name
+}
+
+locals {
+  subnets = var.create_subnets ? azurerm_subnet.this : data.azurerm_subnet.this
 }
 
 resource "azurerm_network_security_group" "this" {
@@ -110,13 +122,13 @@ resource "azurerm_route" "this" {
 resource "azurerm_subnet_network_security_group_association" "this" {
   for_each = { for k, v in var.subnets : k => v if lookup(v, "network_security_group", "") != "" }
 
-  subnet_id                 = azurerm_subnet.this[each.key].id
+  subnet_id                 = local.subnets[each.key].id
   network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group].id
 }
 
 resource "azurerm_subnet_route_table_association" "this" {
   for_each = { for k, v in var.subnets : k => v if lookup(v, "route_table", "") != "" }
 
-  subnet_id      = azurerm_subnet.this[each.key].id
+  subnet_id      = local.subnets[each.key].id
   route_table_id = azurerm_route_table.this[each.value.route_table].id
 }
