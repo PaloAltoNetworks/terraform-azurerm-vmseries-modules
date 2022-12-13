@@ -114,6 +114,12 @@ variable "scale_in_policy" {
   type        = string
 }
 
+variable "scale_in_force_deletion" {
+  description = "When set to `true` will force delete machines selected for removal by the `scale_in_policy`."
+  default     = false
+  type        = bool
+}
+
 variable "single_placement_group" {
   description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
   default     = null

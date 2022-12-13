@@ -9,7 +9,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   overprovision                   = var.overprovision
   platform_fault_domain_count     = var.platform_fault_domain_count
   proximity_placement_group_id    = var.proximity_placement_group_id
-  scale_in_policy                 = var.scale_in_policy
   single_placement_group          = var.single_placement_group
   instances                       = var.autoscale_count_default
   computer_name_prefix            = null
@@ -56,6 +55,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   upgrade_mode = "Manual"
 
   custom_data = base64encode(var.bootstrap_options)
+
+  scale_in {
+    rule                   = var.scale_in_policy
+    force_deletion_enabled = var.scale_in_force_deletion
+  }
 
   network_interface {
     name                          = "${var.name_prefix}${var.name_mgmt_nic_profile}"
