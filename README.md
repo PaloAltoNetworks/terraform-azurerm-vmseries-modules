@@ -17,7 +17,16 @@ This repository has the following directory structure:
 
 * `modules` - this directory contains several standalone, reusable, production-grade Terraform modules. Each module is individually documented.
 * `examples` - this directory shows examples of different ways to combine the modules contained in the
-  `modules` directory.
+  `modules` directory. \
+  Notice, **this code should NOT be used directly in production**. It might contain examples of sensitive data that normally should not be kept in a repository.
+
+## Security
+
+Please keep in mind that modules hosted in this repository require sensitive data to work, like: passwords, firewall bootstrap options, etc. We do not provide a mechanism to safely store this information. It's up to you to make sure this data is safely kept.
+
+Examples provided here are a form of documentation - they should help you understand how to use the modules. They were not written with security in mind. They are here to demonstrate how to utilize code available in this repository and sometimes it's not possible to do it w/o providing variables or data that normally (in production) would not be kept in a VCS.
+
+So before you use this code for something different than training please keep in mind to follow all Terraform and your organization's security best practices.
 
 ## Compatibility
 

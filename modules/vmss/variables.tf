@@ -69,6 +69,7 @@ variable "username" {
 variable "password" {
   description = "Initial administrative password to use for VM-Series."
   type        = string
+  sensitive   = true
 }
 
 variable "disable_password_authentication" {
@@ -393,6 +394,7 @@ variable "bootstrap_options" {
   EOF
   default     = ""
   type        = string
+  sensitive   = true
 }
 
 variable "diagnostics_storage_uri" {
