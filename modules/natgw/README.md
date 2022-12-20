@@ -2,7 +2,9 @@
 
 ## Purpose
 
-Terraform module used to deploy Azure NAT Gateway. For limitations and zone-resiliency considerations please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-overview)
+Terraform module used to deploy Azure NAT Gateway. For limitations and zone-resiliency considerations please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-overview).
+
+This module can be used to either create a new NAT Gateway or to connect an existing one with subnets deployed using (for example) the [VNET module](../vnet/README.md).
 
 ## Usage
 
