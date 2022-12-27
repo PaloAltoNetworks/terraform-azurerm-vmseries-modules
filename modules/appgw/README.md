@@ -485,6 +485,7 @@ No modules.
 | <a name="input_capacity"></a> [capacity](#input\_capacity) | A number of Application Gateway instances. A value bewteen 1 and 125.<br><br>This property is not used when autoscaling is enabled. | `number` | `2` | no |
 | <a name="input_capacity_max"></a> [capacity\_max](#input\_capacity\_max) | Optional, maximum capacity for autoscaling. | `number` | `null` | no |
 | <a name="input_capacity_min"></a> [capacity\_min](#input\_capacity\_min) | When set enables autoscaling and becomes the minimum capacity. | `number` | `null` | no |
+| <a name="input_domain_name_label"></a> [domain\_name\_label](#input\_domain\_name\_label) | Label for the Domain Name. Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system. | `string` | `null` | no |
 | <a name="input_enable_http2"></a> [enable\_http2](#input\_enable\_http2) | Enable HTTP2 on the Application Gateway. | `bool` | `false` | no |
 | <a name="input_location"></a> [location](#input\_location) | Location to place the Application Gateway in. | `string` | n/a | yes |
 | <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities) | A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.<br><br>These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault. | `list(string)` | `null` | no |
@@ -506,5 +507,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_public_domain_name"></a> [public\_domain\_name](#output\_public\_domain\_name) | Public domain name assigned to the Application Gateway. |
 | <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | A public IP assigned to the Application Gateway. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
