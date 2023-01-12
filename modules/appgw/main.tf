@@ -40,7 +40,7 @@ resource "azurerm_public_ip" "this" {
 
   sku               = "Standard"
   allocation_method = "Static"
-  domain_name_label = try(var.domain_name_label, null)
+  domain_name_label = var.domain_name_label
   zones             = var.zones
   tags              = var.tags
 }
