@@ -1,5 +1,4 @@
 resource "azurerm_public_ip" "this" {
-  # for_each = { for k, v in var.interfaces : k => v if try(v.create_public_ip, false) }
   for_each = { for v in var.interfaces : v.name => v if try(v.create_public_ip, false) }
 
   location            = var.location
@@ -12,7 +11,6 @@ resource "azurerm_public_ip" "this" {
 }
 
 resource "azurerm_network_interface" "this" {
-  # count = length(var.interfaces)
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
   name                          = each.value.name
