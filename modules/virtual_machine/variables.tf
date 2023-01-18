@@ -96,8 +96,34 @@ variable "username" {
 
 variable "password" {
   description = "Initial administrative password to use for the virtual machine. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  default     = null
   type        = string
   sensitive   = true
+}
+
+variable "disable_password_authentication" {
+  description = "If true, disables password-based authentication on VM-Series instances."
+  default     = true
+  type        = bool
+}
+
+variable "ssh_keys" {
+  description = <<-EOF
+  A list of initial administrative SSH public keys that allow key-pair authentication.
+  
+  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
+
+  ```
+  [
+    file("/path/to/public/keys/key_1.pub"),
+    file("/path/to/public/keys/key_2.pub")
+  ]
+  ```
+  
+  If the `password` variable is also set, VM-Series will accept both authentication methods.
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "managed_disk_type" {
