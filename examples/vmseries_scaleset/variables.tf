@@ -45,6 +45,17 @@ variable "password" {
   sensitive   = true
 }
 
+variable "ssh_key" {
+  description = "Administrator user SSH key"
+  type        = string
+}
+
+variable "disable_password_authentication" {
+  description = "If true, disables password-based authentication on VM-Series instances."
+  default     = true
+  type        = bool
+}
+
 variable "storage_account_name" {
   description = <<-EOF
   Default name of the storage account to create.

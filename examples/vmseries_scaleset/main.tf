@@ -241,6 +241,7 @@ module "inbound_scale_set" {
   scalein_cooldown_minutes      = var.scalein_cooldown_minutes
   username                      = var.username
   password                      = coalesce(var.password, random_password.this.result)
+  ssh_key                       = var.ssh_key
   subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
   subnet_private                = { id = module.vnet.subnet_ids["inbound_private"] }
   subnet_public                 = { id = module.vnet.subnet_ids["inbound_public"] }
@@ -286,6 +287,7 @@ module "outbound_scale_set" {
   scalein_cooldown_minutes      = var.scalein_cooldown_minutes
   username                      = var.username
   password                      = coalesce(var.password, random_password.this.result)
+  ssh_key                       = var.ssh_key
   subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
   subnet_private                = { id = module.vnet.subnet_ids["outbound_private"] }
   subnet_public                 = { id = module.vnet.subnet_ids["outbound_public"] }

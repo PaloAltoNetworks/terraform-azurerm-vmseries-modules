@@ -17,6 +17,13 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   zones                           = var.zones
   zone_balance                    = var.zone_balance
   provision_vm_agent              = false
+  dynamic "admin_ssh_key" {
+    for_each = var.ssh_key == null ? [] : [1]
+    content {
+      username   = var.username
+      public_key = var.ssh_key
+    }
+  }
 
   # Allowing upgrade_mode = "Rolling" would be actually a big architectural change. First of all:
   #

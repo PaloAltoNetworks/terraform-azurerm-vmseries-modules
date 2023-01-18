@@ -8,6 +8,7 @@ outbound_name_prefix         = "outbound-"
 outbound_lb_name             = "outbound-private-ilb"
 inbound_lb_name              = "inbound-public-elb"
 name_scale_set               = "VMSS" # the suffix
+ssh_key                      = "<admin_ssh_public_key>"
 
 tags = {}
 
