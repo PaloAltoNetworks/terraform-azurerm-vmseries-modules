@@ -75,6 +75,7 @@ variable "password" {
 variable "ssh_key" {
   description = "Administrator user SSH key"
   type        = string
+  default     = null
 }
 
 variable "disable_password_authentication" {

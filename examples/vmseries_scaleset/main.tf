@@ -218,34 +218,35 @@ module "outbound_bootstrap" {
 module "inbound_scale_set" {
   source = "../../modules/vmss"
 
-  resource_group_name           = local.inbound_resource_group.name
-  location                      = var.location
-  name_prefix                   = var.inbound_name_prefix
-  name_scale_set                = var.name_scale_set
-  img_sku                       = var.common_vmseries_sku
-  img_version                   = var.inbound_vmseries_version
-  tags                          = merge(var.tags, var.panorama_tags, var.outbound_vmseries_tags)
-  vm_size                       = var.inbound_vmseries_vm_size
-  autoscale_count_default       = var.inbound_count_minimum
-  autoscale_count_minimum       = var.inbound_count_minimum
-  autoscale_count_maximum       = var.inbound_count_maximum
-  autoscale_notification_emails = var.autoscale_notification_emails
-  autoscale_metrics             = var.autoscale_metrics
-  scaleout_statistic            = var.scaleout_statistic
-  scaleout_time_aggregation     = var.scaleout_time_aggregation
-  scaleout_window_minutes       = var.scaleout_window_minutes
-  scaleout_cooldown_minutes     = var.scaleout_cooldown_minutes
-  scalein_statistic             = var.scalein_statistic
-  scalein_time_aggregation      = var.scalein_time_aggregation
-  scalein_window_minutes        = var.scalein_window_minutes
-  scalein_cooldown_minutes      = var.scalein_cooldown_minutes
-  username                      = var.username
-  password                      = coalesce(var.password, random_password.this.result)
-  ssh_key                       = var.ssh_key
-  subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
-  subnet_private                = { id = module.vnet.subnet_ids["inbound_private"] }
-  subnet_public                 = { id = module.vnet.subnet_ids["inbound_public"] }
-  app_insights_settings         = var.app_insights_settings
+  resource_group_name             = local.inbound_resource_group.name
+  location                        = var.location
+  name_prefix                     = var.inbound_name_prefix
+  name_scale_set                  = var.name_scale_set
+  img_sku                         = var.common_vmseries_sku
+  img_version                     = var.inbound_vmseries_version
+  tags                            = merge(var.tags, var.panorama_tags, var.outbound_vmseries_tags)
+  vm_size                         = var.inbound_vmseries_vm_size
+  autoscale_count_default         = var.inbound_count_minimum
+  autoscale_count_minimum         = var.inbound_count_minimum
+  autoscale_count_maximum         = var.inbound_count_maximum
+  autoscale_notification_emails   = var.autoscale_notification_emails
+  autoscale_metrics               = var.autoscale_metrics
+  scaleout_statistic              = var.scaleout_statistic
+  scaleout_time_aggregation       = var.scaleout_time_aggregation
+  scaleout_window_minutes         = var.scaleout_window_minutes
+  scaleout_cooldown_minutes       = var.scaleout_cooldown_minutes
+  scalein_statistic               = var.scalein_statistic
+  scalein_time_aggregation        = var.scalein_time_aggregation
+  scalein_window_minutes          = var.scalein_window_minutes
+  scalein_cooldown_minutes        = var.scalein_cooldown_minutes
+  username                        = var.username
+  password                        = coalesce(var.password, random_password.this.result)
+  disable_password_authentication = var.disable_password_authentication
+  ssh_key                         = var.ssh_key
+  subnet_mgmt                     = { id = module.vnet.subnet_ids["management"] }
+  subnet_private                  = { id = module.vnet.subnet_ids["inbound_private"] }
+  subnet_public                   = { id = module.vnet.subnet_ids["inbound_public"] }
+  app_insights_settings           = var.app_insights_settings
   bootstrap_options = (join(",",
     [
       "storage-account=${module.inbound_bootstrap.storage_account.name}",
@@ -264,34 +265,35 @@ module "inbound_scale_set" {
 module "outbound_scale_set" {
   source = "../../modules/vmss"
 
-  resource_group_name           = local.outbound_resource_group.name
-  location                      = var.location
-  name_prefix                   = var.outbound_name_prefix
-  name_scale_set                = var.name_scale_set
-  img_sku                       = var.common_vmseries_sku
-  img_version                   = var.outbound_vmseries_version
-  tags                          = merge(var.tags, var.panorama_tags, var.outbound_vmseries_tags)
-  vm_size                       = var.outbound_vmseries_vm_size
-  autoscale_count_default       = var.outbound_count_minimum
-  autoscale_count_minimum       = var.outbound_count_minimum
-  autoscale_count_maximum       = var.outbound_count_maximum
-  autoscale_notification_emails = var.autoscale_notification_emails
-  autoscale_metrics             = var.autoscale_metrics
-  scaleout_statistic            = var.scaleout_statistic
-  scaleout_time_aggregation     = var.scaleout_time_aggregation
-  scaleout_window_minutes       = var.scaleout_window_minutes
-  scaleout_cooldown_minutes     = var.scaleout_cooldown_minutes
-  scalein_statistic             = var.scalein_statistic
-  scalein_time_aggregation      = var.scalein_time_aggregation
-  scalein_window_minutes        = var.scalein_window_minutes
-  scalein_cooldown_minutes      = var.scalein_cooldown_minutes
-  username                      = var.username
-  password                      = coalesce(var.password, random_password.this.result)
-  ssh_key                       = var.ssh_key
-  subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
-  subnet_private                = { id = module.vnet.subnet_ids["outbound_private"] }
-  subnet_public                 = { id = module.vnet.subnet_ids["outbound_public"] }
-  app_insights_settings         = var.app_insights_settings
+  resource_group_name             = local.outbound_resource_group.name
+  location                        = var.location
+  name_prefix                     = var.outbound_name_prefix
+  name_scale_set                  = var.name_scale_set
+  img_sku                         = var.common_vmseries_sku
+  img_version                     = var.outbound_vmseries_version
+  tags                            = merge(var.tags, var.panorama_tags, var.outbound_vmseries_tags)
+  vm_size                         = var.outbound_vmseries_vm_size
+  autoscale_count_default         = var.outbound_count_minimum
+  autoscale_count_minimum         = var.outbound_count_minimum
+  autoscale_count_maximum         = var.outbound_count_maximum
+  autoscale_notification_emails   = var.autoscale_notification_emails
+  autoscale_metrics               = var.autoscale_metrics
+  scaleout_statistic              = var.scaleout_statistic
+  scaleout_time_aggregation       = var.scaleout_time_aggregation
+  scaleout_window_minutes         = var.scaleout_window_minutes
+  scaleout_cooldown_minutes       = var.scaleout_cooldown_minutes
+  scalein_statistic               = var.scalein_statistic
+  scalein_time_aggregation        = var.scalein_time_aggregation
+  scalein_window_minutes          = var.scalein_window_minutes
+  scalein_cooldown_minutes        = var.scalein_cooldown_minutes
+  username                        = var.username
+  password                        = coalesce(var.password, random_password.this.result)
+  disable_password_authentication = var.disable_password_authentication
+  ssh_key                         = var.ssh_key
+  subnet_mgmt                     = { id = module.vnet.subnet_ids["management"] }
+  subnet_private                  = { id = module.vnet.subnet_ids["outbound_private"] }
+  subnet_public                   = { id = module.vnet.subnet_ids["outbound_public"] }
+  app_insights_settings           = var.app_insights_settings
   bootstrap_options = (join(",",
     [
       "storage-account=${module.outbound_bootstrap.storage_account.name}",
