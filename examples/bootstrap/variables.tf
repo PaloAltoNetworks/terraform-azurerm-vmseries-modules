@@ -45,3 +45,8 @@ variable "obew_files" {
   default     = {}
   type        = map(string)
 }
+
+variable "retention_policy_days" {
+  description = "Log retention policy in days"
+  type        = number
+}

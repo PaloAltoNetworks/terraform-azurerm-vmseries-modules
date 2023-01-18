@@ -6,11 +6,12 @@ resource "azurerm_resource_group" "this" {
 module "inbound_bootstrap" {
   source = "../../modules/bootstrap"
 
-  storage_account_name = var.storage_account_name
-  storage_share_name   = var.inbound_storage_share_name
-  resource_group_name  = azurerm_resource_group.this.name
-  location             = azurerm_resource_group.this.location
-  files                = var.inbound_files
+  storage_account_name  = var.storage_account_name
+  storage_share_name    = var.inbound_storage_share_name
+  resource_group_name   = azurerm_resource_group.this.name
+  location              = azurerm_resource_group.this.location
+  retention_policy_days = var.retention_policy_days
+  files                 = var.inbound_files
 }
 
 module "obew_bootstrap" {

@@ -3,6 +3,7 @@ location                   = "West US"
 storage_account_name       = "examplebootstrap"
 inbound_storage_share_name = "inboundbootstrap"
 obew_storage_share_name    = "obewbootstrap"
+retention_policy_days      = 7
 
 inbound_files = {
   "inbound_files/authcodes.sample"    = "license/authcodes"
