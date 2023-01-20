@@ -1,21 +1,25 @@
-location             = "East US 2"
-resource_group_name  = "example-rg"
 virtual_network_name = "vnet-vmseries"
 address_space        = ["10.110.0.0/16"]
-enable_zones         = true
 
 network_security_groups = {
-  "sg-mgmt"    = {}
+  "sg-mgmt" = {
+    rules = {
+      vmseries_mgmt_allow_inbound = {
+        priority  = 100
+        direction = "Inbound"
+        access    = "Allow"
+        protocol  = "Tcp"
+        # source_address_prefixes    = ["x.x.x.x"] # TODO add public from which you will connect to management interface
+        source_address_prefixes    = ["134.238.135.14/32"] # TODO add public from which you will connect to management interface
+        source_port_range          = "*"
+        destination_address_prefix = "10.110.255.0/24"
+        destination_port_ranges    = ["22", "443"]
+      }
+    }
+  }
   "sg-private" = {}
   "sg-public"  = {}
 }
-
-allow_inbound_mgmt_ips = [
-  "191.191.191.191", # Put your own public IP address here
-  "10.255.0.0/24",   # Example Panorama access
-]
-
-olb_private_ip = "10.110.0.21"
 
 route_tables = {
   private_route_table = {
@@ -45,31 +49,91 @@ subnets = {
   }
 }
 
-frontend_ips = {
-  "frontend01" = {
-    create_public_ip = true
-    rules = {
-      "balancessh" = {
-        protocol = "Tcp"
-        port     = 22
+load_balancers = {
+  "lb-public" = {
+    network_security_group_name = "sg-public"
+    # network_security_allow_source_ips = ["x.x.x.x"] # TODO add public IPs from which you will connect to the public Load Balancer
+    network_security_allow_source_ips = ["134.238.135.14/32"] # TODO add public IPs from which you will connect to the public Load Balancer
+    avzones                           = ["1", "2", "3"]
+
+    frontend_ips = {
+      "palo-lb-app1-pip" = {
+        create_public_ip = true
+        rules = {
+          "balanceHttp" = {
+            protocol = "Tcp"
+            port     = 80
+          }
+          "balanceHttps" = {
+            protocol = "Tcp"
+            port     = 443
+          }
+        }
+      }
+    }
+  }
+  "lb-private" = {
+    frontend_ips = {
+      "ha-ports" = {
+        subnet_name        = "subnet-private"
+        private_ip_address = "10.110.0.21"
+        rules = {
+          HA_PORTS = {
+            port     = 0
+            protocol = "All"
+          }
+        }
       }
     }
   }
 }
 
+vmseries_version = "10.2.0"
+vmseries_vm_size = "Standard_DS3_v2"
+vmseries_sku     = "byol"
 vmseries = {
-  "fw00" = { avzone = 1 }
-  "fw01" = { avzone = 2 }
+  "vmseries-1" = {
+    bootstrap_options = "type=dhcp-client" # TODO add your bootstrap settings here
+    avzone            = 1
+    interfaces = [
+      {
+        name        = "mgmt"
+        subnet_name = "subnet-mgmt"
+        create_pip  = true
+      },
+      {
+        name                 = "public"
+        subnet_name          = "subnet-public"
+        backend_pool_lb_name = "lb-public"
+        create_pip           = true
+      },
+      {
+        name                 = "private"
+        subnet_name          = "subnet-private"
+        backend_pool_lb_name = "lb-private"
+      },
+    ]
+  }
+  "vmseries-2" = {
+    bootstrap_options = "type=dhcp-client" # TODO add your bootstrap settings here
+    avzone            = 2
+    interfaces = [
+      {
+        name        = "mgmt"
+        subnet_name = "subnet-mgmt"
+        create_pip  = true
+      },
+      {
+        name                 = "public"
+        subnet_name          = "subnet-public"
+        backend_pool_lb_name = "lb-public"
+        create_pip           = true
+      },
+      {
+        name                 = "private"
+        subnet_name          = "subnet-private"
+        backend_pool_lb_name = "lb-private"
+      },
+    ]
+  }
 }
-
-common_vmseries_version = "9.1.3"
-common_vmseries_sku     = "bundle1"
-storage_account_name    = "pantfstorage"
-storage_share_name      = "bootstrapshare"
-
-files = {
-  "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
-  "files/init-cfg.txt" = "config/init-cfg.txt"
-}
-
-avzones = ["1", "2", "3"]
