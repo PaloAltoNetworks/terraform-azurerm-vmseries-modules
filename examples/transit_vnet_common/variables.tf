@@ -196,3 +196,8 @@ variable "avzones" {
   default     = []
   type        = list(string)
 }
+
+variable "storage_acl" {
+  description = "If `true`, storage account network rules will be activated with Deny default statement."
+  type        = bool
+}

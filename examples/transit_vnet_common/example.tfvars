@@ -66,6 +66,7 @@ common_vmseries_version = "9.1.3"
 common_vmseries_sku     = "bundle1"
 storage_account_name    = "pantfstorage"
 storage_share_name      = "bootstrapshare"
+storage_acl             = false
 
 files = {
   "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"

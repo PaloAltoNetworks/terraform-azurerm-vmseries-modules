@@ -84,6 +84,7 @@ terraform ouput -json password
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. If not provided, it will be auto-generated. | `string` | `""` | no |
 | <a name="input_route_tables"></a> [route\_tables](#input\_route\_tables) | Map of Route Tables to create. Refer to the `vnet` module documentation for more information. | `any` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
+| <a name="input_storage_acl"></a> [storage\_acl](#input\_storage\_acl) | If `true`, storage account network rules will be activated with Deny default statement. | `bool` | n/a | yes |
 | <a name="input_subnets"></a> [subnets](#input\_subnets) | Map of Subnets to create. Refer to the `vnet` module documentation for more information. | `any` | n/a | yes |
 | <a name="input_username"></a> [username](#input\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
 | <a name="input_virtual_network_name"></a> [virtual\_network\_name](#input\_virtual\_network\_name) | Name of the Virtual Network to create. | `string` | n/a | yes |

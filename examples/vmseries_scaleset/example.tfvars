@@ -10,6 +10,7 @@ inbound_lb_name              = "inbound-public-elb"
 name_scale_set               = "VMSS" # the suffix
 ssh_key                      = "<admin_ssh_public_key>"
 
+
 tags = {}
 
 address_space = ["10.110.0.0/16"]
@@ -44,6 +45,7 @@ subnets = {
   "management" = {
     address_prefixes       = ["10.110.255.0/24"]
     network_security_group = "sg_mgmt"
+    storage_private_access = true
   },
   "outbound_private" = {
     address_prefixes       = ["10.110.0.0/24"]
@@ -126,9 +128,11 @@ scalein_time_aggregation = "Average"
 scalein_window_minutes   = 60
 scalein_cooldown_minutes = 10080
 
-storage_account_name        = "vmssexample"
-inbound_storage_share_name  = "ibbootstrapshare"
-outbound_storage_share_name = "obbootstrapshare"
+storage_account_name             = "vmssexample"
+inbound_storage_share_name       = "ibbootstrapshare"
+outbound_storage_share_name      = "obbootstrapshare"
+storage_allow_inbound_public_ips = ["<public IP 1>", "public IP 2"]
+storage_acl                      = true
 
 inbound_files = {
   # "inbound_files/authcodes"    = "license/authcodes" # this line is only needed for common_vmseries_sku  = "byol"

@@ -76,6 +76,7 @@ terraform destroy
 | <a name="input_location"></a> [location](#input\_location) | The Azure region to use. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Default name of the storage account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | `"pantfstorage"` | no |
+| <a name="input_storage_acl"></a> [storage\_acl](#input\_storage\_acl) | If `true`, storage account network rules will be activated with Deny defaul statement. | `bool` | n/a | yes |
 | <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of storage share to be created that holds `files` for bootstrapping. | `string` | n/a | yes |
 | <a name="input_username"></a> [username](#input\_username) | Initial administrative username. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm). | `string` | n/a | yes |
 | <a name="input_vm_series_version"></a> [vm\_series\_version](#input\_vm\_series\_version) | VMSeries PanOS Version | `string` | `"10.1.0"` | no |

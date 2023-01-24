@@ -106,6 +106,7 @@ module "bootstrap" {
   storage_account_name = var.storage_account_name
   storage_share_name   = var.inbound_storage_share_name
   files                = var.inbound_files
+  storage_acl          = var.storage_acl
 }
 
 # The file share for Outbound VM-Series.
@@ -117,6 +118,7 @@ module "outbound_bootstrap" {
   storage_account_name   = module.bootstrap.storage_account.name
   storage_share_name     = var.outbound_storage_share_name
   files                  = var.outbound_files
+  storage_acl            = var.storage_acl
 
   depends_on = [module.bootstrap]
 }

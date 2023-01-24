@@ -50,3 +50,18 @@ variable "retention_policy_days" {
   description = "Log retention policy in days"
   type        = number
 }
+
+variable "storage_allow_inbound_public_ips" {
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the storage.
+    Only public IPs are allowed - RFC1918 address space is not permitted.
+    Remember to include the IP address you are running terraform from.
+  EOF
+  type        = list(string)
+  default     = null
+}
+
+variable "storage_acl" {
+  description = "If `true`, storage account network rules will be activated with Deny default statement."
+  type        = bool
+}

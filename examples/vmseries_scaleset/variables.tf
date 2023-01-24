@@ -370,3 +370,17 @@ variable "app_insights_settings" {
   default     = null
   type        = map(any)
 }
+
+variable "storage_acl" {
+  description = "If `true`, storage account network rules will be activated with Deny defaul statement."
+  type        = bool
+}
+
+variable "storage_allow_inbound_public_ips" {
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the storage.
+    Only public IPs are allowed - RFC1918 address space is not permitted.
+  EOF
+  type        = list(string)
+  default     = null
+}

@@ -11,6 +11,7 @@ vm_series_version = "10.1.5"
 
 storage_account_name = "pantfstoragep"
 storage_share_name   = "ibootstrapshare"
+storage_acl          = false
 
 files = {
   "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"

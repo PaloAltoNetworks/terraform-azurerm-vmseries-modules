@@ -3,6 +3,18 @@ variable "virtual_network_name" {
   type        = string
 }
 
+variable "storage_private_access" {
+  description = <<-EOF
+  ```
+  If true, private access to Microsoft Storage will be enabled via network service endpoint.
+  This setting is required if you are using Storage Accounts with network access based on vnet subnets.
+  Those specified subnets require network service endpoint enabled for Microsoft Storage.
+  ```
+  EOF
+  default     = false
+  type        = bool
+}
+
 variable "create_virtual_network" {
   description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
   default     = true

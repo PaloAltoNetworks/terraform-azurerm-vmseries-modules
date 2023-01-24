@@ -68,6 +68,8 @@ terraform destroy
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to create. | `string` | n/a | yes |
 | <a name="input_retention_policy_days"></a> [retention\_policy\_days](#input\_retention\_policy\_days) | Log retention policy in days | `number` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Name of the Storage Account to create.<br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length and may include only numbers and lowercase letters. | `string` | n/a | yes |
+| <a name="input_storage_acl"></a> [storage\_acl](#input\_storage\_acl) | If `true`, storage account network rules will be activated with Deny default statement. | `bool` | n/a | yes |
+| <a name="input_storage_allow_inbound_public_ips"></a> [storage\_allow\_inbound\_public\_ips](#input\_storage\_allow\_inbound\_public\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the storage.<br>Only public IPs are allowed - RFC1918 address space is not permitted.<br>Remember to include the IP address you are running terraform from. | `list(string)` | `null` | no |
 
 ## Outputs
 

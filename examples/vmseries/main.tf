@@ -78,4 +78,5 @@ module "bootstrap" {
   storage_account_name = var.storage_account_name
   storage_share_name   = var.storage_share_name
   files                = var.files
+  storage_acl          = var.storage_acl
 }

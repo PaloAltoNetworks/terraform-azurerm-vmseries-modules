@@ -77,6 +77,7 @@ common_vmseries_sku         = "bundle1"
 storage_account_name        = "pantfstorage"
 inbound_storage_share_name  = "ibbootstrapshare"
 outbound_storage_share_name = "obbootstrapshare"
+storage_acl                 = false
 
 inbound_files = {
   "inbound_files/authcodes"    = "license/authcodes" # this line is only needed for common_vmseries_sku  = "byol"

@@ -26,6 +26,7 @@ resource "azurerm_subnet" "this" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = local.virtual_network.name
   address_prefixes     = each.value.address_prefixes
+  service_endpoints    = try(each.value.storage_private_access == true ? ["Microsoft.Storage"] : null, null)
 }
 
 data "azurerm_subnet" "this" {

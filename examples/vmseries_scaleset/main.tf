@@ -192,11 +192,14 @@ resource "azurerm_subnet_nat_gateway_association" "mgmt" {
 module "inbound_bootstrap" {
   source = "../../modules/bootstrap"
 
-  resource_group_name  = local.inbound_resource_group.name
-  location             = var.location
-  storage_share_name   = var.inbound_storage_share_name
-  storage_account_name = var.storage_account_name
-  files                = var.inbound_files
+  resource_group_name              = local.inbound_resource_group.name
+  location                         = var.location
+  storage_share_name               = var.inbound_storage_share_name
+  storage_account_name             = var.storage_account_name
+  files                            = var.inbound_files
+  storage_acl                      = var.storage_acl
+  storage_allow_inbound_public_ips = var.storage_allow_inbound_public_ips
+  storage_allow_vnet_subnets       = [module.vnet.subnet_ids["management"]]
 }
 
 # Create File Share and put there files for initial boot of outbound VM-Series.
