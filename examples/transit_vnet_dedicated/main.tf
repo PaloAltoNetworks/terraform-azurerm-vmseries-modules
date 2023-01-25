@@ -157,7 +157,7 @@ module "inbound_vmseries" {
     {
       name                = "${each.key}-public"
       subnet_id           = lookup(module.vnet.subnet_ids, "subnet-public", null)
-      lb_backend_pool_id  = module.inbound_lb.backend_pool_id
+      lb_backend_pool_id  = try(module.inbound_lb.backend_pool_id, null)
       enable_backend_pool = true
     },
     {
@@ -217,7 +217,7 @@ module "outbound_vmseries" {
     {
       name                = "${each.key}-private"
       subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
-      lb_backend_pool_id  = module.outbound_lb.backend_pool_id
+      lb_backend_pool_id  = try(module.outbound_lb.backend_pool_id, null)
       enable_backend_pool = true
 
       # Optional static private IP
