@@ -69,6 +69,7 @@ variable "username" {
 variable "password" {
   description = "Initial administrative password to use for VM-Series."
   type        = string
+  sensitive   = true
 }
 
 variable "disable_password_authentication" {
@@ -111,6 +112,12 @@ variable "scale_in_policy" {
   EOF
   default     = null
   type        = string
+}
+
+variable "scale_in_force_deletion" {
+  description = "When set to `true` will force delete machines selected for removal by the `scale_in_policy`."
+  default     = false
+  type        = bool
 }
 
 variable "single_placement_group" {
@@ -393,6 +400,7 @@ variable "bootstrap_options" {
   EOF
   default     = ""
   type        = string
+  sensitive   = true
 }
 
 variable "diagnostics_storage_uri" {

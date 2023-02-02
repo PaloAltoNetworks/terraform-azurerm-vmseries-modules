@@ -2,6 +2,10 @@
 
 This folder shows an example of Terraform code that helps to deploy a [Transit VNet design model](https://www.paloaltonetworks.com/resources/guides/azure-transit-vnet-deployment-guide) with dedicated VM-Series firewalls on Microsoft Azure.
 
+## NOTICE
+
+This example contains some files that can contain sensitive data, namely `authcodes.sample` and `init-cfg.sample.txt`. Keep in mind that these files are here only as an example. Normally one should avoid placing them in a repository.
+
 ## Usage
 
 Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
