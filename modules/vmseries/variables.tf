@@ -44,8 +44,12 @@ variable "avset_id" {
 variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
-  The first should be the management interface, which does not participate in data filtering.
-  The remaining ones are the dataplane interfaces.
+
+  NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
+  Interfaces will be attached to VM in the order you define here, therefore:
+  * The first should be the management interface, which does not participate in data filtering.
+  * The remaining ones are the dataplane interfaces.
+  
   Options for an interface object:
   - `name`                 - (required|string) Interface name.
   - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
