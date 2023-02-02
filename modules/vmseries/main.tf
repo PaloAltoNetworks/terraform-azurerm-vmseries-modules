@@ -1,5 +1,5 @@
 resource "azurerm_public_ip" "this" {
-  for_each = { for k, v in var.interfaces : k => v if try(v.create_public_ip, false) }
+  for_each = { for v in var.interfaces : v.name => v if try(v.create_public_ip, false) }
 
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -11,26 +11,26 @@ resource "azurerm_public_ip" "this" {
 }
 
 resource "azurerm_network_interface" "this" {
-  count = length(var.interfaces)
+  for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
-  name                          = var.interfaces[count.index].name
+  name                          = each.value.name
   location                      = var.location
   resource_group_name           = var.resource_group_name
-  enable_accelerated_networking = count.index == 0 ? false : var.accelerated_networking                                  # for interface 0 it is unsupported by PAN-OS
-  enable_ip_forwarding          = try(var.interfaces[count.index].enable_ip_forwarding, count.index == 0 ? false : true) # for interface 0 use false per Reference Arch
-  tags                          = try(var.interfaces[count.index].tags, var.tags)
+  enable_accelerated_networking = each.value.index == 0 ? false : var.accelerated_networking                 # for interface 0 it is unsupported by PAN-OS
+  enable_ip_forwarding          = try(each.value.enable_ip_forwarding, each.value.index == 0 ? false : true) # for interface 0 use false per Reference Arch
+  tags                          = try(each.value.tags, var.tags)
 
   ip_configuration {
     name                          = "primary"
-    subnet_id                     = var.interfaces[count.index].subnet_id
-    private_ip_address_allocation = try(var.interfaces[count.index].private_ip_address, null) != null ? "Static" : "Dynamic"
-    private_ip_address            = try(var.interfaces[count.index].private_ip_address, null)
-    public_ip_address_id          = try(azurerm_public_ip.this[count.index].id, var.interfaces[count.index].public_ip_address_id, null)
+    subnet_id                     = each.value.subnet_id
+    private_ip_address_allocation = try(each.value.private_ip_address, null) != null ? "Static" : "Dynamic"
+    private_ip_address            = try(each.value.private_ip_address, null)
+    public_ip_address_id          = try(azurerm_public_ip.this[each.value.name].id, each.value.public_ip_address_id, null)
   }
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = { for k, v in var.interfaces : k => v if try(v.enable_backend_pool, false) }
+  for_each = { for v in var.interfaces : v.name => v if try(v.enable_backend_pool, false) }
 
   backend_address_pool_id = each.value.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.this[each.key].ip_configuration[0].name
@@ -45,9 +45,10 @@ resource "azurerm_virtual_machine" "this" {
   vm_size                      = var.vm_size
   zones                        = var.enable_zones && var.avzone != null && var.avzone != "" ? [var.avzone] : null
   availability_set_id          = var.avset_id
-  primary_network_interface_id = azurerm_network_interface.this[0].id
+  primary_network_interface_id = azurerm_network_interface.this[var.interfaces[0].name].id
 
-  network_interface_ids = [for k, v in azurerm_network_interface.this : v.id]
+  # network_interface_ids = [for k, v in azurerm_network_interface.this : v.id]
+  network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
 
   storage_image_reference {
     id        = var.custom_image_id
