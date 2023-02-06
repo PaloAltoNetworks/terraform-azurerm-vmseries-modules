@@ -31,8 +31,7 @@ So before you use this code for something different than training please keep in
 ## Compatibility
 
 The compatibility with Terraform is defined individually per each module. In general, expect the earliest compatible
-Terraform version to be 0.12.29 across most of the modules.
-<!-- [FUTURE] If you need to stay on Terraform 0.12.29 and need to use these modules, the recommended last compatible release is 1.2.3. -->
+Terraform version to be 1.0.0 across most of the modules.
 
 ## Versioning
 
