@@ -1,29 +1,43 @@
-# GENERAL INFORMATION
-variable "location" {
-  description = "The Azure region to use."
-  default     = "East US 2"
-  type        = string
+### GENERAL
+variable "tags" {
+  description = "Map of tags to assign to the created resources."
+  default     = {}
+  type        = map(string)
 }
 
-variable "resource_group_name" {
-  description = "Name of the Resource Group to create. If not provided, it will be auto-generated."
-  default     = "transit-vnet-common"
+variable "location" {
+  description = "The Azure region to use."
   type        = string
 }
 
 variable "name_prefix" {
-  description = "A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator."
-  default     = "example-"
+  description = <<-EOF
+  A prefix that will be added to all created resources.
+  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+
+  Example:
+  ```
+  name_prefix = "test-"
+  ```
+  
+  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+  EOF
+  default     = ""
   type        = string
 }
 
-variable "tags" {
-  description = "Map of tags to assign to the created resources."
-  default = {
-    "CreatedBy"   = "Palo Alto Networks"
-    "CreatedWith" = "Terraform"
-  }
-  type = map(string)
+variable "create_resource_group" {
+  description = <<-EOF
+  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+  When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+  EOF
+  default     = true
+  type        = bool
+}
+
+variable "resource_group_name" {
+  description = "Name of the Resource Group to ."
+  type        = string
 }
 
 variable "enable_zones" {
@@ -32,37 +46,30 @@ variable "enable_zones" {
   type        = bool
 }
 
-# NETWORK
-variable "virtual_network_name" {
-  description = "The name of the VNet to create."
-  type        = string
-}
-
-variable "address_space" {
-  description = "The address space used by the virtual network. You can supply more than one address space."
-  type        = list(string)
-}
-
-variable "network_security_groups" {
-  description = "Definition of Network Security Groups to create. Refer to the `vnet` module documentation for more information."
-  default     = {}
-  type        = any
-}
 
 
-variable "route_tables" {
-  description = "Definition of Route Tables to create. Refer to the `vnet` module documentation for more information."
-  default     = {}
-  type        = any
-}
+### VNET
+variable "vnets" {
+  description = <<-EOF
+  A map defining VNETs. A key is the VNET name, value is a set of properties like described below.
+  
+  For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.0/modules/vnet/README.md)
 
-variable "subnets" {
-  description = "Definition of Subnets to create. Refer to the `vnet` module documentation for more information."
-  type        = any
+  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `virtual_network_name`
+  - `address_space` : a list of CIDRs for VNET
+  - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
+
+  - `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets
+  - `subnets` : map of Subnets to create
+
+  - `network_security_groups` : map of Network Security Groups to create
+  - `route_tables` : map of Route Tables to create.
+  EOF
 }
 
 
-# LOAD BALANCING
+
+### Load Balancing
 variable "load_balancers" {
   description = <<-EOF
   A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
@@ -126,20 +133,8 @@ variable "load_balancers" {
 }
 
 
-# VMSERIES
-variable "username" {
-  description = "Initial administrative username to use for all systems."
-  default     = "panadmin"
-  type        = string
-}
 
-variable "password" {
-  description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
-  default     = null
-  type        = string
-  sensitive   = true
-}
-
+### GENERIC VMSERIES
 variable "vmseries_version" {
   description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
   type        = string
@@ -155,6 +150,30 @@ variable "vmseries_sku" {
   type        = string
 }
 
+variable "vmseries_username" {
+  description = "Initial administrative username to use for all systems."
+  default     = "panadmin"
+  type        = string
+}
+
+variable "vmseries_password" {
+  description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
+  default     = null
+  type        = string
+}
+
+variable "availability_set" {
+  description = <<-EOF
+  A map defining availability sets. Can be used to provide infrastructure high availability when zones cannot be used.
+
+  Key is the AS name, value can contain following properties:
+  - `update_domain_count` - specifies the number of update domains that are used, defaults to 5 (Azure defaults)
+  - `fault_domain_count` - specifies the number of fault domains that are used, defaults to 3 (Azure defaults)
+  EOF
+  default     = {}
+  type        = any
+}
+
 variable "vmseries" {
   description = <<-EOF
   Map of virtual machines to create to run VM-Series - inbound firewalls. Keys are the individual names, values
@@ -165,8 +184,7 @@ variable "vmseries" {
   - `bootstrap_options`: Bootstrap options to pass to VM-Series instances, semicolon separated values.
   - `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.
 
-  - `interfaces`: a list containing configuration of all NICs assigned to a VM. Order is important as the interfaces are assigned to a VM in the order specified in this list. The management interface should be the first one. Following properties are available:
-    - `name`: (string) a name of an interface
+  - `interfaces`: configuration of all NICs assigned to a VM. A map - key is the type of the interface and will be used to form a name of a NIC resource in Azure. A value is an object with the following properties available:
     - `subnet_name`: (string) a name of a subnet as created in using `vnet_security` module
     - `create_pip`: (boolean) flag to create Public IP for an interface, defaults to `false`
     - `backend_pool_lb_name`: (string) name of a Load Balancer created with the `loadbalancer` module to which a VM should be assigned, defaults to `null`
