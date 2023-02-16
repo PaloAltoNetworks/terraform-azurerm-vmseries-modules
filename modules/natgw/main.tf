@@ -36,7 +36,7 @@ data "azurerm_public_ip_prefix" "this" {
   count = (var.create_natgw && !var.create_pip_prefix && var.existing_pip_prefix_name != null) ? 1 : 0
 
   name                = var.existing_pip_prefix_name
-  resource_group_name = var.existing_pip_prefix_resource_group_name == null ? var.resource_group_name : var.existing_pip_prefix_resource_group_name
+  resource_group_name = coalesce(var.existing_pip_prefix_resource_group_name, var.resource_group_name)
 }
 
 resource "azurerm_nat_gateway" "this" {
@@ -58,8 +58,6 @@ data "azurerm_nat_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
 }
-
-
 
 
 locals {
