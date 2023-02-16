@@ -90,6 +90,7 @@ module "load_balancer" {
 }
 
 
+# create the actual VMSeries VMs
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_set
 
@@ -103,7 +104,6 @@ resource "azurerm_availability_set" "this" {
 }
 
 
-# create the actual VMSeries VMs
 module "vmseries" {
   source = "../../modules/vmseries"
 

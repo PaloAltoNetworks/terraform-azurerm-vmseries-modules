@@ -1,63 +1,112 @@
-virtual_network_name = "vnet-vmseries"
-address_space        = ["10.110.0.0/16"]
+# --- GENERAL --- #
+location              = "North Europe" # TODO adjust deployment region to your needs
+resource_group_name   = "common-refarch"
+name_prefix           = "example-"
+create_resource_group = true
+tags = {
+  "CreatedBy"   = "Palo Alto Networks"
+  "CreatedWith" = "Terraform"
+}
+enable_zones = false
 
-network_security_groups = {
-  "sg-mgmt" = {
-    rules = {
-      vmseries_mgmt_allow_inbound = {
-        priority  = 100
-        direction = "Inbound"
-        access    = "Allow"
-        protocol  = "Tcp"
-        # source_address_prefixes    = ["x.x.x.x"] # TODO add public from which you will connect to management interface
-        source_address_prefixes    = ["134.238.135.14/32"] # TODO add public from which you will connect to management interface
-        source_port_range          = "*"
-        destination_address_prefix = "10.110.255.0/24"
-        destination_port_ranges    = ["22", "443"]
+
+# --- VNET PART --- #
+vnets = {
+  "transit-vnet" = {
+    create_virtual_network = true
+    address_space          = ["10.0.0.0/25"] # TODO adjust the VNET and subnet address spaces if you plan to peer this vnet
+    network_security_groups = {
+      "management" = {
+        rules = {
+          vmseries_mgmt_allow_inbound = {
+            priority                   = 100
+            direction                  = "Inbound"
+            access                     = "Allow"
+            protocol                   = "Tcp"
+            source_address_prefixes    = ["x.x.x.x"] # TODO adjust to allow public IPs to connect to the firewalls' management interfaces from the internet
+            source_port_range          = "*"
+            destination_address_prefix = "10.0.0.0/27"
+            destination_port_ranges    = ["22", "443"]
+          }
+        }
+      }
+      "private" = {}
+      "public"  = {}
+    }
+    route_tables = { # TODO these route tables provide basic black-holing, adjust for further security
+      "management" = {
+        routes = {
+          "private_blackhole" = {
+            address_prefix = "10.0.0.32/27"
+            next_hop_type  = "None"
+          }
+          "public_blackhole" = {
+            address_prefix = "10.0.0.64/27"
+            next_hop_type  = "None"
+          }
+        }
+      }
+      "private" = {
+        routes = {
+          "default" = {
+            address_prefix         = "0.0.0.0/0"
+            next_hop_type          = "VirtualAppliance"
+            next_hop_in_ip_address = "10.0.0.50"
+          }
+          "mgmt_blackhole" = {
+            address_prefix = "10.0.0.0/27"
+            next_hop_type  = "None"
+          }
+          "public_blackhole" = {
+            address_prefix = "10.0.0.64/27"
+            next_hop_type  = "None"
+          }
+        }
+      }
+      "public" = {
+        routes = {
+          "mgmt_blackhole" = {
+            address_prefix = "10.0.0.0/27"
+            next_hop_type  = "None"
+          }
+          "private_blackhole" = {
+            address_prefix = "10.0.0.32/27"
+            next_hop_type  = "None"
+          }
+        }
+      }
+    }
+    create_subnets = true
+    subnets = {
+      "management" = {
+        address_prefixes       = ["10.0.0.0/27"]
+        network_security_group = "management"
+        route_table            = "management"
+      }
+      "private" = {
+        address_prefixes = ["10.0.0.32/27"]
+        route_table      = "private"
+      }
+      "public" = {
+        address_prefixes       = ["10.0.0.64/27"]
+        network_security_group = "public"
+        route_table            = "public"
       }
     }
   }
-  "sg-private" = {}
-  "sg-public"  = {}
 }
 
-route_tables = {
-  private_route_table = {
-    routes = {
-      default = {
-        address_prefix         = "0.0.0.0/0"
-        next_hop_type          = "VirtualAppliance"
-        next_hop_in_ip_address = "10.110.0.21"
-      }
-    }
-  }
-}
 
-subnets = {
-  "subnet-mgmt" = {
-    address_prefixes       = ["10.110.255.0/24"]
-    network_security_group = "sg-mgmt"
-  }
-  "subnet-private" = {
-    address_prefixes       = ["10.110.0.0/24"]
-    network_security_group = "sg-private"
-    route_table            = "private_route_table"
-  }
-  "subnet-public" = {
-    address_prefixes       = ["10.110.129.0/24"]
-    network_security_group = "sg-public"
-  }
-}
 
+# --- LOAD BALANCING PART --- #
 load_balancers = {
   "lb-public" = {
-    network_security_group_name = "sg-public"
-    # network_security_allow_source_ips = ["x.x.x.x"] # TODO add public IPs from which you will connect to the public Load Balancer
-    network_security_allow_source_ips = ["134.238.135.14/32"] # TODO add public IPs from which you will connect to the public Load Balancer
-    avzones                           = ["1", "2", "3"]
+    vnet_name                         = "transit-vnet"
+    network_security_group_name       = "public"
+    network_security_allow_source_ips = ["y.y.y.y"] # TODO adjust to the public IPs that will connect to the public Load Balancer
 
     frontend_ips = {
-      "palo-lb-app1-pip" = {
+      "palo-lb-app1-pip" = { # TODO this is just a basic load balancing rule that will balance HTTP(s) traffic, add more rules to balance different types of traffic
         create_public_ip = true
         rules = {
           "balanceHttp" = {
@@ -75,8 +124,9 @@ load_balancers = {
   "lb-private" = {
     frontend_ips = {
       "ha-ports" = {
-        subnet_name        = "subnet-private"
-        private_ip_address = "10.110.0.21"
+        vnet_name          = "transit-vnet"
+        subnet_name        = "private"
+        private_ip_address = "10.0.0.50"
         rules = {
           HA_PORTS = {
             port     = 0
@@ -88,52 +138,70 @@ load_balancers = {
   }
 }
 
-vmseries_version = "10.2.0"
+
+
+# --- VMSERIES PART --- #
+availability_set = {
+  "vmseries" = {}
+}
+
+vmseries_version = "10.2.2"
 vmseries_vm_size = "Standard_DS3_v2"
 vmseries_sku     = "byol"
+# vmseries_password = "" # TODO by default the VM-Series admin password is autogenerated, uncomment and provide you own
 vmseries = {
   "vmseries-1" = {
-    bootstrap_options = "type=dhcp-client" # TODO add your bootstrap settings here
-    avzone            = 1
+    availability_set_name = "vmseries"
+    app_insights_settings = {}
+    bootstrap_options     = "type=dhcp-client" # TODO add licensing, panorama configuration if needed
+    vnet_name             = "transit-vnet"
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "subnet-mgmt"
-        create_pip  = true
-      },
-      {
-        name                 = "public"
-        subnet_name          = "subnet-public"
-        backend_pool_lb_name = "lb-public"
-        create_pip           = true
+        name               = "mgmt"
+        subnet_name        = "management"
+        private_ip_address = "10.0.0.10"
+        create_pip         = true
       },
       {
         name                 = "private"
-        subnet_name          = "subnet-private"
+        subnet_name          = "private"
         backend_pool_lb_name = "lb-private"
+        private_ip_address   = "10.0.0.40"
       },
+      {
+        name                 = "public"
+        subnet_name          = "public"
+        backend_pool_lb_name = "lb-public"
+        private_ip_address   = "10.0.0.70"
+        create_pip           = true
+      }
     ]
   }
   "vmseries-2" = {
-    bootstrap_options = "type=dhcp-client" # TODO add your bootstrap settings here
-    avzone            = 2
+    availability_set_name = "vmseries"
+    app_insights_settings = {}
+    bootstrap_options     = "type=dhcp-client" # TODO add licensing, panorama configuration if needed
+    vnet_name             = "transit-vnet"
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "subnet-mgmt"
-        create_pip  = true
-      },
-      {
-        name                 = "public"
-        subnet_name          = "subnet-public"
-        backend_pool_lb_name = "lb-public"
-        create_pip           = true
+        name               = "mgmt"
+        subnet_name        = "management"
+        private_ip_address = "10.0.0.11"
+        create_pip         = true
       },
       {
         name                 = "private"
-        subnet_name          = "subnet-private"
+        subnet_name          = "private"
         backend_pool_lb_name = "lb-private"
+        private_ip_address   = "10.0.0.41"
       },
+      {
+        name                 = "public"
+        subnet_name          = "public"
+        backend_pool_lb_name = "lb-public"
+        private_ip_address   = "10.0.0.71"
+        create_pip           = true
+      }
     ]
   }
 }

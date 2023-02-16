@@ -2,18 +2,27 @@
 
 This folder shows an example of Terraform code that helps to deploy a [Transit VNet design model](https://www.paloaltonetworks.com/resources/guides/azure-transit-vnet-deployment-guide-common-firewall-option) (common firewall option) with a VM-Series firewall on Microsoft Azure.
 
+What's worth mentioning is that in this example we will use an *Availability Set* to provide the firewalls with resiliency. Each firewall will also have it's own *Application Insights* resource deployed in order to gather runtime metrics. For details on configuring a VM-Series firewall with Application Insights please refer to [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall) (please note, that the instrumentation key mentioned in the documentation can be also retrieved directly from Terraform state file with the following command: `terraform output metrics_instrumentation_keys`).
+
 ## NOTICE
 
-This example contains some files that can contain sensitive data, namely `authcodes.sample` and `init-cfg.sample.txt`. Keep in mind that these files are here only as an example. Normally one should avoid placing them in a repository.
+This example contains some files that can contain sensitive data, namely the `tfvars` file can contain `bootstrap_options` properties in `var.vmseries` definition. Keep in mind that this code is only an example. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
 
 ## Usage
 
-Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
+1. Create a `terraform.tfvars` file and copy the content of [`example.tfvars`](./example.tfvars) into it.
+1. Adjust the `terraform.tfvars` to your needs. Please follow the `TODO` markers at minimum.
+1. Deploy the infrastructure with the following commands:
 
-```bash
-$ terraform init
-$ terraform apply
-```
+        $ terraform init
+        $ terraform apply
+
+1. When your done with testing you can destroy the infrastructure with the following command:
+
+        $ terraform destroy
+
+**NOTE**\
+Due to the way AzureRM API works, it might be necessary to run the `destroy` command more than once.
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
