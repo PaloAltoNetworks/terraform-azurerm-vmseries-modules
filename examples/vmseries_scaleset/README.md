@@ -9,6 +9,10 @@ This is not a complete autoscaling solution, the missing part is de-licensing, i
 - Panorama's plugin `azure` v2.0.3. (The v3 is incompatible.)
 - Panorama's plugin `sw_fw_license` v1. (See the [documentation](https://docs-new.paloaltonetworks.com/vm-series/10-1/vm-series-deployment/license-the-vm-series-firewall/use-panorama-based-software-firewall-license-management.html).)
 
+## NOTICE
+
+This example contains some files that can contain sensitive data, namely `authcodes.sample` and `init-cfg.sample.txt`. Keep in mind that these files are here only as an example. Normally one should avoid placing them in a repository.
+
 ## Usage
 
 1. Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
@@ -69,7 +73,7 @@ terraform destroy
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0, < 2.0 |
 
 ## Providers
 

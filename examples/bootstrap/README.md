@@ -10,6 +10,10 @@ The following resources will be deployed when using the provided example:
 * 1 [Storage Account](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-overview)
 * 2 [File Shares](https://docs.microsoft.com/en-us/azure/storage/files/storage-files-introduction#:~:text=Azure%20Files%20offers%20fully%20managed,cloud%20or%20on%2Dpremises%20deployments).
 
+## NOTICE
+
+This example contains some files that can contain sensitive data, namely `authcodes.sample` and `init-cfg.sample.txt`. Keep in mind that these files are here only as an example. Normally one should avoid placing them in a repository.
+
 ## Usage
 
 Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust the variables (in particular the `storage_account_name` should be unique).
@@ -31,7 +35,7 @@ terraform destroy
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.15, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0, < 2.0 |
 
 ## Providers
 

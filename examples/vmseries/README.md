@@ -6,6 +6,10 @@ oneself with terraform, as well as a bed for creating a custom pan-os image.
 
 To see a full VM-Series module usage, see the example from the directory [../transit_vnet_common](../transit_vnet_common). It deploys one of the VM-Series Reference Architectures in its entirety, including load balancing.
 
+## NOTICE
+
+This example contains some files that can contain sensitive data, namely `authcodes.sample` and `init-cfg.sample.txt`. Keep in mind that these files are here only as an example. Normally one should avoid placing them in a repository.
+
 ## Usage
 
 Create a `terraform.tfvars` file and copy the content of `example.tfvars` into it, adjust if needed.
@@ -37,7 +41,7 @@ terraform destroy
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.12.29, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0, < 2.0 |
 
 ## Providers
 

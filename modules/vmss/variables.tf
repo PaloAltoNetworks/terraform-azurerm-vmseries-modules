@@ -69,6 +69,7 @@ variable "username" {
 variable "password" {
   description = "Initial administrative password to use for VM-Series."
   type        = string
+  sensitive   = true
 }
 
 variable "disable_password_authentication" {
@@ -111,6 +112,12 @@ variable "scale_in_policy" {
   EOF
   default     = null
   type        = string
+}
+
+variable "scale_in_force_deletion" {
+  description = "When set to `true` will force delete machines selected for removal by the `scale_in_policy`."
+  default     = false
+  type        = bool
 }
 
 variable "single_placement_group" {
@@ -393,16 +400,7 @@ variable "bootstrap_options" {
   EOF
   default     = ""
   type        = string
-  validation {
-    condition = alltrue([
-      for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
-      contains(
-        ["storage-account", "access-key", "file-share", "share-directory", "type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key", "vm-series-auto-registration-pin-value", "vm-series-auto-registration-pin-id"],
-        split("=", v)[0]
-      )
-    ])
-    error_message = "Error in validating bootstrap_options, for details see variable description."
-  }
+  sensitive   = true
 }
 
 variable "diagnostics_storage_uri" {

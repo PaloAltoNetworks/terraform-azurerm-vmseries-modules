@@ -44,8 +44,12 @@ variable "avset_id" {
 variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
-  The first should be the management interface, which does not participate in data filtering.
-  The remaining ones are the dataplane interfaces.
+
+  NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
+  Interfaces will be attached to VM in the order you define here, therefore:
+  * The first should be the management interface, which does not participate in data filtering.
+  * The remaining ones are the dataplane interfaces.
+  
   Options for an interface object:
   - `name`                 - (required|string) Interface name.
   - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
@@ -89,6 +93,7 @@ variable "password" {
   description = "Initial administrative password to use for VM-Series. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
   default     = null
   type        = string
+  sensitive   = true
 }
 
 variable "ssh_keys" {
@@ -200,16 +205,7 @@ variable "bootstrap_options" {
   EOF
   default     = ""
   type        = string
-  validation {
-    condition = alltrue([
-      for v in var.bootstrap_options == "" ? [] : split(";", var.bootstrap_options) :
-      contains(
-        ["storage-account", "access-key", "file-share", "share-directory", "type", "ip-address", "default-gateway", "netmask", "ipv6-address", "ipv6-default-gateway", "hostname", "panorama-server", "panorama-server-2", "tplname", "dgname", "dns-primary", "dns-secondary", "vm-auth-key", "op-command-modes", "op-cmd-dpdk-pkt-io", "plugin-op-commands", "dhcp-send-hostname", "dhcp-send-client-id", "dhcp-accept-server-hostname", "dhcp-accept-server-domain", "auth-key", "vm-series-auto-registration-pin-value", "vm-series-auto-registration-pin-id"],
-        split("=", v)[0]
-      )
-    ])
-    error_message = "Error in validating bootstrap_options, for details see variable description."
-  }
+  sensitive   = true
 }
 
 variable "diagnostics_storage_uri" {

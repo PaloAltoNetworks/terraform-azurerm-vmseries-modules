@@ -42,6 +42,7 @@ variable "password" {
   description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
   default     = null
   type        = string
+  sensitive   = true
 }
 
 variable "storage_account_name" {

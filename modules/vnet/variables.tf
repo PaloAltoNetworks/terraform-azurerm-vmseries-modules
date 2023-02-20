@@ -9,6 +9,12 @@ variable "create_virtual_network" {
   type        = bool
 }
 
+variable "create_subnets" {
+  description = "If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets."
+  default     = true
+  type        = bool
+}
+
 variable "location" {
   description = "Location of the resources that will be deployed."
   type        = string
@@ -37,16 +43,21 @@ variable "network_security_groups" {
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
   - `rules`: (Optional) A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
       needs to be unique across all rules in the Network Security Group.
-      List of attributes available to define a Network Security Rule:
+      List of attributes available to define a Network Security Rule.
+      Notice, all port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value, example: `21-23`:
       - `priority` : Numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection.
       The lower the priority number, the higher the priority of the rule.
       - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
       - `access` : Specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-      - `protocol` : Network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all).
-      - `source_port_range` : List of source ports or port ranges.
-      - `destination_port_range` : Destination Port or Range. Integer or range between `0` and `65535` or `*` to match any.
-      - `source_address_prefix` : List of source address prefixes. Tags may not be used.
-      - `destination_address_prefix` : CIDR or destination IP range or `*` to match any IP.
+      - `protocol` : Network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule#protocol)
+      - `source_port_range` : A source port or a range of ports. This can also be an `*` to match all.
+      - `source_port_ranges` : A list of source ports or ranges of ports. This can be specified only if `source_port_range` was not used.
+      - `destination_port_range` : A destination port or a range of ports. This can also be an `*` to match all.
+      - `destination_port_range` : A list of destination ports or a ranges of ports. This can be specified only if `destination_port_range` was not used.
+      - `source_address_prefix` : Source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
+      - `source_address_prefixes` : A list of source address prefixes. Tags are not allowed. Can be specified only if `source_address_prefix` was not used.
+      - `destination_address_prefix` : Destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
+      - `destination_address_prefixes` : A list of destination address prefixes. Tags are not allowed. Can be specified only if `destination_address_prefix` was not used.
 
   Example:
   ```
@@ -73,6 +84,16 @@ variable "network_security_groups" {
           destination_port_range     = "22"
           source_address_prefix      = "*"
           destination_address_prefix = "*"
+        },
+        "AllowWebBrowsing" = {
+          priority                   = 300
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_port_range          = "*"
+          destination_port_ranges    = ["80","443"]
+          source_address_prefix      = "*"
+          destination_address_prefix = "VirtualNetwork"
         }
       }
     },
@@ -129,12 +150,14 @@ variable "route_tables" {
 
 variable "subnets" {
   description = <<-EOF
-  Map of subnet objects to create within a virtual network. The key of each entry acts as the subnet name.
+  Map of subnet objects to create within a virtual network. If `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
+  
+  The key of each entry acts as the subnet name.
   List of available attributes of each subnet entry:
-  - `address_prefixes` : The address prefix to use for the subnet.
+  - `address_prefixes` : The address prefix to use for the subnet. Only required when a subnet will be created.
   - `network_security_group_id` : The Network Security Group identifier to associate with the subnet.
   - `route_table_id` : The Route Table identifier to associate with the subnet.
-  - `tags` : (Optional) Map of tags to assign to the resource.
+  - `tags` : (Optional) Map of tags to assign to the resource. Only required when a subnet will be created.
   
   Example:
   ```
