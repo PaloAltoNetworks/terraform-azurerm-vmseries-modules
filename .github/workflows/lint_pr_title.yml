@@ -13,9 +13,9 @@ on:
     types:
       - opened
       - edited
-      - synchronize
+      - ready_for_review
 
 jobs:
   lint_pr_title:
     name: Lint PR
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/lint_pr_title.yml@v0.3.1
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/lint_pr_title.yml@v0.4.0

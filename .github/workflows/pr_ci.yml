@@ -8,12 +8,18 @@ permissions:
 
 on:
   pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+      - ready_for_review
     branches: ['main']
 
 jobs:
   pr_ci_wrkflw:
     name: Run CI
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v0.3.1
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v0.4.0
     secrets: inherit
     with:
       cloud: azure
