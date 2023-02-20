@@ -10,7 +10,7 @@ tags = {
 enable_zones = false
 
 
-# --- VNET PART --- #
+# --- VNET CONFIGURATION --- #
 vnets = {
   "transit-vnet" = {
     create_virtual_network = true
@@ -98,7 +98,7 @@ vnets = {
 
 
 
-# --- LOAD BALANCING PART --- #
+# --- LOAD BALANCING CONFIGURATION --- #
 load_balancers = {
   "lb-public" = {
     vnet_name                         = "transit-vnet"
@@ -140,7 +140,7 @@ load_balancers = {
 
 
 
-# --- VMSERIES PART --- #
+# --- VMSERIES CONFIGURATION --- #
 availability_set = {
   "vmseries" = {}
 }
