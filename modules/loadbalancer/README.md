@@ -4,6 +4,8 @@ A Terraform module for deploying a Load Balancer for VM-Series firewalls. Suppor
 
 The module creates a single load balancer and a single backend for it, but it allows multiple frontends.
 
+In case of a public load balancer, reusing the same frontend for inbound and outbound rules is possible - to achieve this, a key in `outbound_rules` has to match a corresponding key from `frontend_ips`.
+
 ## Usage
 
 For usage see any of the reference architecture examples.
