@@ -64,6 +64,16 @@ resource "azurerm_virtual_machine" "this" {
     version   = var.custom_image_id == null ? var.img_version : null
   }
 
+  dynamic "plan" {
+    for_each = var.enable_plan ? ["one"] : []
+
+    content {
+      name      = var.img_sku
+      publisher = var.img_publisher
+      product   = var.img_offer
+    }
+  }
+
   storage_os_disk {
     create_option     = "FromImage"
     name              = coalesce(var.os_disk_name, "${var.name}-vhd")
