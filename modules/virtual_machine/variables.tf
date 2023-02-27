@@ -101,12 +101,6 @@ variable "password" {
   sensitive   = true
 }
 
-variable "disable_password_authentication" {
-  description = "If true, disables password-based authentication on VM-Series instances."
-  default     = true
-  type        = bool
-}
-
 variable "ssh_keys" {
   description = <<-EOF
   A list of initial administrative SSH public keys that allow key-pair authentication. If not defined the `password` variable must be specified.

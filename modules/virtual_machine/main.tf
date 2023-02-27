@@ -1,7 +1,8 @@
 locals {
-  img_publisher = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 0)
-  img_offer     = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 1)
-  img_sku       = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 2)
+  img_publisher                   = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 0)
+  img_offer                       = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 1)
+  img_sku                         = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 2)
+  disable_password_authentication = var.password == null ? true : false
 }
 
 resource "azurerm_public_ip" "this" {
