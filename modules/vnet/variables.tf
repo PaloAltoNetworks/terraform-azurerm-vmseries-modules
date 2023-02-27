@@ -167,7 +167,7 @@ variable "subnets" {
   The key of each entry acts as the subnet name.
   List of available attributes of each subnet entry:
   - `address_prefixes` : The address prefix to use for the subnet. Only required when a subnet will be created.
-  - `network_security_group_id` : The Network Security Group identifier to associate with the subnet.
+  - `network_security_group` : The Network Security Group identifier to associate with the subnet.
   - `route_table_id` : The Route Table identifier to associate with the subnet.
   - `tags` : (Optional) Map of tags to assign to the resource. Only required when a subnet will be created.
   

@@ -82,7 +82,7 @@ resource "azurerm_virtual_machine" "this" {
   }
 
   os_profile_linux_config {
-    disable_password_authentication = var.disable_password_authentication
+    disable_password_authentication = var.password == null ? true : false
     dynamic "ssh_keys" {
       for_each = var.ssh_keys
       content {

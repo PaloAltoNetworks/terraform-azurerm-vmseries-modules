@@ -31,6 +31,12 @@ variable "name" {
   type        = string
 }
 
+variable "domain_name_label" {
+  description = "Label for the Domain Name. Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system."
+  default     = null
+  type        = string
+}
+
 variable "managed_identities" {
   description = <<-EOF
   A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
