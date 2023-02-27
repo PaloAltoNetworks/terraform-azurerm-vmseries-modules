@@ -60,6 +60,7 @@ locals {
       fipkey       = local.input_rules[k].fipkey
       rulekey      = local.input_rules[k].rulekey
       port         = local.input_rules[k].rule.port
+      backend_port = try(local.input_rules[k].rule.backend_port, null)
       nsg_priority = lookup(local.input_rules[k].rule, "nsg_priority", null)
       protocol     = lower(local.input_rules[k].rule.protocol)
       frontend_ip  = local.output_ips[local.input_rules[k].fipkey]
@@ -135,7 +136,7 @@ resource "azurerm_lb_rule" "lb_rules" {
   backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend.id]
 
   protocol                       = each.value.rule.protocol
-  backend_port                   = each.value.rule.port
+  backend_port                   = try(each.value.rule.backend_port, each.value.rule.port)
   frontend_ip_configuration_name = each.value.fip.name
   frontend_port                  = each.value.rule.port
   enable_floating_ip             = try(each.value.rule.floating_ip, true)
@@ -173,9 +174,9 @@ resource "azurerm_network_security_rule" "allow_inbound_ips" {
   direction                   = "Inbound"
   access                      = "Allow"
   protocol                    = title(replace(each.value.protocol, "all", "*"))
-  description                 = "Auto-generated for load balancer ${var.name} port ${each.value.protocol}/${each.value.port}: allowed inbound IP ranges"
+  description                 = "Auto-generated for load balancer ${var.name} port ${each.value.protocol}/${coalesce(each.value.backend_port, each.value.port)}: allowed inbound IP ranges"
   source_port_range           = "*"
-  destination_port_ranges     = [each.value.port == "0" ? "*" : each.value.port]
+  destination_port_ranges     = [each.value.port == "0" ? "*" : coalesce(each.value.backend_port, each.value.port)]
   source_address_prefixes     = var.network_security_allow_source_ips
   destination_address_prefix  = each.value.frontend_ip
   # For the priority, we add this %10 so that the numbering would be a bit more sparse instead of sequential.
