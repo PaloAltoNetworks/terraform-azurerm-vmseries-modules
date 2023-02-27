@@ -187,7 +187,7 @@ variable "vmseries" {
   - `interfaces`: configuration of all NICs assigned to a VM. A map - key is the type of the interface and will be used to form a name of a NIC resource in Azure. A value is an object with the following properties available:
     - `subnet_name`: (string) a name of a subnet as created in using `vnet_security` module
     - `create_pip`: (boolean) flag to create Public IP for an interface, defaults to `false`
-    - `backend_pool_lb_name`: (string) name of a Load Balancer created with the `loadbalancer` module to which a VM should be assigned, defaults to `null`
+    - `load_balancer_name`: (string) name of a Load Balancer created with the `loadbalancer` module to which a VM should be assigned, defaults to `null`
     - `private_ip_address`: (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
 
   Example:
@@ -205,7 +205,7 @@ variable "vmseries" {
         trust = {
           subnet_name          = "trust"
           private_ip_address   = "10.0.1.1"
-          backend_pool_lb_name = "private_lb"
+          load_balancer_name = "private_lb"
         }
       }
     }

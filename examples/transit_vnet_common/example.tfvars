@@ -1,5 +1,6 @@
 # --- GENERAL --- #
-location              = "North Europe" # TODO adjust deployment region to your needs
+# location              = "North Europe" # TODO adjust deployment region to your needs
+location              = "Australia East" # TODO adjust deployment region to your needs
 resource_group_name   = "common-refarch"
 name_prefix           = "example-"
 create_resource_group = true
@@ -23,7 +24,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["x.x.x.x"] # TODO adjust to allow public IPs to connect to the firewalls' management interfaces from the internet
+            source_address_prefixes    = ["1.1.1.1"] # TODO adjust to allow public IPs to connect to the firewalls' management interfaces from the internet
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/27"
             destination_port_ranges    = ["22", "443"]
@@ -103,7 +104,7 @@ load_balancers = {
   "lb-public" = {
     vnet_name                         = "transit-vnet"
     network_security_group_name       = "public"
-    network_security_allow_source_ips = ["y.y.y.y"] # TODO adjust to the public IPs that will connect to the public Load Balancer
+    network_security_allow_source_ips = ["1.1.1.1"] # TODO adjust to the public IPs that will connect to the public Load Balancer
 
     frontend_ips = {
       "palo-lb-app1-pip" = { # TODO this is just a basic load balancing rule that will balance HTTP(s) traffic, add more rules to balance different types of traffic
@@ -142,7 +143,9 @@ load_balancers = {
 
 # --- VMSERIES CONFIGURATION --- #
 availability_set = {
-  "vmseries" = {}
+  "vmseries" = {
+    fault_domain_count = 2
+  }
 }
 
 vmseries_version = "10.2.2"
@@ -163,17 +166,17 @@ vmseries = {
         create_pip         = true
       },
       {
-        name                 = "private"
-        subnet_name          = "private"
-        backend_pool_lb_name = "lb-private"
-        private_ip_address   = "10.0.0.40"
+        name               = "private"
+        subnet_name        = "private"
+        load_balancer_name = "lb-private"
+        private_ip_address = "10.0.0.40"
       },
       {
-        name                 = "public"
-        subnet_name          = "public"
-        backend_pool_lb_name = "lb-public"
-        private_ip_address   = "10.0.0.70"
-        create_pip           = true
+        name               = "public"
+        subnet_name        = "public"
+        load_balancer_name = "lb-public"
+        private_ip_address = "10.0.0.70"
+        create_pip         = true
       }
     ]
   }
@@ -190,17 +193,17 @@ vmseries = {
         create_pip         = true
       },
       {
-        name                 = "private"
-        subnet_name          = "private"
-        backend_pool_lb_name = "lb-private"
-        private_ip_address   = "10.0.0.41"
+        name               = "private"
+        subnet_name        = "private"
+        load_balancer_name = "lb-private"
+        private_ip_address = "10.0.0.41"
       },
       {
-        name                 = "public"
-        subnet_name          = "public"
-        backend_pool_lb_name = "lb-public"
-        private_ip_address   = "10.0.0.71"
-        create_pip           = true
+        name               = "public"
+        subnet_name        = "public"
+        load_balancer_name = "lb-public"
+        private_ip_address = "10.0.0.71"
+        create_pip         = true
       }
     ]
   }

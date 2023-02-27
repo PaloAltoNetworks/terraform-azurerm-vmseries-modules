@@ -129,8 +129,8 @@ module "vmseries" {
     name                = "${var.name_prefix}${each.key}-${v.name}"
     subnet_id           = lookup(module.vnet[each.value.vnet_name].subnet_ids, v.subnet_name, null)
     create_public_ip    = try(v.create_pip, false)
-    enable_backend_pool = can(v.backend_pool_lb_name) ? true : false
-    lb_backend_pool_id  = try(module.load_balancer[v.backend_pool_lb_name].backend_pool_id, null)
+    enable_backend_pool = can(v.load_balancer_name) ? true : false
+    lb_backend_pool_id  = try(module.load_balancer[v.load_balancer_name].backend_pool_id, null)
     private_ip_address  = try(v.private_ip_address, null)
   }]
 
