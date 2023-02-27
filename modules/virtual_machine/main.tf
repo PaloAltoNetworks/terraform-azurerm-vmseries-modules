@@ -78,7 +78,7 @@ resource "azurerm_virtual_machine" "this" {
   os_profile {
     computer_name  = var.name
     admin_username = var.username
-    admin_password = var.disable_password_authentication == true ? null : var.password
+    admin_password = local.disable_password_authentication == true ? null : var.password
     custom_data    = var.custom_data
   }
 
