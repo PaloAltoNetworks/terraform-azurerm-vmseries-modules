@@ -136,7 +136,7 @@ resource "azurerm_lb_rule" "lb_rules" {
   backend_address_pool_ids = [azurerm_lb_backend_address_pool.lb_backend.id]
 
   protocol                       = each.value.rule.protocol
-  backend_port                   = try(each.value.rule.backend_port, each.value.rule.port)
+  backend_port                   = coalesce(try(each.value.rule.backend_port, null), each.value.rule.port)
   frontend_ip_configuration_name = each.value.fip.name
   frontend_port                  = each.value.rule.port
   enable_floating_ip             = try(each.value.rule.floating_ip, true)
