@@ -12,6 +12,9 @@ terraform {
 
 provider "azurerm" {
   features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
     virtual_machine_scale_set {
       # Make upgrade_policy_mode = "Manual" actually work. On a default setting:
       # The image version or the user data cannot be modified on a scale set. Despite the Upgrade Mode being "Manual",
