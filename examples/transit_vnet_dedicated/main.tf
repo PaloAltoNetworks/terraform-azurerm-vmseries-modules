@@ -1,229 +1,165 @@
-# Create the Resource Group.
-resource "azurerm_resource_group" "this" {
-  name     = coalesce(var.resource_group_name, "${var.name_prefix}vmseries-transit-vnet-dedicated")
-  location = var.location
-}
-
 # Generate a random password.
 resource "random_password" "this" {
+  count = var.vmseries_password == null ? 1 : 0
+
   length           = 16
   min_lower        = 16 - 4
   min_numeric      = 1
   min_special      = 1
   min_upper        = 1
-  special          = true
   override_special = "_%@"
 }
 
-# Create the network required for the topology.
+locals {
+  vmseries_password = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
+}
+
+
+# Create or source the Resource Group.
+resource "azurerm_resource_group" "this" {
+  count    = var.create_resource_group ? 1 : 0
+  name     = "${var.name_prefix}${var.resource_group_name}"
+  location = var.location
+
+  tags = var.tags
+}
+
+data "azurerm_resource_group" "this" {
+  count = var.create_resource_group ? 0 : 1
+  name  = var.resource_group_name
+}
+
+locals {
+  resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
+}
+
+
+# Manage the network required for the topology.
 module "vnet" {
   source = "../../modules/vnet"
 
-  virtual_network_name    = var.virtual_network_name
-  location                = var.location
-  resource_group_name     = azurerm_resource_group.this.name
-  address_space           = var.address_space
-  network_security_groups = var.network_security_groups
-  route_tables            = var.route_tables
-  subnets                 = var.subnets
-  tags                    = var.vnet_tags
+  for_each = var.vnets
+
+  create_virtual_network = try(each.value.create_virtual_network, true)
+  virtual_network_name   = "${try(each.value.create_virtual_network, true) ? var.name_prefix : ""}${each.key}"
+  address_space          = each.value.address_space
+  resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
+  location               = var.location
+
+  create_subnets = try(each.value.create_subnets, true)
+  subnets        = each.value.subnets
+
+  network_security_groups = each.value.network_security_groups
+  route_tables            = each.value.route_tables
+
+  tags = var.tags
 }
 
-# Allow inbound access to Management subnet.
-resource "azurerm_network_security_rule" "mgmt" {
-  name                        = "vmseries-mgmt-allow-inbound"
-  resource_group_name         = azurerm_resource_group.this.name
-  network_security_group_name = "sg-mgmt"
-  access                      = "Allow"
-  direction                   = "Inbound"
-  priority                    = 1000
-  protocol                    = "*"
-  source_port_range           = "*"
-  source_address_prefixes     = var.allow_inbound_mgmt_ips
-  destination_address_prefix  = "*"
-  destination_port_range      = "*"
+module "natgw" {
+  source = "../../modules/natgw"
 
+  for_each = var.natgws
+
+  create_natgw        = try(each.value.create_natgw, true)
+  name                = "${try(each.value.create_virtual_network, true) ? var.name_prefix : ""}${each.key}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+  zone                = try(each.value.zone, null)
+  idle_timeout        = try(each.value.idle_timeout, null)
+  subnet_ids          = { for v in each.value.subnet_names : v => module.vnet[each.value.vnet_name].subnet_ids[v] }
+
+  create_pip                       = try(each.value.create_pip, true)
+  existing_pip_name                = try(each.value.existing_pip_name, null)
+  existing_pip_resource_group_name = try(each.value.existing_pip_resource_group_name, null)
+
+  create_pip_prefix                       = try(each.value.create_pip_prefix, false)
+  pip_prefix_length                       = try(each.value.create_pip_prefix, false) ? try(each.value.pip_prefix_length, null) : null
+  existing_pip_prefix_name                = try(each.value.existing_pip_prefix_name, null)
+  existing_pip_prefix_resource_group_name = try(each.value.existing_pip_prefix_resource_group_name, null)
+
+
+  tags       = var.tags
   depends_on = [module.vnet]
 }
 
-# Create public IPs for the Internet-facing data interfaces so they could talk outbound.
-resource "azurerm_public_ip" "public" {
-  for_each = var.outbound_vmseries
-
-  name                = "${var.name_prefix}${each.key}-public"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  zones               = var.enable_zones ? var.avzones : null
-}
-
-# The Inbound Load Balancer for handling the traffic from the Internet.
-module "inbound_lb" {
+# create load balancers, both internal and external
+module "load_balancer" {
   source = "../../modules/loadbalancer"
 
-  name                              = var.inbound_lb_name
-  location                          = var.location
-  resource_group_name               = azurerm_resource_group.this.name
-  frontend_ips                      = var.frontend_ips
-  enable_zones                      = var.enable_zones
-  avzones                           = var.enable_zones ? var.avzones : null # For the regions without AZ support.
-  network_security_group_name       = "sg-public"
-  network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
-}
+  for_each = var.load_balancers
 
-# The Outbound Load Balancer for handling the traffic from the private networks.
-module "outbound_lb" {
-  source = "../../modules/loadbalancer"
-
-  name                = var.outbound_lb_name
+  name                = "${var.name_prefix}${each.key}"
   location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
+  resource_group_name = local.resource_group.name
   enable_zones        = var.enable_zones
-  avzones             = var.enable_zones ? var.avzones : null # For the regions without AZ support.
+  avzones             = try(each.value.avzones, null)
+
+  network_security_resource_group_name = try(var.vnets[each.value.vnet_name].resource_group_name, local.resource_group.name)
+  network_security_group_name          = try(each.value.network_security_group_name, null)
+  network_security_allow_source_ips    = try(each.value.network_security_allow_source_ips, [])
+
   frontend_ips = {
-    outbound = {
-      subnet_id                     = lookup(module.vnet.subnet_ids, "subnet-private", null)
-      private_ip_address_allocation = "Static"
-      private_ip_address            = var.olb_private_ip
-      zones                         = var.enable_zones ? var.avzones : null # For the regions without AZ support.
-      rules = {
-        HA_PORTS = {
-          port     = 0
-          protocol = "All"
-        }
-      }
+    for k, v in each.value.frontend_ips : k => {
+      create_public_ip              = try(v.create_public_ip, false)
+      public_ip_name                = try(v.public_ip_name, null)
+      public_ip_resource_group      = try(v.public_ip_resource_group, null)
+      private_ip_address            = try(v.private_ip_address, null)
+      private_ip_address_allocation = can(v.private_ip_address) ? "Static" : null
+      subnet_id                     = try(module.vnet[v.vnet_name].subnet_ids[v.subnet_name], null)
+      rules                         = v.rules
+      zones                         = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
     }
   }
+
+  tags       = var.tags
+  depends_on = [module.vnet]
 }
 
-# The common storage account for VM-Series initialization and the file share for Inbound VM-Series.
-module "bootstrap" {
-  source = "../../modules/bootstrap"
 
-  location             = var.location
-  resource_group_name  = azurerm_resource_group.this.name
-  storage_account_name = var.storage_account_name
-  storage_share_name   = var.inbound_storage_share_name
-  files                = var.inbound_files
+# create the actual VMSeries VMs
+resource "azurerm_availability_set" "this" {
+  for_each = var.availability_set
+
+  name                         = "${var.name_prefix}${each.key}"
+  resource_group_name          = local.resource_group.name
+  location                     = var.location
+  platform_update_domain_count = try(each.value.update_domain_count, null)
+  platform_fault_domain_count  = try(each.value.fault_domain_count, null)
+
+  tags = var.tags
 }
 
-# The file share for Outbound VM-Series.
-module "outbound_bootstrap" {
-  source = "../../modules/bootstrap"
 
-  resource_group_name    = azurerm_resource_group.this.name
-  create_storage_account = false
-  storage_account_name   = module.bootstrap.storage_account.name
-  storage_share_name     = var.outbound_storage_share_name
-  files                  = var.outbound_files
-
-  depends_on = [module.bootstrap]
-}
-
-# Inbound VM-Series for handling inbound traffic from the Internet.
-module "inbound_vmseries" {
+module "vmseries" {
   source = "../../modules/vmseries"
 
-  for_each = var.inbound_vmseries
+  for_each = var.vmseries
 
   location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  name                = "${var.name_prefix}${each.key}"
-  avzone              = try(each.value.avzone, 1)
-  username            = var.username
-  password            = coalesce(var.password, random_password.this.result)
-  img_sku             = var.common_vmseries_sku
-  img_version         = var.inbound_vmseries_version
-  vm_size             = var.inbound_vmseries_vm_size
-  tags                = var.inbound_vmseries_tags
-  enable_zones        = var.enable_zones
-  bootstrap_options = join(",",
-    [
-      "storage-account=${module.bootstrap.storage_account.name}",
-      "access-key=${module.bootstrap.storage_account.primary_access_key}",
-      "file-share=${module.bootstrap.storage_share.name}",
-      "share-directory=None"
-  ])
-  interfaces = [
-    {
-      name                = "${each.key}-mgmt"
-      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
-      create_public_ip    = true
-      enable_backend_pool = false
-    },
-    {
-      name                = "${each.key}-public"
-      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-public", null)
-      lb_backend_pool_id  = module.inbound_lb.backend_pool_id
-      enable_backend_pool = true
-    },
-    {
-      name                = "${each.key}-private"
-      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
-      enable_backend_pool = false
+  resource_group_name = local.resource_group.name
 
-      # Optional static private IP
-      private_ip_address = try(each.value.trust_private_ip, null)
-    },
-  ]
+  name                  = "${var.name_prefix}${each.key}"
+  username              = var.vmseries_username
+  password              = local.vmseries_password
+  img_version           = var.vmseries_version
+  img_sku               = var.vmseries_sku
+  vm_size               = var.vmseries_vm_size
+  avset_id              = try(azurerm_availability_set.this[each.value.availability_set_name].id, null)
+  app_insights_settings = try(each.value.app_insights_settings, null)
 
-  diagnostics_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
+  enable_zones      = var.enable_zones
+  avzone            = try(each.value.avzone, 1)
+  bootstrap_options = try(each.value.bootstrap_options, "")
 
-  depends_on = [module.bootstrap]
-}
+  interfaces = [for v in each.value.interfaces : {
+    name                = "${var.name_prefix}${each.key}-${v.name}"
+    subnet_id           = lookup(module.vnet[each.value.vnet_name].subnet_ids, v.subnet_name, null)
+    create_public_ip    = try(v.create_pip, false)
+    enable_backend_pool = can(v.load_balancer_name) ? true : false
+    lb_backend_pool_id  = try(module.load_balancer[v.load_balancer_name].backend_pool_id, null)
+    private_ip_address  = try(v.private_ip_address, null)
+  }]
 
-# Outbound VM-Series for handling:
-#   - outbound traffic to the Internet
-#   - internal traffic (also known as "east-west" traffic)
-module "outbound_vmseries" {
-  source = "../../modules/vmseries"
-
-  for_each = var.outbound_vmseries
-
-  location            = var.location
-  resource_group_name = azurerm_resource_group.this.name
-  name                = "${var.name_prefix}${each.key}"
-  avzone              = try(each.value.avzone, 1)
-  username            = var.username
-  password            = coalesce(var.password, random_password.this.result)
-  img_sku             = var.common_vmseries_sku
-  img_version         = var.outbound_vmseries_version
-  vm_size             = var.outbound_vmseries_vm_size
-  tags                = var.outbound_vmseries_tags
-  enable_zones        = var.enable_zones
-  bootstrap_options = join(",",
-    [
-      "storage-account=${module.outbound_bootstrap.storage_account.name}",
-      "access-key=${module.outbound_bootstrap.storage_account.primary_access_key}",
-      "file-share=${module.outbound_bootstrap.storage_share.name}",
-      "share-directory=None"
-  ])
-  interfaces = [
-    {
-      name                = "${each.key}-mgmt"
-      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
-      create_public_ip    = true
-      enable_backend_pool = false
-    },
-    {
-      name                 = "${each.key}-public"
-      subnet_id            = lookup(module.vnet.subnet_ids, "subnet-public", null)
-      public_ip_address_id = azurerm_public_ip.public[each.key].id
-      enable_backend_pool  = false
-    },
-    {
-      name                = "${each.key}-private"
-      subnet_id           = lookup(module.vnet.subnet_ids, "subnet-private", null)
-      lb_backend_pool_id  = module.outbound_lb.backend_pool_id
-      enable_backend_pool = true
-
-      # Optional static private IP
-      private_ip_address = try(each.value.trust_private_ip, null)
-    },
-  ]
-
-  diagnostics_storage_uri = module.bootstrap.storage_account.primary_blob_endpoint
-
-  depends_on = [module.outbound_bootstrap]
+  tags       = var.tags
+  depends_on = [module.vnet, azurerm_availability_set.this, module.load_balancer]
 }

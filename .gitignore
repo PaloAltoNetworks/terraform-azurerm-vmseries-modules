@@ -47,3 +47,4 @@ terraform.tfvars.json
 *.auto.tfvars.json
 **/files
 
+gh_ci.tfplan
