@@ -41,7 +41,7 @@ module "vnet" {
   for_each = var.vnets
 
   create_virtual_network = try(each.value.create_virtual_network, true)
-  virtual_network_name   = "${var.name_prefix}${each.key}"
+  virtual_network_name   = "${try(each.value.create_virtual_network, true) ? var.name_prefix : ""}${each.key}"
   address_space          = each.value.address_space
   resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
@@ -55,6 +55,32 @@ module "vnet" {
   tags = var.tags
 }
 
+module "natgw" {
+  source = "../../modules/natgw"
+
+  for_each = var.natgws
+
+  create_natgw        = try(each.value.create_natgw, true)
+  name                = "${try(each.value.create_virtual_network, true) ? var.name_prefix : ""}${each.key}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+  zone                = try(each.value.zone, null)
+  idle_timeout        = try(each.value.idle_timeout, null)
+  subnet_ids          = { for v in each.value.subnet_names : v => module.vnet[each.value.vnet_name].subnet_ids[v] }
+
+  create_pip                       = try(each.value.create_pip, true)
+  existing_pip_name                = try(each.value.existing_pip_name, null)
+  existing_pip_resource_group_name = try(each.value.existing_pip_resource_group_name, null)
+
+  create_pip_prefix                       = try(each.value.create_pip_prefix, false)
+  pip_prefix_length                       = try(each.value.create_pip_prefix, false) ? try(each.value.pip_prefix_length, null) : null
+  existing_pip_prefix_name                = try(each.value.existing_pip_prefix_name, null)
+  existing_pip_prefix_resource_group_name = try(each.value.existing_pip_prefix_resource_group_name, null)
+
+
+  tags       = var.tags
+  depends_on = [module.vnet]
+}
 
 # create load balancers, both internal and external
 module "load_balancer" {
@@ -135,5 +161,5 @@ module "vmseries" {
   }]
 
   tags       = var.tags
-  depends_on = [module.vnet, azurerm_availability_set.this]
+  depends_on = [module.vnet, azurerm_availability_set.this, module.load_balancer]
 }

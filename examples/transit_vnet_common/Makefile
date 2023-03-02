@@ -1,9 +1,9 @@
 ifndef UUID
 UUID := $(shell uuidgen | tr '[:upper:]' '[:lower:]')
 endif
-RG := GHCI-$(shell echo ${UUID} | cut -d '-' -f 1,5)
-STORAGE := ghci$(shell echo ${UUID} | cut -d '-' -f 5)
-TF_PARAMS := -var-file=example.tfvars -var resource_group_name=${RG} -var name_prefix=""
+RG := $(shell echo ${UUID} | cut -d '-' -f 1,5)
+PREFIX := ghci$(shell echo ${UUID} | cut -d '-' -f 2)-
+TF_PARAMS := -var-file=example.tfvars -var resource_group_name=${RG} -var name_prefix=${PREFIX}
 
 init: 
 	@../../makefile.sh init
@@ -26,4 +26,4 @@ indepotency:
 	@../../makefile.sh indepotency '${TF_PARAMS}'
 
 destroy:
-	@../../makefile.sh destroy '${RG}'
+	@../../makefile.sh destroy '${PREFIX}${RG}'

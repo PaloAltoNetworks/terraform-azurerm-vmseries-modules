@@ -51,21 +51,45 @@ variable "enable_zones" {
 ### VNET
 variable "vnets" {
   description = <<-EOF
-  A map defining VNETs. A key is the VNET name, value is a set of properties like described below.
+  A map defining VNETs. A key is the VNET name, value is a set of properties describing a VNET.
   
-  For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.0/modules/vnet/README.md)
-
-  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `virtual_network_name`
-  - `address_space` : a list of CIDRs for VNET
-  - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
-
-  - `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets
-  - `subnets` : map of Subnets to create
-
+  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET (in this case the name should already contain a prefix).
+  - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside or will be sourced from.
+  - `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets. Subnet names are not pre-fixable.
+  - `address_space` : a list of CIDRs for VNET.
+  - `subnets` : map of Subnets to create or source subnets
   - `network_security_groups` : map of Network Security Groups to create
   - `route_tables` : map of Route Tables to create.
+
+  For details on configuring the last three properties refer to [VNET module documentation](../../modules/vnet/README.md).
   EOF
+  type        = any
 }
+
+variable "natgws" {
+  description = <<-EOF
+  A map defining NAT Gateways, where key is the NatGW name and value is a set of properties described below.
+
+  - `create_natgw` : (default: `true`) when set to `true` will create a NatGW, `false` will source an existing one (in this case the name should already contain a prefix).
+  - `vnet_name` : a name of a VNET that will host this resource, this a key from the `var.vnets` map.
+  - `subnet_name` : a name of a Subnet that NatGW will be assigned to, this is a key from the `subnets` property from a VNET definition described by the `vnet_name` property.
+  - `zone` : Availability Zone is a zonal resource, provide a zone in which this resource will be created, when omitted, zone is set by AzureRM.
+
+  Properties below are only briefly documented, for details, default values, limitation refer to [modules documentation](../../modules/natgw):
+
+  - `idle_timeout` : session timeout for idle connections.
+  - `create_pip` : (default: `true`) create a Public IP to be used by NatGW.
+  - `existing_pip_name` : for `create_pip` set to `false`, a name of an exiting Public IP resource.
+  - `existing_pip_resource_group_name` : for `create_pip` set to `false`, a name of a Resource Group hosting the existing Public IP.
+  - `create_pip_prefix` : (default: `true`) create a Public IP Prefix to be used by NatGW
+  - `pip_prefix_length` : when creating a prefix resource, this is a netmask (IPv4) setting the amount of IP addresses available in the prefix.
+  - `existing_pip_prefix_name` : for `create_pip_prefix` set to `false`, a name of an existing prefix resource
+  - `existing_pip_prefix_resource_group_name` : for `create_pip_prefix` set to `false`, a name of a Resource Group hosting the existing prefix.
+  EOF
+  default     = {}
+  type        = any
+}
+
 
 
 
@@ -77,8 +101,10 @@ variable "load_balancers" {
   Key is the name of the Load Balancer as it will be available in Azure. This name is also used to reference the Load Balancer further in the code.
   Value is an object containing following properties:
 
+  - `vnet_name` : (both) a name of a VNET that will host this resource, this a key from the `var.vnets` map
   - `network_security_group_name`: (public LB) a name of a security group created with the `vnet_security` module, an ingress rule will be created in that NSG for each listener. 
   - `network_security_allow_source_ips`: (public LB) a list of IP addresses that will used in the ingress rules.
+  - `avzones` : (public LB) a list of Availability Zones in which the Public IP will be available
   - `frontend_ips`: (both) a map configuring both a listener and a load balancing rule, key is the name that will be used as an application name inside LB config as well as to create a rule in NSG (for public LBs), value is an object with the following properties:
     - `create_public_ip`: (public LB) defaults to `false`, when set to `true` a Public IP will be created and associated with a listener
     - `public_ip_name`: (public LB) defaults to `null`, when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure
@@ -89,47 +115,9 @@ variable "load_balancers" {
     - `rules` - a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:
       - `protocol`: protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule
       - `port`: port used by the rule, for HA PORTS rule set this to `0`
-
-  Example of a public Load Balancer:
-
-  ```
-  "public_https_app" = {
-    network_security_group_name = "untrust_nsg"
-    network_security_allow_source_ips = [ "1.2.3.4" ]
-    frontend_ips = {
-      "https_app_1" = {
-        create_public_ip = true
-        rules = {
-          "balanceHttps" = {
-            protocol = "Tcp"
-            port     = 443
-          }
-        }
-      }
-    }
-  }
-  ```
-
-  Example of a private Load Balancer with HA PORTS rule:
-
-  ```
-  "ha_ports" = {
-    frontend_ips = {
-      "ha-ports" = {
-        subnet_name        = "trust_snet"
-        private_ip_address = "10.0.0.1"
-        rules = {
-          HA_PORTS = {
-            port     = 0
-            protocol = "All"
-          }
-        }
-      }
-    }
-  }
-  ```
-
   EOF
+  default     = {}
+  type        = any
 }
 
 
@@ -147,6 +135,7 @@ variable "vmseries_vm_size" {
 
 variable "vmseries_sku" {
   description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  default     = "byol"
   type        = string
 }
 
@@ -179,37 +168,20 @@ variable "vmseries" {
   Map of virtual machines to create to run VM-Series - inbound firewalls. Keys are the individual names, values
   are objects containing attributes unique to that individual virtual machine:
 
-  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1" in order to avoid non-HA deployments.
+  - `vnet_name` : a name of a VNET that will host this resource, this a key from the `var.vnets` map.
+  - `avzone` : the Azure Availability Zone identifier ("1", "2", "3"). Default is "1" in order to avoid non-HA deployments.
   - `availability_set_name` : a name of an Availability Set as declared in `availability_set` property. Specify when HA is required but cannot go for zonal deployment.
   - `bootstrap_options`: Bootstrap options to pass to VM-Series instances, semicolon separated values.
   - `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.
+  - `app_insights_settings` : a map defining Application Insights settings for this resource.
 
-  - `interfaces`: configuration of all NICs assigned to a VM. A map - key is the type of the interface and will be used to form a name of a NIC resource in Azure. A value is an object with the following properties available:
+  - `interfaces`: configuration of all NICs assigned to a VM. A list containing properties for each interface. Order is important, as Azure assigns NICs to a VM in the order you provide them here. Therefore the 1st NIC should be the Management one:
+    - `name` : a name of an interface
     - `subnet_name`: (string) a name of a subnet as created in using `vnet_security` module
     - `create_pip`: (boolean) flag to create Public IP for an interface, defaults to `false`
     - `load_balancer_name`: (string) name of a Load Balancer created with the `loadbalancer` module to which a VM should be assigned, defaults to `null`
     - `private_ip_address`: (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
-
-  Example:
-  ```
-  {
-    "fw00" = {
-      bootstrap_options = "type=dhcp-client"
-      avzone = 1
-      interfaces = {
-        mgmt = {
-          subnet_name        = "mgmt"
-          create_pip         = true
-          private_ip_address = "10.0.0.1"
-        }
-        trust = {
-          subnet_name          = "trust"
-          private_ip_address   = "10.0.1.1"
-          load_balancer_name = "private_lb"
-        }
-      }
-    }
-  }
-  ```
   EOF
+  default     = {}
+  type        = any
 }
