@@ -1,20 +1,26 @@
 output "username" {
   description = "Initial administrative username to use for VM-Series."
-  value       = var.username
+  value       = var.vmseries_username
 }
 
 output "password" {
   description = "Initial administrative password to use for VM-Series."
-  value       = coalesce(var.password, random_password.this.result)
+  value       = local.vmseries_password
   sensitive   = true
 }
 
-output "mgmt_ip_addresses" {
-  description = "IP Addresses for VM-Series management (https or ssh)."
-  value       = { for k, v in module.common_vmseries : k => v.mgmt_ip_address }
+output "metrics_instrumentation_keys" {
+  description = "The Instrumentation Key of the created instances of Azure Application Insights. An instance is unused by default, but is ready to receive custom PAN-OS metrics from the firewall. To use it, paste this Instrumentation Key into PAN-OS -> Device -> VM-Series -> Azure."
+  value       = { for k, v in module.vmseries : k => v.metrics_instrumentation_key if v.metrics_instrumentation_key != null }
+  sensitive   = true
 }
 
-output "frontend_ips" {
-  description = "IP Addresses of the inbound load balancer."
-  value       = module.inbound_lb.frontend_ip_configs
+output "lb_frontend_ips" {
+  description = "IP Addresses of the load balancers."
+  value       = { for k, v in module.load_balancer : k => v.frontend_ip_configs }
+}
+
+output "vmseries_mgmt_ip" {
+  description = "IP addresses for the VMSeries management interface."
+  value       = { for k, v in module.vmseries : k => v.mgmt_ip_address }
 }

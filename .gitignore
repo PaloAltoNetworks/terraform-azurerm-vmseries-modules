@@ -45,5 +45,6 @@ terraform.tfvars
 terraform.tfvars.json
 *.auto.tfvars
 *.auto.tfvars.json
+*.tfplan
 **/files
 

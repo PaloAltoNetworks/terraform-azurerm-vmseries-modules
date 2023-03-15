@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o pipefail
+set -e
+
 TFPLAN=gh_ci.tfplan
 
 case $1 in
