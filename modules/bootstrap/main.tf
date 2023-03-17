@@ -48,21 +48,8 @@ resource "azurerm_storage_share_file" "this" {
   name             = regex("[^/]*$", each.value)
   path             = replace(each.value, "/[/]*[^/]*$/", "")
   storage_share_id = azurerm_storage_share.this.id
-  source           = replace(each.key, "/CalculateMe[X]${random_id.this[each.key].id}/", "CalculateMeX${random_id.this[each.key].id}")
-  # Line above is equivalent to:   `source = each.key`  but it re-creates the file every time the content changes.
-  # The replace() is not actually doing anything, except tricking Terraform to destroy a resource.
-  # There is a field content_md5 designed specifically for that. But I see a bug in the provider (last seen in 2.76):
-  # When content_md5 changes the re-uploading seemingly succeeds, result being however a totally empty file (size zero).
-  # Workaround: use random_id above to cause the full destroy/create of a file.
+  source           = each.key
+  content_md5      = try(var.files_md5[each.key], filemd5(each.key))
+
   depends_on = [azurerm_storage_share_directory.this]
-}
-
-resource "random_id" "this" {
-  for_each = var.files
-
-  keepers = {
-    # Re-randomize on every content/md5 change. It forcibly recreates all users of this random_id.
-    md5 = try(var.files_md5[each.key], filemd5(each.key))
-  }
-  byte_length = 8
 }
