@@ -22,47 +22,46 @@ locals {
 }
 
 resource "azurerm_storage_share" "this" {
+  count = var.storage_share_name != null ? 1 : 0
+
   name                 = var.storage_share_name
   storage_account_name = local.storage_account.name
   quota                = var.storage_share_quota
   access_tier          = var.storage_share_access_tier
+
+  lifecycle {
+    precondition {
+      condition = var.storage_share_name != null ? alltrue([
+        can(regex("^[a-z0-9](-?[a-z0-9])+$", var.storage_share_name)),
+        can(regex("^([a-z0-9-]){3,63}$", var.storage_share_name))
+      ]) : true
+      error_message = "A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL schema."
+    }
+  }
 }
 
 resource "azurerm_storage_share_directory" "this" {
-  for_each = toset([
+  for_each = var.storage_share_name != null ? toset([
     "content",
     "config",
     "software",
     "plugins",
     "license"
-  ])
+  ]) : toset([])
 
   name                 = each.key
-  share_name           = azurerm_storage_share.this.name
+  share_name           = azurerm_storage_share.this[0].name
   storage_account_name = local.storage_account.name
 }
 
 resource "azurerm_storage_share_file" "this" {
-  for_each = var.files
+  for_each = var.storage_share_name != null ? var.files : {}
 
   name             = regex("[^/]*$", each.value)
   path             = replace(each.value, "/[/]*[^/]*$/", "")
-  storage_share_id = azurerm_storage_share.this.id
-  source           = replace(each.key, "/CalculateMe[X]${random_id.this[each.key].id}/", "CalculateMeX${random_id.this[each.key].id}")
-  # Line above is equivalent to:   `source = each.key`  but it re-creates the file every time the content changes.
-  # The replace() is not actually doing anything, except tricking Terraform to destroy a resource.
-  # There is a field content_md5 designed specifically for that. But I see a bug in the provider (last seen in 2.76):
-  # When content_md5 changes the re-uploading seemingly succeeds, result being however a totally empty file (size zero).
-  # Workaround: use random_id above to cause the full destroy/create of a file.
+  storage_share_id = azurerm_storage_share.this[0].id
+  source           = each.key
+  content_md5      = try(var.files_md5[each.key], filemd5(each.key))
+
   depends_on = [azurerm_storage_share_directory.this]
-}
-
-resource "random_id" "this" {
-  for_each = var.files
-
-  keepers = {
-    # Re-randomize on every content/md5 change. It forcibly recreates all users of this random_id.
-    md5 = try(var.files_md5[each.key], filemd5(each.key))
-  }
-  byte_length = 8
 }

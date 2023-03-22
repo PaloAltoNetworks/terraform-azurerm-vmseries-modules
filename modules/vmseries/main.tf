@@ -35,6 +35,11 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
   backend_address_pool_id = each.value.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.this[each.key].ip_configuration[0].name
   network_interface_id    = azurerm_network_interface.this[each.key].id
+
+  depends_on = [
+    azurerm_network_interface.this,
+    azurerm_virtual_machine.this
+  ]
 }
 
 resource "azurerm_virtual_machine" "this" {
@@ -112,27 +117,4 @@ resource "azurerm_virtual_machine" "this" {
     type         = var.identity_type
     identity_ids = var.identity_ids
   }
-}
-
-resource "azurerm_log_analytics_workspace" "this" {
-  count = var.app_insights_settings != null && try(var.app_insights_settings.workspace_mode, true) ? 1 : 0
-
-  name                = try(var.app_insights_settings.log_analytics_name, "${var.name}-Workspace")
-  location            = var.location
-  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
-  retention_in_days   = try(var.app_insights_settings.metrics_retention_in_days, null)
-  sku                 = try(var.app_insights_settings.log_analytics_sku, "PerGB2018")
-  tags                = var.tags
-}
-
-resource "azurerm_application_insights" "this" {
-  count = var.app_insights_settings != null ? 1 : 0
-
-  name                = try(var.app_insights_settings.name, "${var.name}-AppInsights")
-  location            = var.location
-  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
-  workspace_id        = try(var.app_insights_settings.workspace_mode, true) ? azurerm_log_analytics_workspace.this[0].id : null
-  application_type    = "other"
-  retention_in_days   = try(var.app_insights_settings.metrics_retention_in_days, null)
-  tags                = var.tags
 }

@@ -57,7 +57,7 @@ resource "local_file" "this" {
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0, < 2.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
 | <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.1 |
 
@@ -66,7 +66,6 @@ resource "local_file" "this" {
 | Name | Version |
 |------|---------|
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.7 |
-| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.1 |
 
 ## Modules
 
@@ -80,7 +79,6 @@ No modules.
 | [azurerm_storage_share.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share) | resource |
 | [azurerm_storage_share_directory.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory) | resource |
 | [azurerm_storage_share_file.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_file) | resource |
-| [random_id.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) | resource |
 | [azurerm_storage_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account) | data source |
 
 ## Inputs
@@ -95,7 +93,7 @@ No modules.
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
 | <a name="input_storage_account_name"></a> [storage\_account\_name](#input\_storage\_account\_name) | Name of the Storage Account, either a new or an existing one (depending on the value of `create_storage_account`).<br><br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | n/a | yes |
 | <a name="input_storage_share_access_tier"></a> [storage\_share\_access\_tier](#input\_storage\_share\_access\_tier) | Access tier for the File Share. | `string` | `"Cool"` | no |
-| <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of a storage File Share to be created that will hold `files` used for bootstrapping.<br>For rules defining a valid name see [Microsoft documentation](https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Shares--Directories--Files--and-Metadata#share-names). | `string` | n/a | yes |
+| <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of a storage File Share to be created that will hold `files` used for bootstrapping.<br>For rules defining a valid name see [Microsoft documentation](https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Shares--Directories--Files--and-Metadata#share-names). | `string` | `null` | no |
 | <a name="input_storage_share_quota"></a> [storage\_share\_quota](#input\_storage\_share\_quota) | Maximum size of a File Share. | `number` | `50` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to be associated with the resources created. | `map(string)` | `{}` | no |
 

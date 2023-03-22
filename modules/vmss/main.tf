@@ -162,29 +162,6 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   }
 }
 
-resource "azurerm_log_analytics_workspace" "this" {
-  count = (length(var.autoscale_metrics) != 0 || var.app_insights_settings != null) && try(var.app_insights_settings.workspace_mode, true) ? 1 : 0
-
-  name                = try(var.app_insights_settings.log_analytics_name, "${var.name_prefix}Workspace")
-  location            = var.location
-  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
-  retention_in_days   = try(var.app_insights_settings.metrics_retention_in_days, null)
-  sku                 = try(var.app_insights_settings.log_analytics_sku, "PerGB2018")
-  tags                = var.tags
-}
-
-resource "azurerm_application_insights" "this" {
-  count = length(var.autoscale_metrics) != 0 || var.app_insights_settings != null ? 1 : 0
-
-  name                = try(var.app_insights_settings.name, "${var.name_prefix}AppInsights")
-  location            = var.location
-  resource_group_name = var.resource_group_name # same RG, so no RBAC modification is needed
-  workspace_id        = try(var.app_insights_settings.workspace_mode, true) ? azurerm_log_analytics_workspace.this[0].id : null
-  application_type    = "other"
-  retention_in_days   = try(var.app_insights_settings.metrics_retention_in_days, null)
-  tags                = var.tags
-}
-
 resource "azurerm_monitor_autoscale_setting" "this" {
   count = length(var.autoscale_metrics) > 0 ? 1 : 0
 

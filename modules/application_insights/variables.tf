@@ -11,6 +11,7 @@ variable "workspace_mode" {
   EOF
   default     = true
   type        = bool
+  nullable    = false
 }
 
 variable "workspace_name" {
@@ -29,10 +30,6 @@ variable "metrics_retention_in_days" {
   description = "Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90."
   default     = null
   type        = number
-  validation {
-    condition     = contains([0, 30, 60, 90, 120, 180, 270, 365, 550, 730], var.metrics_retention_in_days)
-    error_message = "Value of variable has to be one of: 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730."
-  }
 }
 
 variable "location" {
