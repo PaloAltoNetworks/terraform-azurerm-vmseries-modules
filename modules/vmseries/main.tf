@@ -10,6 +10,15 @@ resource "azurerm_public_ip" "this" {
   tags                = try(each.value.tags, var.tags)
 }
 
+data "azurerm_public_ip" "this" {
+  for_each = { for v in var.interfaces : v.name => v
+    if(!try(v.create_public_ip, false) && try(v.public_ip_name, null) != null)
+  }
+
+  name                = each.value.public_ip_name
+  resource_group_name = try(each.value.public_ip_resource_group, null) != null ? each.value.public_ip_resource_group : var.resource_group_name
+}
+
 resource "azurerm_network_interface" "this" {
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
@@ -25,7 +34,7 @@ resource "azurerm_network_interface" "this" {
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = try(each.value.private_ip_address, null) != null ? "Static" : "Dynamic"
     private_ip_address            = try(each.value.private_ip_address, null)
-    public_ip_address_id          = try(azurerm_public_ip.this[each.value.name].id, each.value.public_ip_address_id, null)
+    public_ip_address_id          = try(azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null)
   }
 }
 
@@ -52,7 +61,6 @@ resource "azurerm_virtual_machine" "this" {
   availability_set_id          = var.avset_id
   primary_network_interface_id = azurerm_network_interface.this[var.interfaces[0].name].id
 
-  # network_interface_ids = [for k, v in azurerm_network_interface.this : v.id]
   network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
 
   storage_image_reference {

@@ -51,16 +51,17 @@ variable "interfaces" {
   * The remaining ones are the dataplane interfaces.
   
   Options for an interface object:
-  - `name`                 - (required|string) Interface name.
-  - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
-  - `private_ip_address`   - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
-  - `public_ip_address_id` - (optional|string) Identifier of an existing public IP to associate.
-  - `create_public_ip`     - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `availability_zone`    - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
-  - `enable_ip_forwarding` - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
-  - `enable_backend_pool`  - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
-  - `lb_backend_pool_id`   - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
-  - `tags`                 - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
+  - `name`                     - (required|string) Interface name.
+  - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
+  - `create_public_ip`         - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
+  - `private_ip_address`       - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
+  - `public_ip_name`           - (optional|string) Name of an existing public IP to associate to the interface, used only when `create_public_ip` is `false`.
+  - `public_ip_resource_group` - (optional|string) Name of a Resource Group that contains public IP resource to associate to the interface. When not specified defaults to `var.resource_group_name`. Used only when `create_public_ip` is `false`.
+  - `availability_zone`        - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
+  - `enable_ip_forwarding`     - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
+  - `enable_backend_pool`      - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
+  - `lb_backend_pool_id`       - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
+  - `tags`                     - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
 
   Example:
 
@@ -70,12 +71,15 @@ variable "interfaces" {
       name                 = "fw-mgmt"
       subnet_id            = azurerm_subnet.my_mgmt_subnet.id
       public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
+      create_public_ip     = true
     },
     {
       name                = "fw-public"
       subnet_id           = azurerm_subnet.my_pub_subnet.id
       lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
+      create_public_ip    = false
+      public_ip_name      = "fw-public-ip"
     },
   ]
   ```
