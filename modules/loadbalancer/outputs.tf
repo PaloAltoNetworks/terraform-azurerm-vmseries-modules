@@ -20,6 +20,7 @@ output "frontend_combined_rules" {
   ```
   {
     "frontend01-balancessh" = {
+      backend_port = null
       fipkey       = "frontend01"
       frontend_ip  = "34.34.34.34"
       hash16       = 45991
