@@ -7,7 +7,8 @@ variable "frontend_ips" {
   Here is a list of properties supported for each rule:
 
   - `protocol` : required, communication protocol, either 'Tcp', 'Udp' or 'All'.
-  - `port` : required, communication port, this is both the front- and the backend port.
+  - `port` : required, communication port, this is both the front- and the backend port if `backend_port` is not given.
+  - `backend_port` : optional, this is the backend port to forward traffic to in the backend pool.
   - `floating_ip` : optional, defaults to `true`, enables floating IP for this rule.
   - `session_persistence` : optional, defaults to 5 tuple (Azure default), see `Session persistence/Load distribution` below for details.
 
@@ -28,6 +29,25 @@ variable "frontend_ips" {
       rules = {
         HTTP = {
           port         = 80
+          protocol     = "Tcp"
+        }
+      }
+    }
+  }
+  ```
+
+  Forward to a different port on backend pool
+
+  ```
+  frontend_ips = {
+    pip_existing = {
+      create_public_ip         = false
+      public_ip_name           = "my_ip"
+      public_ip_resource_group = "my_rg_name"
+      rules = {
+        HTTP = {
+          port         = 80
+          backend_port = 8080
           protocol     = "Tcp"
         }
       }
