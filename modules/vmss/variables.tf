@@ -202,7 +202,7 @@ variable "public_backend_pool_id" {
 }
 
 variable "appgw_backend_pool_id" {
-  description = "Identifier of the application gateway backend pool to associate with the public interface of each VM-Series firewall."
+  description = "Identifier of the Application Gateway's backend pool to associate with the public interface of each VM-Series firewall."
   type        = string
   default     = null
 }
