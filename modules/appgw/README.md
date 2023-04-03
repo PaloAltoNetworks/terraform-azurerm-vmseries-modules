@@ -507,6 +507,7 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_application_gateway_backend_address_pool_id"></a> [application\_gateway\_backend\_address\_pool\_id](#output\_application\_gateway\_backend\_address\_pool\_id) | The identifier of the Application Gateway backend address pool. |
 | <a name="output_public_domain_name"></a> [public\_domain\_name](#output\_public\_domain\_name) | Public domain name assigned to the Application Gateway. |
 | <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | A public IP assigned to the Application Gateway. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
