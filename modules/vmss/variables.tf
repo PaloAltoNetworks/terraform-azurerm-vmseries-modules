@@ -201,6 +201,12 @@ variable "public_backend_pool_id" {
   default     = null
 }
 
+variable "appgw_backend_pool_id" {
+  description = "Identifier of the application gateway backend pool to associate with the public interface of each VM-Series firewall."
+  type        = string
+  default     = null
+}
+
 variable "create_public_interface" {
   description = "If true, create the third network interface for virtual machines."
   default     = true
