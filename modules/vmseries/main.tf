@@ -3,7 +3,7 @@ resource "azurerm_public_ip" "this" {
 
   location            = var.location
   resource_group_name = var.resource_group_name
-  name                = each.value.name
+  name                = "${each.value.name}-pip"
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = var.enable_zones ? var.avzones : null
@@ -61,6 +61,7 @@ resource "azurerm_virtual_machine" "this" {
   availability_set_id          = var.avset_id
   primary_network_interface_id = azurerm_network_interface.this[var.interfaces[0].name].id
 
+  # network_interface_ids = [for k, v in azurerm_network_interface.this : v.id]
   network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
 
   storage_image_reference {

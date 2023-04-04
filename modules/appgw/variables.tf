@@ -93,34 +93,12 @@ variable "vmseries_ips" {
 
 variable "rules" {
   description = <<-EOF
-    A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. 
-    A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. 
+  A map of rules for the Application Gateway. A rule combines listener, http settings and health check configuration. 
+  A key is an application name that is used to prefix all components inside Application Gateway that are created for this application. 
 
-    Details on configuration can be found [here](#rules-property-explained).
+  Details on configuration can be found [here](#rules-property-explained).
   EOF
-
-  # validation {
-  #   # The following conditions are checked:
-  #   # - at least one of `backend_hostname` or `backend_hostname_from_backend` is set when we define a probe w/o setting `probe_host`
-  #   # - and
-  #   # - we do not set `backend_hostname` and `backend_hostname_from_backend` at the same time
-  #   # - and
-  #   # - for v2 all rules have or do not have `priority` set. We cannot have a mix of rules with priority set or not.
-  #   condition = (alltrue([
-  #     for k, v in var.rules : (
-  #       (can(v.probe_path) ? can(v.probe_host) : true)
-  #       || can(v.backend_hostname)
-  #       || try(v.backend_hostname_from_backend, false)
-  #       ) && !(
-  #       can(v.backend_hostname)
-  #       && try(v.backend_hostname_from_backend, false)
-  #     )
-  #     ])) && (alltrue([
-  #     for k, v in var.rules : can(v.priority)
-  #   ]))
-  #   error_message = "Please check one of the rules for following configuration issues: \n - one cannot have a probe w/o a host name specified having at the same time http settings that do not override a host header \n - one cannot set a backend host name and force the http settings to set the host header to a backend's hostname at the same time \n - for v2 tiers one cannot use `priority` in a subset of rules; you have to specify it in either all or none."
-  # }
-  type = any
+  type        = any
 }
 
 variable "ssl_policy_type" {
@@ -134,7 +112,7 @@ variable "ssl_policy_type" {
 
 variable "ssl_policy_name" {
   description = <<-EOF
-  Name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application Gateway each time terraform code is run. Therefore this property is omited in the code for `Custom` policies. 
+  Name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application Gateway each time terraform code is run. Therefore this property is omitted in the code for `Custom` policies. 
   
   For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default.
   EOF
@@ -154,7 +132,7 @@ variable "ssl_policy_min_protocol_version" {
 
 variable "ssl_policy_cipher_suites" {
   description = <<-EOF
-  A List of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. 
+  A list of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. 
   For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
   EOF
   default     = null

@@ -29,7 +29,7 @@ variable "frontend_ips" {
       create_public_ip         = false
       public_ip_name           = "my_ip"
       public_ip_resource_group = "my_rg_name"
-      rules = {
+      in_rules = {
         HTTP = {
           port         = 80
           protocol     = "Tcp"
@@ -47,7 +47,7 @@ variable "frontend_ips" {
       create_public_ip         = false
       public_ip_name           = "my_ip"
       public_ip_resource_group = "my_rg_name"
-      rules = {
+      in_rules = {
         HTTP = {
           port         = 80
           backend_port = 8080
@@ -70,7 +70,7 @@ variable "frontend_ips" {
     internal_fe = {
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address            = "192.168.0.10"
-      rules = {
+      in_rules = {
         HA_PORTS = {
           port         = 0
           protocol     = "All"
@@ -94,7 +94,7 @@ variable "frontend_ips" {
     frontend_ips = {
       rule_1 = {
         create_public_ip = true
-        rules = {
+        in_rules = {
           HTTP = {
             port     = 80
             protocol = "Tcp"
@@ -119,12 +119,24 @@ variable "frontend_ips" {
   Example:
 
   ```
-  outbound_rules = {
-    "outbound_tcp" = {
-      protocol                 = "Tcp"
-      allocated_outbound_ports = 2048
-      enable_tcp_reset         = true
-      idle_timeout_in_minutes  = 10
+  frontend_ips = {
+    rule_1 = {
+      create_public_ip = true
+      in_rules = {
+        HTTP = {
+          port     = 80
+          protocol = "Tcp"
+          session_persistence = "SourceIP"
+        }
+      }
+      out_rules = {
+        "outbound_tcp" = {
+          protocol                 = "Tcp"
+          allocated_outbound_ports = 2048
+          enable_tcp_reset         = true
+          idle_timeout_in_minutes  = 10
+        }
+      }
     }
   }
 

@@ -5,23 +5,7 @@ The module is not intended for use with Scale Sets.
 
 ## Usage
 
-```hcl
-module "vmseries" {
-  source  = "../../modules/vmseries"
-
-  location            = "Australia East"
-  resource_group_name = azurerm_resource_group.this.name
-  name                = "myfw"
-  username            = "panadmin"
-  password            = "Change-Me-007"
-  interfaces = [
-    {
-      name      = "myfw-mgmt-interface"
-      subnet_id = lookup(module.vnet.subnet_ids, "subnet-mgmt", null)
-    },
-  ]
-}
-```
+For usage please refer to any reference architecture example.
 
 ## Accept Azure Marketplace Terms
 

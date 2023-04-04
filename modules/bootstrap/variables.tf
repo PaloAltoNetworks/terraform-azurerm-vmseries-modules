@@ -52,7 +52,7 @@ variable "files" {
 variable "files_md5" {
   description = <<-EOF
   Optional map of MD5 hashes of file contents.
-  Normally the map could be all empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.
+  Normally the map could be empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.
   This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.
   The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.
 

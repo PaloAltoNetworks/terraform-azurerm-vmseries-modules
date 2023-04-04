@@ -6,16 +6,13 @@ Azure AI can be used to gather metric from Palo Alto's VMSeries firewall. This c
 
 In both situations the instrumentation key for the Application Insights has to be provided in the firewall's configuration. For more information please refer to [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall).
 
-
 **NOTICE**
 
- * Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions. This module by default deploys Application Insights in Workspace mode.
+* Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions. This module by default deploys Application Insights in Workspace mode.
 
-* The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split to obtain
-back a result for solely a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report
-their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
+* The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split back to obtain a result for a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
 
-* Since upgrade to provider 3.x, when destroying infrastructure with a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state nor code, it's being created by Azure automatically and therefore it prevents resource group deletion. A workaround is to set the following provider configuration:
+* Since upgrade to provider 3.x, when destroying infrastructure a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state nor code, it's being created by Azure automatically and therefore it prevents resource group deletion. A workaround is to set the following provider configuration:
 
       provider "azurerm" {
         features {
@@ -82,5 +79,6 @@ No modules.
 
 | Name | Description |
 |------|-------------|
+| <a name="output_application_insights_id"></a> [application\_insights\_id](#output\_application\_insights\_id) | An Azure ID of the Application Insights resource created by this module. |
 | <a name="output_metrics_instrumentation_key"></a> [metrics\_instrumentation\_key](#output\_metrics\_instrumentation\_key) | The Instrumentation Key of the created instance of Azure Application Insights. <br><br>The instance is unused by default, but is ready to receive custom PAN-OS metrics from the firewalls. To use it, paste this Instrumentation Key into PAN-OS -> Device -> VM-Series -> Azure. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

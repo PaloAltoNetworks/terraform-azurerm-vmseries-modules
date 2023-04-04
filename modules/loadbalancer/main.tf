@@ -31,11 +31,10 @@ locals {
 }
 
 
-
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
-  name                = each.key
+  name                = "${var.name}-${each.key}"
   resource_group_name = var.resource_group_name
   location            = var.location
   allocation_method   = "Static"
@@ -44,14 +43,14 @@ resource "azurerm_public_ip" "this" {
   tags                = var.tags
 }
 
-data "azurerm_public_ip" "exists" {
+data "azurerm_public_ip" "this" {
   for_each = {
     for k, v in var.frontend_ips : k => v
-    if can(v.public_ip_name) && !try(v.create_public_ip, false)
+    if try(v.public_ip_name, null) != null && !try(v.create_public_ip, false)
   }
 
-  name                = each.value.public_ip_name
-  resource_group_name = try(each.value.public_ip_resource_group, var.resource_group_name)
+  name                = try(each.value.public_ip_name, "")
+  resource_group_name = try(each.value.public_ip_resource_group, var.resource_group_name, "")
 }
 
 resource "azurerm_lb" "lb" {
@@ -66,11 +65,11 @@ resource "azurerm_lb" "lb" {
     iterator = each
     content {
       name                          = each.key
-      public_ip_address_id          = try(each.value.create_public_ip, false) ? azurerm_public_ip.this[each.key].id : try(data.azurerm_public_ip.exists[each.key].id, null)
+      public_ip_address_id          = try(each.value.create_public_ip, false) ? azurerm_public_ip.this[each.key].id : try(data.azurerm_public_ip.this[each.key].id, null)
       subnet_id                     = try(each.value.subnet_id, null)
-      private_ip_address_allocation = can(each.value.private_ip_address) ? "Static" : null
+      private_ip_address_allocation = try(each.value.private_ip_address, null) != null ? "Static" : null
       private_ip_address            = try(each.value.private_ip_address, null)
-      zones                         = can(each.value.subnet_id) ? var.avzones : []
+      zones                         = try(each.value.subnet_id, null) != null ? var.avzones : []
     }
   }
 }
@@ -123,7 +122,7 @@ resource "azurerm_lb_outbound_rule" "out_rules" {
 locals {
   # Map of all frontend IP addresses, public or private.
   frontend_addresses = {
-    for v in azurerm_lb.lb.frontend_ip_configuration : v.name => try(data.azurerm_public_ip.exists[v.name].ip_address, azurerm_public_ip.this[v.name].ip_address, v.private_ip_address)
+    for v in azurerm_lb.lb.frontend_ip_configuration : v.name => try(data.azurerm_public_ip.this[v.name].ip_address, azurerm_public_ip.this[v.name].ip_address, v.private_ip_address)
   }
 
   # A map of hashes calculated for each inbound rule. Used to calculate NSG inbound rules priority index if modules is also used to automatically manage NSG rules. 
