@@ -1,15 +1,14 @@
-output "panorama_url" {
-  description = "Panorama instance URL."
-  value       = "https://${module.panorama.mgmt_ip_address}"
+output "username" {
+  description = "Initial administrative username to use for VM-Series."
+  value       = var.vmseries_username
 }
 
 output "password" {
-  description = "Panorama administrator's initial password."
-  value       = random_password.this.result
+  description = "Initial administrative password to use for VM-Series."
+  value       = local.vmseries_password
   sensitive   = true
 }
 
-output "username" {
-  description = "Panorama administrator's initial username."
-  value       = var.username
+output "mgmt_ip" {
+  value = { for k, v in module.panorama : k => v.mgmt_ip_address }
 }

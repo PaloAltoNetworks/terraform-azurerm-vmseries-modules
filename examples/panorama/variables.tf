@@ -1,210 +1,118 @@
+### GENERAL
+variable "tags" {
+  description = "Map of tags to assign to the created resources."
+  default     = {}
+  type        = map(string)
+}
+
 variable "location" {
-  description = "Region to deploy Panorama into."
+  description = "The Azure region to use."
+  type        = string
+}
+
+variable "name_prefix" {
+  description = <<-EOF
+  A prefix that will be added to all created resources.
+  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+
+  Example:
+  ```
+  name_prefix = "test-"
+  ```
+  
+  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+  EOF
   default     = ""
   type        = string
 }
 
-variable "resource_group_name" {
-  description = "Name of the Resource Group to create."
-  type        = string
-}
-
-variable "storage_account_name" {
+variable "create_resource_group" {
   description = <<-EOF
-  Default name of the storage account to create.
-  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+  When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
   EOF
-  type        = string
-}
-
-variable "storage_share_name" {
-  description = "Name of storage File Share to be created that will hold Panorama's boot diagnostics."
-  type        = string
-}
-
-variable "panorama_name" {}
-
-variable "panorama_size" {
-  type    = string
-  default = "Standard_D5_v2"
-}
-
-variable "custom_image_id" {
-  type    = string
-  default = null
-}
-
-variable "username" {
-  description = "Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
-  type        = string
-  default     = "panadmin"
-}
-
-variable "panorama_disk_type" {
-  type    = string
-  default = "Standard_LRS"
-}
-
-variable "panorama_sku" {
-  type    = string
-  default = "byol"
-}
-
-variable "panorama_version" {
-  type    = string
-  default = "10.0.3"
-}
-
-variable "subnet_names" {
-  type    = list(string)
-  default = ["subnet1"]
-}
-
-variable "subnet_prefixes" {
-  type    = list(string)
-  default = ["10.0.0.0/24"]
-}
-
-variable "panorama_private_ip_address" {
-  description = "Optional static private IP address of Panorama, for example 192.168.11.22. If empty, Panorama uses dynamic assignment."
-  type        = string
-  default     = null
-}
-
-variable "vnet_name" {
-  type = string
-}
-
-variable "address_space" {
-  type    = list(string)
-  default = ["10.0.0.0/16"]
-}
-
-variable "tags" {
-  type = map(string)
-}
-
-variable "firewall_mgmt_prefixes" {
-  type    = list(string)
-  default = ["10.0.0.0/24"]
-}
-
-variable "security_group_name" {
-  type    = string
-  default = "nsg-panorama"
-}
-
-variable "avzone" {
-  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones."
-  type        = string
-  default     = null
-}
-
-variable "enable_zones" {
-  description = "If false, the input `avzone` is ignored and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
   default     = true
   type        = bool
 }
 
-variable "network_security_groups" {
-  description = <<-EOF
-  Map of Network Security Groups to create. The key of each entry acts as the Network Security Group name.
-  List of available attributes of each Network Security Group entry:
-  - `location` : (Optional) Specifies the Azure location where to deploy the resource.
-  - `rules`: A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
-      needs to be unique across all rules in the Network Security Group.
-      List of attributes available to define a Network Security Rule:
-      - `priority` : Numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection.
-      The lower the priority number, the higher the priority of the rule.
-      - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
-      - `access` : Specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-      - `protocol` : Network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all).
-      - `source_port_range` : List of source ports or port ranges.
-      - `destination_port_range` : Destination Port or Range. Integer or range between `0` and `65535` or `*` to match any.
-      - `source_address_prefix` : List of source address prefixes. Tags may not be used.
-      - `destination_address_prefix` : CIDR or destination IP range or `*` to match any IP.
+variable "resource_group_name" {
+  description = "Name of the Resource Group to ."
+  type        = string
+}
 
-  Example:
-  ```
-  {
-    "network_security_group_1" = {
-      location = "Australia Central"
-      rules = {
-        "AllOutbound" = {
-          priority                   = 100
-          direction                  = "Outbound"
-          access                     = "Allow"
-          protocol                   = "Tcp"
-          source_port_range          = "*"
-          destination_port_range     = "*"
-          source_address_prefix      = "*"
-          destination_address_prefix = "*"
-        },
-        "AllowSSH" = {
-          priority                   = 200
-          direction                  = "Inbound"
-          access                     = "Allow"
-          protocol                   = "Tcp"
-          source_port_range          = "*"
-          destination_port_range     = "22"
-          source_address_prefix      = "*"
-          destination_address_prefix = "*"
-        }
-      }
-    },
-    "network_security_group_2" = {
-      rules = {}
-    }
-  }
-  ```
+variable "enable_zones" {
+  description = "If `true`, enable zone support for resources."
+  default     = true
+  type        = bool
+}
+
+
+
+### VNET
+variable "vnets" {
+  description = <<-EOF
+  A map defining VNETs. A key is the VNET name, value is a set of properties like described below.
+  
+  For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.0/modules/vnet/README.md)
+
+  - `name` : a name of a Virtual Network
+  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `virtual_network_name`
+  - `address_space` : a list of CIDRs for VNET
+  - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
+
+  - `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets
+  - `subnets` : map of Subnets to create
+
+  - `network_security_groups` : map of Network Security Groups to create
+  - `route_tables` : map of Route Tables to create.
   EOF
 }
 
-variable "allow_inbound_mgmt_ips" {
-  description = <<-EOF
-    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access management interface of Panorama.
-  EOF
-  type        = list(string)
+
+
+### PANORAMA
+variable "vmseries_username" {
+  description = "Initial administrative username to use for all systems."
+  default     = "panadmin"
+  type        = string
 }
 
-variable "subnets" {
-  description = <<-EOF
-  Map of subnet objects to create within a virtual network. The key of each entry acts as the subnet name.
-  List of available attributes of each subnet entry:
-  - `address_prefixes` : The address prefix to use for the subnet.
-  - `network_security_group_id` : The Network Security Group identifier to associate with the subnet.
-  - `route_table_id` : The Route Table identifier to associate with the subnet.
-  - `tags` : (Optional) Map of tags to assign to the resource.
-
-  Example:
-  ```
-  {
-    "management" = {
-      address_prefixes       = ["10.100.0.0/24"]
-      network_security_group = "network_security_group_1"
-      route_table            = "route_table_1"
-    },
-    "private" = {
-      address_prefixes       = ["10.100.1.0/24"]
-      network_security_group = "network_security_group_2"
-      route_table            = "route_table_2"
-    },
-    "public" = {
-      address_prefixes       = ["10.100.2.0/24"]
-      network_security_group = "network_security_group_3"
-      route_table            = "route_table_3"
-    },
-  }
-  ```
-  EOF
+variable "vmseries_password" {
+  description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
+  default     = null
+  type        = string
 }
 
-variable "avzones" {
+variable "panorama_version" {
+  description = "Panorama PanOS versions"
+  type        = string
+}
+variable "panorama_sku" {
+  description = "Panorama SKU, basically a type of licensing used in Azure."
+  default     = "byol"
+  type        = string
+}
+variable "panorama_size" {
+  description = "A size of a VM that will run Panorama."
+  default     = "Standard_D5_v2"
+  type        = string
+}
+variable "panoramas" {
   description = <<-EOF
-  For better understanding this variable check description in module: ../modules/panorama/variables.tf
-  You can use command in terminal ```az vm list-skus --location REGION_NAME --zone --query '[0].locationInfo[0].zones'```
-  to check how many zones are available in your region.
+  A map containing Panorama definitions.
+  
+  All definitions share a VM size, SKU and PanOS version (`panorama_size`, `panorama_sku`, `panorama_version` respectively). Defining more than one Panorama makes sense when creating for example HA pairs. 
+
+  Following properties are available:
+
+  - `name` : a name of a Panorama VM
+  - `vnet_name`: a name of a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable
+  - `subnet_name`: a name of a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_name` property
+  - `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed
+  - `avzones`: when `enable_zones` is `true` these are availability zones used by Panorama's public IPs
+  - `custom_image_id`: a custom build of Panorama to use, overrides the stock image version.
+  
   EOF
-  default     = []
-  type        = list(string)
+  default     = {}
+  type        = any
 }

@@ -1,156 +1,146 @@
+# An example showing how to fill out TFVARS to deploy:
+# - a dedicated reference architecture
+# - using Availbility Zones for infrastructure redundancy
+# - deploying a spoke VNET peered with the transit one
+# - using both a public Load Balancer and an Application Gateway for balancing inbound traffic.
+
 # --- GENERAL --- #
-location              = "North Europe" # TODO adjust deployment region to your needs
-resource_group_name   = "dedicated-refarch"
-name_prefix           = "example-"
-create_resource_group = true
+location            = "North Europe"
+resource_group_name = "transit-vnet-dedicated"
+name_prefix         = "example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = true
+
 
 
 # --- VNET PART --- #
 vnets = {
-  "transit-vnet" = {
-    create_virtual_network = true
-    address_space          = ["10.0.0.0/25"] # TODO adjust the VNET and subnet address spaces if you plan to peer this vnet
+  "transit" = {
+    name          = "transit"
+    address_space = ["10.0.0.0/25"]
     network_security_groups = {
       "management" = {
+        name = "mgmt-nsg"
         rules = {
           vmseries_mgmt_allow_inbound = {
-            priority                = 100
-            direction               = "Inbound"
-            access                  = "Allow"
-            protocol                = "Tcp"
-            source_address_prefixes = ["0.0.0.0/0"] # TODO adjust to allow public IPs to connect to the firewalls' management interfaces from the internet
-            # source_address_prefixes    = ["34.99.247.241"] # TODO adjust to allow public IPs to connect to the firewalls' management interfaces from the internet
+            priority                   = 100
+            direction                  = "Inbound"
+            access                     = "Allow"
+            protocol                   = "Tcp"
+            source_address_prefixes    = ["134.238.135.137", "130.41.247.15"]
             source_port_range          = "*"
-            destination_address_prefix = "10.0.0.0/27"
+            destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
           }
         }
       }
-      "private" = {}
-      "public"  = {}
+      "public" = {
+        name = "public-nsg"
+      }
     }
-    route_tables = { # TODO these route tables provide basic black-holing, adjust for further security
+    route_tables = {
       "management" = {
+        name = "mgmt-rt"
         routes = {
           "private_blackhole" = {
-            address_prefix = "10.0.0.32/27"
+            address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
           "public_blackhole" = {
-            address_prefix = "10.0.0.64/26"
+            address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
         }
       }
       "private" = {
+        name = "private-rt"
         routes = {
           "default" = {
             address_prefix         = "0.0.0.0/0"
             next_hop_type          = "VirtualAppliance"
-            next_hop_in_ip_address = "10.0.0.50"
+            next_hop_in_ip_address = "10.0.0.30"
           }
           "mgmt_blackhole" = {
-            address_prefix = "10.0.0.0/27"
+            address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
           "public_blackhole" = {
-            address_prefix = "10.0.0.64/26"
+            address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
         }
       }
       "public" = {
+        name = "public-rt"
         routes = {
           "mgmt_blackhole" = {
-            address_prefix = "10.0.0.0/27"
+            address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
           "private_blackhole" = {
-            address_prefix = "10.0.0.32/27"
+            address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
         }
       }
     }
-    create_subnets = true
     subnets = {
       "management" = {
-        address_prefixes       = ["10.0.0.0/27"]
-        network_security_group = "management"
-        route_table            = "management"
+        name                            = "mgmt-snet"
+        address_prefixes                = ["10.0.0.0/28"]
+        network_security_group          = "management"
+        route_table                     = "management"
+        enable_storage_service_endpoint = true
       }
       "private" = {
-        address_prefixes = ["10.0.0.32/27"]
+        name             = "private-snet"
+        address_prefixes = ["10.0.0.16/28"]
         route_table      = "private"
       }
-      "public-az-1" = {
-        address_prefixes       = ["10.0.0.64/27"]
-        network_security_group = "public"
-        route_table            = "public"
-      }
-      "public-az-2" = {
-        address_prefixes       = ["10.0.0.96/27"]
+      "public" = {
+        name                   = "public-snet"
+        address_prefixes       = ["10.0.0.32/28"]
         network_security_group = "public"
         route_table            = "public"
       }
     }
-  }
-}
-
-natgws = {
-  "natgw-az-1" = {
-    vnet_name    = "transit-vnet"
-    subnet_names = ["public-az-1"]
-    zone         = 1
-  }
-  "natgw-az-2" = {
-    vnet_name    = "transit-vnet"
-    subnet_names = ["public-az-2"]
-    zone         = 2
   }
 }
 
 
 # --- LOAD BALANCING PART --- #
 load_balancers = {
-  "lb-public" = {
-    vnet_name                         = "transit-vnet"
-    network_security_group_name       = "public"
-    network_security_allow_source_ips = ["0.0.0.0/0"] # TODO adjust to the public IPs that will connect to the public Load Balancer
+  "public" = {
+    name                              = "public-lb"
+    network_security_group_name       = "example-public-nsg"
+    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
     avzones                           = ["1", "2", "3"]
-    frontend_ips = { # TODO this is just a basic load balancing rule that will balance HTTP(s) traffic, add more rules to balance different types of traffic
+    frontend_ips = {
       "palo-lb-app1-pip" = {
         create_public_ip = true
-        rules = {
+        in_rules = {
           "balanceHttp" = {
             protocol = "Tcp"
             port     = 80
-          }
-          "balanceHttps" = {
-            protocol = "Tcp"
-            port     = 443
           }
         }
       }
     }
   }
-  "lb-private" = {
+  "private" = {
+    name    = "private-lb"
+    avzones = ["1", "2", "3"]
     frontend_ips = {
       "ha-ports" = {
-        vnet_name          = "transit-vnet"
+        vnet_name          = "transit"
         subnet_name        = "private"
-        private_ip_address = "10.0.0.50"
-        zones              = ["1", "2", "3"]
-        rules = {
+        private_ip_address = "10.0.0.30"
+        in_rules = {
           HA_PORTS = {
             port     = 0
             protocol = "All"
-
           }
         }
       }
@@ -161,38 +151,31 @@ load_balancers = {
 
 
 # --- VMSERIES PART --- #
-vmseries_version = "10.2.2"
-vmseries_vm_size = "Standard_DS3_v2"
-vmseries_sku     = "byol"
-# vmseries_password = "" # TODO by default the VM-Series admin password is autogenerated, uncomment and provide you own
+
+bootstrap_storage = {
+  bootstrap = {
+    name          = "xmplbootstrapdedicated"
+    public_snet   = "public"
+    private_snet  = "private"
+    intranet_cidr = "10.100.0.0/16"
+  }
+}
+
+vmseries_version  = "10.2.3"
+vmseries_vm_size  = "Standard_DS3_v2"
+vmseries_sku      = "byol"
+vmseries_password = "123QWEasd"
 vmseries = {
-  "vmseries-inbound-1" = {
-    bootstrap_options = "type=dhcp-client" # TODO add licensing, panorama configuration if needed
-    vnet_name         = "transit-vnet"
-    avzone            = 1
-    interfaces = [
-      {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
-        # private_ip_address = "x.x.x.x" # TODO each Firewall NIC can have a static private IP assigned
-      },
-      {
-        name        = "private"
-        subnet_name = "private"
-      },
-      {
-        name               = "public"
-        subnet_name        = "public-az-1"
-        load_balancer_name = "lb-public"
-        create_pip         = true
-      }
-    ]
-  }
-  "vmseries-inbound-2" = {
-    bootstrap_options = "type=dhcp-client" # TODO add licensing, panorama configuration if needed
-    vnet_name         = "transit-vnet"
-    avzone            = 2
+  "vm-in-1" = {
+    name                 = "inbound-firewall-01"
+    add_to_appgw_backend = true
+    bootstrap_storage = {
+      name                   = "bootstrap"
+      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+      template_bootstrap_xml = "templates/bootstrap_inbound.tmpl"
+    }
+    vnet_name = "transit"
+    avzone    = 1
     interfaces = [
       {
         name        = "mgmt"
@@ -205,16 +188,22 @@ vmseries = {
       },
       {
         name               = "public"
-        subnet_name        = "public-az-2"
-        load_balancer_name = "lb-public"
+        subnet_name        = "public"
+        load_balancer_name = "public"
         create_pip         = true
       }
     ]
   }
-  "vmseries-obew-1" = {
-    bootstrap_options = "type=dhcp-client" # TODO add licensing, panorama configuration if needed
-    vnet_name         = "transit-vnet"
-    avzone            = 1
+  "vm-in-2" = {
+    name                 = "inbound-firewall-02"
+    add_to_appgw_backend = true
+    bootstrap_storage = {
+      name                   = "bootstrap"
+      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+      template_bootstrap_xml = "templates/bootstrap_inbound.tmpl"
+    }
+    vnet_name = "transit"
+    avzone    = 2
     interfaces = [
       {
         name        = "mgmt"
@@ -222,20 +211,26 @@ vmseries = {
         create_pip  = true
       },
       {
-        name               = "private"
-        subnet_name        = "private"
-        load_balancer_name = "lb-private"
+        name        = "private"
+        subnet_name = "private"
       },
       {
-        name        = "public"
-        subnet_name = "public-az-1"
+        name               = "public"
+        subnet_name        = "public"
+        load_balancer_name = "public"
+        create_pip         = true
       }
     ]
   }
-  "vmseries-obew-2" = {
-    bootstrap_options = "type=dhcp-client" # TODO add licensing, panorama configuration if needed
-    vnet_name         = "transit-vnet"
-    avzone            = 2
+  "vm-obew-1" = {
+    name = "obew-firewall-01"
+    bootstrap_storage = {
+      name                   = "bootstrap"
+      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+      template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
+    }
+    vnet_name = "transit"
+    avzone    = 1
     interfaces = [
       {
         name        = "mgmt"
@@ -245,12 +240,41 @@ vmseries = {
       {
         name               = "private"
         subnet_name        = "private"
-        load_balancer_name = "lb-private"
+        load_balancer_name = "private"
       },
       {
         name        = "public"
-        subnet_name = "public-az-2"
+        subnet_name = "public"
+        create_pip  = true
+      }
+    ]
+  }
+  "vm-obew-2" = {
+    name = "obew-firewall-02"
+    bootstrap_storage = {
+      name                   = "bootstrap"
+      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+      template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
+    }
+    vnet_name = "transit"
+    avzone    = 2
+    interfaces = [
+      {
+        name        = "mgmt"
+        subnet_name = "management"
+        create_pip  = true
+      },
+      {
+        name               = "private"
+        subnet_name        = "private"
+        load_balancer_name = "private"
+      },
+      {
+        name        = "public"
+        subnet_name = "public"
+        create_pip  = true
       }
     ]
   }
 }
+
