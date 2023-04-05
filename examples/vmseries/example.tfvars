@@ -1,20 +1,61 @@
-location            = "Australia East"
-resource_group_name = "example-rg"
-common_vmseries_sku = "bundle1"
-username            = "panadmin"
-allow_inbound_mgmt_ips = [
-  "191.191.191.191", # Put your own public IP address here, visit "https://ifconfig.me/"
-  "10.255.0.0/24",   # Example Panorama access
-]
+# --- GENERAL --- #
+location            = "North Europe"
+resource_group_name = "vmseries-standalone"
+name_prefix         = "example-"
+tags = {
+  "CreatedBy"   = "Palo Alto Networks"
+  "CreatedWith" = "Terraform"
+}
+enable_zones = false
 
-vm_series_version = "10.1.5"
 
-storage_account_name = "pantfstoragep"
-storage_share_name   = "ibootstrapshare"
-
-files = {
-  "files/authcodes"    = "license/authcodes" # authcode is required only with common_vmseries_sku = "byol"
-  "files/init-cfg.txt" = "config/init-cfg.txt"
+# --- VNET PART --- #
+vnets = {
+  "transit" = {
+    name          = "transit"
+    address_space = ["10.0.0.0/25"]
+    network_security_groups = {
+      "management" = {
+        name = "mgmt-nsg"
+        rules = {
+          vmseries_mgmt_allow_inbound = {
+            priority                   = 100
+            direction                  = "Inbound"
+            access                     = "Allow"
+            protocol                   = "Tcp"
+            source_address_prefixes    = ["134.238.135.137", "130.41.247.15"]
+            source_port_range          = "*"
+            destination_address_prefix = "10.0.0.0/28"
+            destination_port_ranges    = ["22", "443"]
+          }
+        }
+      }
+    }
+    subnets = {
+      "management" = {
+        name                   = "mgmt-snet"
+        address_prefixes       = ["10.0.0.0/28"]
+        network_security_group = "management"
+      }
+    }
+  }
 }
 
-avzones = ["1", "2", "3"]
+
+# --- VMSERIES PART --- #
+vmseries_version = "10.2.3"
+vmseries_vm_size = "Standard_DS3_v2"
+vmseries = {
+  "vm01" = {
+    name              = "firewall01"
+    bootstrap_options = "type=dhcp-client"
+    vnet_name         = "transit"
+    interfaces = [
+      {
+        name        = "mgmt"
+        subnet_name = "management"
+        create_pip  = true
+      },
+    ]
+  }
+}

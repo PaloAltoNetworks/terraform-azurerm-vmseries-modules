@@ -25,7 +25,7 @@ output "metrics_instrumentation_keys" {
 
 output "frontend_ips" {
   description = "IP Addresses of the load balancers."
-  value       = { for k, v in module.load_balancer : k => v.frontend_ip_configs }
+  value       = length(var.load_balancers) > 0 ? { for k, v in module.load_balancer : k => v.frontend_ip_configs } : null
 }
 
 output "vmseries_mgmt_ip" {

@@ -1,6 +1,3 @@
-# An example showing how to fill out TFVARS to deploy:
-# - a Panorama appliance in a dedicated VNET
-
 # --- GENERAL --- #
 location              = "North Europe"
 resource_group_name   = "panorama"

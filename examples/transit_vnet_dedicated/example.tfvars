@@ -1,9 +1,3 @@
-# An example showing how to fill out TFVARS to deploy:
-# - a dedicated reference architecture
-# - using Availbility Zones for infrastructure redundancy
-# - deploying a spoke VNET peered with the transit one
-# - using both a public Load Balancer and an Application Gateway for balancing inbound traffic.
-
 # --- GENERAL --- #
 location            = "North Europe"
 resource_group_name = "transit-vnet-dedicated"
