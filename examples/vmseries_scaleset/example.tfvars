@@ -1,142 +1,257 @@
-location                     = "East US 2"
-inbound_resource_group_name  = "example-vmss-inbound"
-outbound_resource_group_name = "example-vmss-outbound"
-virtual_network_name         = "vnet-vmseries"
-name_prefix                  = "vmseries-"
-inbound_name_prefix          = "inbound-"
-outbound_name_prefix         = "outbound-"
-outbound_lb_name             = "outbound-private-ilb"
-inbound_lb_name              = "inbound-public-elb"
-name_scale_set               = "VMSS" # the suffix
-
-tags = {}
-
-address_space = ["10.110.0.0/16"]
-
-network_security_groups = {
-  sg_mgmt         = {}
-  sg_private      = {}
-  sg_pub_inbound  = {}
-  sg_pub_outbound = {}
+# --- GENERAL --- #
+location            = "North Europe"
+resource_group_name = "autoscale-common"
+name_prefix         = "example-"
+tags = {
+  "CreatedBy"   = "Palo Alto Networks"
+  "CreatedWith" = "Terraform"
 }
+enable_zones = false
 
-allow_inbound_mgmt_ips = [
-  "191.191.191.191", # Put your own public IP address here, visit "https://ifconfig.me/"
-  "10.255.0.0/24",   # Example Panorama access
-]
-
-allow_inbound_data_ips = []
-
-route_tables = {
-  private_route_table = {
-    routes = {
-      default = {
-        address_prefix         = "0.0.0.0/0"
-        next_hop_type          = "VirtualAppliance"
-        next_hop_in_ip_address = "10.110.0.21"
+# --- VNET PART --- #
+vnets = {
+  "transit" = {
+    name          = "transit"
+    address_space = ["10.0.0.0/25"]
+    network_security_groups = {
+      "management" = {
+        name = "mgmt-nsg"
+        rules = {
+          vmseries_mgmt_allow_inbound = {
+            priority                   = 100
+            direction                  = "Inbound"
+            access                     = "Allow"
+            protocol                   = "Tcp"
+            source_address_prefixes    = ["134.238.135.137", "130.41.247.15"]
+            source_port_range          = "*"
+            destination_address_prefix = "10.0.0.0/28"
+            destination_port_ranges    = ["22", "443"]
+          }
+        }
+      }
+      "public" = {
+        name = "public-nsg"
+      }
+    }
+    route_tables = {
+      "management" = {
+        name = "mgmt-rt"
+        routes = {
+          "private_blackhole" = {
+            address_prefix = "10.0.0.16/28"
+            next_hop_type  = "None"
+          }
+          "public_blackhole" = {
+            address_prefix = "10.0.0.32/28"
+            next_hop_type  = "None"
+          }
+        }
+      }
+      "private" = {
+        name = "private-rt"
+        routes = {
+          "default" = {
+            address_prefix         = "0.0.0.0/0"
+            next_hop_type          = "VirtualAppliance"
+            next_hop_in_ip_address = "10.0.0.30"
+          }
+          "mgmt_blackhole" = {
+            address_prefix = "10.0.0.0/28"
+            next_hop_type  = "None"
+          }
+          "public_blackhole" = {
+            address_prefix = "10.0.0.32/28"
+            next_hop_type  = "None"
+          }
+        }
+      }
+      "public" = {
+        name = "public-rt"
+        routes = {
+          "mgmt_blackhole" = {
+            address_prefix = "10.0.0.0/28"
+            next_hop_type  = "None"
+          }
+          "private_blackhole" = {
+            address_prefix = "10.0.0.16/28"
+            next_hop_type  = "None"
+          }
+        }
+      }
+    }
+    subnets = {
+      "management" = {
+        name                            = "mgmt-snet"
+        address_prefixes                = ["10.0.0.0/28"]
+        network_security_group          = "management"
+        route_table                     = "management"
+        enable_storage_service_endpoint = true
+      }
+      "private" = {
+        name             = "private-snet"
+        address_prefixes = ["10.0.0.16/28"]
+        route_table      = "private"
+      }
+      "public" = {
+        name                   = "public-snet"
+        address_prefixes       = ["10.0.0.32/28"]
+        network_security_group = "public"
+        route_table            = "public"
       }
     }
   }
 }
 
-subnets = {
-  "management" = {
-    address_prefixes       = ["10.110.255.0/24"]
-    network_security_group = "sg_mgmt"
-  },
-  "outbound_private" = {
-    address_prefixes       = ["10.110.0.0/24"]
-    network_security_group = "sg_private"
-    route_table            = "private_route_table"
-  },
-  "inbound_private" = {
-    address_prefixes       = ["10.110.1.0/24"] # optional subnet
-    network_security_group = "sg_private"
-    route_table            = "private_route_table"
-  },
-  "outbound_public" = {
-    address_prefixes       = ["10.110.129.0/24"]
-    network_security_group = "sg_pub_outbound"
-  },
-  "inbound_public" = {
-    address_prefixes       = ["10.110.130.0/24"] # optional subnet
-    network_security_group = "sg_pub_inbound"
-  },
+natgws = {
+  "natgw" = {
+    name              = "public-natgw"
+    vnet_name         = "transit"
+    subnet_names      = ["public", "management"]
+    create_pip        = false
+    create_pip_prefix = true
+    pip_prefix_length = 29
+  }
 }
 
-public_frontend_ips = {
-  frontend01 = {
-    create_public_ip = true
-    rules = {
-      balancehttp = {
-        port     = 80
-        protocol = "Tcp"
+
+
+# --- LOAD BALANCING PART --- #
+load_balancers = {
+  "public" = {
+    name                        = "public-lb"
+    network_security_group_name = "example-public-nsg"
+    network_security_allow_source_ips = [
+      #  "x.x.x.x", # Put your own public IP address here  <-- TODO to be adjusted by the customer
+      "0.0.0.0/0",
+    ]
+    frontend_ips = {
+      "palo-lb-app1-pip" = {
+        create_public_ip = true
+        in_rules = {
+          "balanceHttp" = {
+            protocol = "Tcp"
+            port     = 80
+          }
+        }
       }
-      balancessh = {
-        port     = 22
-        protocol = "Tcp"
+    }
+  }
+  "private" = {
+    name = "private-lb"
+    frontend_ips = {
+      "ha-ports" = {
+        vnet_name          = "transit"
+        subnet_name        = "private"
+        private_ip_address = "10.0.0.30"
+        in_rules = {
+          HA_PORTS = {
+            port     = 0
+            protocol = "All"
+          }
+        }
       }
     }
   }
 }
 
-olb_private_ip = "10.110.0.21"
 
-inbound_vmseries_version  = "10.1.5"
-inbound_vmseries_vm_size  = "Standard_D3_v2"
-outbound_vmseries_version = "10.1.5"
-outbound_vmseries_vm_size = "Standard_D3_v2"
-common_vmseries_sku       = "bundle1"
 
-inbound_count_minimum  = 2
-inbound_count_maximum  = 5
-outbound_count_minimum = 2
-outbound_count_maximum = 5
+# --- VMSERIES PART --- #
+application_insights = {}
 
-autoscale_metrics = {
-  "DataPlaneCPUUtilizationPct" = {
-    scaleout_threshold = 80
-    scalein_threshold  = 20
+vmseries_version = "10.2.3"
+vmseries_vm_size = "Standard_DS3_v2"
+
+
+
+# TODO move the additional variables
+
+
+vmss = {
+  "inbound" = {
+    name              = "inbound-vmss"
+    vnet_name         = "transit"
+    bootstrap_options = "type=dhcp"
+
+    interfaces = [
+      {
+        name        = "management"
+        subnet_name = "management"
+      },
+      {
+        name        = "private"
+        subnet_name = "private"
+      },
+      {
+        name               = "public"
+        subnet_name        = "public"
+        load_balancer_name = "public"
+      }
+    ]
+
+    autoscale_config = {
+      count_default = 2
+      count_minimum = 1
+      count_maximum = 3
+    }
+    autoscale_metrics = {
+      "DataPlaneCPUUtilizationPct" = {
+        scaleout_threshold = 80
+        scalein_threshold  = 20
+      }
+    }
+    scaleout_config = {
+      statistic        = "Average"
+      time_aggregation = "Average"
+      window_minutes   = 10
+      cooldown_minutes = 30
+    }
+    scalein_config = {
+      window_minutes   = 10
+      cooldown_minutes = 300
+    }
   }
-  "panSessionUtilization" = {
-    scaleout_threshold = 80
-    scalein_threshold  = 20
+  "obew" = {
+    name              = "obew-vmss"
+    vnet_name         = "transit"
+    bootstrap_options = "type=dhcp"
+
+    interfaces = [
+      {
+        name        = "management"
+        subnet_name = "management"
+      },
+      {
+        name               = "private"
+        subnet_name        = "private"
+        load_balancer_name = "private"
+      },
+      {
+        name        = "public"
+        subnet_name = "public"
+      }
+    ]
+
+    autoscale_config = {
+      count_default = 2
+      count_minimum = 1
+      count_maximum = 3
+    }
+    autoscale_metrics = {
+      "DataPlaneCPUUtilizationPct" = {
+        scaleout_threshold = 70
+        scalein_threshold  = 20
+      }
+    }
+    scaleout_config = {
+      statistic        = "Average"
+      time_aggregation = "Average"
+      window_minutes   = 10
+      cooldown_minutes = 30
+    }
+    scalein_config = {
+      window_minutes   = 10
+      cooldown_minutes = 300
+    }
   }
-  "panSessionThroughputKbps" = {
-    scaleout_threshold = 1800000 # >80 percent of 2.2G
-    scalein_threshold  = 40000
-  }
-  # # For an easy trigger testing:
-  # "panSessionThroughputPps" = {
-  #   scaleout_threshold = 1000
-  #   scalein_threshold  = 100
-  # }
 }
-
-# Autoscaling grows:
-scaleout_statistic        = "Average"
-scaleout_time_aggregation = "Average"
-scaleout_window_minutes   = 10
-scaleout_cooldown_minutes = 30
-
-# Autoscaling shrinks:
-scalein_statistic        = "Max"
-scalein_time_aggregation = "Average"
-scalein_window_minutes   = 60
-scalein_cooldown_minutes = 10080
-
-storage_account_name        = "vmssexample"
-inbound_storage_share_name  = "ibbootstrapshare"
-outbound_storage_share_name = "obbootstrapshare"
-
-inbound_files = {
-  # "inbound_files/authcodes"    = "license/authcodes" # this line is only needed for common_vmseries_sku  = "byol"
-  "inbound_files/init-cfg.txt" = "config/init-cfg.txt"
-}
-
-outbound_files = {
-  # "outbound_files/authcodes"    = "license/authcodes" # this line is only needed for common_vmseries_sku  = "byol"
-  "outbound_files/init-cfg.txt" = "config/init-cfg.txt"
-}
-
-avzones = ["1", "2", "3"]

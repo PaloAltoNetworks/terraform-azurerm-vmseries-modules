@@ -1,305 +1,208 @@
-# Create the Resource Group for inbound VM-Series.
-resource "azurerm_resource_group" "inbound" {
-  count = var.create_inbound_resource_group ? 1 : 0
-
-  name     = coalesce(var.inbound_resource_group_name, "${var.name_prefix}inbound")
-  location = var.location
-}
-
-data "azurerm_resource_group" "inbound" {
-  count = var.create_inbound_resource_group == false ? 1 : 0
-
-  name = var.inbound_resource_group_name
-}
-
-locals {
-  inbound_resource_group = var.create_inbound_resource_group ? azurerm_resource_group.inbound[0] : data.azurerm_resource_group.inbound[0]
-}
-
-# Create the Resource Group for outbound VM-Series.
-resource "azurerm_resource_group" "outbound" {
-  count = var.create_outbound_resource_group ? 1 : 0
-
-  name     = coalesce(var.outbound_resource_group_name, "${var.name_prefix}outbound")
-  location = var.location
-}
-
-data "azurerm_resource_group" "outbound" {
-  count = var.create_outbound_resource_group == false ? 1 : 0
-
-  name = var.outbound_resource_group_name
-}
-
-locals {
-  outbound_resource_group = var.create_outbound_resource_group ? azurerm_resource_group.outbound[0] : data.azurerm_resource_group.outbound[0]
-}
-
 # Generate a random password.
 resource "random_password" "this" {
+  count = var.vmseries_password == null ? 1 : 0
+
   length           = 16
   min_lower        = 16 - 4
   min_numeric      = 1
   min_special      = 1
   min_upper        = 1
-  special          = true
   override_special = "_%@"
 }
 
-# Create the transit network which holds the VM-Series
-# (both inbound and outbound ones).
+locals {
+  vmseries_password = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
+}
+
+# Create or source the Resource Group.
+resource "azurerm_resource_group" "this" {
+  count    = var.create_resource_group ? 1 : 0
+  name     = "${var.name_prefix}${var.resource_group_name}"
+  location = var.location
+
+  tags = var.tags
+}
+
+data "azurerm_resource_group" "this" {
+  count = var.create_resource_group ? 0 : 1
+  name  = var.resource_group_name
+}
+
+locals {
+  resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
+}
+
+# Manage the network required for the topology.
 module "vnet" {
   source = "../../modules/vnet"
 
-  create_virtual_network = var.create_virtual_network
-  virtual_network_name   = var.virtual_network_name
-  # We have two Resource Groups: inbound and outbound. The Virtual Net is used for both the inbound and the outbound
-  # flow, so in which RG to put it in? Just to avoid creating a third RG (common), let's assume we use the inbound RG.
-  resource_group_name     = local.inbound_resource_group.name
-  location                = var.location
-  address_space           = var.address_space
-  network_security_groups = var.network_security_groups
-  route_tables            = var.route_tables
-  subnets                 = var.subnets
-  tags                    = merge(var.tags, var.panorama_tags, var.vnet_tags)
+  for_each = var.vnets
+
+  virtual_network_name   = each.value.name
+  name_prefix            = var.name_prefix
+  create_virtual_network = try(each.value.create_virtual_network, true)
+  resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
+  location               = var.location
+
+  address_space = try(each.value.create_virtual_network, true) ? each.value.address_space : []
+
+  create_subnets = try(each.value.create_subnets, true)
+  subnets        = each.value.subnets
+
+  network_security_groups = try(each.value.network_security_groups, {})
+  route_tables            = try(each.value.route_tables, {})
+
+  tags = var.tags
 }
 
-# Allow access from outside to Management interfaces of VM-Series.
-resource "azurerm_network_security_rule" "mgmt" {
-  name                        = "vmseries-mgmt-allow-inbound"
-  resource_group_name         = local.inbound_resource_group.name
-  network_security_group_name = "sg_mgmt"
-  access                      = "Allow"
-  direction                   = "Inbound"
-  priority                    = 1000
-  protocol                    = "*"
-  source_port_range           = "*"
-  source_address_prefixes     = var.allow_inbound_mgmt_ips
-  destination_address_prefix  = "*"
-  destination_port_range      = "*"
+module "natgw" {
+  source = "../../modules/natgw"
 
+  for_each = var.natgws
+
+  create_natgw        = try(each.value.create_natgw, true)
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
+  location            = var.location
+  zone                = try(each.value.zone, null)
+  idle_timeout        = try(each.value.idle_timeout, null)
+  subnet_ids          = { for v in each.value.subnet_names : v => module.vnet[each.value.vnet_name].subnet_ids[v] }
+
+  create_pip                       = try(each.value.create_pip, true)
+  existing_pip_name                = try(each.value.existing_pip_name, null)
+  existing_pip_resource_group_name = try(each.value.existing_pip_resource_group_name, null)
+
+  create_pip_prefix                       = try(each.value.create_pip_prefix, false)
+  pip_prefix_length                       = try(each.value.create_pip_prefix, false) ? try(each.value.pip_prefix_length, null) : null
+  existing_pip_prefix_name                = try(each.value.existing_pip_prefix_name, null)
+  existing_pip_prefix_resource_group_name = try(each.value.existing_pip_prefix_resource_group_name, null)
+
+
+  tags       = var.tags
   depends_on = [module.vnet]
 }
 
-### LOAD BALANCERS ###
-# Create the inbound load balancer.
-module "inbound_lb" {
+
+# create load balancers, both internal and external
+module "load_balancer" {
   source = "../../modules/loadbalancer"
 
-  name                              = var.inbound_lb_name
-  resource_group_name               = local.inbound_resource_group.name
-  location                          = var.location
-  frontend_ips                      = var.public_frontend_ips
-  enable_zones                      = var.enable_zones
-  avzones                           = var.avzones
-  tags                              = merge(var.tags, var.panorama_tags)
-  network_security_group_name       = "sg_pub_inbound"
-  network_security_allow_source_ips = coalescelist(var.allow_inbound_data_ips, var.allow_inbound_mgmt_ips)
-}
+  for_each = var.load_balancers
 
-# Create the outbound load balancer.
-module "outbound_lb" {
-  source = "../../modules/loadbalancer"
-
-  name                = var.outbound_lb_name
-  resource_group_name = local.outbound_resource_group.name
+  name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
+  resource_group_name = local.resource_group.name
   enable_zones        = var.enable_zones
-  tags                = merge(var.tags, var.panorama_tags)
-  avzones             = var.avzones
+  avzones             = try(each.value.avzones, null)
+
+  network_security_group_name          = try(each.value.network_security_group_name, null)
+  network_security_resource_group_name = try(each.value.network_security_group_rg_name, null)
+  network_security_allow_source_ips    = try(each.value.network_security_allow_source_ips, [])
+
   frontend_ips = {
-    outbound = {
-      subnet_id                     = lookup(module.vnet.subnet_ids, "outbound_private", null)
-      private_ip_address_allocation = "Static"
-      private_ip_address            = var.olb_private_ip
-      rules = {
-        HA_PORTS = {
-          port     = 0
-          protocol = "All"
-        }
-      }
+    for k, v in each.value.frontend_ips : k => {
+      create_public_ip         = try(v.create_public_ip, false)
+      public_ip_name           = try(v.public_ip_name, null)
+      public_ip_resource_group = try(v.public_ip_resource_group, null)
+      private_ip_address       = try(v.private_ip_address, null)
+      subnet_id                = try(module.vnet[v.vnet_name].subnet_ids[v.subnet_name], null)
+      in_rules                 = try(v.in_rules, {})
+      out_rules                = try(v.out_rules, {})
+      zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
     }
   }
+
+  tags       = var.tags
+  depends_on = [module.vnet]
 }
 
-# Outbound Azure NATGW (all-AZ)
-resource "azurerm_nat_gateway" "outbound" {
-  name                    = "${var.outbound_name_prefix}NATGW"
-  location                = var.location
-  resource_group_name     = local.outbound_resource_group.name
-  sku_name                = "Standard"
-  idle_timeout_in_minutes = 10
-  tags                    = var.tags
-}
 
-resource "azurerm_public_ip" "outbound" {
-  name                = "${var.outbound_name_prefix}NATPIP"
-  location            = var.location
-  resource_group_name = local.outbound_resource_group.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  zones               = var.enable_zones ? var.avzones : null
-  tags                = var.tags
-}
-
-resource "azurerm_nat_gateway_public_ip_association" "outbound" {
-  nat_gateway_id       = azurerm_nat_gateway.outbound.id
-  public_ip_address_id = azurerm_public_ip.outbound.id
-}
-
-resource "azurerm_subnet_nat_gateway_association" "outbound_public" {
-  subnet_id      = module.vnet.subnet_ids["outbound_public"]
-  nat_gateway_id = azurerm_nat_gateway.outbound.id
-}
-
-resource "azurerm_subnet_nat_gateway_association" "outbound_private" {
-  subnet_id      = module.vnet.subnet_ids["outbound_private"] # remove it?
-  nat_gateway_id = azurerm_nat_gateway.outbound.id
-}
-
-# Management Azure NATGW (all-AZ)
-resource "azurerm_nat_gateway" "mgmt" {
-  name                    = "${var.name_prefix}NATGW"
-  location                = var.location
-  resource_group_name     = local.inbound_resource_group.name
-  sku_name                = "Standard"
-  idle_timeout_in_minutes = 10
-  tags                    = var.tags
-}
-
-resource "azurerm_public_ip" "mgmt" {
-  name                = "${var.name_prefix}NATPIP"
-  location            = var.location
-  resource_group_name = local.inbound_resource_group.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-  zones               = var.enable_zones ? var.avzones : null
-  tags                = var.tags
-}
-
-resource "azurerm_nat_gateway_public_ip_association" "mgmt" {
-  nat_gateway_id       = azurerm_nat_gateway.mgmt.id
-  public_ip_address_id = azurerm_public_ip.mgmt.id
-}
-
-resource "azurerm_subnet_nat_gateway_association" "mgmt" {
-  subnet_id      = module.vnet.subnet_ids["management"]
-  nat_gateway_id = azurerm_nat_gateway.mgmt.id
-}
-
-### BOOTSTRAPPING ###
-
-# Create File Share and put there files for initial boot of inbound VM-Series.
-module "inbound_bootstrap" {
-  source = "../../modules/bootstrap"
-
-  resource_group_name  = local.inbound_resource_group.name
-  location             = var.location
-  storage_share_name   = var.inbound_storage_share_name
-  storage_account_name = var.storage_account_name
-  files                = var.inbound_files
-}
-
-# Create File Share and put there files for initial boot of outbound VM-Series.
-module "outbound_bootstrap" {
-  source = "../../modules/bootstrap"
-
-  resource_group_name    = local.inbound_resource_group.name
-  create_storage_account = false
-  storage_account_name   = module.inbound_bootstrap.storage_account.name
-  storage_share_name     = var.outbound_storage_share_name
-  files                  = var.outbound_files
-
-  depends_on = [module.inbound_bootstrap]
-}
 
 ### SCALE SETS ###
+module "ai" {
+  source = "../../modules/application_insights"
 
-# Create the inbound scale set.
-module "inbound_scale_set" {
-  source = "../../modules/vmss"
+  for_each = { for k, v in var.vmss : k => "${v.name}-ai" if can(v.autoscale_metrics) }
 
-  resource_group_name           = local.inbound_resource_group.name
-  location                      = var.location
-  name_prefix                   = var.inbound_name_prefix
-  name_scale_set                = var.name_scale_set
-  img_sku                       = var.common_vmseries_sku
-  img_version                   = var.inbound_vmseries_version
-  tags                          = merge(var.tags, var.panorama_tags, var.outbound_vmseries_tags)
-  vm_size                       = var.inbound_vmseries_vm_size
-  autoscale_count_default       = var.inbound_count_minimum
-  autoscale_count_minimum       = var.inbound_count_minimum
-  autoscale_count_maximum       = var.inbound_count_maximum
-  autoscale_notification_emails = var.autoscale_notification_emails
-  autoscale_metrics             = var.autoscale_metrics
-  scaleout_statistic            = var.scaleout_statistic
-  scaleout_time_aggregation     = var.scaleout_time_aggregation
-  scaleout_window_minutes       = var.scaleout_window_minutes
-  scaleout_cooldown_minutes     = var.scaleout_cooldown_minutes
-  scalein_statistic             = var.scalein_statistic
-  scalein_time_aggregation      = var.scalein_time_aggregation
-  scalein_window_minutes        = var.scalein_window_minutes
-  scalein_cooldown_minutes      = var.scalein_cooldown_minutes
-  username                      = var.username
-  password                      = coalesce(var.password, random_password.this.result)
-  subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
-  subnet_private                = { id = module.vnet.subnet_ids["inbound_private"] }
-  subnet_public                 = { id = module.vnet.subnet_ids["inbound_public"] }
-  app_insights_settings         = var.app_insights_settings
-  bootstrap_options = (join(",",
-    [
-      "storage-account=${module.inbound_bootstrap.storage_account.name}",
-      "access-key=${module.inbound_bootstrap.storage_account.primary_access_key}",
-      "file-share=${module.inbound_bootstrap.storage_share.name}",
-      "share-directory=None"
-    ]
-  ))
-  public_backend_pool_id  = module.inbound_lb.backend_pool_id
-  create_mgmt_pip         = false
-  create_public_pip       = false
-  diagnostics_storage_uri = module.inbound_bootstrap.storage_account.primary_blob_endpoint
+  name                = "${var.name_prefix}${each.value}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+
+  workspace_mode            = try(var.application_insights.workspace_mode, null)
+  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
+  workspace_sku             = try(var.application_insights.workspace_sku, null)
+  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+
+  tags = var.tags
 }
 
-# Create the outbound scale set.
-module "outbound_scale_set" {
+module "vmss" {
   source = "../../modules/vmss"
 
-  resource_group_name           = local.outbound_resource_group.name
-  location                      = var.location
-  name_prefix                   = var.outbound_name_prefix
-  name_scale_set                = var.name_scale_set
-  img_sku                       = var.common_vmseries_sku
-  img_version                   = var.outbound_vmseries_version
-  tags                          = merge(var.tags, var.panorama_tags, var.outbound_vmseries_tags)
-  vm_size                       = var.outbound_vmseries_vm_size
-  autoscale_count_default       = var.outbound_count_minimum
-  autoscale_count_minimum       = var.outbound_count_minimum
-  autoscale_count_maximum       = var.outbound_count_maximum
-  autoscale_notification_emails = var.autoscale_notification_emails
-  autoscale_metrics             = var.autoscale_metrics
-  scaleout_statistic            = var.scaleout_statistic
-  scaleout_time_aggregation     = var.scaleout_time_aggregation
-  scaleout_window_minutes       = var.scaleout_window_minutes
-  scaleout_cooldown_minutes     = var.scaleout_cooldown_minutes
-  scalein_statistic             = var.scalein_statistic
-  scalein_time_aggregation      = var.scalein_time_aggregation
-  scalein_window_minutes        = var.scalein_window_minutes
-  scalein_cooldown_minutes      = var.scalein_cooldown_minutes
-  username                      = var.username
-  password                      = coalesce(var.password, random_password.this.result)
-  subnet_mgmt                   = { id = module.vnet.subnet_ids["management"] }
-  subnet_private                = { id = module.vnet.subnet_ids["outbound_private"] }
-  subnet_public                 = { id = module.vnet.subnet_ids["outbound_public"] }
-  app_insights_settings         = var.app_insights_settings
-  bootstrap_options = (join(",",
-    [
-      "storage-account=${module.outbound_bootstrap.storage_account.name}",
-      "access-key=${module.outbound_bootstrap.storage_account.primary_access_key}",
-      "file-share=${module.outbound_bootstrap.storage_share.name}",
-      "share-directory=None"
-    ]
-  ))
-  private_backend_pool_id = module.outbound_lb.backend_pool_id
-  create_mgmt_pip         = false
-  create_public_pip       = false
-  diagnostics_storage_uri = module.outbound_bootstrap.storage_account.primary_blob_endpoint
+  for_each = var.vmss
+
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+
+  username     = var.vmseries_username
+  password     = local.vmseries_password
+  img_sku      = var.vmseries_sku
+  img_version  = var.vmseries_version
+  vm_size      = var.vmseries_vm_size
+  zone_balance = var.enable_zones
+  zones        = var.enable_zones ? try(each.value.zones, null) : []
+
+  encryption_at_host_enabled   = try(each.value.encryption_at_host_enabled, null)
+  overprovision                = try(each.value.overprovision, null)
+  platform_fault_domain_count  = try(each.value.platform_fault_domain_count, null)
+  proximity_placement_group_id = try(each.value.proximity_placement_group_id, null)
+  scale_in_policy              = try(each.value.scale_in_policy, null)
+  scale_in_force_deletion      = try(each.value.scale_in_force_deletion, null)
+  single_placement_group       = try(each.value.single_placement_group, null)
+  storage_account_type         = try(each.value.storage_account_type, null)
+  disk_encryption_set_id       = try(each.value.disk_encryption_set_id, null)
+  use_custom_image             = try(each.value.use_custom_image, false)
+  custom_image_id              = try(each.value.use_custom_image, false) ? each.value.custom_image_id : null
+
+  accelerated_networking = try(each.value.accelerated_networking, null)
+  interfaces = [
+    for v in each.value.interfaces : {
+      name                  = v.name
+      subnet_id             = module.vnet[each.value.vnet_name].subnet_ids[v.subnet_name]
+      create_pip            = try(v.create_pip, false)
+      pip_domain_name_label = try(v.pip_domain_name_label, null)
+      lb_backend_pool_ids   = try([module.load_balancer[v.load_balancer_name].backend_pool_id], [])
+
+    }
+  ]
+
+  bootstrap_options = each.value.bootstrap_options
+
+  application_insights_id = can(each.value.autoscale_metrics) ? module.ai[each.key].application_insights_id : null
+
+  autoscale_count_default       = try(each.value.autoscale_config.count_default, null)
+  autoscale_count_minimum       = try(each.value.autoscale_config.count_minimum, null)
+  autoscale_count_maximum       = try(each.value.autoscale_config.count_maximum, null)
+  autoscale_notification_emails = try(each.value.autoscale_config.notification_emails, null)
+
+  autoscale_metrics = try(each.value.autoscale_metrics, {})
+
+  scaleout_statistic        = try(each.value.scaleout_config.statistic, null)
+  scaleout_time_aggregation = try(each.value.scaleout_config.time_aggregation, null)
+  scaleout_window_minutes   = try(each.value.scaleout_config.window_minutes, null)
+  scaleout_cooldown_minutes = try(each.value.scaleout_config.cooldown_minutes, null)
+
+  scalein_statistic        = try(each.value.scalein_config.statistic, null)
+  scalein_time_aggregation = try(each.value.scalein_config.time_aggregation, null)
+  scalein_window_minutes   = try(each.value.scalein_config.window_minutes, null)
+  scalein_cooldown_minutes = try(each.value.scalein_config.cooldown_minutes, null)
+
+  tags = var.tags
+
+  depends_on = [
+    module.ai,
+    module.vnet
+  ]
 }
+

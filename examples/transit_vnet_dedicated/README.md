@@ -53,19 +53,26 @@ terraform destroy -var-file {{name of the example var file used to create the ar
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0, < 2.0 |
 
+## Providers
+
+| Name | Version |
+|------|---------|
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+| <a name="provider_local"></a> [local](#provider\_local) | n/a |
+| <a name="provider_random"></a> [random](#provider\_random) | n/a |
+
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_ai"></a> [ai](#module\_ai) | ../modules/application_insights | n/a |
-| <a name="module_appgw"></a> [appgw](#module\_appgw) | PaloAltoNetworks/vmseries-modules/azurerm//modules/appgw | 0.5.4 |
-| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../modules/bootstrap | n/a |
-| <a name="module_bootstrap_share"></a> [bootstrap\_share](#module\_bootstrap\_share) | ../modules/bootstrap | n/a |
-| <a name="module_load_balancer"></a> [load\_balancer](#module\_load\_balancer) | ../modules/loadbalancer | n/a |
-| <a name="module_natgw"></a> [natgw](#module\_natgw) | PaloAltoNetworks/vmseries-modules/azurerm//modules/natgw | 0.5.4 |
-| <a name="module_vmseries"></a> [vmseries](#module\_vmseries) | ../modules/vmseries | n/a |
-| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../modules/vnet | n/a |
-| <a name="module_vnet_peering"></a> [vnet\_peering](#module\_vnet\_peering) | ../modules/vnet_peering | n/a |
+| <a name="module_ai"></a> [ai](#module\_ai) | ../../modules/application_insights | n/a |
+| <a name="module_appgw"></a> [appgw](#module\_appgw) | ../../modules/appgw | n/a |
+| <a name="module_bootstrap"></a> [bootstrap](#module\_bootstrap) | ../../modules/bootstrap | n/a |
+| <a name="module_bootstrap_share"></a> [bootstrap\_share](#module\_bootstrap\_share) | ../../modules/bootstrap | n/a |
+| <a name="module_load_balancer"></a> [load\_balancer](#module\_load\_balancer) | ../../modules/loadbalancer | n/a |
+| <a name="module_natgw"></a> [natgw](#module\_natgw) | ../../modules/natgw | n/a |
+| <a name="module_vmseries"></a> [vmseries](#module\_vmseries) | ../../modules/vmseries | n/a |
+| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
 
 ## Resources
 
@@ -99,7 +106,6 @@ terraform destroy -var-file {{name of the example var file used to create the ar
 | <a name="input_vmseries_username"></a> [vmseries\_username](#input\_vmseries\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
 | <a name="input_vmseries_version"></a> [vmseries\_version](#input\_vmseries\_version) | VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | n/a | yes |
 | <a name="input_vmseries_vm_size"></a> [vmseries\_vm\_size](#input\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. | `string` | n/a | yes |
-| <a name="input_vnet_peerings"></a> [vnet\_peerings](#input\_vnet\_peerings) | A map of peerings between VNETs. Key is a descriptive name of the peering (only for self documentation purposes). Value contains peering configuration (see example and [module documentation](../modules/vnet\_peering/README.md) for all possible options).<br><br>NOTICE. The VNET and Resource Group names are used directly in AzureRM peering resource, therefore they should already include any name prefixes - no prefix will be added here automatically, because the VNET can be either a one created by this code, or an existing one.<br><br>Example:<pre>{<br>  "security-application" = <br>    vnets = {<br>      "one" = {<br>        vnet = "security"<br>        rg   = "sec-rg"<br>      }<br>      "two" = {<br>        vnet = "applications"<br>        rg   = "app-rg"<br>      }<br>    }<br>    both_ways         = true<br>    network_access    = true<br>    forwarded_traffic = true<br>}</pre> | `any` | `{}` | no |
 | <a name="input_vnets"></a> [vnets](#input\_vnets) | A map defining VNETs.<br><br>For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.4/modules/vnet/README.md)<br><br>- `name` :  A name of a VNET.<br>- `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `virtual_network_name`<br>- `address_space` : a list of CIDRs for VNET<br>- `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside<br><br>- `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets<br>- `subnets` : map of Subnets to create<br><br>- `network_security_groups` : map of Network Security Groups to create<br>- `route_tables` : map of Route Tables to create. | `any` | n/a | yes |
 
 ## Outputs

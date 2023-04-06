@@ -107,36 +107,6 @@ variable "natgws" {
   type        = any
 }
 
-variable "vnet_peerings" {
-  description = <<-EOF
-  A map of peerings between VNETs. Key is a descriptive name of the peering (only for self documentation purposes). Value contains peering configuration (see example and [module documentation](../modules/vnet_peering/README.md) for all possible options).
-
-  NOTICE. The VNET and Resource Group names are used directly in AzureRM peering resource, therefore they should already include any name prefixes - no prefix will be added here automatically, because the VNET can be either a one created by this code, or an existing one.
-
-  Example:
-  ```
-  {
-    "security-application" = 
-      vnets = {
-        "one" = {
-          vnet = "security"
-          rg   = "sec-rg"
-        }
-        "two" = {
-          vnet = "applications"
-          rg   = "app-rg"
-        }
-      }
-      both_ways         = true
-      network_access    = true
-      forwarded_traffic = true
-  }
-  ```
-  EOF
-  default     = {}
-  type        = any
-}
-
 
 
 ### Load Balancing

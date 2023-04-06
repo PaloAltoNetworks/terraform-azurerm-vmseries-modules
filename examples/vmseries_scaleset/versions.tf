@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.0, < 2.0"
+  required_version = ">= 1.1, < 2.0"
   required_providers {
     azurerm = {
       source = "hashicorp/azurerm"
@@ -22,6 +22,9 @@ provider "azurerm" {
       # minutes, because contrary to what Azure assumes it has not booted yet.
       # Tested on panos 10.0.6 and azurerm provider 2.64.
       roll_instances_when_required = false
+    }
+    resource_group {
+      prevent_deletion_if_contains_resources = false
     }
   }
 }

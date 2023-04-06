@@ -1,5 +1,5 @@
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  name                            = "${var.name_prefix}${var.name_scale_set}"
+  name                            = var.name
   location                        = var.location
   resource_group_name             = var.resource_group_name
   admin_username                  = var.username
@@ -61,72 +61,35 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     force_deletion_enabled = var.scale_in_force_deletion
   }
 
-  network_interface {
-    name                          = "${var.name_prefix}${var.name_mgmt_nic_profile}"
-    primary                       = true
-    enable_ip_forwarding          = true
-    enable_accelerated_networking = false # unsupported by PAN-OS
-
-    ip_configuration {
-      name      = "${var.name_prefix}${var.name_mgmt_nic_ip}"
-      primary   = true
-      subnet_id = var.subnet_mgmt.id
-
-      dynamic "public_ip_address" {
-        for_each = var.create_mgmt_pip ? ["one"] : []
-
-        content {
-          name                    = "${var.name_prefix}${var.name_fw_mgmt_pip}"
-          domain_name_label       = var.mgmt_pip_domain_name_label
-          idle_timeout_in_minutes = 4
-          public_ip_prefix_id     = var.mgmt_pip_prefix_id
-        }
-      }
-    }
-  }
-
   dynamic "network_interface" {
-    for_each = var.create_public_interface ? ["public"] : [/* else none */]
+    for_each = var.interfaces
+    iterator = nic
 
     content {
-      name                          = "${var.name_prefix}${var.name_public_nic_profile}"
-      primary                       = false
-      enable_ip_forwarding          = true
-      enable_accelerated_networking = var.accelerated_networking
+      name                          = "${var.name}-${nic.value.name}"
+      primary                       = nic.key == 0 ? true : false
+      enable_ip_forwarding          = nic.key == 0 ? false : true
+      enable_accelerated_networking = nic.key == 0 ? false : var.accelerated_networking
 
       ip_configuration {
-        name                                   = "${var.name_prefix}${var.name_public_nic_ip}"
+        name                                   = "primary"
         primary                                = true
-        subnet_id                              = var.subnet_public.id
-        load_balancer_backend_address_pool_ids = var.public_backend_pool_id != null ? [var.public_backend_pool_id] : []
+        subnet_id                              = nic.value.subnet_id
+        load_balancer_backend_address_pool_ids = nic.key == 0 ? [] : try(nic.value.lb_backend_pool_ids, [])
 
         dynamic "public_ip_address" {
-          for_each = var.create_public_pip ? ["one"] : []
+          for_each = try(nic.value.create_pip, false) ? ["one"] : []
+          iterator = pip
 
           content {
-            name                    = "${var.name_prefix}${var.name_fw_public_pip}"
-            domain_name_label       = var.public_pip_domain_name_label
-            idle_timeout_in_minutes = 4
+            name              = "${var.name}-${nic.value.name}-pip"
+            domain_name_label = try(nic.value.pip_domain_name_label, null)
           }
         }
-
       }
     }
   }
 
-  network_interface {
-    name                          = "${var.name_prefix}${var.name_private_nic_profile}"
-    primary                       = false
-    enable_ip_forwarding          = true
-    enable_accelerated_networking = var.accelerated_networking
-
-    ip_configuration {
-      name                                   = "${var.name_prefix}${var.name_private_nic_ip}"
-      primary                                = true
-      subnet_id                              = var.subnet_private.id
-      load_balancer_backend_address_pool_ids = var.private_backend_pool_id != null ? [var.private_backend_pool_id] : []
-    }
-  }
 
   boot_diagnostics {
     storage_account_uri = var.diagnostics_storage_uri
@@ -165,13 +128,13 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 resource "azurerm_monitor_autoscale_setting" "this" {
   count = length(var.autoscale_metrics) > 0 ? 1 : 0
 
-  name                = coalesce(var.name_autoscale, "${var.name_prefix}autoscale")
+  name                = "${var.name}-autoscale"
   location            = var.location
   resource_group_name = var.resource_group_name
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
 
   profile {
-    name = "${var.name_prefix}profile"
+    name = "autoscale profile"
 
     capacity {
       default = var.autoscale_count_default
@@ -185,7 +148,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
       content {
         metric_trigger {
           metric_name        = rule.key
-          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : azurerm_application_insights.this[0].id
+          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.application_insights_id
           metric_namespace   = "Azure.ApplicationInsights"
           operator           = "GreaterThanOrEqual"
           threshold          = rule.value.scaleout_threshold
@@ -211,7 +174,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
       content {
         metric_trigger {
           metric_name        = rule.key
-          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : azurerm_application_insights.this[0].id
+          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.application_insights_id
           metric_namespace   = "Azure.ApplicationInsights"
           operator           = "LessThanOrEqual"
           threshold          = rule.value.scalein_threshold
