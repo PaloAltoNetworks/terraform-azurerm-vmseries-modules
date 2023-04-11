@@ -98,6 +98,10 @@ vnets = {
         network_security_group = "public"
         route_table            = "public"
       }
+      "appgw" = {
+        name             = "appgw-snet"
+        address_prefixes = ["10.0.0.48/28"]
+      }
     }
   }
 }
@@ -154,6 +158,31 @@ load_balancers = {
   }
 }
 
+appgws = {
+  "public" = {
+    name        = "public-appgw"
+    vnet_name   = "transit"
+    subnet_name = "appgw"
+    capacity    = 2
+    rules = {
+      "minimum" = {
+        priority = 1
+        listener = {
+          port = 80
+        }
+        rewrite_sets = {
+          "xff-strip-port" = {
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
 
 
 # --- VMSERIES PART --- #
@@ -161,12 +190,6 @@ application_insights = {}
 
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
-
-
-
-# TODO move the additional variables
-
-
 vmss = {
   "inbound" = {
     name              = "inbound-vmss"
@@ -183,9 +206,10 @@ vmss = {
         subnet_name = "private"
       },
       {
-        name               = "public"
-        subnet_name        = "public"
-        load_balancer_name = "public"
+        name                     = "public"
+        subnet_name              = "public"
+        load_balancer_name       = "public"
+        application_gateway_name = "public"
       }
     ]
 

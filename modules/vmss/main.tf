@@ -72,10 +72,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       enable_accelerated_networking = nic.key == 0 ? false : var.accelerated_networking
 
       ip_configuration {
-        name                                   = "primary"
-        primary                                = true
-        subnet_id                              = nic.value.subnet_id
-        load_balancer_backend_address_pool_ids = nic.key == 0 ? [] : try(nic.value.lb_backend_pool_ids, [])
+        name                                         = "primary"
+        primary                                      = true
+        subnet_id                                    = nic.value.subnet_id
+        load_balancer_backend_address_pool_ids       = nic.key == 0 ? [] : try(nic.value.lb_backend_pool_ids, [])
+        application_gateway_backend_address_pool_ids = nic.key == 0 ? [] : try(nic.value.appgw_backend_pool_ids, [])
 
         dynamic "public_ip_address" {
           for_each = try(nic.value.create_pip, false) ? ["one"] : []

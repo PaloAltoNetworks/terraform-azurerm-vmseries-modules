@@ -177,6 +177,36 @@ variable "load_balancers" {
   EOF
 }
 
+# Application Gateway
+variable "appgws" {
+  description = <<-EOF
+  A map defining all Application Gateways in the current deployment.
+
+  For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/main/modules/appgw/README.md).
+
+  Following properties are supported:
+  - `name` : name of the Application Gateway.
+  - `vnet_name` : a name of a VNET (key value) defined in the `var.vnets` map.
+  - `subnet_name` : a name of a subnet (key value) as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
+  - `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
+  - `capacity` : (optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)
+  - `capacity_min` : (optional) when set enables autoscaling and becomes the minimum capacity
+  - `capacity_max` : (optional) maximum capacity for autoscaling
+  - `enable_http2` : enable HTTP2 support on the Application Gateway
+  - `waf_enabled` : (optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`
+  - `vmseries_public_nic_name` : name of the public VMSeries interface as defined in `interfaces` property.
+  - `managed_identities` : (optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault
+  - `ssl_policy_type` : (optional) type of an SSL policy, defaults to `Predefined`
+  - `ssl_policy_name` : (optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
+  - `ssl_policy_min_protocol_version` : (optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
+  - `ssl_policy_cipher_suites` : (optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
+  - `ssl_profiles` : (optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
+
+  EOF
+  default     = {}
+}
+
+
 variable "application_insights" {
   description = <<-EOF
   A map defining Azure Application Insights. There are three ways to use this variable:

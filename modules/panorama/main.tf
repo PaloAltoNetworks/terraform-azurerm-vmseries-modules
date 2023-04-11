@@ -3,7 +3,7 @@
 resource "azurerm_public_ip" "this" {
   count = var.interface[0].public_ip == true ? 1 : 0
 
-  name                = var.interface[0].public_ip_name
+  name                = "${var.interface[0].public_ip_name}-pip"
   location            = var.location
   resource_group_name = var.resource_group_name
   allocation_method   = "Static"

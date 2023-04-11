@@ -88,6 +88,7 @@ variable "subnet_id" {
 
 variable "vmseries_ips" {
   description = "IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway."
+  default     = []
   type        = list(string)
 }
 
@@ -108,6 +109,7 @@ variable "ssl_policy_type" {
   EOF
   default     = "Predefined"
   type        = string
+  nullable    = false
 }
 
 variable "ssl_policy_name" {
@@ -118,6 +120,7 @@ variable "ssl_policy_name" {
   EOF
   default     = "AppGwSslPolicy20150501"
   type        = string
+  nullable    = false
 }
 
 variable "ssl_policy_min_protocol_version" {

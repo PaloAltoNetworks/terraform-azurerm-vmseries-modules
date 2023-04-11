@@ -83,6 +83,7 @@ module "natgw" {
 }
 
 
+
 # create load balancers, both internal and external
 module "load_balancer" {
   source = "../../modules/loadbalancer"
@@ -116,9 +117,39 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
+module "appgw" {
+  source = "../../modules/appgw"
+
+  for_each = var.appgws
+
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+  subnet_id           = module.vnet[each.value.vnet_name].subnet_ids[each.value.subnet_name]
+
+  managed_identities = try(each.value.managed_identities, null)
+  waf_enabled        = try(each.value.waf_enabled, false)
+  capacity           = try(each.value.capacity, null)
+  capacity_min       = try(each.value.capacity_min, null)
+  capacity_max       = try(each.value.capacity_max, null)
+  enable_http2       = try(each.value.enable_http2, null)
+  zones              = try(each.value.zones, null)
+
+  rules = each.value.rules
+
+  ssl_policy_type                 = try(each.value.ssl_policy_type, null)
+  ssl_policy_name                 = try(each.value.ssl_policy_name, null)
+  ssl_policy_min_protocol_version = try(each.value.ssl_policy_min_protocol_version, null)
+  ssl_policy_cipher_suites        = try(each.value.ssl_policy_cipher_suites, [])
+  ssl_profiles                    = try(each.value.ssl_profiles, {})
+
+  tags       = var.tags
+  depends_on = [module.vnet]
+}
 
 
-### SCALE SETS ###
+
+# Create the scale sets and related resources.
 module "ai" {
   source = "../../modules/application_insights"
 
@@ -168,12 +199,12 @@ module "vmss" {
   accelerated_networking = try(each.value.accelerated_networking, null)
   interfaces = [
     for v in each.value.interfaces : {
-      name                  = v.name
-      subnet_id             = module.vnet[each.value.vnet_name].subnet_ids[v.subnet_name]
-      create_pip            = try(v.create_pip, false)
-      pip_domain_name_label = try(v.pip_domain_name_label, null)
-      lb_backend_pool_ids   = try([module.load_balancer[v.load_balancer_name].backend_pool_id], [])
-
+      name                   = v.name
+      subnet_id              = module.vnet[each.value.vnet_name].subnet_ids[v.subnet_name]
+      create_pip             = try(v.create_pip, false)
+      pip_domain_name_label  = try(v.pip_domain_name_label, null)
+      lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_name].backend_pool_id], [])
+      appgw_backend_pool_ids = try([module.appgw[v.application_gateway_name].backend_pool_id], [])
     }
   ]
 
@@ -205,4 +236,3 @@ module "vmss" {
     module.vnet
   ]
 }
-

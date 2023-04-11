@@ -32,7 +32,8 @@ variable "interfaces" {
   - `name`                     - (required|string) Interface name.
   - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
   - `create_pip`               - (optional|bool) If true, create a public IP for the interface
-  - `lb_backend_pool_ids`      - (optional|list(string)) A list of identifiers of an existing backend pools to associate interface with.
+  - `lb_backend_pool_ids`      - (optional|list(string)) A list of identifiers of an existing Load Balancer backend pools to associate interface with.
+  - `appgw_backend_pool_ids`   - (optional|list(String)) A list of identifier of the Application Gateway backend pools to associate interface with.
   - `pip_domain_name_label`    - (optional|string) The Prefix which should be used for the Domain Name Label for each Virtual Machine Instance.
 
   Example:

@@ -60,7 +60,7 @@ variable "network_security_groups" {
       - `source_port_range` : A source port or a range of ports. This can also be an `*` to match all.
       - `source_port_ranges` : A list of source ports or ranges of ports. This can be specified only if `source_port_range` was not used.
       - `destination_port_range` : A destination port or a range of ports. This can also be an `*` to match all.
-      - `destination_port_range` : A list of destination ports or a ranges of ports. This can be specified only if `destination_port_range` was not used.
+      - `destination_port_ranges` : A list of destination ports or a ranges of ports. This can be specified only if `destination_port_range` was not used.
       - `source_address_prefix` : Source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
       - `source_address_prefixes` : A list of source address prefixes. Tags are not allowed. Can be specified only if `source_address_prefix` was not used.
       - `destination_address_prefix` : Destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
