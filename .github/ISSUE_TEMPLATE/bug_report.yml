@@ -1,0 +1,43 @@
+name: Bug Report
+description: Create an issue to help us improve
+title: '[Bug Report] <Short title of the bug>'
+assignees: aws-vmseries-modules-codeowners
+body:
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what is wrong and steps to reproduce.
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Module Version
+      description: What is the module version in use (https://github.com/PaloAltoNetworks/terraform-aws-vmseries-modules/releases)? Please include the commit hash if you're using an unreleased version.
+      placeholder: eg. v0.4.1
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Terraform version
+      description: What is the Terraform version in use?
+      placeholder: Execute terraform -version
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Expected behavior
+      description: Tell us what should happen or how it should work.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Current behavior
+      description: Tell us what happens instead of the expected behavior.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Anything else to add?
+      description: If you would like to add any more information, please add it below.
+      placeholder: |
+        Drag any screenshot here to help illustrate, other relevant details about the environment you experienced the bug in, terraform debug logs or relevant outputs.
