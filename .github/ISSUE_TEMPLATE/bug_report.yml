@@ -12,7 +12,7 @@ body:
   - type: input
     attributes:
       label: Module Version
-      description: What is the module version in use (https://github.com/PaloAltoNetworks/terraform-aws-vmseries-modules/releases)? Please include the commit hash if you're using an unreleased version.
+      description: What is the module version in use (https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/releases)? Please include the commit hash if you're using an unreleased version.
       placeholder: eg. v0.4.1
     validations:
       required: true
