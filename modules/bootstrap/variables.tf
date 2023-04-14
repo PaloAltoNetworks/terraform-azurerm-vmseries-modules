@@ -67,6 +67,13 @@ variable "files_md5" {
   type        = map(string)
 }
 
+
+variable "bootstrap_files" {
+  description = "Location to the bootstrap file structure. More infor can be found under https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package"
+  type        = string
+  default     = "./bootstrap_files"
+}
+
 variable "storage_share_name" {
   description = <<-EOF
   Name of a storage File Share to be created that will hold `files` used for bootstrapping.

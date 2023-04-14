@@ -1,3 +1,8 @@
+locals {
+  bootstrap_filenames = { for f in fileset(var.bootstrap_files, "**") : "${var.bootstrap_files}/${f}" => f }
+  filenames           = merge(local.bootstrap_filenames, var.files)
+}
+
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
@@ -43,7 +48,7 @@ resource "azurerm_storage_share_directory" "this" {
 }
 
 resource "azurerm_storage_share_file" "this" {
-  for_each = var.files
+  for_each = local.filenames
 
   name             = regex("[^/]*$", each.value)
   path             = replace(each.value, "/[/]*[^/]*$/", "")
@@ -58,7 +63,7 @@ resource "azurerm_storage_share_file" "this" {
 }
 
 resource "random_id" "this" {
-  for_each = var.files
+  for_each = local.filenames
 
   keepers = {
     # Re-randomize on every content/md5 change. It forcibly recreates all users of this random_id.

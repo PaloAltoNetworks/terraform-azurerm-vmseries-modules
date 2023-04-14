@@ -14,8 +14,12 @@ repos:
           --args=--only=terraform_workspace_remote,
         ]
   - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '2.1.98'
+    rev: '2.2.125'
     hooks:
     - id: checkov
       verbose: true
-      args: [--soft-fail]
+      args: [
+        --compact,
+        --quiet,
+        --skip-check, "CKV_AZURE_118,CKV_AZURE_1,CKV2_AZURE_1,CKV_AZURE_33,CKV_AZURE_35,CKV_AZURE_93,CKV_AZURE_149,CKV_AZURE_49,CKV2_AZURE_10,CKV2_AZURE_18,CKV2_AZURE_12,CKV_AZURE_119,CKV_AZURE_120,CKV2_GHA_1",
+      ]
