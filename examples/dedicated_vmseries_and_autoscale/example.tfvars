@@ -45,6 +45,10 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
+          "appgw_blackhole" = {
+            address_prefix = "10.0.0.48/28"
+            next_hop_type  = "None"
+          }
         }
       }
       "private" = {
@@ -61,6 +65,10 @@ vnets = {
           }
           "public_blackhole" = {
             address_prefix = "10.0.0.32/28"
+            next_hop_type  = "None"
+          }
+          "appgw_blackhole" = {
+            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
