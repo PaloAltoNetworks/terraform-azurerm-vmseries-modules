@@ -43,7 +43,7 @@ resource "azurerm_network_interface" "this" {
 
 # Build the Panorama VM
 resource "azurerm_virtual_machine" "panorama" {
-  name                         = var.panorama_name
+  name                         = var.name
   location                     = var.location
   resource_group_name          = var.resource_group_name
   primary_network_interface_id = azurerm_network_interface.this[var.interfaces[0].name].id
@@ -62,14 +62,14 @@ resource "azurerm_virtual_machine" "panorama" {
   }
 
   storage_os_disk {
-    name              = coalesce(var.os_disk_name, "${var.panorama_name}-disk")
+    name              = coalesce(var.os_disk_name, "${var.name}-disk")
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = var.panorama_disk_type
   }
 
   os_profile {
-    computer_name  = var.panorama_name
+    computer_name  = var.name
     admin_username = var.username
     admin_password = var.password
   }
@@ -107,7 +107,7 @@ resource "azurerm_virtual_machine" "panorama" {
 resource "azurerm_managed_disk" "this" {
   for_each = var.logging_disks
 
-  name                 = "${var.panorama_name}-disk-${each.key}"
+  name                 = "${var.name}-disk-${each.key}"
   location             = var.location
   resource_group_name  = var.resource_group_name
   storage_account_type = try(each.value.disk_type, "Standard_LRS")

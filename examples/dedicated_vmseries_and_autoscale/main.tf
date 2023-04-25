@@ -38,7 +38,7 @@ module "vnet" {
 
   for_each = var.vnets
 
-  virtual_network_name   = each.value.name
+  name                   = each.value.name
   name_prefix            = var.name_prefix
   create_virtual_network = try(each.value.create_virtual_network, true)
   resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)

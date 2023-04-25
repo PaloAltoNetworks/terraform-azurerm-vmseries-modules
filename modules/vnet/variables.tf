@@ -4,7 +4,7 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "virtual_network_name" {
+variable "name" {
   description = "The name of the Azure Virtual Network."
   type        = string
 }

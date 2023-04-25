@@ -38,7 +38,7 @@ module "vnet" {
 
   for_each = var.vnets
 
-  virtual_network_name   = each.value.name
+  name                   = each.value.name
   name_prefix            = var.name_prefix
   create_virtual_network = try(each.value.create_virtual_network, true)
   resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
@@ -195,7 +195,7 @@ module "bootstrap" {
   for_each = var.bootstrap_storage
 
   create_storage_account = try(each.value.create_storage, true)
-  storage_account_name   = each.value.name
+  name                   = each.value.name
   resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
 
@@ -208,7 +208,7 @@ module "bootstrap_share" {
   for_each = { for k, v in var.vmseries : k => v if can(v.bootstrap_storage) }
 
   create_storage_account = false
-  storage_account_name   = module.bootstrap[each.value.bootstrap_storage.name].storage_account.name
+  name                   = module.bootstrap[each.value.bootstrap_storage.name].storage_account.name
   resource_group_name    = try(var.bootstrap_storage[each.value.bootstrap_storage].resource_group_name, local.resource_group.name)
   location               = var.location
   storage_share_name     = each.key

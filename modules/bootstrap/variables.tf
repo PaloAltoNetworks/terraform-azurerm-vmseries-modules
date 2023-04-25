@@ -4,7 +4,7 @@ variable "create_storage_account" {
   type        = bool
 }
 
-variable "storage_account_name" {
+variable "name" {
   description = <<-EOF
   Name of the Storage Account, either a new or an existing one (depending on the value of `create_storage_account`).
 
@@ -12,7 +12,7 @@ variable "storage_account_name" {
   EOF
   type        = string
   validation {
-    condition     = can(regex("^[a-z0-9]{3,24}$", var.storage_account_name))
+    condition     = can(regex("^[a-z0-9]{3,24}$", var.name))
     error_message = "A Storage Account name must be between 3 and 24 characters, only lower case letters and numbers are allowed."
   }
 }

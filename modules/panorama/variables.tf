@@ -26,7 +26,7 @@ variable "avzones" {
 }
 
 # Naming
-variable "panorama_name" {
+variable "name" {
   description = "The Panorama common name."
   type        = string
 }

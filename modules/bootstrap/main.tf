@@ -1,7 +1,7 @@
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
-  name                     = var.storage_account_name
+  name                     = var.name
   location                 = var.location
   resource_group_name      = var.resource_group_name
   min_tls_version          = var.min_tls_version
@@ -13,7 +13,7 @@ resource "azurerm_storage_account" "this" {
 data "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 0 : 1
 
-  name                = var.storage_account_name
+  name                = var.name
   resource_group_name = var.resource_group_name
 }
 

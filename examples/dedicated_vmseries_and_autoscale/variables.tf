@@ -56,7 +56,7 @@ variable "vnets" {
   For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.4/modules/vnet/README.md)
 
   - `name` :  A name of a VNET.
-  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `virtual_network_name`
+  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `name`
   - `address_space` : a list of CIDRs for VNET
   - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
 
