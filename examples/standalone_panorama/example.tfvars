@@ -17,8 +17,8 @@ vnets = {
     name          = "panorama-vnet"
     address_space = ["10.1.0.0/27"]
     network_security_groups = {
-      "management" = {
-        name = "mgmt-nsg"
+      "panorama" = {
+        name = "panorama-nsg"
         rules = {
           vmseries_mgmt_allow_inbound = {
             priority                   = 100
@@ -34,10 +34,10 @@ vnets = {
       }
     }
     subnets = {
-      "management" = {
-        name                   = "mgmt-snet"
+      "panorama" = {
+        name                   = "panorama-snet"
         address_prefixes       = ["10.1.0.0/28"]
-        network_security_group = "management"
+        network_security_group = "panorama"
       }
     }
   }
@@ -50,7 +50,7 @@ panoramas = {
   "panorama" = {
     name               = "panorama01"
     vnet_key           = "vnet"
-    subnet_key         = "management"
+    subnet_key         = "panorama"
     private_ip_address = "10.1.0.10"
   }
 }
