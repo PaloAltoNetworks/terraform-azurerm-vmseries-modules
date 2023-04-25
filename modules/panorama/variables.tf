@@ -87,7 +87,7 @@ variable "enable_plan" {
 
 variable "panorama_disk_type" {
   description = "Specifies the type of managed disk to create. Possible values are either Standard_LRS, StandardSSD_LRS, Premium_LRS or UltraSSD_LRS."
-  default     = "Standard_LRS"
+  default     = "StandardSSD_LRS"
   type        = string
 
   validation {
@@ -127,23 +127,33 @@ variable "custom_image_id" {
 }
 
 # Networking
-variable "interface" {
+variable "interfaces" {
   description = <<-EOF
-  A array of map describing the intefaces configuration. Keys of the map are the names and values are { subnet_id, private_ip_address, public_ip, enable_ip_forwarding }. Example:
+  List of the network interface specifications.
+
+  NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
+  Interfaces will be attached to VM in the order you define here, therefore the first should be the management interface.
+  
+  Options for an interface object:
+  - `name`                     - (required|string) Interface name.
+  - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
+  - `create_public_ip`         - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
+  - `private_ip_address`       - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
+  - `public_ip_name`           - (optional|string) Name of an existing public IP to associate to the interface, used only when `create_public_ip` is `false`.
+  - `public_ip_resource_group` - (optional|string) Name of a Resource Group that contains public IP resource to associate to the interface. When not specified defaults to `var.resource_group_name`. Used only when `create_public_ip` is `false`.
+
+  Example:
 
   ```
   [
     {
       name                 = "mgmt"
-      subnet_id            = ""
-      private_ip_address   = ""
-      public_ip            = true
-      public_ip_name       = ""
-      enable_ip_forwarding = false
+      subnet_id            = azurerm_subnet.my_mgmt_subnet.id
+      public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
+      create_public_ip     = true
     }
   ]
   ```
-
   EOF
   type        = list(any)
 }

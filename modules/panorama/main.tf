@@ -1,11 +1,10 @@
 # Create a public IP for management
-
 resource "azurerm_public_ip" "this" {
-  count = var.interface[0].public_ip == true ? 1 : 0
+  for_each = { for v in var.interfaces : v.name => v if try(v.create_public_ip, false) }
 
-  name                = "${var.interface[0].public_ip_name}-pip"
   location            = var.location
   resource_group_name = var.resource_group_name
+  name                = "${each.value.name}-pip"
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = var.enable_zones ? var.avzones : null
@@ -13,22 +12,33 @@ resource "azurerm_public_ip" "this" {
   tags = var.tags
 }
 
-# Build Panorama interface
-resource "azurerm_network_interface" "this" {
-  name                 = var.interface[0].name
-  location             = var.location
-  resource_group_name  = var.resource_group_name
-  enable_ip_forwarding = lookup(var.interface[0], "enable_ip_forwarding", false)
-
-  ip_configuration {
-    name                          = var.interface[0].name
-    subnet_id                     = var.interface[0].subnet_id
-    private_ip_address_allocation = lookup(var.interface[0], "private_ip_address", null) != null ? "Static" : "Dynamic"
-    private_ip_address            = lookup(var.interface[0], "private_ip_address", null) != null ? var.interface[0].private_ip_address : null
-    public_ip_address_id          = lookup(var.interface[0], "public_ip", false) ? azurerm_public_ip.this[0].id : null
+data "azurerm_public_ip" "this" {
+  for_each = { for v in var.interfaces : v.name => v
+    if(!try(v.create_public_ip, false) && try(v.public_ip_name, null) != null)
   }
 
-  tags = var.tags
+  name                = each.value.public_ip_name
+  resource_group_name = try(each.value.public_ip_resource_group, null) != null ? each.value.public_ip_resource_group : var.resource_group_name
+}
+
+# Build Panorama interface
+resource "azurerm_network_interface" "this" {
+  for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
+
+  name                          = "${each.value.name}-nic"
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  enable_accelerated_networking = false
+  enable_ip_forwarding          = false
+  tags                          = var.tags
+
+  ip_configuration {
+    name                          = "primary"
+    subnet_id                     = each.value.subnet_id
+    private_ip_address_allocation = try(each.value.private_ip_address, null) != null ? "Static" : "Dynamic"
+    private_ip_address            = try(each.value.private_ip_address, null)
+    public_ip_address_id          = try(azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null)
+  }
 }
 
 # Build the Panorama VM
@@ -36,9 +46,9 @@ resource "azurerm_virtual_machine" "panorama" {
   name                         = var.panorama_name
   location                     = var.location
   resource_group_name          = var.resource_group_name
-  network_interface_ids        = [azurerm_network_interface.this.id]
-  primary_network_interface_id = azurerm_network_interface.this.id
+  primary_network_interface_id = azurerm_network_interface.this[var.interfaces[0].name].id
   vm_size                      = var.panorama_size
+  network_interface_ids        = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
 
   delete_os_disk_on_termination    = true
   delete_data_disks_on_termination = true
@@ -100,13 +110,10 @@ resource "azurerm_managed_disk" "this" {
   name                 = "${var.panorama_name}-disk-${each.key}"
   location             = var.location
   resource_group_name  = var.resource_group_name
-  storage_account_type = lookup(each.value, "disk_type", "Standard_LRS")
+  storage_account_type = try(each.value.disk_type, "Standard_LRS")
   create_option        = "Empty"
-  disk_size_gb         = lookup(each.value, "size", "2048")
-  zone = try(
-    each.value.zone,
-    var.enable_zones && var.avzone != null && var.avzone != "" ? var.avzone : null
-  )
+  disk_size_gb         = try(each.value.size, "2048")
+  zone                 = var.enable_zones ? try(var.avzone, null) : null
 
   tags = var.tags
 }
