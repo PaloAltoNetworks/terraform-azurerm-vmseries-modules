@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest an idea for this project
+# title: '[Enhancement] <Title>'
+labels: enhancement
+assignees: aws-vmseries-modules-codeowners
+body:
+  - type: textarea
+    attributes:
+      label: Is your feature request related to a problem?
+      description: A clear and concise description of what the problem is.
+      placeholder: eg. I'm always frustrated when [...]
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the solution you'd like
+      description: A clear and concise description of what you want to happen.
+      placeholder: How should it work?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe alternatives you've considered.
+      description: A clear and concise description of any alternative solutions, features, or workarounds you've considered.
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional context
+      description: How has this issue affected you? What are you trying to accomplish?
+      placeholder: Providing context helps us come up with a solution that is useful in the real world. Drag any screenshot here to help illustrate
+    validations:
+      required: false
