@@ -25,7 +25,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["134.238.135.137", "130.41.247.15"]
+            source_address_prefixes    = ["130.41.247.149", "130.41.247.15"]
             source_port_range          = "*"
             destination_address_prefix = "10.1.0.0/24"
             destination_port_ranges    = ["22", "443"]
@@ -48,9 +48,15 @@ panorama_version = "10.2.3"
 
 panoramas = {
   "pn-1" = {
-    name               = "panorama01"
-    vnet_key           = "vnet"
-    subnet_key         = "panorama"
-    private_ip_address = "10.1.0.10"
+    name     = "panorama01"
+    vnet_key = "vnet"
+    interfaces = [
+      {
+        name               = "management"
+        subnet_key         = "panorama"
+        private_ip_address = "10.1.0.10"
+        create_pip         = true
+      },
+    ]
   }
 }

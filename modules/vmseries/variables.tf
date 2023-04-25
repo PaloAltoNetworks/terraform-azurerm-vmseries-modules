@@ -161,7 +161,7 @@ variable "img_offer" {
 
 variable "img_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "bundle2"
+  default     = "byol"
   type        = string
 }
 

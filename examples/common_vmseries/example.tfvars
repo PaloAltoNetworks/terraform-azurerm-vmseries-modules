@@ -119,7 +119,7 @@ load_balancers = {
     avzones = ["1", "2", "3"]
 
     frontend_ips = {
-      "palo-lb-app1-pip" = {
+      "palo-lb-app1" = {
         create_public_ip = true
         in_rules = {
           "balanceHttp" = {

@@ -4,7 +4,7 @@ output "mgmt_ip_address" {
 }
 
 output "interfaces" {
-  description = "List of VM-Series network interfaces. The elements of the list are `azurerm_network_interface` objects. The order is the same as `interfaces` input."
+  description = "Map of VM-Series network interfaces. Keys are equal to var.interfaces `name` properties."
   value       = azurerm_network_interface.this
 }
 

@@ -111,7 +111,38 @@ variable "panoramas" {
   - `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed
   - `avzones`: when `enable_zones` is `true` these are availability zones used by Panorama's public IPs
   - `custom_image_id`: a custom build of Panorama to use, overrides the stock image version.
-  
+
+  - `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
+    - `name`: string that will form the NIC name
+    - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`
+    - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`
+    - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface
+    - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
+    - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
+
+  - `logging_disks` : a map containing configuration of additional disks that should be attached to a Panorama appliance. Following properties are available:
+    - `size` : size of a disk, 2TB by default
+    - `lun` : slot to which the disk should be attached
+    - `disk_type` : type of a disk, determines throughput, `Standard_LRS` by default.
+
+  Example:
+
+  ```
+    {
+      "pn-1" = {
+        name     = "panorama01"
+        vnet_key = "vnet"
+        interfaces = [
+          {
+            name               = "management"
+            subnet_key         = "panorama"
+            private_ip_address = "10.1.0.10"
+            create_pip         = true
+          },
+        ]
+      }
+    }
+  ```
   EOF
   default     = {}
   type        = any

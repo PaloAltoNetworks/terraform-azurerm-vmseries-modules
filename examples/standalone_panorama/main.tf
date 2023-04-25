@@ -72,20 +72,16 @@ module "panorama" {
   panorama_version            = var.panorama_version
   boot_diagnostic_storage_uri = ""
 
-  interface = [{
-    name               = "${var.name_prefix}management"
-    subnet_id          = lookup(module.vnet[each.value.vnet_key].subnet_ids, each.value.subnet_key, null)
-    private_ip_address = try(each.value.private_ip_address, null)
-    public_ip          = true
-    public_ip_name     = "${var.name_prefix}${each.key}-pip"
+  interfaces = [for v in each.value.interfaces : {
+    name                     = "${var.name_prefix}${each.value.name}-${v.name}"
+    subnet_id                = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
+    create_public_ip         = try(v.create_pip, false)
+    public_ip_name           = try(v.public_ip_name, null)
+    public_ip_resource_group = try(v.public_ip_resource_group, null)
+    private_ip_address       = try(v.private_ip_address, null)
   }]
 
-  logging_disks = {
-    logs-1 = {
-      size : "2048"
-      lun : "1"
-    }
-  }
+  logging_disks = try(each.value.data_disks, {})
 
   username = var.vmseries_username
   password = local.vmseries_password

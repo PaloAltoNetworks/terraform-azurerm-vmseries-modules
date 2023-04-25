@@ -155,11 +155,11 @@ variable "location" {
 
 variable "backend_name" {
   description = <<-EOF
-    The name of the backend pool to create. If an empty name is provided, it will be auto-generated.
-    All the frontends of the load balancer always use the same single backend.
+    The name of the backend pool to create. All the frontends of the load balancer always use the same single backend.
   EOF
-  default     = ""
+  default     = "vmseries_backend"
   type        = string
+  nullable    = false
 }
 
 variable "name" {
@@ -169,8 +169,9 @@ variable "name" {
 
 variable "probe_name" {
   description = "The name of the load balancer probe."
+  default     = "vmseries_probe"
   type        = string
-  default     = ""
+  nullable    = false
 }
 
 variable "probe_port" {

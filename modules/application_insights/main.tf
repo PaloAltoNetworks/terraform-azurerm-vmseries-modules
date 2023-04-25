@@ -1,7 +1,7 @@
 resource "azurerm_log_analytics_workspace" "this" {
   count = var.workspace_mode ? 1 : 0
 
-  name     = try(var.workspace_name, "${var.name}-Wrkspc")
+  name     = try(var.workspace_name, "${var.name}-wrkspc")
   location = var.location
 
   resource_group_name = var.resource_group_name

@@ -75,12 +75,12 @@ resource "azurerm_lb" "lb" {
 }
 
 resource "azurerm_lb_backend_address_pool" "lb_backend" {
-  name            = coalesce(var.backend_name, var.name)
+  name            = var.backend_name
   loadbalancer_id = azurerm_lb.lb.id
 }
 
 resource "azurerm_lb_probe" "probe" {
-  name            = coalesce(var.probe_name, var.name)
+  name            = var.probe_name
   loadbalancer_id = azurerm_lb.lb.id
   port            = var.probe_port
 }
