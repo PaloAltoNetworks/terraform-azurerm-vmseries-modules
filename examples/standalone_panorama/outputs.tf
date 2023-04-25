@@ -9,6 +9,6 @@ output "password" {
   sensitive   = true
 }
 
-output "mgmt_ip" {
+output "panorama_mgmt_ips" {
   value = { for k, v in module.panorama : k => v.mgmt_ip_address }
 }

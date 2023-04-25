@@ -9,7 +9,7 @@ output "password" {
   sensitive   = true
 }
 
-output "natgw_pip" {
+output "natgw_public_ips" {
   description = "Nat Gateways Public IP resources."
   value = length(var.natgws) > 0 ? { for k, v in module.natgw : k => {
     pip        = v.natgw_pip
@@ -23,17 +23,17 @@ output "metrics_instrumentation_keys" {
   sensitive   = true
 }
 
-output "frontend_ips" {
+output "lb_frontend_ips" {
   description = "IP Addresses of the load balancers."
   value       = length(var.load_balancers) > 0 ? { for k, v in module.load_balancer : k => v.frontend_ip_configs } : null
 }
 
-output "vmseries_mgmt_ip" {
+output "vmseries_mgmt_ips" {
   description = "IP addresses for the VMSeries management interface."
   value       = { for k, v in module.vmseries : k => v.mgmt_ip_address }
 }
 
-output "bootstrap_storages" {
+output "bootstrap_storage_urls" {
   value     = length(var.bootstrap_storage) > 0 ? { for k, v in module.bootstrap_share : k => v.storage_share.url } : null
   sensitive = true
 }
