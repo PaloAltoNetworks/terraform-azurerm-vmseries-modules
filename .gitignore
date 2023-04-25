@@ -36,7 +36,7 @@ authcodes
 crash.log
 credentials.json
 # Palo specific
-# init-cfg.txt
+init-cfg.txt
 temp
 terraform.rc
 tmp
