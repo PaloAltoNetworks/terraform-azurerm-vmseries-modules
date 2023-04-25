@@ -160,7 +160,7 @@ vmseries_vm_size  = "Standard_DS3_v2"
 vmseries_sku      = "byol"
 vmseries_password = "123QWEasd"
 vmseries = {
-  "vm-in-1" = {
+  "fw-in-1" = {
     name                 = "inbound-firewall-01"
     add_to_appgw_backend = true
     bootstrap_storage = {
@@ -188,7 +188,7 @@ vmseries = {
       }
     ]
   }
-  "vm-in-2" = {
+  "fw-in-2" = {
     name                 = "inbound-firewall-02"
     add_to_appgw_backend = true
     bootstrap_storage = {
@@ -216,7 +216,7 @@ vmseries = {
       }
     ]
   }
-  "vm-obew-1" = {
+  "fw-obew-1" = {
     name = "obew-firewall-01"
     bootstrap_storage = {
       name                   = "bootstrap"
@@ -243,7 +243,7 @@ vmseries = {
       }
     ]
   }
-  "vm-obew-2" = {
+  "fw-obew-2" = {
     name = "obew-firewall-02"
     bootstrap_storage = {
       name                   = "bootstrap"

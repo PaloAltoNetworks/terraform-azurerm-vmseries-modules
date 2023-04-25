@@ -47,7 +47,7 @@ vnets = {
 panorama_version = "10.2.3"
 
 panoramas = {
-  "panorama" = {
+  "pn-1" = {
     name               = "panorama01"
     vnet_key           = "vnet"
     subnet_key         = "panorama"

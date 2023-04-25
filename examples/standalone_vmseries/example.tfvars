@@ -46,7 +46,7 @@ vnets = {
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
-  "vm01" = {
+  "fw-1" = {
     name              = "firewall01"
     bootstrap_options = "type=dhcp-client"
     vnet_key          = "transit"
