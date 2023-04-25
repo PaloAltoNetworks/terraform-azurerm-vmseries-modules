@@ -135,8 +135,8 @@ load_balancers = {
     avzones = ["1", "2", "3"]
     frontend_ips = {
       "ha-ports" = {
-        vnet_name          = "transit"
-        subnet_name        = "private"
+        vnet_key           = "transit"
+        subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
           HA_PORTS = {
@@ -158,48 +158,48 @@ vmseries = {
   "vm-1" = {
     name              = "firewall01"
     bootstrap_options = "type=dhcp-client"
-    vnet_name         = "transit"
+    vnet_key          = "transit"
     avzone            = 1
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
       {
-        name               = "private"
-        subnet_name        = "private"
-        load_balancer_name = "private"
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       },
       {
-        name               = "public"
-        subnet_name        = "public"
-        load_balancer_name = "public"
-        create_pip         = true
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
+        create_pip        = true
       }
     ]
   }
   "vm-2" = {
     name              = "firewall02"
     bootstrap_options = "type=dhcp-client"
-    vnet_name         = "transit"
+    vnet_key          = "transit"
     avzone            = 2
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
       {
-        name               = "private"
-        subnet_name        = "private"
-        load_balancer_name = "private"
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       },
       {
-        name               = "public"
-        subnet_name        = "public"
-        load_balancer_name = "public"
-        create_pip         = true
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
+        create_pip        = true
       }
     ]
   }
@@ -210,8 +210,8 @@ vmseries = {
 appgws = {
   "public" = {
     name                     = "public-appgw"
-    vnet_name                = "transit"
-    subnet_name              = "appgw"
+    vnet_key                 = "transit"
+    subnet_key               = "appgw"
     zones                    = ["1", "2", "3"]
     capacity                 = 2
     vmseries_public_nic_name = "public"

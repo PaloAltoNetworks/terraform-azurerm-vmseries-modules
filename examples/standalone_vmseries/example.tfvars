@@ -49,12 +49,12 @@ vmseries = {
   "vm01" = {
     name              = "firewall01"
     bootstrap_options = "type=dhcp-client"
-    vnet_name         = "transit"
+    vnet_key          = "transit"
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
     ]
   }

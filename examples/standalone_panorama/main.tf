@@ -34,7 +34,7 @@ locals {
 
 # Manage the network required for the topology.
 module "vnet" {
-  source = "../modules/vnet"
+  source = "../../modules/vnet"
 
   for_each = var.vnets
 
@@ -56,8 +56,7 @@ module "vnet" {
 }
 
 module "panorama" {
-  source  = "PaloAltoNetworks/vmseries-modules/azurerm//modules/panorama"
-  version = "0.5.4"
+  source = "../../modules/panorama"
 
   for_each = var.panoramas
 
@@ -75,7 +74,7 @@ module "panorama" {
 
   interface = [{
     name               = "${var.name_prefix}management"
-    subnet_id          = lookup(module.vnet[each.value.vnet_name].subnet_ids, each.value.subnet_name, null)
+    subnet_id          = lookup(module.vnet[each.value.vnet_key].subnet_ids, each.value.subnet_key, null)
     private_ip_address = try(each.value.private_ip_address, null)
     public_ip          = true
     public_ip_name     = "${var.name_prefix}${each.key}-pip"

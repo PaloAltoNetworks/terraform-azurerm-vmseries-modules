@@ -128,8 +128,8 @@ load_balancers = {
     avzones = ["1", "2", "3"]
     frontend_ips = {
       "ha-ports" = {
-        vnet_name          = "transit"
-        subnet_name        = "private"
+        vnet_key           = "transit"
+        subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
           HA_PORTS = {
@@ -148,10 +148,10 @@ load_balancers = {
 
 bootstrap_storage = {
   bootstrap = {
-    name          = "xmplbootstrapdedicated"
-    public_snet   = "public"
-    private_snet  = "private"
-    intranet_cidr = "10.100.0.0/16"
+    name             = "xmplbootstrapdedicated"
+    public_snet_key  = "public"
+    private_snet_key = "private"
+    intranet_cidr    = "10.100.0.0/16"
   }
 }
 
@@ -168,23 +168,23 @@ vmseries = {
       static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
       template_bootstrap_xml = "templates/bootstrap_inbound.tmpl"
     }
-    vnet_name = "transit"
-    avzone    = 1
+    vnet_key = "transit"
+    avzone   = 1
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
       {
-        name        = "private"
-        subnet_name = "private"
+        name       = "private"
+        subnet_key = "private"
       },
       {
-        name               = "public"
-        subnet_name        = "public"
-        load_balancer_name = "public"
-        create_pip         = true
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
+        create_pip        = true
       }
     ]
   }
@@ -196,23 +196,23 @@ vmseries = {
       static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
       template_bootstrap_xml = "templates/bootstrap_inbound.tmpl"
     }
-    vnet_name = "transit"
-    avzone    = 2
+    vnet_key = "transit"
+    avzone   = 2
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
       {
-        name        = "private"
-        subnet_name = "private"
+        name       = "private"
+        subnet_key = "private"
       },
       {
-        name               = "public"
-        subnet_name        = "public"
-        load_balancer_name = "public"
-        create_pip         = true
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
+        create_pip        = true
       }
     ]
   }
@@ -223,23 +223,23 @@ vmseries = {
       static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
       template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
     }
-    vnet_name = "transit"
-    avzone    = 1
+    vnet_key = "transit"
+    avzone   = 1
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
       {
-        name               = "private"
-        subnet_name        = "private"
-        load_balancer_name = "private"
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       },
       {
-        name        = "public"
-        subnet_name = "public"
-        create_pip  = true
+        name       = "public"
+        subnet_key = "public"
+        create_pip = true
       }
     ]
   }
@@ -250,23 +250,23 @@ vmseries = {
       static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
       template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
     }
-    vnet_name = "transit"
-    avzone    = 2
+    vnet_key = "transit"
+    avzone   = 2
     interfaces = [
       {
-        name        = "mgmt"
-        subnet_name = "management"
-        create_pip  = true
+        name       = "mgmt"
+        subnet_key = "management"
+        create_pip = true
       },
       {
-        name               = "private"
-        subnet_name        = "private"
-        load_balancer_name = "private"
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       },
       {
-        name        = "public"
-        subnet_name = "public"
-        create_pip  = true
+        name       = "public"
+        subnet_key = "public"
+        create_pip = true
       }
     ]
   }

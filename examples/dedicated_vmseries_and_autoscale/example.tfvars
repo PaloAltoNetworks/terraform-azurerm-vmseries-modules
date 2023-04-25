@@ -1,7 +1,8 @@
 # --- GENERAL --- #
 location            = "North Europe"
 resource_group_name = "autoscale-common"
-name_prefix         = "example-"
+# resource_group_name = "autoscale-dedicated"
+name_prefix = "example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -117,8 +118,8 @@ vnets = {
 natgws = {
   "natgw" = {
     name              = "public-natgw"
-    vnet_name         = "transit"
-    subnet_names      = ["public", "management"]
+    vnet_key          = "transit"
+    subnet_keys       = ["public", "management"]
     create_pip        = false
     create_pip_prefix = true
     pip_prefix_length = 29
@@ -152,8 +153,8 @@ load_balancers = {
     name = "private-lb"
     frontend_ips = {
       "ha-ports" = {
-        vnet_name          = "transit"
-        subnet_name        = "private"
+        vnet_key           = "transit"
+        subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
           HA_PORTS = {
@@ -168,10 +169,10 @@ load_balancers = {
 
 appgws = {
   "public" = {
-    name        = "public-appgw"
-    vnet_name   = "transit"
-    subnet_name = "appgw"
-    capacity    = 2
+    name       = "public-appgw"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    capacity   = 2
     rules = {
       "minimum" = {
         priority = 1
@@ -201,23 +202,23 @@ vmseries_vm_size = "Standard_DS3_v2"
 vmss = {
   "inbound" = {
     name              = "inbound-vmss"
-    vnet_name         = "transit"
+    vnet_key          = "transit"
     bootstrap_options = "type=dhcp"
 
     interfaces = [
       {
-        name        = "management"
-        subnet_name = "management"
+        name       = "management"
+        subnet_key = "management"
       },
       {
-        name        = "private"
-        subnet_name = "private"
+        name       = "private"
+        subnet_key = "private"
       },
       {
-        name                     = "public"
-        subnet_name              = "public"
-        load_balancer_name       = "public"
-        application_gateway_name = "public"
+        name                    = "public"
+        subnet_key              = "public"
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
       }
     ]
 
@@ -245,22 +246,22 @@ vmss = {
   }
   "obew" = {
     name              = "obew-vmss"
-    vnet_name         = "transit"
+    vnet_key          = "transit"
     bootstrap_options = "type=dhcp"
 
     interfaces = [
       {
-        name        = "management"
-        subnet_name = "management"
+        name       = "management"
+        subnet_key = "management"
       },
       {
-        name               = "private"
-        subnet_name        = "private"
-        load_balancer_name = "private"
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       },
       {
-        name        = "public"
-        subnet_name = "public"
+        name       = "public"
+        subnet_key = "public"
       }
     ]
 

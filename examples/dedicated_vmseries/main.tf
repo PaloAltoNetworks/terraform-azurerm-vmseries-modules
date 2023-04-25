@@ -66,7 +66,7 @@ module "natgw" {
   location            = var.location
   zone                = try(each.value.zone, null)
   idle_timeout        = try(each.value.idle_timeout, null)
-  subnet_ids          = { for v in each.value.subnet_names : v => module.vnet[each.value.vnet_name].subnet_ids[v] }
+  subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
   create_pip                       = try(each.value.create_pip, true)
   existing_pip_name                = try(each.value.existing_pip_name, null)
@@ -105,7 +105,7 @@ module "load_balancer" {
       public_ip_name           = try(v.public_ip_name, null)
       public_ip_resource_group = try(v.public_ip_resource_group, null)
       private_ip_address       = try(v.private_ip_address, null)
-      subnet_id                = try(module.vnet[v.vnet_name].subnet_ids[v.subnet_name], null)
+      subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
       in_rules                 = try(v.in_rules, {})
       out_rules                = try(v.out_rules, {})
       zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
@@ -149,16 +149,16 @@ resource "local_file" "bootstrap_xml" {
     {
       private_azure_router_ip = cidrhost(
         try(
-          module.vnet[each.value.vnet_name].subnet_cidrs[each.value.bootstrap_storage.private_snet],
-          module.vnet[each.value.vnet_name].subnet_cidrs[var.bootstrap_storage[each.value.bootstrap_storage.name].private_snet]
+          module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_storage.private_snet_key],
+          module.vnet[each.value.vnet_key].subnet_cidrs[var.bootstrap_storage[each.value.bootstrap_storage.name].private_snet_key]
         ),
         1
       )
 
       public_azure_router_ip = cidrhost(
         try(
-          module.vnet[each.value.vnet_name].subnet_cidrs[each.value.bootstrap_storage.public_snet],
-          module.vnet[each.value.vnet_name].subnet_cidrs[var.bootstrap_storage[each.value.bootstrap_storage.name].public_snet]
+          module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_storage.public_snet_key],
+          module.vnet[each.value.vnet_key].subnet_cidrs[var.bootstrap_storage[each.value.bootstrap_storage.name].public_snet_key]
         ),
         1
       )
@@ -174,11 +174,11 @@ resource "local_file" "bootstrap_xml" {
       private_network_cidr = try(
         each.value.bootstrap_storage.intranet_cidr,
         var.bootstrap_storage[each.value.bootstrap_storage.name].intranet_cidr,
-        module.vnet[each.value.vnet_name].vnet_cidr[0]
+        module.vnet[each.value.vnet_key].vnet_cidr[0]
       )
 
       mgmt_profile_appgw_cidr = flatten([
-        for _, v in var.appgws : var.vnets[v.vnet_name].subnets[v.subnet_name].address_prefixes
+        for _, v in var.appgws : var.vnets[v.vnet_key].subnets[v.subnet_key].address_prefixes
       ])
     }
   )
@@ -276,12 +276,12 @@ module "vmseries" {
 
   interfaces = [for v in each.value.interfaces : {
     name                     = "${var.name_prefix}${each.value.name}-${v.name}"
-    subnet_id                = try(module.vnet[each.value.vnet_name].subnet_ids[v.subnet_name], null)
+    subnet_id                = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
     create_public_ip         = try(v.create_pip, false)
     public_ip_name           = try(v.public_ip_name, null)
     public_ip_resource_group = try(v.public_ip_resource_group, null)
-    enable_backend_pool      = can(v.load_balancer_name) ? true : false
-    lb_backend_pool_id       = try(module.load_balancer[v.load_balancer_name].backend_pool_id, null)
+    enable_backend_pool      = can(v.load_balancer_key) ? true : false
+    lb_backend_pool_id       = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
     private_ip_address       = try(v.private_ip_address, null)
   }]
 
@@ -302,7 +302,7 @@ module "appgw" {
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
-  subnet_id           = module.vnet[each.value.vnet_name].subnet_ids[each.value.subnet_name]
+  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   managed_identities = try(each.value.managed_identities, null)
   waf_enabled        = try(each.value.waf_enabled, false)
@@ -318,8 +318,8 @@ module "appgw" {
 
   rules = each.value.rules
 
-  ssl_policy_type                 = try(each.value.ssl_policy_type, "Predefined")
-  ssl_policy_name                 = try(each.value.ssl_policy_name, "AppGwSslPolicy20150501")
+  ssl_policy_type                 = try(each.value.ssl_policy_type, null)
+  ssl_policy_name                 = try(each.value.ssl_policy_name, null)
   ssl_policy_min_protocol_version = try(each.value.ssl_policy_min_protocol_version, null)
   ssl_policy_cipher_suites        = try(each.value.ssl_policy_cipher_suites, [])
   ssl_profiles                    = try(each.value.ssl_profiles, {})

@@ -56,7 +56,7 @@ variable "vnets" {
   For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.0/modules/vnet/README.md)
 
   - `name` : a name of a Virtual Network
-  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `virtual_network_name`
+  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET
   - `address_space` : a list of CIDRs for VNET
   - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
 
@@ -106,8 +106,8 @@ variable "panoramas" {
   Following properties are available:
 
   - `name` : a name of a Panorama VM
-  - `vnet_name`: a name of a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable
-  - `subnet_name`: a name of a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_name` property
+  - `vnet_key`: a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable
+  - `subnet_key`: a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_key` property
   - `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed
   - `avzones`: when `enable_zones` is `true` these are availability zones used by Panorama's public IPs
   - `custom_image_id`: a custom build of Panorama to use, overrides the stock image version.

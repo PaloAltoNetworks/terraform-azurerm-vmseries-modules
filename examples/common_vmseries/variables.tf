@@ -81,8 +81,8 @@ variable "natgws" {
   - `resource_group_name : name of a Resource Group hosting the NatGW (newly create or the existing one).
   - `zone` : Availability Zone in which the NatGW will be placed, when skipped AzureRM will pick a zone.
   - `idle_timeout` : connection IDLE timeout in minutes, for newly created resources
-  - `vnet_name` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.
-  - `subnet_names` : a list of subnets (key values) the NatGW will be assigned to, defined in `var.vnets` for a VNET described by `vnet_name`.
+  - `vnet_key` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.
+  - `subnet_keys` : a list of subnets (key values) the NatGW will be assigned to, defined in `var.vnets` for a VNET described by `vnet_name`.
   - `create_pip` : (default: `true`) create a Public IP that will be attached to a NatGW
   - `existing_pip_name` : when `create_pip` is set to `false`, source and attach and existing Public IP to the NatGW
   - `existing_pip_resource_group_name` : when `create_pip` is set to `false`, name of the Resource Group hosting the existing Public IP
@@ -96,8 +96,8 @@ variable "natgws" {
   natgws = {
     "natgw" = {
       name         = "public-natgw"
-      vnet_name    = "transit-vnet"
-      subnet_names = ["public"]
+      vnet_key     = "transit-vnet"
+      subnet_keys  = ["public"]
       zone         = 1
     }
   }
@@ -126,7 +126,8 @@ variable "load_balancers" {
     - `public_ip_name`: (public LB) defaults to `null`, when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure
     - `public_ip_resource_group`: (public LB) defaults to `null`, when using an existing Public IP created in a different Resource Group than the currently used use this property is to provide the name of that RG
     - `private_ip_address`: (private LB) defaults to `null`, specify a static IP address that will be used by a listener
-    - `subnet_name`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
+    - `vnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a vnet's key (as defined in `vnet` variable). This will be the VNET hosting this Load Balancer
+    - `subnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet's key (as defined in `vnet` variable) to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
     - `rules` - a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:
       - `protocol`: protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule
       - `port`: port used by the rule, for HA PORTS rule set this to `0`
@@ -160,8 +161,8 @@ variable "load_balancers" {
     name = "ha_ports_internal_lb
     frontend_ips = {
       "ha-ports" = {
-        vnet_name          = "trust_vnet"
-        subnet_name        = "trust_snet"
+        vnet_key           = "trust_vnet"
+        subnet_key         = "trust_snet"
         private_ip_address = "10.0.0.1"
         rules = {
           HA_PORTS = {
@@ -175,6 +176,7 @@ variable "load_balancers" {
   ```
 
   EOF
+  default     = {}
 }
 
 
@@ -270,6 +272,13 @@ variable "bootstrap_storage" {
   - `name` : name of the Storage Account. Please keep in mind that storage account name has to be globally unique. This name will not be prefixed with the value of `var.name_prefix`.
   - `create_storage_account` : (defaults to `true`) create or source (when `false`) an existing Storage Account.
   - `resource_group_name` : (defaults to `var.resource_group_name`) name of the Resource Group hosting the Storage Account (existing or newly created). The RG has to exist.
+
+  The properties below do not directly change anything in the Storage Account settings. They can be used to control common parts of the `DAY0` configuration (used only when full bootstrap is used). These properties can also be specified per firewall, but when specified here they tak higher precedence:
+  - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
+  - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
+  - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.
+  - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).
+
   EOF
   default     = {}
   type        = any
@@ -280,27 +289,28 @@ variable "vmseries" {
   Map of virtual machines to create to run VM-Series - inbound firewalls. Following properties are supported:
 
   - `name` : name of the VMSeries virtual machine.
-  - `vnet_name` : a name of a VNET (key value) defined in the `var.vnets` map. This value will be used during network interfaces creation.
+  - `vnet_key` : a key of a VNET defined in the `var.vnets` map. This value will be used during network interfaces creation.
   - `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.
   - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1".
   - `availability_set_name` : a name of an Availability Set as declared in `availability_set` property. Specify when HA is required but cannot go for zonal deployment.
+
   - `bootstrap_options` : string, optional bootstrap options to pass to VM-Series instances, semicolon separated values. When defined this precedence over `bootstrap_storage`
   - `bootstrap_storage` : a map containing definition of the bootstrap package content. When present triggers a creation of a File Share in an existing Storage Account, following properties supported:
     - `name` : a name of a key in `var.bootstrap_storage` variable defining a Storage Account
     - `static_files` : a map where key is a path to a file, value is the location of the file in the bootstrap package (file share). All files in this map are copied 1:1 to the bootstrap package
     - `template_bootstrap_xml` : path to the `bootstrap.xml` template. When defined it will trigger creation of the `bootstrap.xml` file and the file will be uploaded to the storage account. This is a simple `day 0` configuration file that should set up only basic networking. Specifying this property forces additional properties that are required to properly template the file. They can be defined per each VM or globally for all VMs (in this case place them in the bootstrap storage definition). The properties are listed below.
-    - `public_snet` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
-    - `private_snet` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
+    - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
+    - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
     - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.
     - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).
 
   - `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
     - `name`: string that will form the NIC name
-    - `subnet_name` : (string) a name of a subnet (key value) as defined in `var.vnets`
+    - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`
     - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`
     - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface
     - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
-    - `load_balancer_name` : (string) name of a Load Balancer (key value) defined in the `var.loadbalancers`  variable, defaults to `null`
+    - `load_balancer_key` : (string) key of a Load Balancer defined in the `var.loadbalancers`  variable, defaults to `null`
     - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
 
   Example:
@@ -312,28 +322,29 @@ variable "vmseries" {
         name                   = "storageaccountname"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
         template_bootstrap_xml = "templates/bootstrap_common.tmpl"
-        public_snet            = "public"
-        private_snet           = "private"
+        public_snet_key        = "public"
+        private_snet_key       = "private"
       }
-      avzone = 1
+      avzone   = 1
+      vnet_key = "trust"
       interfaces = [
         {
           name               = "mgmt"
-          subnet_name        = "mgmt"
+          subnet_key         = "mgmt"
           create_pip         = true
           private_ip_address = "10.0.0.1"
         },
         {
           name                 = "trust"
-          subnet_name          = "private"
+          subnet_key           = "private"
           private_ip_address   = "10.0.1.1"
-          load_balancer_name   = "private_lb"
+          load_balancer_key    = "private_lb"
         },
         {
           name                 = "untrust"
-          subnet_name          = "public"
+          subnet_key           = "public"
           private_ip_address   = "10.0.2.1"
-          load_balancer_name   = "public_lb"
+          load_balancer_key    = "public_lb"
           public_ip_name       = "existing_public_ip"
         }
       ]
@@ -352,8 +363,8 @@ variable "appgws" {
 
   Following properties are supported:
   - `name` : name of the Application Gateway.
-  - `vnet_name` : a name of a VNET (key value) defined in the `var.vnets` map.
-  - `subnet_name` : a name of a subnet (key value) as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
+  - `vnet_key` : a key of a VNET defined in the `var.vnets` map.
+  - `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
   - `capacity` : (optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)
   - `capacity_min` : (optional) when set enables autoscaling and becomes the minimum capacity

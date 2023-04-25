@@ -66,7 +66,7 @@ module "natgw" {
   location            = var.location
   zone                = try(each.value.zone, null)
   idle_timeout        = try(each.value.idle_timeout, null)
-  subnet_ids          = { for v in each.value.subnet_names : v => module.vnet[each.value.vnet_name].subnet_ids[v] }
+  subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
   create_pip                       = try(each.value.create_pip, true)
   existing_pip_name                = try(each.value.existing_pip_name, null)
@@ -106,7 +106,7 @@ module "load_balancer" {
       public_ip_name           = try(v.public_ip_name, null)
       public_ip_resource_group = try(v.public_ip_resource_group, null)
       private_ip_address       = try(v.private_ip_address, null)
-      subnet_id                = try(module.vnet[v.vnet_name].subnet_ids[v.subnet_name], null)
+      subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
       in_rules                 = try(v.in_rules, {})
       out_rules                = try(v.out_rules, {})
       zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
@@ -117,6 +117,25 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
+
+# Create the scale sets and related resources.
+module "ai" {
+  source = "../../modules/application_insights"
+
+  for_each = { for k, v in var.vmss : k => "${v.name}-ai" if can(v.autoscale_metrics) }
+
+  name                = "${var.name_prefix}${each.value}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+
+  workspace_mode            = try(var.application_insights.workspace_mode, null)
+  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
+  workspace_sku             = try(var.application_insights.workspace_sku, null)
+  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+
+  tags = var.tags
+}
+
 module "appgw" {
   source = "../../modules/appgw"
 
@@ -125,7 +144,7 @@ module "appgw" {
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
-  subnet_id           = module.vnet[each.value.vnet_name].subnet_ids[each.value.subnet_name]
+  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   managed_identities = try(each.value.managed_identities, null)
   waf_enabled        = try(each.value.waf_enabled, false)
@@ -145,26 +164,6 @@ module "appgw" {
 
   tags       = var.tags
   depends_on = [module.vnet]
-}
-
-
-
-# Create the scale sets and related resources.
-module "ai" {
-  source = "../../modules/application_insights"
-
-  for_each = { for k, v in var.vmss : k => "${v.name}-ai" if can(v.autoscale_metrics) }
-
-  name                = "${var.name_prefix}${each.value}"
-  resource_group_name = local.resource_group.name
-  location            = var.location
-
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
-
-  tags = var.tags
 }
 
 module "vmss" {
@@ -200,11 +199,11 @@ module "vmss" {
   interfaces = [
     for v in each.value.interfaces : {
       name                   = v.name
-      subnet_id              = module.vnet[each.value.vnet_name].subnet_ids[v.subnet_name]
+      subnet_id              = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
       create_pip             = try(v.create_pip, false)
       pip_domain_name_label  = try(v.pip_domain_name_label, null)
-      lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_name].backend_pool_id], [])
-      appgw_backend_pool_ids = try([module.appgw[v.application_gateway_name].backend_pool_id], [])
+      lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])
+      appgw_backend_pool_ids = try([module.appgw[v.application_gateway_key].backend_pool_id], [])
     }
   ]
 
@@ -233,6 +232,7 @@ module "vmss" {
 
   depends_on = [
     module.ai,
-    module.vnet
+    module.vnet,
+    module.appgw
   ]
 }

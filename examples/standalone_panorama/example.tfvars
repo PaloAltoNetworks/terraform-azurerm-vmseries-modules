@@ -49,8 +49,8 @@ panorama_version = "10.2.3"
 panoramas = {
   "panorama" = {
     name               = "panorama01"
-    vnet_name          = "vnet"
-    subnet_name        = "management"
+    vnet_key           = "vnet"
+    subnet_key         = "management"
     private_ip_address = "10.1.0.10"
   }
 }

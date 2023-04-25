@@ -81,8 +81,8 @@ variable "natgws" {
   - `resource_group_name : name of a Resource Group hosting the NatGW (newly create or the existing one).
   - `zone` : Availability Zone in which the NatGW will be placed, when skipped AzureRM will pick a zone.
   - `idle_timeout` : connection IDLE timeout in minutes, for newly created resources
-  - `vnet_name` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.
-  - `subnet_names` : a list of subnets (key values) the NatGW will be assigned to, defined in `var.vnets` for a VNET described by `vnet_name`.
+  - `vnet_key` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.
+  - `subnet_keys` : a list of subnets (key values) the NatGW will be assigned to, defined in `var.vnets` for a VNET described by `vnet_name`.
   - `create_pip` : (default: `true`) create a Public IP that will be attached to a NatGW
   - `existing_pip_name` : when `create_pip` is set to `false`, source and attach and existing Public IP to the NatGW
   - `existing_pip_resource_group_name` : when `create_pip` is set to `false`, name of the Resource Group hosting the existing Public IP
@@ -96,8 +96,8 @@ variable "natgws" {
   natgws = {
     "natgw" = {
       name         = "public-natgw"
-      vnet_name    = "transit-vnet"
-      subnet_names = ["public"]
+      vnet_key     = "transit-vnet"
+      subnet_keys  = ["public"]
       zone         = 1
     }
   }
@@ -126,7 +126,8 @@ variable "load_balancers" {
     - `public_ip_name`: (public LB) defaults to `null`, when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure
     - `public_ip_resource_group`: (public LB) defaults to `null`, when using an existing Public IP created in a different Resource Group than the currently used use this property is to provide the name of that RG
     - `private_ip_address`: (private LB) defaults to `null`, specify a static IP address that will be used by a listener
-    - `subnet_name`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
+    - `vnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a vnet's key (as defined in `vnet` variable). This will be the VNET hosting this Load Balancer
+    - `subnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet's key (as defined in `vnet` variable) to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
     - `rules` - a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:
       - `protocol`: protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule
       - `port`: port used by the rule, for HA PORTS rule set this to `0`
@@ -160,8 +161,8 @@ variable "load_balancers" {
     name = "ha_ports_internal_lb
     frontend_ips = {
       "ha-ports" = {
-        vnet_name          = "trust_vnet"
-        subnet_name        = "trust_snet"
+        vnet_key           = "trust_vnet"
+        subnet_key         = "trust_snet"
         private_ip_address = "10.0.0.1"
         rules = {
           HA_PORTS = {
@@ -173,34 +174,6 @@ variable "load_balancers" {
     }
   }
   ```
-
-  EOF
-}
-
-# Application Gateway
-variable "appgws" {
-  description = <<-EOF
-  A map defining all Application Gateways in the current deployment.
-
-  For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/main/modules/appgw/README.md).
-
-  Following properties are supported:
-  - `name` : name of the Application Gateway.
-  - `vnet_name` : a name of a VNET (key value) defined in the `var.vnets` map.
-  - `subnet_name` : a name of a subnet (key value) as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
-  - `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
-  - `capacity` : (optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)
-  - `capacity_min` : (optional) when set enables autoscaling and becomes the minimum capacity
-  - `capacity_max` : (optional) maximum capacity for autoscaling
-  - `enable_http2` : enable HTTP2 support on the Application Gateway
-  - `waf_enabled` : (optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`
-  - `vmseries_public_nic_name` : name of the public VMSeries interface as defined in `interfaces` property.
-  - `managed_identities` : (optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault
-  - `ssl_policy_type` : (optional) type of an SSL policy, defaults to `Predefined`
-  - `ssl_policy_name` : (optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
-  - `ssl_policy_min_protocol_version` : (optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
-  - `ssl_policy_cipher_suites` : (optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
-  - `ssl_profiles` : (optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
 
   EOF
   default     = {}
@@ -283,3 +256,33 @@ variable "vmss" {
   type        = any
 }
 
+
+
+# Application Gateway
+variable "appgws" {
+  description = <<-EOF
+  A map defining all Application Gateways in the current deployment.
+
+  For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/main/modules/appgw/README.md).
+
+  Following properties are supported:
+  - `name` : name of the Application Gateway.
+  - `vnet_key` : a key of a VNET defined in the `var.vnets` map.
+  - `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
+  - `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
+  - `capacity` : (optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)
+  - `capacity_min` : (optional) when set enables autoscaling and becomes the minimum capacity
+  - `capacity_max` : (optional) maximum capacity for autoscaling
+  - `enable_http2` : enable HTTP2 support on the Application Gateway
+  - `waf_enabled` : (optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`
+  - `vmseries_public_nic_name` : name of the public VMSeries interface as defined in `interfaces` property.
+  - `managed_identities` : (optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault
+  - `ssl_policy_type` : (optional) type of an SSL policy, defaults to `Predefined`
+  - `ssl_policy_name` : (optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
+  - `ssl_policy_min_protocol_version` : (optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
+  - `ssl_policy_cipher_suites` : (optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
+  - `ssl_profiles` : (optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
+
+  EOF
+  default     = {}
+}
