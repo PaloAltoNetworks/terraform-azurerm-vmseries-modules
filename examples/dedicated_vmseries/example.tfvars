@@ -23,7 +23,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["134.238.135.137", "130.41.247.15"]
+            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -155,10 +155,8 @@ bootstrap_storage = {
   }
 }
 
-vmseries_version  = "10.2.3"
-vmseries_vm_size  = "Standard_DS3_v2"
-vmseries_sku      = "byol"
-vmseries_password = "123QWEasd"
+vmseries_version = "10.2.3"
+vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
   "fw-in-1" = {
     name                 = "inbound-firewall-01"
