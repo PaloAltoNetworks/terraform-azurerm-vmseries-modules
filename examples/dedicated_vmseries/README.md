@@ -1,50 +1,113 @@
-# NGFW module
+# Palo Alto Networks VM-Series Dedicated Firewall Option
 
-## Purpose
+An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Dedicated Firewall reference architecture.
 
-Terraform module used to deploy Next Generation Firewalls and related resources.
+**NOTE:**
 
-## Usage
+* after the deployment the firewalls remain not licensed, they do however contain minimum `DAY0` configuration (required NIC, VR, routes configuration).
+* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
 
-The module is written in a way that 99% of the reference architecture adjustments can be done from the `TFVARS` file. This make the code as well as the `VAR` file slightly more complicated. To ease the start following example `TFVARS` files have been prepared:
+## Topology and resources
 
-* [`transit_vnet_common_example.tfvars`](transit_vnet_common_example.tfvars), deploys common reference architecture, with:
-  * two Next Generation Firewalls, bootstrap using user-data, with static private IP addresses assigned to each NIC
-  * Availability Set, as an example of a deployment in a region where Availability Zones are not available
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * Application Insights, one per each VM
-  * A NAT GW attached to the public subnet.
-* [`transit_vnet_common_full_bootstrap_example.tfvars`](transit_vnet_common_panorama_natgw.tfvars), deploys a common reference architecture for an existing Panorama installation (see [`panorama` module](../panorama/README.md)), with:
-  * two Next Generation Firewalls, bootstrap using full bootstrap with `bootstrap.xml` templated, with private IP addresses taken from DHCP
-  * Availability Zones for resiliency
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * public NICs do not contain Public IP addresses assigned: all public traffic goes through the public LB (inbound) outbound rules.
-* [`transit_vnet_common_panorama_natgw.tfvars`](transit_vnet_common_with_natgw_example.tfvars), deploys a common reference architecture with:
-  * two Next Generation Firewalls, bootstrapped using user-data (Panorama connectivity, licensing), with private IP addresses taken from DHCP
-  * Availability Set, as an example of a deployment in a region where Availability Zones are not available
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * peetig with a Panorama VNET deployed [panorama_example.tfvars](../panorama/panorama_example.tfvars)
-* [`transit_vnet_dedicated_example.tfvars`](transit_vnet_dedicated_example.tfvars), deploys a dedicated reference architecture with:
-  * four Next Generation Firewalls (two inbound, two OBEW), bootstrapped using full bootstrapping with `bootstrap.xml` templated, with private IP addresses assigned statically
-  * Availability Zones for resiliency
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * Application Gateway for HTTP(s) traffic
+Common Firewall reference architecture consists of:
 
-## Deploy
+* a VNET containing:
+  * 3 subnets dedicated to the firewalls: management, private and public
+  * Route Tables and Network Security Groups
+* 2 Load Balancers:
+  * public - with a public IP address assigned, in front of the firewalls public interfaces, for incoming traffic
+  * private - in front of the firewalls private interfaces, for outgoing and east-west traffic
+* a Storage Account used to keep bootstrap packages containing `DAY0` configuration for the firewalls
+* 4 firewalls:
+  * deployed in different zones
+  * 2 pairs, one for inbound, the other for outbound and east-west traffic
+  * with 3 network interfaces each: management, public, private
+  * with public IP addresses assigned to:
+    * management interface
+    * public interface
 
-To deploy this infrastructure simply run these commands in the current folder:
+### Architecture diagram
 
-```bash
-terraform init # only the 1st time
-terraform plan -var-file {{name of the example var file}} -out terraform.tfplan
-terraform apply terraform.tfplan
+![Dedicated-Topology-Overview](./diagram-dedicated.png)
+
+## Prerequisites
+
+A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
+
+* (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
+* [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
+* if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
+
+## Deploy the infrastructure
+
+Steps to deploy the infrastructure are as following:
+
+* checkout the code locally (if you haven't done so yet)
+* copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
+* copy the [`init-cfg.sample.txt`](./files/init-cfg.sample.txt) to `init-cfg.txt` and fill it out with required bootstrap parameters (see this [documentation](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components#id07933d91-15be-414d-bc8d-f2a5f3d8df6b) for details)
+* (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+* initialize the Terraform module:
+
+      terraform init
+
+* (optional) plan you infrastructure to see what will be actually deployed:
+
+      terraform plan
+
+* deploy the infrastructure (you will have to confirm it with typing in `yes`):
+
+      terraform apply
+
+  The deployment takes couple of minutes. Observe the output. At the end you should see a summary similar to this:
+
+      bootstrap_storage_urls = <sensitive>
+      lb_frontend_ips = {
+        "private" = {
+          "ha-ports" = "1.2.3.4"
+        }
+        "public" = {
+          "palo-lb-app1-pip" = "1.2.3.4"
+        }
+      }
+      password = <sensitive>
+      username = "panadmin"
+      vmseries_mgmt_ips = {
+        "fw-in-1" = "1.2.3.4"
+        "fw-in-2" = "1.2.3.4"
+        "fw-obew-1" = "1.2.3.4"
+        "fw-obew-2" = "1.2.3.4"
+      }
+
+* at this stage you have to wait couple of minutes for the firewalls to bootstrap.
+
+## Post deploy
+
+Firewalls in this example are configured with password authentication. To retrieve the initial credentials run:
+
+* for username:
+
+      terraform output username
+
+* for password:
+
+      terraform output password
+
+The management public IP addresses are available in the `vmseries_mgmt_ips`:
+
+```sh
+terraform output vmseries_mgmt_ips
 ```
 
-To destroy the infrastructure run:
+You can now login to the devices using either:
 
-```bash
-terraform destroy -var-file {{name of the example var file used to create the architecture}}
-```
+* cli - ssh client is required
+* Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
+
+As mentioned, the devices already contain `DAY0` configuration, so all network interfaces should be configured and Azure Load Balancer should already report that the devices are healthy.
+
+You can now proceed with licensing the devices and configuring your first rules.
+
+Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
