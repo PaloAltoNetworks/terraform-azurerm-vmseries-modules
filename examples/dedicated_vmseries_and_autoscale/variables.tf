@@ -251,6 +251,76 @@ variable "vmseries_password" {
 
 variable "vmss" {
   description = <<-EOF
+  A map defining all Virtual Machine Scale Sets.
+
+  For detailed documentation on how to configure this resource, for available properties, especially for the defaults refer to [module documentation](../../modules/vmss/README.md)
+
+  Following properties are available:
+  - `name` : (string|required) name of the Virtual Machine Scale Set.
+  - `vnet_key` : (string|required) a key of a VNET defined in the `var.vnets` map.
+  - `bootstrap_options` : (string|`''`) bootstrap options passed to every VM instance upon creation.
+  - `zones` : (list(string)|`[]`) a list of Availability Zones to use for Zone redundancy
+  - `encryption_at_host_enabled` : (bool|`null` - Azure defaults) should all of the disks attached to this Virtual Machine be encrypted
+  - `overprovision` : (bool|`null` - module defaults) when provisioning new VM, multiple will be provisioned but the 1st one to run will be kept
+  - `platform_fault_domain_count` : (number|`null` - Azure defaults) number of fault domains to use
+  - `proximity_placement_group_id` : (string|`null`) ID of a proximity placement group the VMSS should be placed in
+  - `scale_in_policy` : (string|`null` - Azure defaults) policy of removing VMs when scaling in
+  - `scale_in_force_deletion` : (bool|`null` - module default) forces (`true`) deletion of VMs during scale in
+  - `single_placement_group` : (bool|`null` - Azure defaults) limit the Scale Set to one Placement Group
+  - `storage_account_type` : (string|`null` - module defaults) type of managed disk that will be used on all VMs
+  - `disk_encryption_set_id` : (string|`null`) the ID of the Disk Encryption Set which should be used to encrypt this Data Disk
+  - `accelerated_networking` : (bool|`null`- module defaults) enable Azure accelerated networking for all dataplane network interfaces
+  - `use_custom_image` : (bool|`false`) 
+  - `custom_image_id` : (string|reqquired when `use_custom_image` is `true`) absolute ID of your own Custom Image to be used for creating new VM-Series
+  - `application_insights_id` : (string|`null`) ID of Application Insights instance that should be used to provide metrics for autoscaling
+  - `interfaces` : (list(string)|`[]`) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
+    - `name` : (string|required) string that will form the NIC name
+    - `subnet_key` : (string|required) a key of a subnet as defined in `var.vnets`
+    - `create_pip` : (bool|`false`) flag to create Public IP for an interface, defaults to `false`
+    - `load_balancer_key` : (string|`null`) key of a Load Balancer defined in the `var.loadbalancers` variable
+    - `application_gateway_key` : (string|`null`) key of an Application Gateway defined in the `var.appgws`
+    - `pip_domain_name_label` : (string|`null`) prefix which should be used for the Domain Name Label for each VM instance
+  - `autoscale_config` : (map|`{}`) map containing basic autoscale configuration
+    - `count_default` : (number|`null` - module defaults) default number or instances when autoscalling is not available
+    - `count_minimum` : (number|`null` - module defaults) minimum number of instances to reach when scaling in
+    - `count_maximum` : (number|`null` - module defaults) maximum number of instances when scaling out
+    - `notification_emails` : (list(string)|`null` - module defaults) a list of e-mail addresses to notify about scaling events
+  - `autoscale_metrics` : (map|`{}`) metrics and thresholds used to trigger scaling events, see module documentation for details
+  - `scaleout_config` : (map|`{}`) scale out configuration, for details see module documentation
+    - `statistic` : (string|`null` - module defaults) aggregation method for statistics coming from different VMs
+    - `time_aggregation` : (string|`null` - module defaults) aggregation method applied to statistics in time window
+    - `window_minutes` : (string|`null` - module defaults) time windows used to analyze statistics
+    - `cooldown_minutes` : (string|`null` - module defaults) time to wait after a scaling event before analyzing the statistics again
+  - `scalein_config` : (map|`{}`) scale in configuration, same properties supported as for `scaleout_config`
+
+  Example, no auto scaling:
+
+  ```
+  {
+  "vmss" = {
+    name              = "ngfw-vmss"
+    vnet_key          = "transit"
+    bootstrap_options = "type=dhcp"
+
+    interfaces = [
+      {
+        name       = "management"
+        subnet_key = "management"
+      },
+      {
+        name       = "private"
+        subnet_key = "private"
+      },
+      {
+        name                    = "public"
+        subnet_key              = "public"
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
+      }
+    ]
+  }
+  ```
+
   EOF
   default     = {}
   type        = any
@@ -263,10 +333,12 @@ variable "appgws" {
   description = <<-EOF
   A map defining all Application Gateways in the current deployment.
 
-  For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/main/modules/appgw/README.md).
+  For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](../../modules/appgw/README.md).
 
   Following properties are supported:
   - `name` : name of the Application Gateway.
+  - `vnet_key` : a key of a VNET defined in the `var.vnets` map.
+  - `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `vnet_key` : a key of a VNET defined in the `var.vnets` map.
   - `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
