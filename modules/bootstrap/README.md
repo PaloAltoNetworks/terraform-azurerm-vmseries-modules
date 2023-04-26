@@ -78,22 +78,22 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_create_storage_account"></a> [create\_storage\_account](#input\_create\_storage\_account) | If `true`, create a Storage Account. | `bool` | `true` | no |
-| <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths.<br>Always use slash `/` as directory separator (unix-like), not the backslash `\`.<br>Example:<pre>files = {<br>  "dir/my.txt" = "config/init-cfg.txt"<br>}</pre> | `map(string)` | `{}` | no |
-| <a name="input_files_md5"></a> [files\_md5](#input\_files\_md5) | Optional map of MD5 hashes of file contents.<br>Normally the map could be empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.<br>This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.<br>The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.<br><br>Example:<pre>files_md5 = {<br>    "dir/my.txt" = "6f7ce3191b50a58cc13e751a8f7ae3fd"<br>}</pre> | `map(string)` | `{}` | no |
-| <a name="input_location"></a> [location](#input\_location) | Region to deploy bootstrap resources. Ignored when `create_storage_account` is set to `false`. | `string` | `null` | no |
-| <a name="input_min_tls_version"></a> [min\_tls\_version](#input\_min\_tls\_version) | The minimum supported TLS version for the storage account. | `string` | `"TLS1_2"` | no |
 | <a name="input_name"></a> [name](#input\_name) | Name of the Storage Account, either a new or an existing one (depending on the value of `create_storage_account`).<br><br>The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters. | `string` | n/a | yes |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to use. | `string` | n/a | yes |
-| <a name="input_storage_share_access_tier"></a> [storage\_share\_access\_tier](#input\_storage\_share\_access\_tier) | Access tier for the File Share. | `string` | `"Cool"` | no |
+| <a name="input_location"></a> [location](#input\_location) | Region to deploy bootstrap resources. Ignored when `create_storage_account` is set to `false`. | `string` | `null` | no |
+| <a name="input_min_tls_version"></a> [min\_tls\_version](#input\_min\_tls\_version) | The minimum supported TLS version for the storage account. | `string` | `"TLS1_2"` | no |
+| <a name="input_files"></a> [files](#input\_files) | Map of all files to copy to bucket. The keys are local paths, the values are remote paths.<br>Always use slash `/` as directory separator (unix-like), not the backslash `\`.<br>Example:<pre>files = {<br>  "dir/my.txt" = "config/init-cfg.txt"<br>}</pre> | `map(string)` | `{}` | no |
+| <a name="input_files_md5"></a> [files\_md5](#input\_files\_md5) | Optional map of MD5 hashes of file contents.<br>Normally the map could be empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.<br>This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.<br>The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.<br><br>Example:<pre>files_md5 = {<br>    "dir/my.txt" = "6f7ce3191b50a58cc13e751a8f7ae3fd"<br>}</pre> | `map(string)` | `{}` | no |
 | <a name="input_storage_share_name"></a> [storage\_share\_name](#input\_storage\_share\_name) | Name of a storage File Share to be created that will hold `files` used for bootstrapping.<br>For rules defining a valid name see [Microsoft documentation](https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Shares--Directories--Files--and-Metadata#share-names). | `string` | `null` | no |
 | <a name="input_storage_share_quota"></a> [storage\_share\_quota](#input\_storage\_share\_quota) | Maximum size of a File Share. | `number` | `50` | no |
+| <a name="input_storage_share_access_tier"></a> [storage\_share\_access\_tier](#input\_storage\_share\_access\_tier) | Access tier for the File Share. | `string` | `"Cool"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to be associated with the resources created. | `map(string)` | `{}` | no |
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| <a name="output_primary_access_key"></a> [primary\_access\_key](#output\_primary\_access\_key) | The primary access key for the Azure Storage Account. |
 | <a name="output_storage_account"></a> [storage\_account](#output\_storage\_account) | The Azure Storage Account object used for the Bootstrap. |
 | <a name="output_storage_share"></a> [storage\_share](#output\_storage\_share) | The File Share object within Azure Storage used for the Bootstrap. |
+| <a name="output_primary_access_key"></a> [primary\_access\_key](#output\_primary\_access\_key) | The primary access key for the Azure Storage Account. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
