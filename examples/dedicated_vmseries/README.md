@@ -28,7 +28,7 @@ Common Firewall reference architecture consists of:
 
 ### Architecture diagram
 
-![Dedicated-Topology-Overview](./diagram-dedicated.png)
+![image](https://user-images.githubusercontent.com/2110772/234920818-44e4082d-b445-4ffc-b0cb-174ef1e3c2ae.png)
 
 ## Prerequisites
 
