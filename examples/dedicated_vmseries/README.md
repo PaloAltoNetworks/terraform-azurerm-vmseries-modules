@@ -109,6 +109,14 @@ You can now proceed with licensing the devices and configuring your first rules.
 
 Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
 
+## Cleanup
+
+To remove the deployed infrastructure run:
+
+```sh
+terraform destroy
+```
+
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 

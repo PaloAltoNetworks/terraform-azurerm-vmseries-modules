@@ -1,49 +1,93 @@
-# NGFW module
+# Palo Alto Networks Next Generation deployment example
 
-## Purpose
+An example of a Terraform module that deploys a Next Generation Firewall appliance in Azure.
 
-Terraform module used to deploy Next Generation Firewalls and related resources.
+**NOTE:**
 
-## Usage
+* after the deployment firewall remains not licensed and not configured
+* this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
 
-The module is written in a way that 99% of the reference architecture adjustments can be done from the `TFVARS` file. This make the code as well as the `VAR` file slightly more complicated. To ease the start following example `TFVARS` files have been prepared:
+## Topology and resources
 
-* [`transit_vnet_common_example.tfvars`](transit_vnet_common_example.tfvars), deploys common reference architecture, with:
-  * two Next Generation Firewalls, bootstrap using user-data, with static private IP addresses assigned to each NIC
-  * Availability Set, as an example of a deployment in a region where Availability Zones are not available
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * Application Insights, one per each VM
-  * A NAT GW attached to the public subnet.
-* [`transit_vnet_common_full_bootstrap_example.tfvars`](transit_vnet_common_panorama_natgw.tfvars), deploys a common reference architecture for an existing Panorama installation (see [`panorama` module](../panorama/README.md)), with:
-  * two Next Generation Firewalls, bootstrap using full bootstrap with `bootstrap.xml` templated, with private IP addresses taken from DHCP
-  * Availability Zones for resiliency
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * public NICs do not contain Public IP addresses assigned: all public traffic goes through the public LB (inbound) outbound rules.
-* [`transit_vnet_common_panorama_natgw.tfvars`](transit_vnet_common_with_natgw_example.tfvars), deploys a common reference architecture with:
-  * two Next Generation Firewalls, bootstrapped using user-data (Panorama connectivity, licensing), with private IP addresses taken from DHCP
-  * Availability Set, as an example of a deployment in a region where Availability Zones are not available
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * peetig with a Panorama VNET deployed [panorama_example.tfvars](../panorama/panorama_example.tfvars)
-* [`transit_vnet_dedicated_example.tfvars`](transit_vnet_dedicated_example.tfvars), deploys a dedicated reference architecture with:
-  * four Next Generation Firewalls (two inbound, two OBEW), bootstrapped using full bootstrapping with `bootstrap.xml` templated, with private IP addresses assigned statically
-  * Availability Zones for resiliency
-  * two Standard Load Balancers: public for incoming and private for OBEW traffic
-  * Application Gateway for HTTP(s) traffic
+This is a non zonal deployment. The deployed infrastructure consists of:
 
-## Deploy
+* a VNET containing:
+  * one subnet dedicated to the management interface of the deployed firewall
+  * a Network Security Group to give access to firewalls's public interface
+* a firewall appliance with a public IP assigned to the management interface
 
-To deploy this infrastructure simply run these commands in the current folder:
+## Prerequisites
 
-```bash
-terraform init # only the 1st time
-terraform plan -var-file {{name of the example var file}} -out terraform.tfplan
-terraform apply terraform.tfplan
+A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
+
+* (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
+* [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
+* if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
+
+## Deploy the infrastructure
+
+Steps to deploy the infrastructure are as following:
+
+* checkout the code locally (if you haven't done so yet)
+* copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
+* (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+* initialize the Terraform module:
+
+      terraform init
+
+* (optional) plan you infrastructure to see what will be actually deployed:
+
+      terraform plan
+
+* deploy the infrastructure (you will have to confirm it with typing in `yes`):
+
+      terraform apply
+
+  The deployment takes couple of minutes. Observe the output. At the end you should see a summary similar to this:
+
+      Apply complete! Resources: 10 added, 0 changed, 0 destroyed.
+
+      Outputs:
+
+      password = <sensitive>
+      username = "panadmin"
+      vmseries_mgmt_ips = {
+        "fw-1" = "1.2.3.4"
+      }
+
+* at this stage you have to wait couple of minutes for the firewall to bootstrap.
+
+## Post deploy
+
+Firewall in this example is configured with password authentication. To retrieve the initial credentials run:
+
+* for username:
+
+      terraform output username
+
+* for password:
+
+      terraform output password
+
+The management public IP addresses are available in the `vmseries_mgmt_ips`:
+
+```sh
+terraform output vmseries_mgmt_ips
 ```
 
-To destroy the infrastructure run:
+You can now login to the device using either:
 
-```bash
-terraform destroy -var-file {{name of the example var file used to create the architecture}}
+* cli - ssh client is required
+* Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
+
+You can now proceed with licensing and configuring the device.
+
+## Cleanup
+
+To remove the deployed infrastructure run:
+
+```sh
+terraform destroy
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

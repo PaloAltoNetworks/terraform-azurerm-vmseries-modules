@@ -2,28 +2,93 @@
 
 >Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
 
-This folder shows an example of Terraform code that helps to deploy Panorama in Azure.
+An example of a Terraform module that deploys a Panorama appliance in Azure.
 
-## Usage
+**NOTE:**
 
-The module is written in a way that 99% of adjustments can be done from the `TFVARS` file. This make the code as well as the `VAR` file slightly more complicated. To ease the start an example [`panorama_example.tfvars`](panorama_example.tfvars) was prepared that deploys a Panorama device in a separate VNET.
+* after the deployment Panorama remains not licensed and not configured
+* keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
 
-## Deploy
+## Topology and resources
 
-All resourced created by this code are prefixed with a variable `name_prefix`. Please make sure to adjust this variable to deploy resources with unique names.
+This is a non zonal deployment. The deployed infrastructure consists of:
 
-To deploy this infrastructure simply run these commands in the current folder:
+* a VNET containing:
+  * one subnet dedicated to host Panorama appliances
+  * a Network Security Group to give access to Panorama's public interface
+* a Panorama appliance with a public IP assigned to the management interface
 
-```bash
-terraform init # only the 1st time
-terraform plan -var-file {{name of the example var file}} -out terraform.tfplan
-terraform apply terraform.tfplan
+## Prerequisites
+
+A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
+
+* (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
+* [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
+
+## Deploy the infrastructure
+
+Steps to deploy the infrastructure are as following:
+
+* checkout the code locally (if you haven't done so yet)
+* copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
+* (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+* initialize the Terraform module:
+
+      terraform init
+
+* (optional) plan you infrastructure to see what will be actually deployed:
+
+      terraform plan
+
+* deploy the infrastructure (you will have to confirm it with typing in `yes`):
+
+      terraform apply
+
+  The deployment takes couple of minutes. Observe the output. At the end you should see a summary similar to this:
+
+      Apply complete! Resources: 10 added, 0 changed, 0 destroyed.
+
+      Outputs:
+
+      panorama_mgmt_ips = {
+        "pn-1" = "1.2.3.4"
+      }
+      password = <sensitive>
+      username = "panadmin"
+
+* at this stage you have to wait couple of minutes for the Panorama to bootstrap.
+
+## Post deploy
+
+Panorama in this example is configured with password authentication. To retrieve the initial credentials run:
+
+* for username:
+
+      terraform output username
+
+* for password:
+
+      terraform output password
+
+The management public IP addresses are available in the `panorama_mgmt_ips`:
+
+```sh
+terraform output panorama_mgmt_ips
 ```
 
-To destroy the infrastructure run:
+You can now login to the devices using either:
 
-```bash
-terraform destroy -var-file {{name of the example var file used to create the architecture}}
+* cli - ssh client is required
+* Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
+
+You can now proceed with licensing and configuring the devices.
+
+## Cleanup
+
+To remove the deployed infrastructure run:
+
+```sh
+terraform destroy
 ```
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
