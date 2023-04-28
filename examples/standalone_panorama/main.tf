@@ -68,8 +68,8 @@ module "panorama" {
   enable_zones                = var.enable_zones
   custom_image_id             = try(each.value.custom_image_id, null)
   panorama_sku                = var.panorama_sku
-  panorama_size               = var.panorama_size
-  panorama_version            = var.panorama_version
+  panorama_size               = try(each.value.size, var.panorama_size)
+  panorama_version            = try(each.value.version, var.panorama_version)
   boot_diagnostic_storage_uri = ""
 
   interfaces = [for v in each.value.interfaces : {

@@ -84,7 +84,7 @@ variable "vmseries_password" {
 }
 
 variable "panorama_version" {
-  description = "Panorama PanOS versions"
+  description = "Panorama PanOS version. It's also possible to specify the Pan-OS version per Panorama (in case you would like to deploy more than one), see `var.panoramas` variable."
   type        = string
 }
 variable "panorama_sku" {
@@ -93,7 +93,7 @@ variable "panorama_sku" {
   type        = string
 }
 variable "panorama_size" {
-  description = "A size of a VM that will run Panorama."
+  description = "A size of a VM that will run Panorama. It's also possible to specify the the VM size per Panorama, see `var.panoramas` variable."
   default     = "Standard_D5_v2"
   type        = string
 }
@@ -106,6 +106,8 @@ variable "panoramas" {
   Following properties are available:
 
   - `name` : a name of a Panorama VM
+  - `size` : size of the Panorama virtual machine, when specified overrides `var.panorama_size`.
+  - `version` : PanOS version, when specified overrides `var.panorama_version`.
   - `vnet_key`: a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable
   - `subnet_key`: a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_key` property
   - `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed

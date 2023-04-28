@@ -178,8 +178,8 @@ module "vmss" {
   username     = var.vmseries_username
   password     = local.vmseries_password
   img_sku      = var.vmseries_sku
-  img_version  = var.vmseries_version
-  vm_size      = var.vmseries_vm_size
+  img_version  = try(each.value.version, var.vmseries_version)
+  vm_size      = try(each.value.vm_size, var.vmseries_vm_size)
   zone_balance = var.enable_zones
   zones        = var.enable_zones ? try(each.value.zones, null) : []
 

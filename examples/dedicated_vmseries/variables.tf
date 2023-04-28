@@ -183,12 +183,12 @@ variable "load_balancers" {
 
 ### GENERIC VMSERIES
 variable "vmseries_version" {
-  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per firewall, see `var.vmseries` variable."
   type        = string
 }
 
 variable "vmseries_vm_size" {
-  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
+  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per firewall, see `var.vmseries` variable."
   type        = string
 }
 
@@ -289,6 +289,8 @@ variable "vmseries" {
   Map of virtual machines to create to run VM-Series - inbound firewalls. Following properties are supported:
 
   - `name` : name of the VMSeries virtual machine.
+  - `vm_size` : size of the VMSeries virtual machine, when specified overrides `var.vmseries_vm_size`.
+  - `version` : PanOS version, when specified overrides `var.vmseries_version`.
   - `vnet_key` : a key of a VNET defined in the `var.vnets` map. This value will be used during network interfaces creation.
   - `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.
   - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1".

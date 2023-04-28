@@ -222,12 +222,12 @@ variable "application_insights" {
 
 ### GENERIC VMSERIES
 variable "vmseries_version" {
-  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
+  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per Scale Set, see `var.vmss` variable."
   type        = string
 }
 
 variable "vmseries_vm_size" {
-  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
+  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per Scale Set, see `var.vmss` variable."
   type        = string
 }
 
@@ -257,6 +257,8 @@ variable "vmss" {
 
   Following properties are available:
   - `name` : (string|required) name of the Virtual Machine Scale Set.
+  - `vm_size` : size of the VMSeries virtual machines created with this Scale Set, when specified overrides `var.vmseries_vm_size`.
+  - `version` : PanOS version, when specified overrides `var.vmseries_version`.
   - `vnet_key` : (string|required) a key of a VNET defined in the `var.vnets` map.
   - `bootstrap_options` : (string|`''`) bootstrap options passed to every VM instance upon creation.
   - `zones` : (list(string)|`[]`) a list of Availability Zones to use for Zone redundancy

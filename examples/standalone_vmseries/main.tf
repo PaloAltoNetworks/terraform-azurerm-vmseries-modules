@@ -256,9 +256,9 @@ module "vmseries" {
   name        = "${var.name_prefix}${each.value.name}"
   username    = var.vmseries_username
   password    = local.vmseries_password
-  img_version = var.vmseries_version
+  img_version = try(each.value.version, var.vmseries_version)
   img_sku     = var.vmseries_sku
-  vm_size     = var.vmseries_vm_size
+  vm_size     = try(each.value.vm_size, var.vmseries_vm_size)
   avset_id    = try(azurerm_availability_set.this[each.value.availability_set_name].id, null)
 
   enable_zones = var.enable_zones

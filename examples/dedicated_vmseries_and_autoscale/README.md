@@ -33,7 +33,7 @@ This example architecture consists of:
 
 ### Architecture diagram
 
-![Scaling-Topology-Overview](./diagram-vmss.png)
+![Scaling-Topology-Overview](https://user-images.githubusercontent.com/42772730/235161583-98475129-aee4-4cc9-9fd8-9f8784ad09a6.png)
 
 ## Prerequisites
 
