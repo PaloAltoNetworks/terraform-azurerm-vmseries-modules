@@ -9,7 +9,7 @@ resource "azurerm_public_ip" "this" {
 
   location            = var.location
   resource_group_name = var.resource_group_name
-  name                = each.value.name
+  name                = "${each.value.name}-pip"
   allocation_method   = "Static"
   sku                 = "Standard"
   zones               = var.enable_zones ? var.avzones : null

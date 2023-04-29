@@ -1,4 +1,10 @@
-variable "virtual_network_name" {
+variable "name_prefix" {
+  description = "A prefix added to all resource names created by this module: VNET, NSGs, RTs. Subnet, as a sub-resource is not prefixed."
+  default     = ""
+  type        = string
+}
+
+variable "name" {
   description = "The name of the Azure Virtual Network."
   type        = string
 }
@@ -38,8 +44,9 @@ variable "address_space" {
 
 variable "network_security_groups" {
   description = <<-EOF
-  Map of Network Security Groups to create. The key of each entry acts as the Network Security Group name.
+  Map of Network Security Groups to create.
   List of available attributes of each Network Security Group entry:
+  - `name` : Name of the Network Security Group.
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
   - `rules`: (Optional) A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
       needs to be unique across all rules in the Network Security Group.
@@ -62,7 +69,8 @@ variable "network_security_groups" {
   Example:
   ```
   {
-    "network_security_group_1" = {
+    "nsg_1" = {
+      name = "network_security_group_1"
       location = "Australia Central"
       rules = {
         "AllOutbound" = {
@@ -107,8 +115,9 @@ variable "network_security_groups" {
 
 variable "route_tables" {
   description = <<-EOF
-  Map of objects describing a Route Table. The key of each entry acts as the Route Table name.
+  Map of objects describing a Route Table.
   List of available attributes of each Route Table entry:
+  - `name`: Name of a Route Table.
   - `location` : (Optional) Specifies the Azure location where to deploy the resource.
   - `routes` : (Optional) Map of routes within the Route Table.
     List of available attributes of each route entry:
@@ -121,7 +130,8 @@ variable "route_tables" {
   Example:
   ```
   {
-    "route_table_1" = {
+    "rt_1" = {
+      name = "route_table_1"
       routes = {
         "route_1" = {
           address_prefix = "10.1.0.0/16"
@@ -133,7 +143,8 @@ variable "route_tables" {
         },
       }
     },
-    "route_table_2" = {
+    "rt_2" = {
+      name = "route_table_2"
       routes = {
         "route_3" = {
           address_prefix         = "0.0.0.0/0"
@@ -152,27 +163,30 @@ variable "subnets" {
   description = <<-EOF
   Map of subnet objects to create within a virtual network. If `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
   
-  The key of each entry acts as the subnet name.
   List of available attributes of each subnet entry:
+  - `name` - Name of a subnet.
   - `address_prefixes` : The address prefix to use for the subnet. Only required when a subnet will be created.
   - `network_security_group` : The Network Security Group identifier to associate with the subnet.
   - `route_table_id` : The Route Table identifier to associate with the subnet.
-  - `tags` : (Optional) Map of tags to assign to the resource. Only required when a subnet will be created.
-  
+  - `enable_storage_service_endpoint` : Flag that enables `Microsoft.Storage` service endpoint on a subnet. This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used. Defaults to `false`.
   Example:
   ```
   {
     "management" = {
-      address_prefixes       = ["10.100.0.0/24"]
-      network_security_group = "network_security_group_1"
-      route_table            = "route_table_1"
+      name                            = "management-snet"
+      address_prefixes                = ["10.100.0.0/24"]
+      network_security_group          = "network_security_group_1"
+      route_table                     = "route_table_1"
+      enable_storage_service_endpoint = true
     },
     "private" = {
+      name                   = "private-snet"
       address_prefixes       = ["10.100.1.0/24"]
       network_security_group = "network_security_group_2"
       route_table            = "route_table_2"
     },
     "public" = {
+      name                   = "public-snet"
       address_prefixes       = ["10.100.2.0/24"]
       network_security_group = "network_security_group_3"
       route_table            = "route_table_3"

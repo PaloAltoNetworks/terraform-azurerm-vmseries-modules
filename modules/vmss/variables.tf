@@ -1,3 +1,8 @@
+variable "name" {
+  description = "Name of the created scale set."
+  type        = string
+}
+
 variable "location" {
   description = "Region to install VM-Series and dependencies."
   type        = string
@@ -8,56 +13,51 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "name_prefix" {
-  description = "A prefix for all the names of the created Azure objects. It can end with a dash `-` character, if your naming convention prefers such separator."
-  type        = string
-}
-
 variable "vm_size" {
   description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
   default     = "Standard_D3_v2"
   type        = string
 }
 
-variable "subnet_mgmt" {
-  description = "Management subnet."
-  type        = object({ id = string })
-}
+variable "interfaces" {
+  description = <<-EOF
+  List of the network interface specifications.
 
-variable "subnet_public" {
-  description = "Public subnet (untrusted)."
-  type        = object({ id = string })
-}
+  NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
+  Interfaces will be attached to VM in the order you define here, therefore:
+  * The first should be the management interface, which does not participate in data filtering.
+  * The remaining ones are the dataplane interfaces.
+  
+  Options for an interface object:
+  - `name`                     - (required|string) Interface name.
+  - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
+  - `create_pip`               - (optional|bool) If true, create a public IP for the interface
+  - `lb_backend_pool_ids`      - (optional|list(string)) A list of identifiers of an existing Load Balancer backend pools to associate interface with.
+  - `appgw_backend_pool_ids`   - (optional|list(String)) A list of identifier of the Application Gateway backend pools to associate interface with.
+  - `pip_domain_name_label`    - (optional|string) The Prefix which should be used for the Domain Name Label for each Virtual Machine Instance.
 
-variable "subnet_private" {
-  description = "Private subnet (trusted)."
-  type        = object({ id = string })
-}
+  Example:
 
-variable "create_mgmt_pip" {
-  default = true
-  type    = bool
-}
-
-variable "create_public_pip" {
-  default = true
-  type    = bool
-}
-
-variable "mgmt_pip_domain_name_label" {
-  default = null
-  type    = string
-}
-
-variable "mgmt_pip_prefix_id" {
-  description = "Public IP address prefix id to use for management interface."
-  default     = null
-  type        = string
-}
-
-variable "public_pip_domain_name_label" {
-  default = null
-  type    = string
+  ```
+  [
+    {
+      name       = "management"
+      subnet_id  = azurerm_subnet.my_mgmt_subnet.id
+      create_pip = true
+    },
+    {
+      name      = "private"
+      subnet_id = azurerm_subnet.my_priv_subnet.id
+    },
+    {
+      name                = "public"
+      subnet_id           = azurerm_subnet.my_pub_subnet.id
+      lb_backend_pool_ids = [azurerm_lb_backend_address_pool.lb_backend.id]
+    }
+  ]
+  ```
+  EOF
+  type        = list(any)
 }
 
 variable "username" {
@@ -88,6 +88,7 @@ variable "overprovision" {
   description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
   default     = false
   type        = bool
+  nullable    = false
 }
 
 variable "platform_fault_domain_count" {
@@ -118,6 +119,7 @@ variable "scale_in_force_deletion" {
   description = "When set to `true` will force delete machines selected for removal by the `scale_in_policy`."
   default     = false
   type        = bool
+  nullable    = false
 }
 
 variable "single_placement_group" {
@@ -136,17 +138,20 @@ variable "zones" {
   description = "The availability zones to use, for example `[\"1\", \"2\", \"3\"]`. If an empty list, no Availability Zones are used: `[]`."
   default     = ["1", "2", "3"]
   type        = list(string)
+  nullable    = false
 }
 
 variable "storage_account_type" {
   description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
   default     = "StandardSSD_LRS"
   type        = string
+  nullable    = false
 }
 
 variable "disk_encryption_set_id" {
-  default = null
-  type    = string
+  description = "The ID of the Disk Encryption Set which should be used to encrypt this Data Disk."
+  default     = null
+  type        = string
 }
 
 variable "use_custom_image" {
@@ -170,68 +175,40 @@ variable "enable_plan" {
 variable "img_publisher" {
   description = "The Azure Publisher identifier for a image which should be deployed."
   default     = "paloaltonetworks"
+  type        = string
 }
 
 variable "img_offer" {
   description = "The Azure Offer identifier corresponding to a published image. For `img_version` 9.1.1 or above, use \"vmseries-flex\"; for 9.1.0 or below use \"vmseries1\"."
   default     = "vmseries-flex"
+  type        = string
 }
 
 variable "img_sku" {
   description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "bundle2"
+  default     = "byol"
   type        = string
 }
 
 variable "img_version" {
   description = "VM-Series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
-  default     = "9.1.3"
   type        = string
-}
-
-variable "private_backend_pool_id" {
-  description = "Identifier of the load balancer backend pool to associate with the private interface of each VM-Series firewall."
-  type        = string
-  default     = null
-}
-
-variable "public_backend_pool_id" {
-  description = "Identifier of the load balancer backend pool to associate with the public interface of each VM-Series firewall."
-  type        = string
-  default     = null
-}
-
-variable "appgw_backend_pool_id" {
-  description = "Identifier of the Application Gateway's backend pool to associate with the public interface of each VM-Series firewall."
-  type        = string
-  default     = null
-}
-
-variable "create_public_interface" {
-  description = "If true, create the third network interface for virtual machines."
-  default     = true
-  type        = bool
 }
 
 variable "accelerated_networking" {
   description = "If true, enable Azure accelerated networking (SR-IOV) for all dataplane network interfaces. [Requires](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) PAN-OS 9.0 or higher. The PAN-OS management interface (nic0) is never accelerated, whether this variable is true or false."
   default     = true
   type        = bool
+  nullable    = false
 }
 
-variable "app_insights_settings" {
+variable "application_insights_id" {
   description = <<-EOF
-  A map of the Application Insights related parameters. Full configuration description available under [vmseries/README.md](../../modules/vmseries/README.md#input_app_insights_settings)
+  An ID of Application Insights instance that should be used to provide metrics for autoscaling.
 
-  NOTICE. Even if you keep this property set to `null` but set up the `autoscale_metrics` property Application Insights will be created as it is required to gather Palo Alto's autoscaling specific metrics.
+  **Note**, to avoid false positives this should be an instance dedicated to this VMSS.
   ```
   EOF
-  default     = null
-  type        = map(any)
-}
-
-variable "name_autoscale" {
-  description = "Name of the Autoscale Settings to be created. Can be null, in which case a default name is auto-generated."
   default     = null
   type        = string
 }
@@ -240,24 +217,28 @@ variable "autoscale_count_default" {
   description = "The minimum number of instances that should be present in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the metrics to the thresholds."
   default     = 2
   type        = number
+  nullable    = false
 }
 
 variable "autoscale_count_minimum" {
   description = "The minimum number of instances that should be present in the scale set."
   default     = 2
   type        = number
+  nullable    = false
 }
 
 variable "autoscale_count_maximum" {
   description = "The maximum number of instances that should be present in the scale set."
   default     = 5
   type        = number
+  nullable    = false
 }
 
 variable "autoscale_notification_emails" {
   description = "List of email addresses to notify about autoscaling events."
   default     = []
   type        = list(string)
+  nullable    = false
 }
 
 variable "autoscale_webhooks_uris" {
@@ -288,18 +269,21 @@ variable "autoscale_metrics" {
   Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
   EOF
   default     = {}
+  type        = map(any)
 }
 
 variable "scaleout_statistic" {
   description = "Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max."
   default     = "Max"
   type        = string
+  nullable    = false
 }
 
 variable "scaleout_time_aggregation" {
   description = "Specifies how the metric should be combined over the time `scaleout_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total."
   default     = "Maximum"
   type        = string
+  nullable    = false
 }
 
 variable "scaleout_window_minutes" {
@@ -310,24 +294,28 @@ variable "scaleout_window_minutes" {
   EOF
   default     = 10
   type        = number
+  nullable    = false
 }
 
 variable "scaleout_cooldown_minutes" {
   description = "Azure only considers adding a VM after this number of minutes has passed since the last VM scaling action. It should be much higher than `scaleout_window_minutes`, to account both for the VM-Series spin-up time and for the subsequent metrics stabilization time. Must be between 1 and 10080 minutes."
   default     = 25
   type        = number
+  nullable    = false
 }
 
 variable "scalein_statistic" {
   description = "Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max."
   default     = "Max"
   type        = string
+  nullable    = false
 }
 
 variable "scalein_time_aggregation" {
   description = "Specifies how the metric should be combined over the time `scalein_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total."
   default     = "Maximum"
   type        = string
+  nullable    = false
 }
 
 variable "scalein_window_minutes" {
@@ -338,58 +326,20 @@ variable "scalein_window_minutes" {
   EOF
   default     = 15
   type        = number
+  nullable    = false
 }
 
 variable "scalein_cooldown_minutes" {
   description = "Azure only considers deleting a VM after this number of minutes has passed since the last VM scaling action. Should be higher or equal to `scalein_window_minutes`. Must be between 1 and 10080 minutes."
   default     = 2880
   type        = number
+  nullable    = false
 }
 
 variable "tags" {
   description = "Map of tags to use for all the created resources."
   default     = {}
   type        = map(string)
-}
-
-#  ---   #
-# Naming #
-#  ---   #
-
-variable "name_scale_set" {
-  default = "scaleset"
-}
-
-variable "name_mgmt_nic_profile" {
-  default = "nic-fw-mgmt-profile"
-}
-
-variable "name_mgmt_nic_ip" {
-  default = "nic-fw-mgmt"
-}
-
-variable "name_fw_mgmt_pip" {
-  default = "fw-mgmt-pip"
-}
-
-variable "name_fw_public_pip" {
-  default = "fw-mgmt-pip"
-}
-
-variable "name_public_nic_profile" {
-  default = "nic-fw-public-profile"
-}
-
-variable "name_public_nic_ip" {
-  default = "nic-fw-public"
-}
-
-variable "name_private_nic_profile" {
-  default = "nic-fw-private-profile"
-}
-
-variable "name_private_nic_ip" {
-  default = "nic-fw-private"
 }
 
 variable "bootstrap_options" {
@@ -399,8 +349,6 @@ variable "bootstrap_options" {
   Proper syntax is a string of semicolon separated properties.
   Example:
     bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
-
-  A list of available properties: storage-account, access-key, file-share, share-directory, type, ip-address, default-gateway, netmask, ipv6-address, ipv6-default-gateway, hostname, panorama-server, panorama-server-2, tplname, dgname, dns-primary, dns-secondary, vm-auth-key, op-command-modes, op-cmd-dpdk-pkt-io, plugin-op-commands, dhcp-send-hostname, dhcp-send-client-id, dhcp-accept-server-hostname, dhcp-accept-server-domain, auth-key, vm-series-auto-registration-pin-value, vm-series-auto-registration-pin-id.
 
   For more details on bootstrapping see documentation: https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components
   EOF
@@ -412,5 +360,5 @@ variable "bootstrap_options" {
 variable "diagnostics_storage_uri" {
   description = "The storage account's blob endpoint to hold diagnostic files."
   default     = null
-  type        = any
+  type        = string
 }

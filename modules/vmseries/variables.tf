@@ -51,16 +51,17 @@ variable "interfaces" {
   * The remaining ones are the dataplane interfaces.
   
   Options for an interface object:
-  - `name`                 - (required|string) Interface name.
-  - `subnet_id`            - (required|string) Identifier of an existing subnet to create interface in.
-  - `private_ip_address`   - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
-  - `public_ip_address_id` - (optional|string) Identifier of an existing public IP to associate.
-  - `create_public_ip`     - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `availability_zone`    - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
-  - `enable_ip_forwarding` - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
-  - `enable_backend_pool`  - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
-  - `lb_backend_pool_id`   - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
-  - `tags`                 - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
+  - `name`                     - (required|string) Interface name.
+  - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
+  - `create_public_ip`         - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
+  - `private_ip_address`       - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
+  - `public_ip_name`           - (optional|string) Name of an existing public IP to associate to the interface, used only when `create_public_ip` is `false`.
+  - `public_ip_resource_group` - (optional|string) Name of a Resource Group that contains public IP resource to associate to the interface. When not specified defaults to `var.resource_group_name`. Used only when `create_public_ip` is `false`.
+  - `availability_zone`        - (optional|string) Availability zone to create public IP in. If not specified, set based on `avzone` and `enable_zones`.
+  - `enable_ip_forwarding`     - (optional|bool) If true, the network interface will not discard packets sent to an IP address other than the one assigned. If false, the network interface only accepts traffic destined to its IP address.
+  - `enable_backend_pool`      - (optional|bool) If true, associate interface with backend pool specified with `lb_backend_pool_id`. Default is false.
+  - `lb_backend_pool_id`       - (optional|string) Identifier of an existing backend pool to associate interface with. Required if `enable_backend_pool` is true.
+  - `tags`                     - (optional|map) Tags to assign to the interface and public IP (if created). Overrides contents of `tags` variable.
 
   Example:
 
@@ -70,12 +71,15 @@ variable "interfaces" {
       name                 = "fw-mgmt"
       subnet_id            = azurerm_subnet.my_mgmt_subnet.id
       public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
+      create_public_ip     = true
     },
     {
       name                = "fw-public"
       subnet_id           = azurerm_subnet.my_pub_subnet.id
       lb_backend_pool_id  = module.inbound_lb.backend_pool_id
       enable_backend_pool = true
+      create_public_ip    = false
+      public_ip_name      = "fw-public-ip"
     },
   ]
   ```
@@ -157,7 +161,7 @@ variable "img_offer" {
 
 variable "img_sku" {
   description = "VM-series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "bundle2"
+  default     = "byol"
   type        = string
 }
 
@@ -212,51 +216,4 @@ variable "diagnostics_storage_uri" {
   description = "The storage account's blob endpoint to hold diagnostic files."
   default     = null
   type        = string
-}
-
-variable "app_insights_settings" {
-  description = <<-EOF
-  A map of the Application Insights related parameters.
-  
-  If the variable is:
-  - not defined - Application Insights will not be created (default behavior)
-  - defined as empty map `{}` - Application Insights will be created based on the default parameters
-  - defined as a map - Application Insights will be created with the defined properties, for any skipped - a default value will be used.
-
-  Available properties are:
-  - `name`                      - (optional|string) Name of the Applications Insights instance. Can be `null`, in which case a default name is auto-generated.
-  - `workspace_mode`            - (optional|bool)   Application Insights mode. If `true` (default), the "Workspace-based" mode is used. With `false`, the mode is set to legacy "Classic".
-  - `metrics_retention_in_days` - (optional|number) Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90.
-  - `log_analytics_name`        - (optional|string) The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated.
-  - `log_analytics_sku`         - (optional|string) Azure Log Analytics Workspace mode SKU. The default value is set to "PerGB2018". For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model)
-
-  NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions.
-
-  NOTICE. Since upgrade to provider 3.x when destroying infrastructure with a classic Application Insights a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state and it prevents resource group deletion.
-
-  A workaround is to set the following provider configuration:
-  
-  ```
-  provider "azurerm" {
-    features {
-      resource_group {
-        prevent_deletion_if_contains_resources = false
-      }
-    }
-  }
-
-  Example:
-  
-  ```
-    {
-        name                      = "AppInsights"
-        workspace_mode            = true
-        metrics_retention_in_days = 30
-        log_analytics_name        = "LogAnalyticsName"
-        log_analytics_sku         = "PerGB2018"
-    }
-  ```
-  EOF
-  default     = null
-  type        = map(any)
 }

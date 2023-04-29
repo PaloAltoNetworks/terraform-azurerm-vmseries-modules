@@ -4,7 +4,7 @@ variable "create_storage_account" {
   type        = bool
 }
 
-variable "storage_account_name" {
+variable "name" {
   description = <<-EOF
   Name of the Storage Account, either a new or an existing one (depending on the value of `create_storage_account`).
 
@@ -12,7 +12,7 @@ variable "storage_account_name" {
   EOF
   type        = string
   validation {
-    condition     = can(regex("^[a-z0-9]{3,24}$", var.storage_account_name))
+    condition     = can(regex("^[a-z0-9]{3,24}$", var.name))
     error_message = "A Storage Account name must be between 3 and 24 characters, only lower case letters and numbers are allowed."
   }
 }
@@ -52,7 +52,7 @@ variable "files" {
 variable "files_md5" {
   description = <<-EOF
   Optional map of MD5 hashes of file contents.
-  Normally the map could be all empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.
+  Normally the map could be empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.
   This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.
   The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.
 
@@ -72,14 +72,9 @@ variable "storage_share_name" {
   Name of a storage File Share to be created that will hold `files` used for bootstrapping.
   For rules defining a valid name see [Microsoft documentation](https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Shares--Directories--Files--and-Metadata#share-names).
   EOF
+  default     = null
   type        = string
-  validation {
-    condition = alltrue([
-      can(regex("^[a-z0-9](-?[a-z0-9])+$", var.storage_share_name)),
-      can(regex("^([a-z0-9-]){3,63}$", var.storage_share_name))
-    ])
-    error_message = "A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL schema."
-  }
+  nullable    = true
 }
 
 variable "storage_share_quota" {
