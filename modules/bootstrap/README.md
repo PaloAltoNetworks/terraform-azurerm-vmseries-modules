@@ -89,6 +89,9 @@ No modules.
 | <a name="input_storage_share_access_tier"></a> [storage\_share\_access\_tier](#input\_storage\_share\_access\_tier) | Access tier for the File Share. | `string` | `"Cool"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to be associated with the resources created. | `map(string)` | `{}` | no |
 | <a name="input_retention_policy_days"></a> [retention\_policy\_days](#input\_retention\_policy\_days) | Log retention policy in days | `number` | `7` | no |
+| <a name="input_storage_allow_inbound_public_ips"></a> [storage\_allow\_inbound\_public\_ips](#input\_storage\_allow\_inbound\_public\_ips) | List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the storage.<br>Only public IPs are allowed - RFC1918 address space is not permitted. | `list(string)` | `null` | no |
+| <a name="input_storage_allow_vnet_subnets"></a> [storage\_allow\_vnet\_subnets](#input\_storage\_allow\_vnet\_subnets) | List of the allowed vnet subnets.<br>Note that this option requires network service endpoint enabled for Microsoft Storage for the specified subnets.<br>If you are using vnet module - set 'storage\_private\_access' to true for the specific subnet.<br>Example:<pre>[module.vnet.subnet_ids["subnet-mgmt"],module.vnet.subnet_ids["subnet-pub"],module.vnet.subnet_ids["subnet-priv"]]</pre> | `list(any)` | `null` | no |
+| <a name="input_storage_acl"></a> [storage\_acl](#input\_storage\_acl) | If `true`, storage account network rules will be activated with Deny default statement. | `bool` | `true` | no |
 
 ## Outputs
 
