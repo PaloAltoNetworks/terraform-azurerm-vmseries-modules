@@ -94,3 +94,13 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
+
+variable "retention_policy_days" {
+  description = "Log retention policy in days"
+  type        = number
+  default     = 7
+  validation {
+    condition     = var.retention_policy_days > 0 && var.retention_policy_days < 365
+    error_message = "Enter a value between 1 and 365."
+  }
+}

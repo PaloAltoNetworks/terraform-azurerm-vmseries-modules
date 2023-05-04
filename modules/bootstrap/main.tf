@@ -8,6 +8,15 @@ resource "azurerm_storage_account" "this" {
   account_replication_type = "LRS"
   account_tier             = "Standard"
   tags                     = var.tags
+  queue_properties {
+    logging {
+      delete                = true
+      read                  = true
+      write                 = true
+      version               = "1.0"
+      retention_policy_days = var.retention_policy_days
+    }
+  }
 }
 
 data "azurerm_storage_account" "this" {

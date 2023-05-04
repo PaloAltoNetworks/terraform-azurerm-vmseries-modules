@@ -88,6 +88,7 @@ No modules.
 | <a name="input_storage_share_quota"></a> [storage\_share\_quota](#input\_storage\_share\_quota) | Maximum size of a File Share. | `number` | `50` | no |
 | <a name="input_storage_share_access_tier"></a> [storage\_share\_access\_tier](#input\_storage\_share\_access\_tier) | Access tier for the File Share. | `string` | `"Cool"` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to be associated with the resources created. | `map(string)` | `{}` | no |
+| <a name="input_retention_policy_days"></a> [retention\_policy\_days](#input\_retention\_policy\_days) | Log retention policy in days | `number` | `7` | no |
 
 ## Outputs
 
