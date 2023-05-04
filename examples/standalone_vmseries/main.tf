@@ -212,7 +212,6 @@ module "bootstrap_share" {
   name                   = module.bootstrap[each.value.bootstrap_storage.name].storage_account.name
   resource_group_name    = try(var.bootstrap_storage[each.value.bootstrap_storage].resource_group_name, local.resource_group.name)
   location               = var.location
-  storage_acl            = try(each.value.storage_acl, false)
   storage_share_name     = each.key
   files = merge(
     each.value.bootstrap_storage.static_files,

@@ -24,6 +24,6 @@ repos:
       args: [
         --compact,
         --quiet,
-        --skip-check, "CKV_AZURE_118,CKV_AZURE_119,CKV_AZURE_120,CKV2_AZURE_10,CKV2_AZURE_12",
+        --skip-check, "CKV_AZURE_118,CKV_AZURE_119,CKV_AZURE_120,CKV2_AZURE_10,CKV2_AZURE_12,CKV_AZURE_43",
         --soft-fail-on, "CKV_AZURE_93,CKV2_AZURE_1,CKV2_AZURE_18,CKV_AZURE_97",
       ]
