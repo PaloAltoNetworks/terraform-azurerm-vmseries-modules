@@ -89,17 +89,15 @@ vnets = {
         enable_storage_service_endpoint = true
       }
       "private" = {
-        name                            = "private-snet"
-        address_prefixes                = ["10.0.0.16/28"]
-        route_table                     = "private"
-        enable_storage_service_endpoint = true
+        name             = "private-snet"
+        address_prefixes = ["10.0.0.16/28"]
+        route_table      = "private"
       }
       "public" = {
-        name                            = "public-snet"
-        address_prefixes                = ["10.0.0.32/28"]
-        network_security_group          = "public"
-        route_table                     = "public"
-        enable_storage_service_endpoint = true
+        name                   = "public-snet"
+        address_prefixes       = ["10.0.0.32/28"]
+        network_security_group = "public"
+        route_table            = "public"
       }
     }
   }
@@ -159,14 +157,6 @@ bootstrap_storage = {
       management = {
         vnet_key   = "transit"
         subnet_key = "management"
-      },
-      private = {
-        vnet_key   = "transit"
-        subnet_key = "private"
-      },
-      public = {
-        vnet_key   = "transit"
-        subnet_key = "public"
       }
     }
     storage_allow_inbound_public_ips = ["1.2.3.4"] # TODO: whitelist public IP addresses subnets (minimum /30 CIDR) that will be used to apply the terraform code from
