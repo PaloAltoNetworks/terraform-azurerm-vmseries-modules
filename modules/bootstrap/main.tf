@@ -20,7 +20,7 @@ resource "azurerm_storage_account" "this" {
   network_rules {
     default_action             = var.storage_acl == true ? "Deny" : "Allow"
     ip_rules                   = var.storage_acl == true ? var.storage_allow_inbound_public_ips : null
-    virtual_network_subnet_ids = var.storage_acl == true ? var.storage_allow_vnet_subnets : null
+    virtual_network_subnet_ids = var.storage_acl == true ? var.storage_allow_vnet_subnet_ids : null
   }
 }
 
