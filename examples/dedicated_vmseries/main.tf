@@ -194,11 +194,13 @@ module "bootstrap" {
 
   for_each = var.bootstrap_storage
 
-  create_storage_account = try(each.value.create_storage, true)
-  name                   = each.value.name
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
-  storage_acl            = try(each.value.storage_acl, false)
+  create_storage_account           = try(each.value.create_storage, true)
+  name                             = each.value.name
+  resource_group_name              = try(each.value.resource_group_name, local.resource_group.name)
+  location                         = var.location
+  storage_acl                      = try(each.value.storage_acl, false)
+  storage_allow_vnet_subnet_ids    = try(flatten([for v in each.value.storage_allow_vnet_subnet_ids : [module.vnet[v.vnet_key].subnet_ids[v.subnet_key]]]), [])
+  storage_allow_inbound_public_ips = try(each.value.storage_allow_inbound_public_ips, [])
 
   tags = var.tags
 }
