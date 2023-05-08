@@ -17,7 +17,8 @@ resource "azurerm_storage_account" "this" {
       retention_policy_days = var.retention_policy_days
     }
   }
-  public_network_access_enabled = var.storage_acl == true ? false : true
+  public_network_access_enabled   = var.storage_acl == true ? false : true
+  allow_nested_items_to_be_public = var.storage_acl == true ? false : true
   network_rules {
     default_action             = var.storage_acl == true ? "Deny" : "Allow"
     ip_rules                   = var.storage_acl == true ? var.storage_allow_inbound_public_ips : null
