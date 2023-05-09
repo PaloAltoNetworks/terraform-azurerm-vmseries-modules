@@ -22,6 +22,16 @@ resource "azurerm_storage_account" "this" {
     ip_rules                   = var.storage_acl == true ? var.storage_allow_inbound_public_ips : null
     virtual_network_subnet_ids = var.storage_acl == true ? var.storage_allow_vnet_subnet_ids : null
   }
+  lifecycle {
+    precondition {
+      condition = var.storage_acl == true ? length(var.storage_allow_vnet_subnet_ids) > 0 : true
+      error_message = "If storage_acl is set to true, you must provide a non-empty list of storage_allow_vnet_subnet_ids"
+    }
+    precondition {
+      condition = (length(var.storage_allow_vnet_subnet_ids) > 0 || length(var.storage_allow_inbound_public_ips) > 0) ? var.storage_acl == true : true
+      error_message = "If storage_allow_vnet_subnet_ids or storage_allow_inbound_public_ips is set, storage_acl must be set to true"
+      }
+    }
 }
 
 data "azurerm_storage_account" "this" {
