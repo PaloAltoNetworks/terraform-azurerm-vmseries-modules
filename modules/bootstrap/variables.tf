@@ -133,7 +133,7 @@ variable "storage_allow_vnet_subnet_ids" {
 }
 
 variable "storage_acl" {
-  description = "If `true`, storage account network rules will be activated with Deny default statement."
+  description = "If `true`, storage account network rules will be activated with Deny as the default statement."
   default     = true
   type        = bool
 }
