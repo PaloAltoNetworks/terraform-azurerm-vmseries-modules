@@ -121,7 +121,11 @@ variable "storage_allow_vnet_subnet_ids" {
   If you are using vnet module - set 'storage_private_access' to true for the specific subnet.
   Example:
   ```
-  [module.vnet.subnet_ids["subnet-mgmt"],module.vnet.subnet_ids["subnet-pub"],module.vnet.subnet_ids["subnet-priv"]]
+  [
+    module.vnet.subnet_ids["subnet-mgmt"],
+    module.vnet.subnet_ids["subnet-pub"],
+    module.vnet.subnet_ids["subnet-priv"]
+  ]
   ```
   EOF
   type        = list(any)
