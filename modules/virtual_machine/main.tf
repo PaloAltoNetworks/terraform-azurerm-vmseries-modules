@@ -93,6 +93,13 @@ resource "azurerm_virtual_machine" "this" {
     }
   }
 
+lifecycle {
+      precondition {
+      condition = var.password != null || var.ssh_keys != []
+      error_message = "Either password or ssh_keys must be set in order to have access to the device"
+  }
+}
+
   # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
   # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
   dynamic "boot_diagnostics" {

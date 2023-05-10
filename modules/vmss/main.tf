@@ -17,13 +17,20 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   zones                           = var.zones
   zone_balance                    = var.zone_balance
   provision_vm_agent              = false
-  dynamic "admin_ssh_key" {
-    for_each = var.ssh_key == null ? [] : [1]
-    content {
-      username   = var.username
-      public_key = var.ssh_key
+    dynamic "admin_ssh_key" {
+      for_each = var.ssh_keys
+      content {
+        key_data = ssh_keys.value
+        path     = "/home/${var.username}/.ssh/authorized_keys"
+      }
     }
+
+  lifecycle {
+      precondition {
+      condition = var.password != null || var.ssh_keys != []
+      error_message = "Either password or ssh_keys must be set in order to have access to the device"
   }
+}
 
   # Allowing upgrade_mode = "Rolling" would be actually a big architectural change. First of all:
   #
