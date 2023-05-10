@@ -107,7 +107,7 @@ variable "retention_policy_days" {
 
 variable "storage_allow_inbound_public_ips" {
   description = <<-EOF
-    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the storage.
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the Storage Account.
     Only public IPs are allowed - RFC1918 address space is not permitted.
   EOF
   type        = list(string)
