@@ -118,7 +118,7 @@ variable "storage_allow_vnet_subnet_ids" {
   description = <<-EOF
   List of the allowed vnet subnet ids.
   Note that this option requires network service endpoint enabled for Microsoft Storage for the specified subnets.
-  If you are using vnet module - set 'storage_private_access' to true for the specific subnet.
+  If you are using [vnet module](../vnet/README.md) - set `storage_private_access` to true for the specific subnet.
   Example:
   ```
   [
