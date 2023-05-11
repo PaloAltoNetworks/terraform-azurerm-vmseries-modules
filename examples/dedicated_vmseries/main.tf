@@ -205,7 +205,7 @@ module "bootstrap" {
   resource_group_name              = try(each.value.resource_group_name, local.resource_group.name)
   location                         = var.location
   storage_acl                      = try(each.value.storage_acl, false)
-  storage_allow_vnet_subnet_ids    = try(flatten([for v in each.value.storage_allow_vnet_subnet_ids : [module.vnet[v.vnet_key].subnet_ids[v.subnet_key]]]), [])
+  storage_allow_vnet_subnet_ids    = try(flatten([for v in each.value.storage_allow_vnet_subnets : [module.vnet[v.vnet_key].subnet_ids[v.subnet_key]]]), [])
   storage_allow_inbound_public_ips = concat(try(each.value.storage_allow_inbound_public_ips, []), try([data.http.this.response_body], []))
 
   tags = var.tags
