@@ -1,15 +1,28 @@
-# Palo Alto Networks VM-Series Common Firewall Option
+# VM-Series Reference Architecture - Dedicated Deployment Option
 
-An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Common Firewall reference architecture.
+## Audience
 
-**NOTE:**
+This guide is for technical readers, including system architects and design engineers, who want to deploy the Palo Alto Networks VM-Series firewalls and Panorama within a public-cloud infrastructure. This guide assumes the reader is familiar with the basic concepts of applications, networking, virtualization, security, high availability, as well as public cloud concepts with specific focus on Azure.
 
-* after the deployment the firewalls remain not configured and not licensed
-* this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
+## Introduction
 
-## Topology and resources
+There are many design models which can be used to secure application environments in Azure. Palo Alto Networks produces [validated reference architecture design and deployment documentation](https://www.paloaltonetworks.com/resources/reference-architectures), which guides towards the best security outcomes, reducing rollout time and avoiding common integration efforts. These architectures are designed, tested, and documented to provide faster, predictable deployments.
 
-Common Firewall reference architecture consists of:
+This guide uses the Transit VNet design pattern. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+
+This guide follows the _common_ deployment option, described in more detail in the [Reference Architecture documentation](https://www.paloaltonetworks.com/resources/reference-architectures).
+
+The common firewall option leverages a single set of VM-Series firewalls. The sole set of firewalls operates as a shared resource and may present scale limitations with all traffic flowing through a single set of firewalls due to the performance degradation that occurs when traffic crosses virtual routers. This option is suitable for proof-of-concepts and smaller scale deployments because the number of firewalls low. However, the technical integration complexity is high.
+
+## Terraform
+
+This guide introduces the Terraform code maintained within this repository, which will deploy the reference architecture described above.
+
+## Topology
+
+![image](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
+
+Reference architecture consists of:
 
 * a VNET containing:
   * 4 subnets:
@@ -27,11 +40,6 @@ Common Firewall reference architecture consists of:
     * public interface - due to use of a public Load Balancer this public IP is used mainly for outgoing traffic
 * an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
 
-### Architecture diagram
-
-![image](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
-
-
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
@@ -39,6 +47,11 @@ A list of requirements might vary depending on the platform used to deploy the i
 * (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
 * [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 * if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
+
+**NOTE:**
+
+* after the deployment the firewalls remain not configured and not licensed
+* this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
 
 ## Deploy the infrastructure
 
