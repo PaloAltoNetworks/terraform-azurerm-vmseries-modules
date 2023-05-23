@@ -1,4 +1,4 @@
-# VM-Series Reference Architecture - Dedicated Deployment Option
+# VM-Series Reference Architecture - Dedicated-Inbound Deployment Option
 
 ## Audience
 
@@ -10,7 +10,7 @@ There are many design models which can be used to secure application environment
 
 This guide uses the Transit VNet design pattern. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
 
-This guide follows the _dedicated_ deployment option, described in more detail in the [Reference Architecture documentation](https://www.paloaltonetworks.com/resources/reference-architectures).
+This guide follows the _dedicated inbound_ deployment option, described in more detail in the [Reference Architecture documentation](https://www.paloaltonetworks.com/resources/reference-architectures).
 
 The dedicated inbound option separates traffic flows across two separate sets of VM-Series firewalls. One set of VM-Series firewalls is dedicated to inbound traffic flows, allowing for greater flexibility and scaling of inbound traffic loads. The second set of VM-Series firewalls services all outbound, east-west, and enterprise network traffic flows. This deployment choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting other traffic flows within the deployment.
 

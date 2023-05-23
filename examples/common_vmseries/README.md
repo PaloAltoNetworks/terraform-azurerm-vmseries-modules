@@ -1,4 +1,4 @@
-# VM-Series Reference Architecture - Dedicated Deployment Option
+# VM-Series Reference Architecture - Common Deployment Option
 
 ## Audience
 
