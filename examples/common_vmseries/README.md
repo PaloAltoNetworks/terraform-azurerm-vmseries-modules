@@ -5,7 +5,7 @@ The Terraform code presented here will deploy Palo Alto Networks VM-Series firew
 
 ## Reference Architecture Design
 
-![Simplified High Level Topology Diagram]()
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
 This code implements:
 - a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
