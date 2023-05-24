@@ -1,28 +1,29 @@
-# VM-Series Reference Architecture - Common Deployment Option
+# Reference Architecture with Terraform: VM-Series in Azure, Common Deployment Option
 
-## Audience
+Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
+The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with common VM-Series for all traffic; for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
-This guide is for technical readers, including system architects and design engineers, who want to deploy the Palo Alto Networks VM-Series firewalls and Panorama within a public-cloud infrastructure. This guide assumes the reader is familiar with the basic concepts of applications, networking, virtualization, security, high availability, as well as public cloud concepts with specific focus on Azure.
+## Reference Architecture Design
 
-## Introduction
+![Simplified High Level Topology Diagram]()
 
-There are many design models which can be used to secure application environments in Azure. Palo Alto Networks produces [validated reference architecture design and deployment documentation](https://www.paloaltonetworks.com/resources/reference-architectures), which guides towards the best security outcomes, reducing rollout time and avoiding common integration efforts. These architectures are designed, tested, and documented to provide faster, predictable deployments.
+This code implements:
+- a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
+- the _common option_, which routes all traffic flows onto a single set of VM-Series
 
-This guide uses the Transit VNet design pattern. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+## Detailed Architecture and Design
 
-This guide follows the _common_ deployment option, described in more detail in the [Reference Architecture documentation](https://www.paloaltonetworks.com/resources/reference-architectures).
+### Centralized Design
+
+This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+
+### Common Option
 
 The common firewall option leverages a single set of VM-Series firewalls. The sole set of firewalls operates as a shared resource and may present scale limitations with all traffic flowing through a single set of firewalls due to the performance degradation that occurs when traffic crosses virtual routers. This option is suitable for proof-of-concepts and smaller scale deployments because the number of firewalls low. However, the technical integration complexity is high.
 
-## Terraform
+![Detailed Topology Diagram](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
 
-This guide introduces the Terraform code maintained within this repository, which will deploy the reference architecture described above.
-
-## Topology
-
-![image](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
-
-Reference architecture consists of:
+This reference architecture consists of:
 
 * a VNET containing:
   * 4 subnets:
@@ -53,9 +54,9 @@ A list of requirements might vary depending on the platform used to deploy the i
 * after the deployment the firewalls remain not configured and not licensed
 * this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
 
-## Deploy the infrastructure
+## Usage
 
-Steps to deploy the infrastructure are as following:
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
@@ -95,7 +96,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
-## Post deploy
+### Post deploy
 
 Firewalls in this example are configured with password authentication. To retrieve the initial credentials run:
 
@@ -122,7 +123,7 @@ You can now proceed with licensing and configuring the devices.
 
 Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 
