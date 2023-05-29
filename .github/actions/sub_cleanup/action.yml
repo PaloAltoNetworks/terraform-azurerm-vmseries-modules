@@ -1,0 +1,34 @@
+name: 'Subscription cleanup'
+description: 'Cleans up subscription in case the job was cancelled.'
+runs:
+  using: "composite"
+  steps:
+
+    - name: login to Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ env.ARM_CLIENT_ID }}
+        tenant-id: ${{ env.ARM_TENANT_ID }}
+        subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+
+    - name: delete resource groups
+      shell: bash
+      run: |
+        echo "::group::CLEANUP"
+
+        set +e
+        for RG in $(az group list --query "[?properties.provisioningState=='Succeeded']" | jq -r '.[] | select(.name | contains("ghci")) | .name'); do 
+          echo "  deleting: $RG"
+          az group delete -g ${RG} -y --no-wait
+
+          E_CODE=$?
+          # check the az group delete exit code
+          if [ ! $E_CODE -eq 0 ] && [ ! $E_CODE -eq 3 ]; then
+            # when exit code is 3 it means that the group is no longer available (deleted for example)
+            # hence we skip that error as it is not relevant for us
+            # we do honor every other non 0 exit code though
+            exit $E_CODE
+          fi
+        done
+        set -e
+        echo "::endgroup::"
