@@ -2,6 +2,21 @@
 
 A terraform module for VMSS VM-Series firewalls in Azure.
 
+**NOTE** \
+Due to [lack of proper method of running health probes](./main.tf#L21-54) against Pan-OS based VMs running in a Scale Set, the `upgrade_mode` property is hardcoded to `Manual`. For this mode to actually work the `roll_instances_when_required` provider feature has to be also configured and set to `false`. Unfortunately this cannot be set in the `vmss` module, it has to be specified in the **root** module.
+
+Therefore, when using this module please add the following `provider` block to your code:
+
+```hcl
+provider "azurerm" {
+  features {
+    virtual_machine_scale_set {
+      roll_instances_when_required = false
+    }
+  }
+}
+```
+
 ## Usage
 
 ```hcl
