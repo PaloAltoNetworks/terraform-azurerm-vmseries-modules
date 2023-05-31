@@ -27,13 +27,13 @@ module "vmss" {
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.21 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.25 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.21 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.25 |
 
 ## Modules
 
