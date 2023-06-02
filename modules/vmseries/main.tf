@@ -126,3 +126,4 @@ resource "azurerm_virtual_machine" "this" {
     identity_ids = var.identity_ids
   }
 }
+# test
