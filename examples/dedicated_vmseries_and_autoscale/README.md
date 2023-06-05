@@ -1,3 +1,6 @@
+---
+show_in_hub: false
+---
 # Palo Alto Networks VM-Series Scaleset Module Example
 
 An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Dedicated Firewall reference architecture. In module a Virtual Machine Scale Set is used to run the Next Generation Firewalls. Thanks to custom, data plane oriented metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane utilization).
