@@ -1,15 +1,34 @@
-# Palo Alto Networks VM-Series Dedicated Firewall Option
+---
+short_title: Dedicated Firewall Option
+type: refarch
+show_in_hub: true
+---
+# Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture, Dedicated Inbound NGFW Option
 
-An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Dedicated Firewall reference architecture.
+Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
+The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with dedicated-inbound VM-Series; for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
-**NOTE:**
+## Reference Architecture Design
 
-* after the deployment the firewalls remain not licensed, they do however contain minimum `DAY0` configuration (required NIC, VR, routes configuration).
-* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
-## Topology and resources
+This code implements:
+- a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
+- the _dedicated inbound option_, which separates inbound traffic flows onto a separate set of VM-Series
 
-Common Firewall reference architecture consists of:
+## Detailed Architecture and Design
+
+### Centralized Design
+
+This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+
+### Dedicated Inbound Option
+
+The dedicated inbound option separates traffic flows across two separate sets of VM-Series firewalls. One set of VM-Series firewalls is dedicated to inbound traffic flows, allowing for greater flexibility and scaling of inbound traffic loads. The second set of VM-Series firewalls services all outbound, east-west, and enterprise network traffic flows. This deployment choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting other traffic flows within the deployment.
+
+![Detailed Topology Diagram](https://user-images.githubusercontent.com/2110772/234920818-44e4082d-b445-4ffc-b0cb-174ef1e3c2ae.png)
+
+This reference architecture consists of:
 
 * a VNET containing:
   * 3 subnets dedicated to the firewalls: management, private and public
@@ -26,10 +45,6 @@ Common Firewall reference architecture consists of:
     * management interface
     * public interface
 
-### Architecture diagram
-
-![image](https://user-images.githubusercontent.com/2110772/234920818-44e4082d-b445-4ffc-b0cb-174ef1e3c2ae.png)
-
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
@@ -38,9 +53,15 @@ A list of requirements might vary depending on the platform used to deploy the i
 * [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 * if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
 
-## Deploy the infrastructure
 
-Steps to deploy the infrastructure are as following:
+**NOTE:**
+
+* after the deployment the firewalls remain not licensed, they do however contain minimum `DAY0` configuration (required NIC, VR, routes configuration).
+* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+
+## Usage
+
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
@@ -80,7 +101,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
-## Post deploy
+### Post deploy
 
 Firewalls in this example are configured with password authentication. To retrieve the initial credentials run:
 
@@ -109,7 +130,7 @@ You can now proceed with licensing the devices and configuring your first rules.
 
 Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 

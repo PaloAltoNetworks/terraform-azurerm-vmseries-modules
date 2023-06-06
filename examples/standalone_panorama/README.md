@@ -1,3 +1,6 @@
+---
+show_in_hub: false
+---
 # Palo Alto Networks Panorama Module Example
 
 >Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.

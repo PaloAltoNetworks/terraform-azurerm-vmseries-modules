@@ -1,15 +1,34 @@
-# Palo Alto Networks VM-Series Common Firewall Option
+---
+short_title: Common Firewall Option
+type: refarch
+show_in_hub: true
+---
+# Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture. Common NGFW Option
 
-An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Common Firewall reference architecture.
+Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
+The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with common VM-Series for all traffic; for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
-**NOTE:**
+## Reference Architecture Design
 
-* after the deployment the firewalls remain not configured and not licensed
-* this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
-## Topology and resources
+This code implements:
+- a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
+- the _common option_, which routes all traffic flows onto a single set of VM-Series
 
-Common Firewall reference architecture consists of:
+## Detailed Architecture and Design
+
+### Centralized Design
+
+This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+
+### Common Option
+
+The common firewall option leverages a single set of VM-Series firewalls. The sole set of firewalls operates as a shared resource and may present scale limitations with all traffic flowing through a single set of firewalls due to the performance degradation that occurs when traffic crosses virtual routers. This option is suitable for proof-of-concepts and smaller scale deployments because the number of firewalls low. However, the technical integration complexity is high.
+
+![Detailed Topology Diagram](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
+
+This reference architecture consists of:
 
 * a VNET containing:
   * 4 subnets:
@@ -27,11 +46,6 @@ Common Firewall reference architecture consists of:
     * public interface - due to use of a public Load Balancer this public IP is used mainly for outgoing traffic
 * an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
 
-### Architecture diagram
-
-![image](https://user-images.githubusercontent.com/2110772/234920647-c7dc77c1-d86c-42ac-ba5a-59a95439ef23.png)
-
-
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
@@ -40,9 +54,14 @@ A list of requirements might vary depending on the platform used to deploy the i
 * [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 * if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
 
-## Deploy the infrastructure
+**NOTE:**
 
-Steps to deploy the infrastructure are as following:
+* after the deployment the firewalls remain not configured and not licensed
+* this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+
+## Usage
+
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
@@ -82,7 +101,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
-## Post deploy
+### Post deploy
 
 Firewalls in this example are configured with password authentication. To retrieve the initial credentials run:
 
@@ -109,7 +128,7 @@ You can now proceed with licensing and configuring the devices.
 
 Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 

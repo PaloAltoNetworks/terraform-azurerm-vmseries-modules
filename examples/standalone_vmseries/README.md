@@ -1,3 +1,6 @@
+---
+show_in_hub: false
+---
 # Palo Alto Networks Next Generation deployment example
 
 An example of a Terraform module that deploys a Next Generation Firewall appliance in Azure.
