@@ -94,28 +94,29 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
+## Reference
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
 
-## Providers
+### Providers
 
 | Name | Version |
 |------|---------|
 | <a name="provider_random"></a> [random](#provider\_random) | n/a |
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
 
-## Modules
+### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
 | <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
 | <a name="module_panorama"></a> [panorama](#module\_panorama) | ../../modules/panorama | n/a |
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
@@ -123,7 +124,7 @@ terraform destroy
 | [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
 | [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 
-## Inputs
+### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -141,7 +142,7 @@ terraform destroy
 | <a name="input_panorama_size"></a> [panorama\_size](#input\_panorama\_size) | A size of a VM that will run Panorama. It's also possible to specify the the VM size per Panorama, see `var.panoramas` variable. | `string` | `"Standard_D5_v2"` | no |
 | <a name="input_panoramas"></a> [panoramas](#input\_panoramas) | A map containing Panorama definitions.<br><br>All definitions share a VM size, SKU and PanOS version (`panorama_size`, `panorama_sku`, `panorama_version` respectively). Defining more than one Panorama makes sense when creating for example HA pairs. <br><br>Following properties are available:<br><br>- `name` : a name of a Panorama VM<br>- `size` : size of the Panorama virtual machine, when specified overrides `var.panorama_size`.<br>- `version` : PanOS version, when specified overrides `var.panorama_version`.<br>- `vnet_key`: a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable<br>- `subnet_key`: a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_key` property<br>- `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed<br>- `avzones`: when `enable_zones` is `true` these are availability zones used by Panorama's public IPs<br>- `custom_image_id`: a custom build of Panorama to use, overrides the stock image version.<br><br>- `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:<br>  - `name`: string that will form the NIC name<br>  - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`<br>  - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`<br>  - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface<br>  - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`<br>  - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)<br><br>- `logging_disks` : a map containing configuration of additional disks that should be attached to a Panorama appliance. Following properties are available:<br>  - `size` : size of a disk, 2TB by default<br>  - `lun` : slot to which the disk should be attached<br>  - `disk_type` : type of a disk, determines throughput, `Standard_LRS` by default.<br><br>Example:<pre>{<br>    "pn-1" = {<br>      name     = "panorama01"<br>      vnet_key = "vnet"<br>      interfaces = [<br>        {<br>          name               = "management"<br>          subnet_key         = "panorama"<br>          private_ip_address = "10.1.0.10"<br>          create_pip         = true<br>        },<br>      ]<br>    }<br>  }</pre> | `any` | `{}` | no |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|
