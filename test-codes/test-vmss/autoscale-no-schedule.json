@@ -1,0 +1,81 @@
+{
+    "location": "northeurope",
+    "tags": {
+        "CreatedBy": "Palo Alto Networks",
+        "CreatedWith": "Terraform"
+    },
+    "properties": {
+        "name": "alf-obew-vmss-autoscale",
+        "enabled": true,
+        "targetResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-obew-vmss",
+        "profiles": [
+            {
+                "name": "autoscale profile",
+                "capacity": {
+                    "minimum": "1",
+                    "maximum": "3",
+                    "default": "2"
+                },
+                "rules": [
+                    {
+                        "scaleAction": {
+                            "direction": "Increase",
+                            "type": "ChangeCount",
+                            "value": "1",
+                            "cooldown": "PT30M"
+                        },
+                        "metricTrigger": {
+                            "metricName": "DataPlaneCPUUtilizationPct",
+                            "metricNamespace": "Azure.ApplicationInsights",
+                            "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Insights/components/alf-obew-vmss-ai",
+                            "operator": "GreaterThanOrEqual",
+                            "statistic": "Average",
+                            "threshold": 70,
+                            "timeAggregation": "Average",
+                            "timeGrain": "PT1M",
+                            "timeWindow": "PT10M",
+                            "Dimensions": [],
+                            "dividePerInstance": false
+                        }
+                    },
+                    {
+                        "scaleAction": {
+                            "direction": "Decrease",
+                            "type": "ChangeCount",
+                            "value": "1",
+                            "cooldown": "PT5H"
+                        },
+                        "metricTrigger": {
+                            "metricName": "DataPlaneCPUUtilizationPct",
+                            "metricNamespace": "Azure.ApplicationInsights",
+                            "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Insights/components/alf-obew-vmss-ai",
+                            "operator": "LessThanOrEqual",
+                            "statistic": "Max",
+                            "threshold": 20,
+                            "timeAggregation": "Maximum",
+                            "timeGrain": "PT1M",
+                            "timeWindow": "PT10M",
+                            "Dimensions": [],
+                            "dividePerInstance": false
+                        }
+                    }
+                ]
+            }
+        ],
+        "notifications": [
+            {
+                "operation": "Scale",
+                "email": {
+                    "sendToSubscriptionAdministrator": false,
+                    "sendToSubscriptionCoAdministrators": false,
+                    "customEmails": []
+                },
+                "webhooks": []
+            }
+        ],
+        "targetResourceLocation": "northeurope"
+    },
+    "id": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/microsoft.insights/autoscalesettings/alf-obew-vmss-autoscale",
+    "name": "alf-obew-vmss-autoscale",
+    "type": "Microsoft.Insights/autoscaleSettings"
+}

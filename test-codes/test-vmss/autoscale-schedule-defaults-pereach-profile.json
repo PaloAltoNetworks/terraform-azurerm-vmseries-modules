@@ -1,0 +1,202 @@
+{
+    "location": "northeurope",
+    "tags": {},
+    "properties": {
+        "name": "alf-obew-vmss-Autoscale-143",
+        "enabled": true,
+        "targetResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-obew-vmss",
+        "profiles": [
+            {
+                "name": "Profile 1",
+                "capacity": {
+                    "minimum": "2",
+                    "maximum": "2",
+                    "default": "2"
+                },
+                "rules": [],
+                "recurrence": {
+                    "frequency": "Week",
+                    "schedule": {
+                        "timeZone": "UTC",
+                        "days": [
+                            "Monday",
+                            "Tuesday"
+                        ],
+                        "hours": [
+                            12
+                        ],
+                        "minutes": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "Profile 2",
+                "capacity": {
+                    "minimum": "3",
+                    "maximum": "3",
+                    "default": "3"
+                },
+                "rules": [],
+                "recurrence": {
+                    "frequency": "Week",
+                    "schedule": {
+                        "timeZone": "UTC",
+                        "days": [
+                            "Monday",
+                            "Tuesday"
+                        ],
+                        "hours": [
+                            13
+                        ],
+                        "minutes": [
+                            0
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "{\"name\":\"Auto created default scale condition\",\"for\":\"Profile 1\"}",
+                "capacity": {
+                    "minimum": "2",
+                    "maximum": "4",
+                    "default": "2"
+                },
+                "rules": [
+                    {
+                        "scaleAction": {
+                            "direction": "Increase",
+                            "type": "ChangeCount",
+                            "value": "1",
+                            "cooldown": "PT5M"
+                        },
+                        "metricTrigger": {
+                            "metricName": "Percentage CPU",
+                            "metricNamespace": "microsoft.compute/virtualmachinescalesets",
+                            "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-obew-vmss",
+                            "operator": "GreaterThan",
+                            "statistic": "Average",
+                            "threshold": 70,
+                            "timeAggregation": "Average",
+                            "timeGrain": "PT1M",
+                            "timeWindow": "PT10M",
+                            "Dimensions": [],
+                            "dividePerInstance": false
+                        }
+                    },
+                    {
+                        "scaleAction": {
+                            "direction": "Decrease",
+                            "type": "ChangeCount",
+                            "value": "1",
+                            "cooldown": "PT5M"
+                        },
+                        "metricTrigger": {
+                            "metricName": "Percentage CPU",
+                            "metricNamespace": "microsoft.compute/virtualmachinescalesets",
+                            "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-obew-vmss",
+                            "operator": "GreaterThan",
+                            "statistic": "Average",
+                            "threshold": 5,
+                            "timeAggregation": "Average",
+                            "timeGrain": "PT1M",
+                            "timeWindow": "PT10M",
+                            "Dimensions": [],
+                            "dividePerInstance": false
+                        }
+                    }
+                ],
+                "recurrence": {
+                    "frequency": "Week",
+                    "schedule": {
+                        "timeZone": "UTC",
+                        "days": [
+                            "Monday",
+                            "Tuesday"
+                        ],
+                        "hours": [
+                            12
+                        ],
+                        "minutes": [
+                            59
+                        ]
+                    }
+                }
+            },
+            {
+                "name": "{\"name\":\"Auto created default scale condition\",\"for\":\"Profile 2\"}",
+                "capacity": {
+                    "minimum": "2",
+                    "maximum": "4",
+                    "default": "2"
+                },
+                "rules": [
+                    {
+                        "scaleAction": {
+                            "direction": "Increase",
+                            "type": "ChangeCount",
+                            "value": "1",
+                            "cooldown": "PT5M"
+                        },
+                        "metricTrigger": {
+                            "metricName": "Percentage CPU",
+                            "metricNamespace": "microsoft.compute/virtualmachinescalesets",
+                            "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-obew-vmss",
+                            "operator": "GreaterThan",
+                            "statistic": "Average",
+                            "threshold": 70,
+                            "timeAggregation": "Average",
+                            "timeGrain": "PT1M",
+                            "timeWindow": "PT10M",
+                            "Dimensions": [],
+                            "dividePerInstance": false
+                        }
+                    },
+                    {
+                        "scaleAction": {
+                            "direction": "Decrease",
+                            "type": "ChangeCount",
+                            "value": "1",
+                            "cooldown": "PT5M"
+                        },
+                        "metricTrigger": {
+                            "metricName": "Percentage CPU",
+                            "metricNamespace": "microsoft.compute/virtualmachinescalesets",
+                            "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-obew-vmss",
+                            "operator": "GreaterThan",
+                            "statistic": "Average",
+                            "threshold": 5,
+                            "timeAggregation": "Average",
+                            "timeGrain": "PT1M",
+                            "timeWindow": "PT10M",
+                            "Dimensions": [],
+                            "dividePerInstance": false
+                        }
+                    }
+                ],
+                "recurrence": {
+                    "frequency": "Week",
+                    "schedule": {
+                        "timeZone": "UTC",
+                        "days": [
+                            "Monday",
+                            "Tuesday"
+                        ],
+                        "hours": [
+                            15
+                        ],
+                        "minutes": [
+                            0
+                        ]
+                    }
+                }
+            }
+        ],
+        "notifications": [],
+        "targetResourceLocation": "northeurope"
+    },
+    "id": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/microsoft.insights/autoscalesettings/alf-obew-vmss-Autoscale-143",
+    "name": "alf-obew-vmss-Autoscale-143",
+    "type": "Microsoft.Insights/autoscaleSettings"
+}

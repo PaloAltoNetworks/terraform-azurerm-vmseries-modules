@@ -362,3 +362,11 @@ variable "diagnostics_storage_uri" {
   default     = null
   type        = string
 }
+
+
+
+variable "autoscale_profiles" {
+  default     = []
+  # type        = map(any)
+  type = any
+}

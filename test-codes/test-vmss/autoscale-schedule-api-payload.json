@@ -1,0 +1,126 @@
+// requested to start at 20:00 and end at 23:00 for Profile 1
+{
+  "location": "northeurope",
+  "tags": {
+    "CreatedBy": "Palo Alto Networks",
+    "CreatedWith": "Terraform"
+  },
+  "properties": {
+    "name": "alf-inbound-vmss-autoscale",
+    "enabled": true,
+    "targetResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Compute/virtualMachineScaleSets/alf-inbound-vmss",
+    "profiles": [
+      {
+        "name": "Profile 1",
+        "capacity": {
+          "minimum": "2",
+          "maximum": "2",
+          "default": "2"
+        },
+        "rules": [],
+        "recurrence": {
+          "frequency": "Week",
+          "schedule": {
+            "timeZone": "UTC",
+            "days": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday"
+            ],
+            "hours": [
+              20
+            ],
+            "minutes": [
+              0
+            ]
+          }
+        },
+        "useAndAsScaleOutLogicalOperator": false
+      },
+      {
+        "name": "{\"name\":\"autoscale profile\",\"for\":\"Profile 1\"}",
+        "capacity": {
+          "minimum": "1",
+          "maximum": "3",
+          "default": "2"
+        },
+        "rules": [
+          {
+            "scaleAction": {
+              "direction": "Increase",
+              "type": "ChangeCount",
+              "value": "1",
+              "cooldown": "PT30M"
+            },
+            "metricTrigger": {
+              "metricName": "DataPlaneCPUUtilizationPct",
+              "metricNamespace": "Azure.ApplicationInsights",
+              "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Insights/components/alf-inbound-vmss-ai",
+              "operator": "GreaterThanOrEqual",
+              "statistic": "Average",
+              "threshold": 80,
+              "timeAggregation": "Average",
+              "timeGrain": "PT1M",
+              "timeWindow": "PT10M",
+              "Dimensions": [],
+              "dividePerInstance": false
+            }
+          },
+          {
+            "scaleAction": {
+              "direction": "Decrease",
+              "type": "ChangeCount",
+              "value": "1",
+              "cooldown": "PT5H"
+            },
+            "metricTrigger": {
+              "metricName": "DataPlaneCPUUtilizationPct",
+              "metricNamespace": "Azure.ApplicationInsights",
+              "metricResourceUri": "/subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/alf-test-vmss/providers/Microsoft.Insights/components/alf-inbound-vmss-ai",
+              "operator": "LessThanOrEqual",
+              "statistic": "Max",
+              "threshold": 20,
+              "timeAggregation": "Maximum",
+              "timeGrain": "PT1M",
+              "timeWindow": "PT10M",
+              "Dimensions": [],
+              "dividePerInstance": false
+            }
+          }
+        ],
+        "recurrence": {
+          "frequency": "Week",
+          "schedule": {
+            "timeZone": "UTC",
+            "days": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday"
+            ],
+            "hours": [
+              23
+            ],
+            "minutes": [
+              0
+            ]
+          }
+        }
+      }
+    ],
+    "notifications": [
+      {
+        "operation": "Scale",
+        "email": {
+          "sendToSubscriptionAdministrator": false,
+          "sendToSubscriptionCoAdministrators": false,
+          "customEmails": []
+        },
+        "webhooks": []
+      }
+    ]
+  }
+}
