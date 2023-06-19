@@ -47,6 +47,7 @@ runs:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
         echo "::group::TERRAFORM PLAN"
@@ -61,6 +62,7 @@ runs:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
         echo "::group::TERRAFORM APPLY"
@@ -75,6 +77,7 @@ runs:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
         echo "::group::TERRAFORM IDEMPOTENCE"
@@ -89,7 +92,7 @@ runs:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
-        IDEMPOTENCE: ${{ inputs.idempotence }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
         cd "$GITHUB_WORKSPACE/$TPATH"
