@@ -1,0 +1,10 @@
+# Palo Alto Networks VNet Peering Module for Azure
+
+A terraform module for deploying a Virtual Network Peering and its components required for the VM-Series firewalls in Azure.
+
+## Usage
+
+For usage refer to any example module.
+
+## Reference
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
