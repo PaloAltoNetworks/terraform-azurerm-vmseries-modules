@@ -45,7 +45,7 @@ variable "local_allow_gateway_transit" {
 }
 
 variable "local_use_remote_gateways" {
-  description = "Local peer setting for using peer VNET remote gateway or Route Server. If set to `true` - `peer_allow_gateway_transit` to be set to true."
+  description = "Local peer setting for using peer VNET remote gateway or Route Server. If set to `true` - `peer_allow_gateway_transit` needs to be set to true."
   default     = false
   type        = bool
 }
@@ -69,7 +69,7 @@ variable "peer_allow_gateway_transit" {
 }
 
 variable "peer_use_remote_gateways" {
-  description = "Remote peer setting for using local VNET remote gateway or Route Server. If set to `true` - `local_allow_gateway_transit` to be set to true."
+  description = "Remote peer setting for using local VNET remote gateway or Route Server. If set to `true` - `local_allow_gateway_transit` needs to be set to true."
   default     = false
   type        = bool
 }
