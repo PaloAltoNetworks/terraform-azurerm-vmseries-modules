@@ -16,7 +16,6 @@ variable "name_prefix" {
 
 variable "local_vnet_name" {
   description = "Local VNET name."
-  default     = ""
   type        = string
 }
 
