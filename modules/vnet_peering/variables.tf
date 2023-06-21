@@ -21,7 +21,6 @@ variable "local_vnet_name" {
 
 variable "peer_vnet_name" {
   description = "Peer VNET name."
-  default     = ""
   type        = string
 }
 
