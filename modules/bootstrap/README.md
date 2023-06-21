@@ -44,26 +44,27 @@ resource "local_file" "this" {
 }
 ```
 
+## Reference
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.7 |
+| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.25 |
 | <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.1 |
 
-## Providers
+### Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.7 |
+| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.25 |
 
-## Modules
+### Modules
 
 No modules.
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
@@ -73,7 +74,7 @@ No modules.
 | [azurerm_storage_share_file.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_file) | resource |
 | [azurerm_storage_account.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account) | data source |
 
-## Inputs
+### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -93,7 +94,7 @@ No modules.
 | <a name="input_storage_allow_vnet_subnet_ids"></a> [storage\_allow\_vnet\_subnet\_ids](#input\_storage\_allow\_vnet\_subnet\_ids) | List of the allowed vnet subnet ids.<br>Note that this option requires network service endpoint enabled for Microsoft Storage for the specified subnets.<br>If you are using [vnet module](../vnet/README.md) - set `storage_private_access` to true for the specific subnet.<br>Example:<pre>[<br>  module.vnet.subnet_ids["subnet-mgmt"],<br>  module.vnet.subnet_ids["subnet-pub"],<br>  module.vnet.subnet_ids["subnet-priv"]<br>]</pre> | `list(any)` | `null` | no |
 | <a name="input_storage_acl"></a> [storage\_acl](#input\_storage\_acl) | If `true`, storage account network rules will be activated with Deny as the default statement. | `bool` | `true` | no |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|

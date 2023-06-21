@@ -11,22 +11,27 @@ inputs:
     description: When set to true runs also apply
     type: boolean
     default: false
-  indepotency:
+  idempotence:
     description: When set to true runs plan to on already applied configuration
     type: boolean
     default: true
+
 runs:
   using: "composite"
   steps:
+
     - name: setup Terraform
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.tf_version }}
 
-    - name: set UUID value
+    - name: set UUID and provider values value
       id: uuid
       shell: bash
-      run: echo "::set-output name=uuid::$(uuidgen | tr '[:upper:]' '[:lower:]')"
+      env:
+        TPATH: ${{ inputs.path }}
+      run: |
+        echo "uuid=$(uuidgen | tr '[:upper:]' '[:lower:]')" >> $GITHUB_OUTPUT
 
     - name: login to Azure
       uses: azure/login@v1
@@ -35,47 +40,62 @@ runs:
         tenant-id: ${{ env.ARM_TENANT_ID }}
         subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-    - name: run plan
+    - name: plan infrastructure
       id: plan
-      if: ${{ ! inputs.do_apply }}
+      if: inputs.do_apply == 'false'
       env:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
+        echo "::group::TERRAFORM PLAN"
         cd "$GITHUB_WORKSPACE/$TPATH"
-        make plan
+          make plan
+        echo "::endgroup::"
 
-    - name: run apply
-      if: inputs.do_apply
+    - name: create infrastructure
+      id: apply
+      if: inputs.do_apply == 'true'
       env:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
+        echo "::group::TERRAFORM APPLY"
         cd "$GITHUB_WORKSPACE/$TPATH"
         make apply
+        echo "::endgroup::"
 
-    - name: test indepotency
-      if: inputs.do_apply && inputs.indepotency
+    - name: test idempotence
+      id: idempotence
+      if: inputs.do_apply == 'true' && inputs.idempotence == 'true'
       env:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
+        echo "::group::TERRAFORM IDEMPOTENCE"
         cd "$GITHUB_WORKSPACE/$TPATH"
-        make indepotency
+        make idempotence
+        echo "::endgroup::"
 
     - name: run destroy
-      if: inputs.do_apply && always()
+      id: destroy
+      if: inputs.do_apply == 'true'
       env:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
+        ARM_SKIP_PROVIDER_REGISTRATION: true
       shell: bash
       run: |
         cd "$GITHUB_WORKSPACE/$TPATH"
+        echo "::group::TERRAFORM DESTROY"
         make destroy
+        echo "::endgroup::"

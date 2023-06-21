@@ -1,3 +1,11 @@
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/PaloAltoNetworks/terraform-azurerm-vmseries-modules?style=flat-square)
+![GitHub](https://img.shields.io/github/license/PaloAltoNetworks/terraform-modules-vmseries-ci-workflows?style=flat-square)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/PaloAltoNetworks/terraform-azurerm-vmseries-modules/release_ci.yml?style=flat-square)
+![GitHub issues](https://img.shields.io/github/issues/PaloAltoNetworks/terraform-azurerm-vmseries-modules?style=flat-square)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/PaloAltoNetworks/terraform-azurerm-vmseries-modules?style=flat-square)
+![Terraform registry downloads total](https://img.shields.io/badge/dynamic/json?color=green&label=downloads%20total&query=data.attributes.total&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fmodules%2FPaloAltoNetworks%2Fvmseries-modules%2Fazurerm%2Fdownloads%2Fsummary&style=flat-square)
+![Terraform registry download month](https://img.shields.io/badge/dynamic/json?color=green&label=downloads%20this%20month&query=data.attributes.month&url=https%3A%2F%2Fregistry.terraform.io%2Fv2%2Fmodules%2FPaloAltoNetworks%2Fvmseries-modules%2Fazurerm%2Fdownloads%2Fsummary&style=flat-square)
+
 # Terraform Modules for Palo Alto Networks VM-Series on Azure Cloud
 
 ## Overview

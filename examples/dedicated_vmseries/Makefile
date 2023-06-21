@@ -2,30 +2,24 @@ init:
 	@../../makefile.sh init
 
 prep_vars: check_uuid
-	@../../makefile.sh prep_vars
+	@if [ ! -f ghci.tfvars ]; then sed -E "s/example-/${PREFIX}/g;s/xmplbootstrapdedicated/${STORAGE}/g;s/^resource_group_name.*/resource_group_name = \"${RG}\"/g" example.tfvars > ghci.tfvars; fi
+	@if [ ! -f files/init-cfg.txt ]; then  cp files/init-cfg.sample.txt files/init-cfg.txt; fi
 
 validate:
 	@../../makefile.sh validate
 
-plan: check_uuid init
-	@../../makefile.sh plan '${TF_PARAMS}'
+plan: init prep_vars
+	@../../makefile.sh plan
 
-plan_file: check_uuid init
-	@../../makefile.sh plan_file '${TF_PARAMS}'
+apply: init prep_vars
+	@../../makefile.sh apply
 
-apply_file:
-	@../../makefile.sh apply_file
+idempotence:
+	@../../makefile.sh idempotence
 
-apply: check_uuid init plan_file apply_file
-
-idempotence: check_uuid
-	@../../makefile.sh idempotence '${TF_PARAMS}'
-
-destroy: check_uuid
-	@../../makefile.sh destroy '${TF_PARAMS}'
-
-delete_rg: check_uuid
-	@../../makefile.sh delete_rg '${PREFIX}${RG}'
+destroy:
+	@../../makefile.sh destroy
+	@rm ghci.tfvars
 
 check_uuid:
 ifndef UUID
@@ -35,5 +29,5 @@ ifndef UUID
 else
 RG := $(shell echo ${UUID} | cut -d '-' -f 1,5)
 PREFIX := ghci$(shell echo ${UUID} | cut -d '-' -f 2)-
-TF_PARAMS := -var-file=example.tfvars -var resource_group_name=${RG} -var name_prefix=${PREFIX}
+STORAGE := $(shell echo ${UUID} | cut -d '-' -f 2,3,4 | tr -d '-')
 endif

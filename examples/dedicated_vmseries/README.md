@@ -1,15 +1,34 @@
-# Palo Alto Networks VM-Series Dedicated Firewall Option
+---
+short_title: Dedicated Firewall Option
+type: refarch
+show_in_hub: true
+---
+# Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture, Dedicated Inbound NGFW Option
 
-An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Dedicated Firewall reference architecture.
+Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
+The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with dedicated-inbound VM-Series; for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
-**NOTE:**
+## Reference Architecture Design
 
-* after the deployment the firewalls remain not licensed, they do however contain minimum `DAY0` configuration (required NIC, VR, routes configuration).
-* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
-## Topology and resources
+This code implements:
+- a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
+- the _dedicated inbound option_, which separates inbound traffic flows onto a separate set of VM-Series
 
-Common Firewall reference architecture consists of:
+## Detailed Architecture and Design
+
+### Centralized Design
+
+This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+
+### Dedicated Inbound Option
+
+The dedicated inbound option separates traffic flows across two separate sets of VM-Series firewalls. One set of VM-Series firewalls is dedicated to inbound traffic flows, allowing for greater flexibility and scaling of inbound traffic loads. The second set of VM-Series firewalls services all outbound, east-west, and enterprise network traffic flows. This deployment choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting other traffic flows within the deployment.
+
+![Detailed Topology Diagram](https://user-images.githubusercontent.com/2110772/234920818-44e4082d-b445-4ffc-b0cb-174ef1e3c2ae.png)
+
+This reference architecture consists of:
 
 * a VNET containing:
   * 3 subnets dedicated to the firewalls: management, private and public
@@ -26,10 +45,6 @@ Common Firewall reference architecture consists of:
     * management interface
     * public interface
 
-### Architecture diagram
-
-![image](https://user-images.githubusercontent.com/2110772/234920818-44e4082d-b445-4ffc-b0cb-174ef1e3c2ae.png)
-
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
@@ -38,9 +53,15 @@ A list of requirements might vary depending on the platform used to deploy the i
 * [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
 * if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
 
-## Deploy the infrastructure
 
-Steps to deploy the infrastructure are as following:
+**NOTE:**
+
+* after the deployment the firewalls remain not licensed, they do however contain minimum `DAY0` configuration (required NIC, VR, routes configuration).
+* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+
+## Usage
+
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
@@ -80,7 +101,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
-## Post deploy
+### Post deploy
 
 Firewalls in this example are configured with password authentication. To retrieve the initial credentials run:
 
@@ -109,7 +130,7 @@ You can now proceed with licensing the devices and configuring your first rules.
 
 Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 
@@ -117,14 +138,15 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
+## Reference
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
 
-## Providers
+### Providers
 
 | Name | Version |
 |------|---------|
@@ -133,7 +155,7 @@ terraform destroy
 | <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
 | <a name="provider_local"></a> [local](#provider\_local) | n/a |
 
-## Modules
+### Modules
 
 | Name | Source | Version |
 |------|--------|---------|
@@ -146,7 +168,7 @@ terraform destroy
 | <a name="module_vmseries"></a> [vmseries](#module\_vmseries) | ../../modules/vmseries | n/a |
 | <a name="module_appgw"></a> [appgw](#module\_appgw) | ../../modules/appgw | n/a |
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
@@ -157,7 +179,7 @@ terraform destroy
 | [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
 | [http_http.this](https://registry.terraform.io/providers/hashicorp/http/latest/docs/data-sources/http) | data source |
 
-## Inputs
+### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -181,7 +203,7 @@ terraform destroy
 | <a name="input_vmseries"></a> [vmseries](#input\_vmseries) | Map of virtual machines to create to run VM-Series - inbound firewalls. Following properties are supported:<br><br>- `name` : name of the VMSeries virtual machine.<br>- `vm_size` : size of the VMSeries virtual machine, when specified overrides `var.vmseries_vm_size`.<br>- `version` : PanOS version, when specified overrides `var.vmseries_version`.<br>- `vnet_key` : a key of a VNET defined in the `var.vnets` map. This value will be used during network interfaces creation.<br>- `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.<br>- `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1".<br>- `availability_set_name` : a name of an Availability Set as declared in `availability_set` property. Specify when HA is required but cannot go for zonal deployment.<br><br>- `bootstrap_options` : string, optional bootstrap options to pass to VM-Series instances, semicolon separated values. When defined this precedence over `bootstrap_storage`<br>- `bootstrap_storage` : a map containing definition of the bootstrap package content. When present triggers a creation of a File Share in an existing Storage Account, following properties supported:<br>  - `name` : a name of a key in `var.bootstrap_storage` variable defining a Storage Account<br>  - `static_files` : a map where key is a path to a file, value is the location of the file in the bootstrap package (file share). All files in this map are copied 1:1 to the bootstrap package<br>  - `template_bootstrap_xml` : path to the `bootstrap.xml` template. When defined it will trigger creation of the `bootstrap.xml` file and the file will be uploaded to the storage account. This is a simple `day 0` configuration file that should set up only basic networking. Specifying this property forces additional properties that are required to properly template the file. They can be defined per each VM or globally for all VMs (in this case place them in the bootstrap storage definition). The properties are listed below.<br>  - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.<br>  - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.<br>  - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.<br>  - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).<br><br>- `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:<br>  - `name`: string that will form the NIC name<br>  - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`<br>  - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`<br>  - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface<br>  - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`<br>  - `load_balancer_key` : (string) key of a Load Balancer defined in the `var.loadbalancers`  variable, defaults to `null`<br>  - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)<br><br>Example:<pre>{<br>  "fw01" = {<br>    name = "firewall01"<br>    bootstrap_storage = {<br>      name                   = "storageaccountname"<br>      static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }<br>      template_bootstrap_xml = "templates/bootstrap_common.tmpl"<br>      public_snet_key        = "public"<br>      private_snet_key       = "private"<br>    }<br>    avzone   = 1<br>    vnet_key = "trust"<br>    interfaces = [<br>      {<br>        name               = "mgmt"<br>        subnet_key         = "mgmt"<br>        create_pip         = true<br>        private_ip_address = "10.0.0.1"<br>      },<br>      {<br>        name                 = "trust"<br>        subnet_key           = "private"<br>        private_ip_address   = "10.0.1.1"<br>        load_balancer_key    = "private_lb"<br>      },<br>      {<br>        name                 = "untrust"<br>        subnet_key           = "public"<br>        private_ip_address   = "10.0.2.1"<br>        load_balancer_key    = "public_lb"<br>        public_ip_name       = "existing_public_ip"<br>      }<br>    ]<br>  }<br>}</pre> | `any` | n/a | yes |
 | <a name="input_appgws"></a> [appgws](#input\_appgws) | A map defining all Application Gateways in the current deployment.<br><br>For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/main/modules/appgw/README.md).<br><br>Following properties are supported:<br>- `name` : name of the Application Gateway.<br>- `vnet_key` : a key of a VNET defined in the `var.vnets` map.<br>- `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.<br>- `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.<br>- `capacity` : (optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)<br>- `capacity_min` : (optional) when set enables autoscaling and becomes the minimum capacity<br>- `capacity_max` : (optional) maximum capacity for autoscaling<br>- `enable_http2` : enable HTTP2 support on the Application Gateway<br>- `waf_enabled` : (optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`<br>- `vmseries_public_nic_name` : name of the public VMSeries interface as defined in `interfaces` property.<br>- `managed_identities` : (optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault<br>- `ssl_policy_type` : (optional) type of an SSL policy, defaults to `Predefined`<br>- `ssl_policy_name` : (optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`<br>- `ssl_policy_min_protocol_version` : (optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`<br>- `ssl_policy_cipher_suites` : (optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`<br>- `ssl_profiles` : (optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property | `map` | `{}` | no |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|
