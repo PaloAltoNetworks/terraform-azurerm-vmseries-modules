@@ -41,8 +41,8 @@ No modules.
 | <a name="input_local_resource_group_name"></a> [local\_resource\_group\_name](#input\_local\_resource\_group\_name) | Name of the existing local peer resource group where to place the resources created. | `string` | n/a | yes |
 | <a name="input_peer_resource_group_name"></a> [peer\_resource\_group\_name](#input\_peer\_resource\_group\_name) | Name of the existing remote peer resource group where to place the resources created. | `string` | n/a | yes |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix name appended to the peering names. | `string` | `""` | no |
-| <a name="input_local_vnet_name"></a> [local\_vnet\_name](#input\_local\_vnet\_name) | Local VNET name. | `string` | `""` | no |
-| <a name="input_peer_vnet_name"></a> [peer\_vnet\_name](#input\_peer\_vnet\_name) | Peer VNET name. | `string` | `""` | no |
+| <a name="input_local_vnet_name"></a> [local\_vnet\_name](#input\_local\_vnet\_name) | Local VNET name. | `string` | n/a | yes |
+| <a name="input_peer_vnet_name"></a> [peer\_vnet\_name](#input\_peer\_vnet\_name) | Peer VNET name. | `string` | n/a | yes |
 | <a name="input_local_allow_virtual_network_access"></a> [local\_allow\_virtual\_network\_access](#input\_local\_allow\_virtual\_network\_access) | Local peer setting for allowing traffic from peer VNET to VMs in the local VNET. | `bool` | `true` | no |
 | <a name="input_local_allow_forwarded_traffic"></a> [local\_allow\_forwarded\_traffic](#input\_local\_allow\_forwarded\_traffic) | Local peer setting for forwarded traffic from VMs in the peer VNET. | `bool` | `true` | no |
 | <a name="input_local_allow_gateway_transit"></a> [local\_allow\_gateway\_transit](#input\_local\_allow\_gateway\_transit) | Local peer setting for allowing gateway links for remote gateway or Route Server in the peer VNET. | `bool` | `false` | no |
