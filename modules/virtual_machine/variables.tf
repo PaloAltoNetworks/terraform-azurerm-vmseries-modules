@@ -96,6 +96,7 @@ variable "username" {
 
 variable "password" {
   description = "Initial administrative password to use for the virtual machine. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
+  default     = null
   type        = string
   sensitive   = true
 }

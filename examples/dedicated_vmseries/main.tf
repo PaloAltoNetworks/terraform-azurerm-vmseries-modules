@@ -14,6 +14,13 @@ locals {
   vmseries_password = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
 }
 
+# Obtain Public IP address of code deployment machine
+
+data "http" "this" {
+  count = length(var.bootstrap_storage) > 0 && contains([for v in values(var.bootstrap_storage) : v.storage_acl], true) ? 1 : 0
+  url   = "https://api.ipify.org"
+}
+
 # Create or source the Resource Group.
 resource "azurerm_resource_group" "this" {
   count    = var.create_resource_group ? 1 : 0
@@ -194,10 +201,13 @@ module "bootstrap" {
 
   for_each = var.bootstrap_storage
 
-  create_storage_account = try(each.value.create_storage, true)
-  name                   = each.value.name
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  create_storage_account           = try(each.value.create_storage, true)
+  name                             = each.value.name
+  resource_group_name              = try(each.value.resource_group_name, local.resource_group.name)
+  location                         = var.location
+  storage_acl                      = try(each.value.storage_acl, false)
+  storage_allow_vnet_subnet_ids    = try(flatten([for v in each.value.storage_allow_vnet_subnets : [module.vnet[v.vnet_key].subnet_ids[v.subnet_key]]]), [])
+  storage_allow_inbound_public_ips = concat(try(each.value.storage_allow_inbound_public_ips, []), try([data.http.this[0].response_body], []))
 
   tags = var.tags
 }

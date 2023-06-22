@@ -94,3 +94,46 @@ variable "tags" {
   default     = {}
   type        = map(string)
 }
+
+variable "retention_policy_days" {
+  description = "Log retention policy in days"
+  type        = number
+  default     = 7
+  validation {
+    condition     = var.retention_policy_days > 0 && var.retention_policy_days < 365
+    error_message = "Enter a value between 1 and 365."
+  }
+}
+
+variable "storage_allow_inbound_public_ips" {
+  description = <<-EOF
+    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the Storage Account.
+    Only public IPs are allowed - RFC1918 address space is not permitted.
+  EOF
+  type        = list(string)
+  default     = null
+}
+
+variable "storage_allow_vnet_subnet_ids" {
+  description = <<-EOF
+  List of the allowed vnet subnet ids.
+  Note that this option requires network service endpoint enabled for Microsoft Storage for the specified subnets.
+  If you are using [vnet module](../vnet/README.md) - set `storage_private_access` to true for the specific subnet.
+  Example:
+  ```
+  [
+    module.vnet.subnet_ids["subnet-mgmt"],
+    module.vnet.subnet_ids["subnet-pub"],
+    module.vnet.subnet_ids["subnet-priv"]
+  ]
+  ```
+  EOF
+  type        = list(any)
+  default     = null
+}
+
+variable "storage_acl" {
+  description = "If `true`, storage account network rules will be activated with Deny as the default statement."
+  default     = true
+  type        = bool
+}

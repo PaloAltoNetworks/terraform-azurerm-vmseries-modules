@@ -72,9 +72,26 @@ variable "password" {
   sensitive   = true
 }
 
+variable "ssh_keys" {
+  description = <<-EOF
+  A list of initial administrative SSH public keys that allow key-pair authentication. If not defined the `password` variable must be specified.
+  
+  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
+
+  ```
+  [
+    file("/path/to/public/keys/key_1.pub"),
+    file("/path/to/public/keys/key_2.pub")
+  ]
+  ```
+  EOF
+  default     = []
+  type        = list(string)
+}
+
 variable "disable_password_authentication" {
   description = "If true, disables password-based authentication on VM-Series instances."
-  default     = false
+  default     = true
   type        = bool
 }
 
