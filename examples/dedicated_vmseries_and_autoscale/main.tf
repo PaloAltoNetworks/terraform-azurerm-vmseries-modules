@@ -11,7 +11,8 @@ resource "random_password" "this" {
 }
 
 locals {
-  vmseries_password = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
+  vmseries_password               = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
+  disable_password_authentication = local.vmseries_password == null ? true : false
 }
 
 # Create or source the Resource Group.
@@ -175,13 +176,14 @@ module "vmss" {
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  username     = var.vmseries_username
-  password     = local.vmseries_password
-  img_sku      = var.vmseries_sku
-  img_version  = try(each.value.version, var.vmseries_version)
-  vm_size      = try(each.value.vm_size, var.vmseries_vm_size)
-  zone_balance = var.enable_zones
-  zones        = var.enable_zones ? try(each.value.zones, null) : []
+  username                        = var.vmseries_username
+  password                        = local.vmseries_password
+  disable_password_authentication = local.disable_password_authentication
+  img_sku                         = var.vmseries_sku
+  img_version                     = try(each.value.version, var.vmseries_version)
+  vm_size                         = try(each.value.vm_size, var.vmseries_vm_size)
+  zone_balance                    = var.enable_zones
+  zones                           = var.enable_zones ? try(each.value.zones, null) : []
 
   encryption_at_host_enabled   = try(each.value.encryption_at_host_enabled, null)
   overprovision                = try(each.value.overprovision, null)

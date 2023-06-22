@@ -1,7 +1,8 @@
 locals {
-  img_publisher = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 0)
-  img_offer     = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 1)
-  img_sku       = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 2)
+  img_publisher                   = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 0)
+  img_offer                       = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 1)
+  img_sku                         = element(split(",", lookup(var.standard_os, var.vm_os_simple, "")), 2)
+  disable_password_authentication = var.password == null ? true : false
 }
 
 resource "azurerm_public_ip" "this" {
@@ -77,18 +78,25 @@ resource "azurerm_virtual_machine" "this" {
   os_profile {
     computer_name  = var.name
     admin_username = var.username
-    admin_password = var.password
+    admin_password = local.disable_password_authentication == true ? null : var.password
     custom_data    = var.custom_data
   }
 
   os_profile_linux_config {
-    disable_password_authentication = var.password == null ? true : false
+    disable_password_authentication = local.disable_password_authentication
     dynamic "ssh_keys" {
       for_each = var.ssh_keys
       content {
         key_data = ssh_keys.value
         path     = "/home/${var.username}/.ssh/authorized_keys"
       }
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition     = var.password != null || var.ssh_keys != []
+      error_message = "Either password or ssh_keys must be set in order to have access to the device"
     }
   }
 

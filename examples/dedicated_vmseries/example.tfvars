@@ -151,7 +151,15 @@ bootstrap_storage = {
     name             = "xmplbootstrapdedicated"
     public_snet_key  = "public"
     private_snet_key = "private"
+    storage_acl      = true
     intranet_cidr    = "10.100.0.0/16"
+    storage_allow_vnet_subnets = {
+      management = {
+        vnet_key   = "transit"
+        subnet_key = "management"
+      }
+    }
+    storage_allow_inbound_public_ips = ["1.2.3.4"] # TODO: whitelist public IP addresses subnets (minimum /30 CIDR) that will be used to apply the terraform code from
   }
 }
 
