@@ -20,5 +20,5 @@ jobs:
     with:
       cloud: azure
       max_parallel: 10
-      tf_version: 1.2 1.3 1.4
+      tf_version: 1.2 1.3 1.4 1.5
       do_apply: true
