@@ -11,7 +11,7 @@ Simple example usage is shown below. For more *real life* code please check [exa
 
 ```hcl
 module "bootstrap" {
-  source = "../modules/bootstrap"
+  source = "../../modules/bootstrap"
 
   storage_account_name = "accountname"
   resource_group_name  = "rg-name"
