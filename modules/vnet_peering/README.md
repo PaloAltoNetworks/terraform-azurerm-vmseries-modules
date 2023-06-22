@@ -43,6 +43,8 @@ No modules.
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | Prefix name appended to the peering names. | `string` | `""` | no |
 | <a name="input_local_vnet_name"></a> [local\_vnet\_name](#input\_local\_vnet\_name) | Local VNET name. | `string` | n/a | yes |
 | <a name="input_peer_vnet_name"></a> [peer\_vnet\_name](#input\_peer\_vnet\_name) | Peer VNET name. | `string` | n/a | yes |
+| <a name="input_local_peering_name"></a> [local\_peering\_name](#input\_local\_peering\_name) | The name of the local peering. | `string` | `null` | no |
+| <a name="input_peer_peering_name"></a> [peer\_peering\_name](#input\_peer\_peering\_name) | The name of the remote peering. | `string` | `null` | no |
 | <a name="input_local_allow_virtual_network_access"></a> [local\_allow\_virtual\_network\_access](#input\_local\_allow\_virtual\_network\_access) | Local peer setting for allowing traffic from peer VNET to VMs in the local VNET. | `bool` | `true` | no |
 | <a name="input_local_allow_forwarded_traffic"></a> [local\_allow\_forwarded\_traffic](#input\_local\_allow\_forwarded\_traffic) | Local peer setting for forwarded traffic from VMs in the peer VNET. | `bool` | `true` | no |
 | <a name="input_local_allow_gateway_transit"></a> [local\_allow\_gateway\_transit](#input\_local\_allow\_gateway\_transit) | Local peer setting for allowing gateway links for remote gateway or Route Server in the peer VNET. | `bool` | `false` | no |
@@ -58,4 +60,6 @@ No modules.
 |------|-------------|
 | <a name="output_local_peering_name"></a> [local\_peering\_name](#output\_local\_peering\_name) | The name of the local VNET peering. |
 | <a name="output_remote_peering_name"></a> [remote\_peering\_name](#output\_remote\_peering\_name) | The name of the remote VNET peering. |
+| <a name="output_local_peering_id"></a> [local\_peering\_id](#output\_local\_peering\_id) | The ID of the local VNET peering. |
+| <a name="output_remote_peering_id"></a> [remote\_peering\_id](#output\_remote\_peering\_id) | The ID of the remote VNET peering. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->

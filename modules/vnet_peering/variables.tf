@@ -24,6 +24,18 @@ variable "peer_vnet_name" {
   type        = string
 }
 
+variable "local_peering_name" {
+  description = "The name of the local peering."
+  default     = null
+  type        = string
+}
+
+variable "peer_peering_name" {
+  description = "The name of the remote peering."
+  default     = null
+  type        = string
+}
+
 variable "local_allow_virtual_network_access" {
   description = "Local peer setting for allowing traffic from peer VNET to VMs in the local VNET."
   default     = true
