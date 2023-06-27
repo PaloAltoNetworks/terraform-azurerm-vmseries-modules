@@ -39,6 +39,15 @@ case $1 in
     echo
     ;;
 
+  test)  
+    echo "::  DOWNLOADING GO DEPENDENCIES  ::"
+    go get -v -t -d | nl -bn && go mod tidy | nl -bn
+    echo
+    echo "::  EXECUTING TERRATEST  ::"
+    go test -v -timeout 120m -count=1 | nl -bn
+    echo
+    ;;
+
   destroy)
     echo "::  DESTROYING INFRASTRUCTURE  ::"
     terraform destroy -auto-approve -var-file=ghci.tfvars  | nl -bn
