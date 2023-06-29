@@ -1,0 +1,34 @@
+name: Pre-Commit update
+run-name: "Update Pre-Commit dependencies"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: 0 1 1-7 * 1 # This is basically every 1st Monday of each month
+
+jobs:
+  update:
+    name: "Update Pre-Commit dependencies"
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre-commit-update.yml@v1
+
+  pre-commit:
+    name: Run Pre-Commit with the udpated config
+    needs: [update]
+    if: needs.update.outputs.pr_operation == 'created' || needs.update.outputs.pr_operation == 'updated'
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@v1
+    with:
+      pre-commit-hooks: terraform_fmt terraform_docs terraform_tflint checkov
+      checkout-branch: pre-commit-dependencies-update
+
+  comment-pr:
+    name: Give comment on the PR if pre-commit failed
+    needs: [pre-commit, update]
+    if: always() && (needs.pre-commit.result == 'failure' || needs.pre-commit.result == 'success')
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_comment_pr.yml@v1
+    with:
+      pr_number: ${{ needs.update.outputs.pr_number }}
+      job_result: ${{ needs.pre-commit.result }}
