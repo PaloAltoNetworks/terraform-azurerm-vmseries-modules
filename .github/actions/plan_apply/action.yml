@@ -63,6 +63,7 @@ runs:
         ARM_USE_OIDC: true
         UUID: ${{ steps.uuid.outputs.uuid }}
         ARM_SKIP_PROVIDER_REGISTRATION: true
+        TF_LOG: DEBUG
       shell: bash
       run: |
         echo "::group::TERRAFORM APPLY"
