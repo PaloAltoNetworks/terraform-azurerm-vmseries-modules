@@ -17,19 +17,11 @@ variable "local_peer_config" {
 
   <details>
   <summary>Optional</summary>
-  - 
-  </details>
   - `name` (string) : the name of the local VNET peering
+  </details>
+
   EOF
-  type = object({
-    vnet_name                    = string
-    resource_group_name          = string
-    name                         = optional(string)
-    allow_virtual_network_access = bool
-    allow_forwarded_traffic      = bool
-    allow_gateway_transit        = bool
-    use_remote_gateways          = bool
-  })
+  type        = map(any)
 }
 
 variable "remote_peer_config" {
@@ -45,17 +37,9 @@ variable "remote_peer_config" {
 
   <details>
   <summary>Optional</summary>
-  - 
-  </details>
   - `name` (string) : the name of the remote VNET peering
+  </details>
+
   EOF
-  type = object({
-    vnet_name                    = string
-    resource_group_name          = string
-    name                         = optional(string)
-    allow_virtual_network_access = bool
-    allow_forwarded_traffic      = bool
-    allow_gateway_transit        = bool
-    use_remote_gateways          = bool
-  })
+  type        = map(any)
 }
