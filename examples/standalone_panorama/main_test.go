@@ -1,4 +1,4 @@
-package centralized_design
+package standalone_panorama
 
 import (
 	"os"

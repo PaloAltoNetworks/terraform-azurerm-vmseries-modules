@@ -1,4 +1,4 @@
-package centralized_design
+package common_vmseries
 
 import (
 	"os"

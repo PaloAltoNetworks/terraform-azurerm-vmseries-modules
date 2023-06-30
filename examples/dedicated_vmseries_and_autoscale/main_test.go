@@ -1,4 +1,4 @@
-package centralized_design
+package dedicated_vmseries_and_autoscale
 
 import (
 	"os"
