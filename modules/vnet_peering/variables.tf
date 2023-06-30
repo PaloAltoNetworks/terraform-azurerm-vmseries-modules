@@ -1,85 +1,55 @@
-variable "local_resource_group_name" {
-  description = "Name of the existing local peer resource group where to place the resources created."
-  type        = string
-}
-
-variable "peer_resource_group_name" {
-  description = "Name of the existing remote peer resource group where to place the resources created."
-  type        = string
-}
-
 variable "name_prefix" {
   description = "Prefix name appended to the peering names."
   default     = ""
   type        = string
 }
 
-variable "local_vnet_name" {
-  description = "Local VNET name."
-  type        = string
+variable "local_peer_config" {
+  description = <<-EOF
+  A map that contains the local peer configuration.
+  Mandatory Values are : 
+  - `vnet_name`                   (string) : the local peer VNET name.
+  - `resource_group_name          (string) : the resource group name of the local peer
+  - `allow_virtual_network_access (bool)   : allows communication between the two peering VNETs
+  - `allow_forwarded_traffic`     (bool)   : allows traffic forwarded from the peer VNET but not originated from within it
+  - `allow_gateway_transit`       (bool)   : controls the learning of routes from local VNET (gateway or route server) into the remote VNET. Must be true if `use_remote_gateways` is `true` for remote peer
+  - `use_remote_gateways`         (bool)   : controls the learning of routes from the remote VNET (gateway or route server) into the local VNET
+
+  Optional values:
+  - `name`                        (string) : the name of the local VNET peering
+  EOF
+  type = object({
+    vnet_name                    = string
+    resource_group_name          = string
+    name                         = optional(string)
+    allow_virtual_network_access = bool
+    allow_forwarded_traffic      = bool
+    allow_gateway_transit        = bool
+    use_remote_gateways          = bool
+  })
 }
 
-variable "peer_vnet_name" {
-  description = "Peer VNET name."
-  type        = string
-}
+variable "remote_peer_config" {
+  description = <<-EOF
+  A map that contains the remote peer configuration.
+  Mandatory Values are : 
+  - `vnet_name`                   (string) : the remote peer VNET name.
+  - `resource_group_name          (string) : the resource group name of the remote peer
+  - `allow_virtual_network_access (bool)   : allows communication between the two peering VNETs
+  - `allow_forwarded_traffic`     (bool)   : allows traffic forwarded from the local VNET but not originated from within it
+  - `allow_gateway_transit`       (bool)   : controls the learning of routes from remote VNET (gateway or route server) into the local VNET. Must be true if `use_remote_gateways` is `true` for local peer
+  - `use_remote_gateways`         (bool)   : controls the learning of routes from the local VNET (gateway or route server) into the remote VNET
 
-variable "local_peering_name" {
-  description = "The name of the local peering."
-  default     = null
-  type        = string
-}
-
-variable "peer_peering_name" {
-  description = "The name of the remote peering."
-  default     = null
-  type        = string
-}
-
-variable "local_allow_virtual_network_access" {
-  description = "Local peer setting for allowing traffic from peer VNET to VMs in the local VNET."
-  default     = true
-  type        = bool
-}
-
-variable "local_allow_forwarded_traffic" {
-  description = "Local peer setting for forwarded traffic from VMs in the peer VNET."
-  default     = true
-  type        = bool
-}
-
-variable "local_allow_gateway_transit" {
-  description = "Local peer setting for allowing gateway links for remote gateway or Route Server in the peer VNET."
-  default     = false
-  type        = bool
-}
-
-variable "local_use_remote_gateways" {
-  description = "Local peer setting for using peer VNET remote gateway or Route Server. If set to `true` - `peer_allow_gateway_transit` needs to be set to true."
-  default     = false
-  type        = bool
-}
-
-variable "peer_allow_virtual_network_access" {
-  description = "Remote peer setting for allowing traffic from local VNET to VMs in the peer VNET."
-  default     = true
-  type        = bool
-}
-
-variable "peer_allow_forwarded_traffic" {
-  description = "Remote peer setting for forwarded traffic from VMs in the local VNET."
-  default     = true
-  type        = bool
-}
-
-variable "peer_allow_gateway_transit" {
-  description = "Remote peer setting for allowing gateway links for remote gateway or Route Server in the local VNET."
-  default     = false
-  type        = bool
-}
-
-variable "peer_use_remote_gateways" {
-  description = "Remote peer setting for using local VNET remote gateway or Route Server. If set to `true` - `local_allow_gateway_transit` needs to be set to true."
-  default     = false
-  type        = bool
+  Optional values:
+  - `name`                        (string) : the name of the remote VNET peering
+  EOF
+  type = object({
+    vnet_name                    = string
+    resource_group_name          = string
+    name                         = optional(string)
+    allow_virtual_network_access = bool
+    allow_forwarded_traffic      = bool
+    allow_gateway_transit        = bool
+    use_remote_gateways          = bool
+  })
 }

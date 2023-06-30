@@ -5,7 +5,7 @@ output "local_peering_name" {
 
 output "remote_peering_name" {
   description = "The name of the remote VNET peering."
-  value       = azurerm_virtual_network_peering.peer.name
+  value       = azurerm_virtual_network_peering.remote.name
 }
 
 output "local_peering_id" {
@@ -15,5 +15,5 @@ output "local_peering_id" {
 
 output "remote_peering_id" {
   description = "The ID of the remote VNET peering."
-  value       = azurerm_virtual_network_peering.peer.id
+  value       = azurerm_virtual_network_peering.remote.id
 }
