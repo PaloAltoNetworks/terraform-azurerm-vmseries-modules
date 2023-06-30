@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	tfjson "github.com/hashicorp/terraform-json"
@@ -55,6 +56,33 @@ type AdditionalChangesAfterDeployment struct {
 	UseVarFiles          []string
 	FileNameWithTfCode   string
 	ChangedResources     []ChangedResource
+}
+
+// Structure used for Azure deployments - contains randomly generated resource names.
+type AzureRandomNames struct {
+	NamePrefix         string
+	ResourceGroupName  string
+	StorageAccountName string
+}
+
+// Function that generates and return a set of random Azure resource names.
+// Randomization is based on UUID.
+func GenerateAzureRandomNames() AzureRandomNames {
+	id := uuid.New().String()
+	idSliced := strings.Split(id, "-")
+
+	prefixId := idSliced[2]
+	gid := idSliced[0:2]
+	storageId := idSliced[3:5]
+
+	names := AzureRandomNames{
+		NamePrefix:         fmt.Sprintf("ghci%s-", prefixId),
+		ResourceGroupName:  strings.Join(gid, ""),
+		StorageAccountName: fmt.Sprintf("ghci%s", strings.Join(storageId, "")),
+		// StorageAccountName: strings.Join(storageId, ""),
+	}
+
+	return names
 }
 
 // Function running only only code validation.
@@ -129,21 +157,17 @@ func GenericDeployInfraAndVerifyAssertChanges(t *testing.T,
 		defer destroyFunc()
 	}
 
-	// Terraform initalization and apply with auto-approve
-	terraform.InitAndApply(t, terraformOptions)
+	// Check if there are no changes planed after deployment (if checkNoChanges is true)
+	if checkNoChanges {
+		terraform.InitAndApplyAndIdempotent(t, terraformOptions)
+	} else {
+		// Terraform initalization and apply with auto-approve
+		terraform.InitAndApply(t, terraformOptions)
+	}
 
 	// Verify outputs and compare to expected results
 	if assertList != nil && len(assertList) > 0 {
 		AssertOutputs(t, terraformOptions, assertList)
-	}
-
-	// Check if there are no changes planed after deployment (if checkNoChanges is true)
-	if checkNoChanges {
-		terraformOptions.PlanFilePath = "test.plan"
-		planStructure := terraform.InitAndPlanAndShowWithStruct(t, terraformOptions)
-		for _, v := range planStructure.ResourceChangesMap {
-			checkResourceChange(t, v, nil)
-		}
 	}
 
 	// If there is passed structure with additional changes deployed after,

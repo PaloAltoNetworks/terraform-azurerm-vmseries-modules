@@ -1,6 +1,7 @@
-package centralized_design
+package dedicated_vmseries
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -13,6 +14,7 @@ import (
 func TestDeploy(t *testing.T) {
 	// prepare random prefix
 	randomNames := testskeleton.GenerateAzureRandomNames()
+	storageDefinition := fmt.Sprintf("{ bootstrap = { name = \"%s\", public_snet_key = \"public\", private_snet_key = \"private\", storage_acl = true, intranet_cidr = \"10.100.0.0/16\", storage_allow_vnet_subnets = { management = { vnet_key = \"transit\", subnet_key = \"management\" } }, storage_allow_inbound_public_ips = [\"1.2.3.4\"] } }", randomNames.StorageAccountName)
 
 	// define options for Terraform
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
@@ -21,6 +23,7 @@ func TestDeploy(t *testing.T) {
 		Vars: map[string]interface{}{
 			"name_prefix":         randomNames.NamePrefix,
 			"resource_group_name": randomNames.ResourceGroupName,
+			"bootstrap_storage":   storageDefinition,
 		},
 		Logger:               logger.Default,
 		Lock:                 true,
