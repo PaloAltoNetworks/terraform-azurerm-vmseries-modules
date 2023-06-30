@@ -1,0 +1,40 @@
+name: 'TF plan/apply'
+description: 'Runs Terraform plan and/or apply for a specified path.'
+inputs:
+  tf_version:
+    description: 'TF version used.'
+    required: true
+  path:
+    description: 'Path to Terraform module.'
+    required: true
+  do_apply:
+    description: When set to true runs also apply
+    type: boolean
+    default: false
+
+runs:
+  using: "composite"
+  steps:
+
+    - name: setup Terraform
+      uses: hashicorp/setup-terraform@v2
+      with:
+        terraform_version: ${{ inputs.tf_version }}
+
+    - name: login to Azure
+      uses: azure/login@v1
+      with:
+        client-id: ${{ env.ARM_CLIENT_ID }}
+        tenant-id: ${{ env.ARM_TENANT_ID }}
+        subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+
+    - name: test infrastructure
+      env:
+        TPATH: ${{ inputs.path }}
+        ARM_USE_OIDC: true
+        ARM_SKIP_PROVIDER_REGISTRATION: true
+        DO_APPLY: ${{ inputs.do_apply }}
+      shell: bash
+      run: |
+        cd "$GITHUB_WORKSPACE/$TPATH"
+        make test
