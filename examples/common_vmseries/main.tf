@@ -18,7 +18,7 @@ locals {
 
 data "http" "this" {
   count = length(var.bootstrap_storage) > 0 && contains([for v in values(var.bootstrap_storage) : v.storage_acl], true) ? 1 : 0
-  url   = "https://api.ipify.org"
+  url   = "https://ifconfig.me/ip"
 }
 
 # Create or source the Resource Group.
