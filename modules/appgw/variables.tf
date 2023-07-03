@@ -118,7 +118,7 @@ variable "ssl_policy_name" {
   
   For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default.
   EOF
-  default     = "AppGwSslPolicy20150501"
+  default     = "AppGwSslPolicy20220101S"
   type        = string
   nullable    = false
 }
