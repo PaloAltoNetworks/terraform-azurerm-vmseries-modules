@@ -21,7 +21,7 @@ provider "azurerm" {
 
 ```hcl
 module "vmss" {
-  source = "github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules//modules/vmss"
+  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/vmss"
 
   location                  = "Australia Central"
   name_prefix               = "pan"
