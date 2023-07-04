@@ -266,26 +266,26 @@ variable "vmss" {
   - `scale_in_policy`       - (`string`, optional, see module defaults) policy of removing VMs when scaling in
   - `storage_account_type`  - (`string`, optional, see module defaults) type of managed disk that will be used on all VMs
   - `interfaces`            - (`list`, required) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order **DOES** matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
-      - `name`                    - (`string`, required) string that will form the NIC name
-      - `subnet_key`              - (`string`, required) a key of a subnet as defined in `var.vnets`
-      - `create_pip`              - (`bool`, optional, defaults to `false`) flag to create Public IP for an interface, defaults to `false`
-      - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the `var.loadbalancers` variable
-      - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the `var.appgws`
-      - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label for each VM instance
+  -- `name`                    - (`string`, required) string that will form the NIC name
+  -- `subnet_key`              - (`string`, required) a key of a subnet as defined in `var.vnets`
+  -- `create_pip`              - (`bool`, optional, defaults to `false`) flag to create Public IP for an interface, defaults to `false`
+  -- `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the `var.loadbalancers` variable
+  -- `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the `var.appgws`
+  -- `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label for each VM instance
 
   If you would like to set up autoscaling, following additional options are available:
 
   - `autoscale_config`        - (`map`, optional, defaults to `{}`) map containing basic autoscale configuration
-    - `count_default`           - (`number`, optional, see module defaults) default number or instances when autoscalling is not available
-    - `count_minimum`           - (`number`, optional, see module defaults) minimum number of instances to reach when scaling in
-    - `count_maximum`           - (`number`, optional, see module defaults) maximum number of instances when scaling out
-    - `notification_emails`     - (`list(string)`, optional, defaults to `[]`) a list of e-mail addresses to notify about scaling events
+  -- `count_default`           - (`number`, optional, see module defaults) default number or instances when autoscalling is not available
+  -- `count_minimum`           - (`number`, optional, see module defaults) minimum number of instances to reach when scaling in
+  -- `count_maximum`           - (`number`, optional, see module defaults) maximum number of instances when scaling out
+  -- `notification_emails`     - (`list(string)`, optional, defaults to `[]`) a list of e-mail addresses to notify about scaling events
   - `autoscale_metrics`       - (`map`, optional, defaults to `{}`) metrics and thresholds used to trigger scaling events, see module documentation for details
   - `scaleout_config`         - (`map`, optional, defaults to `{}`) scale out configuration, for details see module documentation
-    - `statistic`               - (`string`, optional, see module defaults) aggregation method for statistics coming from different VMs
-    - `time_aggregation`        - (`string`, optional, see module defaults) aggregation method applied to statistics in time window
-    - `window_minutes`          - (`string`, optional, see module defaults) time windows used to analyze statistics
-    - `cooldown_minutes`        - (`string`, optional, see module defaults) time to wait after a scaling event before analyzing the statistics again
+  -- `statistic`               - (`string`, optional, see module defaults) aggregation method for statistics coming from different VMs
+  -- `time_aggregation`        - (`string`, optional, see module defaults) aggregation method applied to statistics in time window
+  -- `window_minutes`          - (`string`, optional, see module defaults) time windows used to analyze statistics
+  -- `cooldown_minutes`        - (`string`, optional, see module defaults) time to wait after a scaling event before analyzing the statistics again
   - `scalein_config`          - (`map`, optional, defaults to `{}`) scale in configuration, same properties supported as for `scaleout_config`
 
   Following properties are optional and can be used to fine-tune your infrastructure:
