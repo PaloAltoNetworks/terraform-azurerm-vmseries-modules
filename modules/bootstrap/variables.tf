@@ -110,7 +110,7 @@ variable "blob_delete_retention_policy_days" {
   type        = number
   default     = 7
   validation {
-    condition     = var.retention_policy_days > 0 && var.retention_policy_days < 365
+    condition     = var.blob_delete_retention_policy_days > 0 && var.blob_delete_retention_policy_days < 365
     error_message = "Enter a value between 1 and 365."
   }
 }
