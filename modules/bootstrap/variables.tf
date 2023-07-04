@@ -121,12 +121,12 @@ variable "storage_allow_inbound_public_ips" {
     Only public IPs are allowed - RFC1918 address space is not permitted.
   EOF
   type        = list(string)
-  default     = null
+  default     = []
 }
 
 variable "storage_allow_vnet_subnet_ids" {
   description = <<-EOF
-  List of the allowed vnet subnet ids.
+  List of the allowed VNet subnet ids.
   Note that this option requires network service endpoint enabled for Microsoft Storage for the specified subnets.
   If you are using [vnet module](../vnet/README.md) - set `storage_private_access` to true for the specific subnet.
   Example:
@@ -138,12 +138,12 @@ variable "storage_allow_vnet_subnet_ids" {
   ]
   ```
   EOF
-  type        = list(any)
-  default     = null
+  type        = list(string)
+  default     = []
 }
 
 variable "storage_acl" {
-  description = "If `true`, storage account network rules will be activated with Deny as the default statement."
+  description = "If `true`, storage account network rules will be activated with `Deny` as the default action. In such case, at least one of `storage_allow_inbound_public_ips` or `storage_allow_vnet_subnet_ids` must be a non-empty list."
   default     = true
   type        = bool
 }

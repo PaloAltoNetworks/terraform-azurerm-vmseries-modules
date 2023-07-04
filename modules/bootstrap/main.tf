@@ -8,6 +8,7 @@ resource "azurerm_storage_account" "this" {
   account_replication_type = "LRS"
   account_tier             = "Standard"
   tags                     = var.tags
+
   queue_properties {
     logging {
       delete                = true
@@ -27,14 +28,15 @@ resource "azurerm_storage_account" "this" {
     ip_rules                   = var.storage_acl == true ? var.storage_allow_inbound_public_ips : null
     virtual_network_subnet_ids = var.storage_acl == true ? var.storage_allow_vnet_subnet_ids : null
   }
+
   lifecycle {
     precondition {
-      condition     = var.storage_acl == true ? length(var.storage_allow_vnet_subnet_ids) > 0 : true
-      error_message = "If storage_acl is set to true, you must provide a non-empty list of storage_allow_vnet_subnet_ids"
+      condition     = var.storage_acl == true ? (length(var.storage_allow_vnet_subnet_ids) > 0 || length(var.storage_allow_inbound_public_ips) > 0) : true
+      error_message = "If 'storage_acl' is set to true, at least on of 'storage_allow_vnet_subnet_ids' or 'storage_allow_inbound_public_ips' must be a non-empty list."
     }
     precondition {
       condition     = (length(var.storage_allow_vnet_subnet_ids) > 0 || length(var.storage_allow_inbound_public_ips) > 0) ? var.storage_acl == true : true
-      error_message = "If storage_allow_vnet_subnet_ids or storage_allow_inbound_public_ips is set, storage_acl must be set to true"
+      error_message = "If either 'storage_allow_vnet_subnet_ids' or 'storage_allow_inbound_public_ips' is a non-empty list, 'storage_acl' must be set to true."
     }
   }
 }
