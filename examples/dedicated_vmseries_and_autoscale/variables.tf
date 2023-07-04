@@ -255,45 +255,52 @@ variable "vmss" {
 
   For detailed documentation on how to configure this resource, for available properties, especially for the defaults refer to [module documentation](../../modules/vmss/README.md)
 
-  Following properties are available:
-  - `name` : (string|required) name of the Virtual Machine Scale Set.
-  - `vm_size` : size of the VMSeries virtual machines created with this Scale Set, when specified overrides `var.vmseries_vm_size`.
-  - `version` : PanOS version, when specified overrides `var.vmseries_version`.
-  - `vnet_key` : (string|required) a key of a VNET defined in the `var.vnets` map.
-  - `bootstrap_options` : (string|`''`) bootstrap options passed to every VM instance upon creation.
-  - `zones` : (list(string)|`[]`) a list of Availability Zones to use for Zone redundancy
-  - `encryption_at_host_enabled` : (bool|`null` - Azure defaults) should all of the disks attached to this Virtual Machine be encrypted
-  - `overprovision` : (bool|`null` - module defaults) when provisioning new VM, multiple will be provisioned but the 1st one to run will be kept
-  - `platform_fault_domain_count` : (number|`null` - Azure defaults) number of fault domains to use
-  - `proximity_placement_group_id` : (string|`null`) ID of a proximity placement group the VMSS should be placed in
-  - `scale_in_policy` : (string|`null` - Azure defaults) policy of removing VMs when scaling in
-  - `scale_in_force_deletion` : (bool|`null` - module default) forces (`true`) deletion of VMs during scale in
-  - `single_placement_group` : (bool|`null` - Azure defaults) limit the Scale Set to one Placement Group
-  - `storage_account_type` : (string|`null` - module defaults) type of managed disk that will be used on all VMs
-  - `disk_encryption_set_id` : (string|`null`) the ID of the Disk Encryption Set which should be used to encrypt this Data Disk
-  - `accelerated_networking` : (bool|`null`- module defaults) enable Azure accelerated networking for all dataplane network interfaces
-  - `use_custom_image` : (bool|`false`) 
-  - `custom_image_id` : (string|reqquired when `use_custom_image` is `true`) absolute ID of your own Custom Image to be used for creating new VM-Series
-  - `application_insights_id` : (string|`null`) ID of Application Insights instance that should be used to provide metrics for autoscaling
-  - `interfaces` : (list(string)|`[]`) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
-    - `name` : (string|required) string that will form the NIC name
-    - `subnet_key` : (string|required) a key of a subnet as defined in `var.vnets`
-    - `create_pip` : (bool|`false`) flag to create Public IP for an interface, defaults to `false`
-    - `load_balancer_key` : (string|`null`) key of a Load Balancer defined in the `var.loadbalancers` variable
-    - `application_gateway_key` : (string|`null`) key of an Application Gateway defined in the `var.appgws`
-    - `pip_domain_name_label` : (string|`null`) prefix which should be used for the Domain Name Label for each VM instance
-  - `autoscale_config` : (map|`{}`) map containing basic autoscale configuration
-    - `count_default` : (number|`null` - module defaults) default number or instances when autoscalling is not available
-    - `count_minimum` : (number|`null` - module defaults) minimum number of instances to reach when scaling in
-    - `count_maximum` : (number|`null` - module defaults) maximum number of instances when scaling out
-    - `notification_emails` : (list(string)|`null` - module defaults) a list of e-mail addresses to notify about scaling events
-  - `autoscale_metrics` : (map|`{}`) metrics and thresholds used to trigger scaling events, see module documentation for details
-  - `scaleout_config` : (map|`{}`) scale out configuration, for details see module documentation
-    - `statistic` : (string|`null` - module defaults) aggregation method for statistics coming from different VMs
-    - `time_aggregation` : (string|`null` - module defaults) aggregation method applied to statistics in time window
-    - `window_minutes` : (string|`null` - module defaults) time windows used to analyze statistics
-    - `cooldown_minutes` : (string|`null` - module defaults) time to wait after a scaling event before analyzing the statistics again
-  - `scalein_config` : (map|`{}`) scale in configuration, same properties supported as for `scaleout_config`
+  Please take a closer look to the properties below. They are either required or control the most important aspects of the module:
+
+  - `name`                  - (`string`, required) name of the Virtual Machine Scale Set
+  - `vm_size`               - (`string`, optional, defaults to `var.vmseries_vm_size`) size of the VMSeries virtual machines created with this Scale Set, when specified overrides`var.vmseries_vm_size`
+  - `version`               - (`string`, optional, defaults to `var.vmseries_version`) PanOS version
+  - `vnet_key`              - (`string`, required) a key of a VNET defined in the `var.vnets` map
+  - `bootstrap_options`     - (`string`, optional, defaults to `''`) bootstrap options passed to every VM instance upon creation
+  - `zones`                 - (`list(string)`, optional, defaults to []) a list of Availability Zones to use for Zone redundancy
+  - `scale_in_policy`       - (`string`, optional, see module defaults) policy of removing VMs when scaling in
+  - `storage_account_type`  - (`string`, optional, see module defaults) type of managed disk that will be used on all VMs
+  - `interfaces`            - (`list`, required) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order **DOES** matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
+      - `name`                    - (`string`, required) string that will form the NIC name
+      - `subnet_key`              - (`string`, required) a key of a subnet as defined in `var.vnets`
+      - `create_pip`              - (`bool`, optional, defaults to `false`) flag to create Public IP for an interface, defaults to `false`
+      - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the `var.loadbalancers` variable
+      - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the `var.appgws`
+      - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label for each VM instance
+
+  If you would like to set up autoscaling, following additional options are available:
+
+  - `autoscale_config`        - (`map`, optional, defaults to `{}`) map containing basic autoscale configuration
+    - `count_default`           - (`number`, optional, see module defaults) default number or instances when autoscalling is not available
+    - `count_minimum`           - (`number`, optional, see module defaults) minimum number of instances to reach when scaling in
+    - `count_maximum`           - (`number`, optional, see module defaults) maximum number of instances when scaling out
+    - `notification_emails`     - (`list(string)`, optional, defaults to `[]`) a list of e-mail addresses to notify about scaling events
+  - `autoscale_metrics`       - (`map`, optional, defaults to `{}`) metrics and thresholds used to trigger scaling events, see module documentation for details
+  - `scaleout_config`         - (`map`, optional, defaults to `{}`) scale out configuration, for details see module documentation
+    - `statistic`               - (`string`, optional, see module defaults) aggregation method for statistics coming from different VMs
+    - `time_aggregation`        - (`string`, optional, see module defaults) aggregation method applied to statistics in time window
+    - `window_minutes`          - (`string`, optional, see module defaults) time windows used to analyze statistics
+    - `cooldown_minutes`        - (`string`, optional, see module defaults) time to wait after a scaling event before analyzing the statistics again
+  - `scalein_config`          - (`map`, optional, defaults to `{}`) scale in configuration, same properties supported as for `scaleout_config`
+
+  Following properties are optional and can be used to fine-tune your infrastructure:
+
+  - `application_insights_id`       - (`string`, optional, defaults to `null`) ID of Application Insights instance that should be used to provide metrics for autoscaling
+  - `encryption_at_host_enabled`    - (`bool`, optional, see module defaults) should all of the disks attached to this Virtual Machine be encrypted
+  - `overprovision`                 - (`bool`, optional, see module defaults) when provisioning new VM, multiple will be provisioned but the 1st one to run will be kept
+  - `platform_fault_domain_count`   - (`number`, optional, see module defaults) number of fault domains to use
+  - `proximity_placement_group_id`  - (`string`, optional, defaults to `null`) ID of a proximity placement group the VMSS should be placed in
+  - `scale_in_force_deletion`       - (`bool`, optional, see module defaults) when `true`, forces deletion of VMs during scale in
+  - `single_placement_group`        - (`bool`, optional, see module defaults) limit the Scale Set to one Placement Group
+  - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be used to encrypt this Data Disk
+  - `accelerated_networking`        - (`bool`, optional, see module defaults) enable Azure accelerated networking for all dataplane network interfaces
+  - `use_custom_image`              - (`bool`, optional, defaults to `false`) flag that controls usage of a custom OS image
+  - `custom_image_id`               - (`string`|required when `use_custom_image` is `true`) absolute ID of your own Custom Image to be used for creating new VM-Series
 
   Example, no auto scaling:
 
