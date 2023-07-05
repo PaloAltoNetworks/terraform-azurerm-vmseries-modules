@@ -8,7 +8,7 @@ permissions:
 on:
   workflow_dispatch:
   schedule:
-    - cron: 0 1 1-7 * 1 # This is basically every 1st Monday of each month
+    - cron: 0 1 1 * *  # 1am of every 1st day of every month
 
 jobs:
   update:
