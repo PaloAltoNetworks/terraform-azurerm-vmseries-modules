@@ -53,7 +53,7 @@ variable "vnets" {
   description = <<-EOF
   A map defining VNETs. A key is the VNET name, value is a set of properties like described below.
   
-  For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.0/modules/vnet/README.md)
+  For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
   - `name` : a name of a Virtual Network
   - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET

@@ -214,7 +214,7 @@ An example invocation (assuming usage of other Palo Alto's Azure modules) with a
 
 ```hcl
 module "Application Gateway" {
-  source = "../modules/Application Gateway"
+  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/appgw"
 
   name                = "Application Gateway"
   resource_group_name = azurerm_resource_group.this.name
