@@ -53,7 +53,7 @@ variable "vnets" {
   description = <<-EOF
   A map defining VNETs.
   
-  For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.4/modules/vnet/README.md)
+  For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
   - `name` :  A name of a VNET.
   - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `name`
@@ -192,7 +192,7 @@ variable "application_insights" {
 
   Names for all AI instances are prefixed with `var.name_prefix`.
 
-  Properties supported (for details on each property see [modules documentation](../modules/application_insights/README.md)):
+  Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
 
   - `name` : (optional, string) a name of a single AI instance
   - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
