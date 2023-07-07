@@ -1,0 +1,94 @@
+name: ChatOPS tester
+run-name: "On demand tests for PR - (#${{ github.event.inputs.pr-id }}) ${{ github.event.inputs.pr-title }}"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      paths:
+        description: Space delimited list of module paths to test
+        type: string
+        required: true
+      tf_version:
+        description: Terraform versions to use for tests, comma-separated list
+        type: string
+      pr-id:
+        description: ID of the PR that triggered this workflow
+        required: true
+      pr-title: 
+        description: Title of the PR that triggered this workflow
+        type: string
+        required: true
+      comment-id:
+        description: 'The comment-id of the slash command'
+        required: true
+      branch:
+        description: Branch on which the tests should run
+        type: string
+        default: main
+      do_apply:
+        description: When set to true runs also apply
+        type: string
+        default: "false"
+
+jobs:
+  init:
+    name: Add a comment to originating PR with job ID
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    outputs:
+      paths: ${{ steps.paths_reformat.outputs.paths }}
+    steps:
+      - name: add comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr-id }}
+          body: |
+            > Testing job ID: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: reformat paths input property
+        id: paths_reformat
+        env:
+          IN_PATHS: ${{ inputs.paths }}
+        run: |
+          set -x
+          echo "paths=$(echo $IN_PATHS | tr " " "," )" >> $GITHUB_OUTPUT
+
+  plan_apply:
+    name: Run on-demand tests
+    needs: init
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_tf_plan_apply.yml@v1
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      cloud: azure
+      tf_version: ${{ inputs.tf_version }}
+      paths: ${{ needs.init.outputs.paths }}
+      branch: ${{ inputs.branch }}
+      do_apply: ${{ inputs.do_apply == 'true' && true || false }}
+    secrets: inherit
+  
+  finish_comment_pr:
+    name: Add a comment to originating PR
+    needs: plan_apply
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: add comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr-id }}
+          body: |
+            > Job result: ${{ needs.plan_apply.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+          reactions: ${{ needs.plan_apply.result == 'success' && '+1' || '-1' }}
+          reactions-edit-mode: replace
