@@ -13,3 +13,6 @@ test: init_go
 	@echo "::group::TESTING INFRASTRUCTURE" && \
 	go test -run Deploy -timeout 60m -count=1 && \
 	echo "::endgroup::"
+
+low_level: init_go
+	@go test -run LowLevel -timeout 60m -count=1 
