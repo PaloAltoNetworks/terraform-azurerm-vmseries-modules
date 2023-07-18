@@ -105,6 +105,16 @@ variable "retention_policy_days" {
   }
 }
 
+variable "blob_delete_retention_policy_days" {
+  description = "Specifies the number of days that the blob should be retained"
+  type        = number
+  default     = 7
+  validation {
+    condition     = var.blob_delete_retention_policy_days > 0 && var.blob_delete_retention_policy_days < 365
+    error_message = "Enter a value between 1 and 365."
+  }
+}
+
 variable "storage_allow_inbound_public_ips" {
   description = <<-EOF
     List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the Storage Account.
