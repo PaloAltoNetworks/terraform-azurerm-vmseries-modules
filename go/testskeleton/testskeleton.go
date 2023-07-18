@@ -157,17 +157,21 @@ func GenericDeployInfraAndVerifyAssertChanges(t *testing.T,
 		defer destroyFunc()
 	}
 
-	// Check if there are no changes planed after deployment (if checkNoChanges is true)
-	if checkNoChanges {
-		terraform.InitAndApplyAndIdempotent(t, terraformOptions)
-	} else {
-		// Terraform initalization and apply with auto-approve
-		terraform.InitAndApply(t, terraformOptions)
-	}
+	// Terraform initalization and apply with auto-approve
+	terraform.InitAndApply(t, terraformOptions)
 
 	// Verify outputs and compare to expected results
 	if assertList != nil && len(assertList) > 0 {
 		AssertOutputs(t, terraformOptions, assertList)
+	}
+
+	// Check if there are no changes planed after deployment (if checkNoChanges is true)
+	if checkNoChanges {
+		terraformOptions.PlanFilePath = "test.plan"
+		planStructure := terraform.InitAndPlanAndShowWithStruct(t, terraformOptions)
+		for _, v := range planStructure.ResourceChangesMap {
+			checkResourceChange(t, v, nil)
+		}
 	}
 
 	// If there is passed structure with additional changes deployed after,
