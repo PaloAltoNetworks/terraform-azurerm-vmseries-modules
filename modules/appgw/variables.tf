@@ -118,7 +118,7 @@ variable "ssl_policy_name" {
   
   For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default.
   EOF
-  default     = "AppGwSslPolicy20150501"
+  default     = "AppGwSslPolicy20220101S"
   type        = string
   nullable    = false
 }
@@ -129,7 +129,7 @@ variable "ssl_policy_min_protocol_version" {
 
   Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2` or `null` (only to be used with a `Predefined` policy).
   EOF
-  default     = null
+  default     = "TLSv1_2"
   type        = string
 }
 
@@ -138,7 +138,7 @@ variable "ssl_policy_cipher_suites" {
   A list of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`. 
   For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
   EOF
-  default     = null
+  default     = ["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
   type        = list(string)
 }
 
