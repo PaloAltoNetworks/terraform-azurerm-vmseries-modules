@@ -8,7 +8,7 @@ variable "local_peer_config" {
   description = <<-EOF
   A map that contains the local peer configuration.
   Mandatory Values: 
-  - `vnet_name`                   - (`string`, required) : the local peer VNET name.
+  - `vnet_name`                   - (`string`, required) the local peer VNET name.
   - `resource_group_name          - (`string`, required) : the resource group name of the local peer
   - `allow_virtual_network_access - (`bool`, required) : allows communication between the two peering VNETs
   - `allow_forwarded_traffic`     - (`bool`, required) : allows traffic forwarded from the remote VNET but not originated from within it
