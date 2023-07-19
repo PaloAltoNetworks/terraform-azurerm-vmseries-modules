@@ -11,9 +11,22 @@ output "scale_set_name" {
 #   value = local.autoscale_config
 # }
 
-output "default_autoscale_profiles" {
-  value = local.default_autoscale_profiles
+output "default_autoscale_profile" {
+  value = local.default_autoscale_profile
 }
+
+output "generated_autoscale_profiles" {
+  value = local.generated_autoscale_profiles
+}
+
+# output "test_autoscale_profile" {
+#   value = local.test_autoscale_profile
+# }
+
+# output "test_autoscale_profile_type" {
+#   value = "${type(local.test_autoscale_profile)}"
+# }
+
 
 # output "scheduled_autoscale_profiles" {
 #   value = local.scheduled_autoscale_profiles

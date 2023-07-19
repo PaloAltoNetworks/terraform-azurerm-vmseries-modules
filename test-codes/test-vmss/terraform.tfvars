@@ -214,9 +214,9 @@ vmss = {
         subnet_key = "private"
       },
       {
-        name                    = "public"
-        subnet_key              = "public"
-        load_balancer_key       = "public"
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
         # application_gateway_key = "public"
       }
     ]
@@ -227,7 +227,7 @@ vmss = {
     # TODO convert to list of objects with name element, maps are not ordered!
     autoscale_profiles = [
       {
-        name = "my-default"
+        name                    = "my-default"
         autoscale_count_default = 2
         autoscale_count_minimum = 1
         autoscale_count_maximum = 3
@@ -243,10 +243,10 @@ vmss = {
             # scalein_cooldown = "PT5H"
             scaleout_window_minutes   = 10
             scaleout_cooldown_minutes = 30
-            scalein_window_minutes   = 10
-            scalein_cooldown_minutes = 300
-            statistic        = "Average"
-            time_aggregation = "Average"
+            scalein_window_minutes    = 10
+            scalein_cooldown_minutes  = 300
+            statistic                 = "Average"
+            time_aggregation          = "Average"
           }
         }
 
@@ -259,7 +259,7 @@ vmss = {
         # }
       },
       {
-        name = "other-profile"
+        name                    = "other-profile"
         autoscale_count_default = 2
         autoscale_count_minimum = 1
         autoscale_count_maximum = 4
@@ -275,37 +275,37 @@ vmss = {
             # scalein_cooldown = "PT40M"
             scaleout_window_minutes   = 20
             scaleout_cooldown_minutes = 40
-            scalein_window_minutes   = 20
-            scalein_cooldown_minutes = 40
-            statistic        = "Average"
-            time_aggregation = "Average"
+            scalein_window_minutes    = 20
+            scalein_cooldown_minutes  = 40
+            statistic                 = "Average"
+            time_aggregation          = "Average"
           }
         }
 
 
-        schedule = {            # start and end time must be given
+        schedule = { # start and end time must be given
           timezone = "Pacific Standard Time"
           days     = ["Saturday", "Sunday"]
           # time = "12:00"  # TODO 24h format
-          hours    = [12]
-          minutes  = [0]
-          end_hours = [12]
+          hours       = [12]
+          minutes     = [0]
+          end_hours   = [12]
           end_minutes = [59]
         }
       },
       {
-        name = "3rd-profile"
+        name                    = "3rd-profile"
         autoscale_count_default = 2
         autoscale_count_minimum = 1
         autoscale_count_maximum = 4
 
-        schedule = {            # start and end time must be given
+        schedule = { # start and end time must be given
           timezone = "Pacific Standard Time"
           days     = ["Saturday", "Sunday"]
           # time = "12:00"  # TODO 24h format
-          hours    = [13]
-          minutes  = [0]
-          end_hours = [14]
+          hours       = [13]
+          minutes     = [0]
+          end_hours   = [14]
           end_minutes = [0]
         }
       }

@@ -327,6 +327,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             statistic        = try(metric.value.statistic, "Max")
             time_aggregation = try(metric.value.time_aggregation, "Maximum")
             time_grain       = "PT1M" # PT1M means: Period of Time 1 Minute
+            # TODO BURADA KALDIN
             # time_window      = local.autoscale_config["${profile.value.name}"]["${metric.key}"].scaleout_window
             time_window      = metric.value.scaleout_window
           }
@@ -566,159 +567,185 @@ locals {
   # scalein_window_t       = "T${local.scalein_window_hours != "0H" ? local.scalein_window_hours : ""}${local.scalein_window_minutes != "0M" ? local.scalein_window_minutes : ""}"
   # scalein_window         = "P${local.scalein_window_days != "0D" ? local.scalein_window_days : ""}${local.scalein_window_t != "T" ? local.scalein_window_t : ""}"
 
+  # TODO would be good to remove schedule and recurrence elements if exists in defaul profile
+  default_autoscale_profile = length(var.autoscale_profiles) == 1 ? [var.autoscale_profiles[0],] : []
+  # test_autoscale_profile = var.autoscale_profiles[0]
 
-  # TODO
-  # default_autoscale_profiles = [
-  #   for i, profile in var.autoscale_profiles: profile if length(var.autoscale_profiles) > 1 && i != 0
-  # ]
-
-
-
-  # TODO loop over profiles maybe skipping the first one and populate default profiles with start times (using end times)
-  # TODO without scheduled profiles default profile should have no "for" attribute, and this dict should have single entry!
-  default_autoscale_profiles = [
-    {
-      name = "Auto created default scale condition" # NOTE this is when its auto created
-      for_profile = "other-profile"
-
-      # TODO below should be copied from default(first) profile - maybe avoid this and take it from autoscale_profiles directly
-      autoscale_count_default = 2
-      autoscale_count_minimum = 1
-
-      autoscale_count_maximum = 3
-
-      autoscale_metrics = {
-        "DataPlaneCPUUtilizationPct" = {
-          scaleout_threshold = 80
-          scalein_threshold  = 20
-
-          scaleout_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_window
-          scaleout_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_cooldown
-          scalein_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_window
-          scalein_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_cooldown
-
-          # scaleout_window_minutes   = 10
-          # scaleout_cooldown_minutes = 30
-          # scalein_window_minutes   = 10
-          # scalein_cooldown_minutes = 300
-          statistic        = "Average"
-          time_aggregation = "Average"
-        }
-      }
-      # TODO below should be populated from end time of scheduled profiles
-      recurrence = {
-        days     = [
-          "Saturday",
-          "Sunday",
-        ]
-        hours    = [
-          12,
-        ]
-        minutes  = [
-          59,
-        ]
-        timezone = "Pacific Standard Time"
-      }
-    },
-    {
+  # loop over profiles skipping the first one and populate copy default profiles with start times (using end times)
+  generated_autoscale_profiles = [
+    for i, profile in var.autoscale_profiles:
+    merge(var.autoscale_profiles[0],{
       name = "Auto created default scale condition"
-      for_profile = "3rd-profile"
-
-      autoscale_count_default = 2
-      autoscale_count_minimum = 1
-      autoscale_count_maximum = 3
-
-      autoscale_metrics = {
-        "DataPlaneCPUUtilizationPct" = {
-          scaleout_threshold = 80
-          scalein_threshold  = 20
-
-          scaleout_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_window
-          scaleout_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_cooldown
-          scalein_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_window
-          scalein_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_cooldown
-          # scaleout_window = "PT10M"
-          # scaleout_cooldown = "PT30M"
-          # scalein_window = "PT10M"
-          # scalein_cooldown = "PT5H"
-
-          # scaleout_window_minutes   = 10
-          # scaleout_cooldown_minutes = 30
-          # scalein_window_minutes   = 10
-          # scalein_cooldown_minutes = 300
-          statistic        = "Average"
-          time_aggregation = "Average"
-        }
-      }
+      for_profile = profile.name
 
       recurrence = {
-        days     = [
-          "Saturday",
-          "Sunday",
-        ]
-        hours    = [
-          14,
-        ]
-        minutes  = [
-          0,
-        ]
-        timezone = "Pacific Standard Time"
+        days     = profile.schedule.days
+        hours    = profile.schedule.end_hours
+        minutes  = profile.schedule.end_minutes
+        timezone = profile.schedule.timezone
       }
-
-    }
+    }) if length(var.autoscale_profiles) > 1 && i != 0
   ]
 
   scheduled_autoscale_profiles = [
-    {
-      name = "other-profile"
-
-      autoscale_count_default = 2
-      autoscale_count_minimum = 1
-      autoscale_count_maximum = 4
-
-      # TODO optional autoscale_metrics block
-      autoscale_metrics = {
-        "DataPlaneCPUUtilizationPct" = {
-          scaleout_threshold = 70
-          scalein_threshold  = 30
-
-          scaleout_window = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scaleout_window
-          scaleout_cooldown = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scaleout_cooldown
-          scalein_window = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scalein_window
-          scalein_cooldown = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scalein_cooldown
-          # scaleout_window = "PT20M"
-          # scaleout_cooldown = "PT40M"
-          # scalein_window = "PT20M"
-          # scalein_cooldown = "PT40M"
-
-          statistic        = "Average"
-          time_aggregation = "Average"
-        }
-      }
-
+    for i, profile in var.autoscale_profiles:
+    merge(profile,{
       recurrence = {
-        timezone = "Pacific Standard Time"
-        days     = ["Saturday", "Sunday"]
-        hours    = [12]
-        minutes  = [0]
+        days     = profile.schedule.days
+        hours    = profile.schedule.hours
+        minutes  = profile.schedule.minutes
+        timezone = profile.schedule.timezone
       }
-    },
-    {
-      name = "3rd-profile"
-
-      autoscale_count_default = 2
-      autoscale_count_minimum = 1
-      autoscale_count_maximum = 4
-
-      recurrence = {
-        timezone = "Pacific Standard Time"
-        days     = ["Saturday", "Sunday"]
-        hours    = [13]
-        minutes  = [0]
-      }
-    }
+    }) if length(var.autoscale_profiles) > 1 && i != 0
   ]
 
-  combined_autoscale_profiles = concat(local.default_autoscale_profiles, local.scheduled_autoscale_profiles)
+  combined_autoscale_profiles = concat(local.default_autoscale_profile, local.generated_autoscale_profiles, local.scheduled_autoscale_profiles)
+
+  # TODO loop over profiles maybe skipping the first one and populate default profiles with start times (using end times)
+  # TODO without scheduled profiles default profile should have no "for" attribute, and this dict should have single entry!
+  # default_autoscale_profiles = [
+  #   {
+  #     name = "Auto created default scale condition" # NOTE this is when its auto created
+  #     for_profile = "other-profile"
+
+  #     # TODO below should be copied from default(first) profile - maybe avoid this and take it from autoscale_profiles directly
+  #     autoscale_count_default = 2
+  #     autoscale_count_minimum = 1
+
+  #     autoscale_count_maximum = 3
+
+  #     autoscale_metrics = {
+  #       "DataPlaneCPUUtilizationPct" = {
+  #         scaleout_threshold = 80
+  #         scalein_threshold  = 20
+
+  #         scaleout_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_window
+  #         scaleout_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_cooldown
+  #         scalein_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_window
+  #         scalein_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_cooldown
+
+  #         # scaleout_window_minutes   = 10
+  #         # scaleout_cooldown_minutes = 30
+  #         # scalein_window_minutes   = 10
+  #         # scalein_cooldown_minutes = 300
+  #         statistic        = "Average"
+  #         time_aggregation = "Average"
+  #       }
+  #     }
+  #     # TODO below should be populated from end time of scheduled profiles
+  #     recurrence = {
+  #       days     = [
+  #         "Saturday",
+  #         "Sunday",
+  #       ]
+  #       hours    = [
+  #         12,
+  #       ]
+  #       minutes  = [
+  #         59,
+  #       ]
+  #       timezone = "Pacific Standard Time"
+  #     }
+  #   },
+  #   {
+  #     name = "Auto created default scale condition"
+  #     for_profile = "3rd-profile"
+
+  #     autoscale_count_default = 2
+  #     autoscale_count_minimum = 1
+  #     autoscale_count_maximum = 3
+
+  #     autoscale_metrics = {
+  #       "DataPlaneCPUUtilizationPct" = {
+  #         scaleout_threshold = 80
+  #         scalein_threshold  = 20
+
+  #         scaleout_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_window
+  #         scaleout_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scaleout_cooldown
+  #         scalein_window = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_window
+  #         scalein_cooldown = local.autoscale_config["my-default"]["DataPlaneCPUUtilizationPct"].scalein_cooldown
+  #         # scaleout_window = "PT10M"
+  #         # scaleout_cooldown = "PT30M"
+  #         # scalein_window = "PT10M"
+  #         # scalein_cooldown = "PT5H"
+
+  #         # scaleout_window_minutes   = 10
+  #         # scaleout_cooldown_minutes = 30
+  #         # scalein_window_minutes   = 10
+  #         # scalein_cooldown_minutes = 300
+  #         statistic        = "Average"
+  #         time_aggregation = "Average"
+  #       }
+  #     }
+
+  #     recurrence = {
+  #       days     = [
+  #         "Saturday",
+  #         "Sunday",
+  #       ]
+  #       hours    = [
+  #         14,
+  #       ]
+  #       minutes  = [
+  #         0,
+  #       ]
+  #       timezone = "Pacific Standard Time"
+  #     }
+
+  #   }
+  # ]
+
+  # scheduled_autoscale_profiles = [
+  #   {
+  #     name = "other-profile"
+
+  #     autoscale_count_default = 2
+  #     autoscale_count_minimum = 1
+  #     autoscale_count_maximum = 4
+
+  #     # TODO optional autoscale_metrics block
+  #     autoscale_metrics = {
+  #       "DataPlaneCPUUtilizationPct" = {
+  #         scaleout_threshold = 70
+  #         scalein_threshold  = 30
+
+  #         scaleout_window = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scaleout_window
+  #         scaleout_cooldown = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scaleout_cooldown
+  #         scalein_window = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scalein_window
+  #         scalein_cooldown = local.autoscale_config["other-profile"]["DataPlaneCPUUtilizationPct"].scalein_cooldown
+  #         # scaleout_window = "PT20M"
+  #         # scaleout_cooldown = "PT40M"
+  #         # scalein_window = "PT20M"
+  #         # scalein_cooldown = "PT40M"
+
+  #         statistic        = "Average"
+  #         time_aggregation = "Average"
+  #       }
+  #     }
+
+  #     recurrence = {
+  #       timezone = "Pacific Standard Time"
+  #       days     = ["Saturday", "Sunday"]
+  #       hours    = [12]
+  #       minutes  = [0]
+  #     }
+  #   },
+  #   {
+  #     name = "3rd-profile"
+
+  #     autoscale_count_default = 2
+  #     autoscale_count_minimum = 1
+  #     autoscale_count_maximum = 4
+
+  #     recurrence = {
+  #       timezone = "Pacific Standard Time"
+  #       days     = ["Saturday", "Sunday"]
+  #       hours    = [13]
+  #       minutes  = [0]
+  #     }
+  #   }
+  # ]
+
+  # combined_autoscale_profiles = concat(local.default_autoscale_profiles, local.scheduled_autoscale_profiles)
 
 }
