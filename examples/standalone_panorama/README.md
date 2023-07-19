@@ -1,5 +1,5 @@
 ---
-show_in_hub: false
+show_in_hub: true
 ---
 # Palo Alto Networks Panorama Module Example
 
