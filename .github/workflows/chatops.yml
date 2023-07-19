@@ -37,7 +37,7 @@ jobs:
           token: ${{ secrets.CHATOPS }}
           issue-type: pull-request
           dispatch-type: workflow
-          permission: write
+          permission: maintain
           commands: |
             test
           static-args: |
