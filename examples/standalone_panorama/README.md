@@ -1,4 +1,6 @@
 ---
+short_title: Standalone Panorama Deployment
+type: example
 show_in_hub: true
 ---
 # Palo Alto Networks Panorama Module Example
