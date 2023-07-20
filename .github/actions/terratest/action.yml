@@ -20,6 +20,7 @@ runs:
       uses: hashicorp/setup-terraform@v2
       with:
         terraform_version: ${{ inputs.tf_version }}
+        terraform_wrapper: false
 
     - name: login to Azure
       uses: azure/login@v1
