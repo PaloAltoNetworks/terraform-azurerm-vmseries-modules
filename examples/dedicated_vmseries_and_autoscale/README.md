@@ -29,7 +29,7 @@ This design uses a Transit VNet. Application functions and resources are deploye
 
 The dedicated inbound option separates traffic flows across two separate sets of VM-Series firewalls. One set of VM-Series firewalls is dedicated to inbound traffic flows, allowing for greater flexibility and scaling of inbound traffic loads. The second set of VM-Series firewalls services all outbound, east-west, and enterprise network traffic flows. This deployment choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting other traffic flows within the deployment.
 
-![Scaling-Topology-Overview](https://user-images.githubusercontent.com/42772730/235161583-98475129-aee4-4cc9-9fd8-9f8784ad09a6.png)
+![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6500664/5c8d056d-ecfb-4cba-895d-2ad345b0adc8)
 
 This reference architecture consists of:
 
