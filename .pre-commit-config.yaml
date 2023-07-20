@@ -1,29 +1,25 @@
 repos:
-  - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.68.1 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
-    hooks:
-      - id: terraform_fmt 
-      - id: terraform_docs
-        args: [
-          '--args=--sort=false',
-          '--args=--lockfile=false',
-          '--args=--indent=3',
-        ]
-      - id: terraform_tflint
-        args: [
-          --args=--only=terraform_deprecated_interpolation,
-          --args=--only=terraform_deprecated_index,
-          --args=--only=terraform_module_pinned_source,
-          --args=--only=terraform_naming_convention,
-          --args=--only=terraform_workspace_remote,
-        ]
-  - repo: https://github.com/bridgecrewio/checkov.git
-    rev: '2.3.227'
-    hooks:
-    - id: checkov
-      verbose: true
-      args: [
-        --compact,
-        --quiet,
-        --skip-check, "CKV_AZURE_118,CKV_AZURE_119,CKV_AZURE_120,CKV2_AZURE_10,CKV2_AZURE_12,CKV_AZURE_35,CKV_AZURE_206,CKV_AZURE_93,CKV2_AZURE_1,CKV2_AZURE_18,CKV_AZURE_97,CKV_AZURE_59,CKV_AZURE_190,CKV2_AZURE_33,CKV_AZURE_179,CKV_AZURE_1,CKV_AZURE_49",
-      ]
+- hooks:
+  - id: terraform_fmt
+  - args:
+    - --args=--config=.terraform-docs.yml
+    id: terraform_docs
+  - args:
+    - --args=--only=terraform_deprecated_interpolation
+    - --args=--only=terraform_deprecated_index
+    - --args=--only=terraform_module_pinned_source
+    - --args=--only=terraform_naming_convention
+    - --args=--only=terraform_workspace_remote
+    id: terraform_tflint
+  repo: https://github.com/antonbabenko/pre-commit-terraform
+  rev: v1.81.0
+- hooks:
+  - args:
+    - --compact
+    - --quiet
+    - --skip-check
+    - CKV_AZURE_118,CKV_AZURE_119,CKV_AZURE_120,CKV2_AZURE_10,CKV2_AZURE_12,CKV_AZURE_35,CKV_AZURE_206,CKV_AZURE_93,CKV2_AZURE_1,CKV2_AZURE_18,CKV_AZURE_97,CKV_AZURE_59,CKV_AZURE_190,CKV2_AZURE_33,CKV_AZURE_179,CKV_AZURE_1,CKV_AZURE_49,CKV_AZURE_217,CKV_AZURE_218
+    id: checkov
+    verbose: true
+  repo: https://github.com/bridgecrewio/checkov.git
+  rev: 2.3.310

@@ -1,0 +1,14 @@
+formatter: "markdown document" # this is required
+version: ""
+header-from: ".header.md"
+
+output:
+  file: README.md
+  mode: replace
+
+sort:
+  enabled: false
+
+settings:
+  indent: 3
+  lockfile: false

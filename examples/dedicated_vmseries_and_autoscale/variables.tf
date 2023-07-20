@@ -78,7 +78,7 @@ variable "natgws" {
 
   - `name` : a name of the newly created NatGW.
   - `create_natgw` : (default: `true`) create or source (when `false`) an existing NatGW. Created or sourced: the NatGW will be assigned to a subnet created by the `vnet` module.
-  - `resource_group_name : name of a Resource Group hosting the NatGW (newly create or the existing one).
+  - `resource_group_name` : name of a Resource Group hosting the NatGW (newly create or the existing one).
   - `zone` : Availability Zone in which the NatGW will be placed, when skipped AzureRM will pick a zone.
   - `idle_timeout` : connection IDLE timeout in minutes, for newly created resources
   - `vnet_key` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.
@@ -116,21 +116,21 @@ variable "load_balancers" {
 
   Following properties are available (for details refer to module's documentation):
 
-  - `name`: name of the Load Balancer resource.
-  - `network_security_group_name`: (public LB) a name of a security group, an ingress rule will be created in that NSG for each listener. **NOTE** this is the FULL NAME of the NSG (including prefixes).
-  - `network_security_group_rg_name`: (public LB) a name of a resource group for the security group, to be used when the NSG is hosted in a different RG than the one described in `var.resource_group_name`.
-  - `network_security_allow_source_ips`: (public LB) a list of IP addresses that will used in the ingress rules.
-  - `avzones`: (both) for regional Load Balancers, a list of supported zones (this has different meaning for public and private LBs - please refer to module's documentation for details).
-  - `frontend_ips`: (both) a map configuring both a listener and a load balancing rule, key is the name that will be used as an application name inside LB config as well as to create a rule in NSG (for public LBs), value is an object with the following properties:
-    - `create_public_ip`: (public LB) defaults to `false`, when set to `true` a Public IP will be created and associated with a listener
-    - `public_ip_name`: (public LB) defaults to `null`, when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure
-    - `public_ip_resource_group`: (public LB) defaults to `null`, when using an existing Public IP created in a different Resource Group than the currently used use this property is to provide the name of that RG
-    - `private_ip_address`: (private LB) defaults to `null`, specify a static IP address that will be used by a listener
-    - `vnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a vnet's key (as defined in `vnet` variable). This will be the VNET hosting this Load Balancer
-    - `subnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet's key (as defined in `vnet` variable) to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
-    - `rules` - a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:
-      - `protocol`: protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule
-      - `port`: port used by the rule, for HA PORTS rule set this to `0`
+  - `name`                                - (`string`, required) name of the Load Balancer resource.
+  - `network_security_group_name`         - (`string`, required for public LB) a name of a security group, an ingress rule will be created in that NSG for each listener. **NOTE** this is the FULL NAME of the NSG (including prefixes).
+  - `network_security_group_rg_name`      - (`string`, required for public LB) a name of a resource group for the security group, to be used when the NSG is hosted in a different RG than the one described in `var.resource_group_name`.
+  - `network_security_allow_source_ips`   - (`list`, required for public LB) a list of IP addresses that will used in the ingress rules.
+  - `avzones`                             - (`list`, required for Zonal deployments) for regional Load Balancers, a list of supported zones (this has different meaning for public and private LBs - please refer to module's documentation for details).
+  - `frontend_ips`                        - (`map`, required) a map configuring both a listener and a load balancing rule, key is the name that will be used as an application name inside LB config as well as to create a rule in NSG (for public LBs), value is an object with the following properties:
+    - `create_public_ip`          - (`boolean`, public LB only, optional, defaults to `false`) when set to `true` a Public IP will be created and associated with a listener
+    - `public_ip_name`            - (`string`, public LB only, optional, defaults to `null`) when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure
+    - `public_ip_resource_group`  - (`string`, public LB only, optional, defaults to `null`) when using an existing Public IP created in a different Resource Group than the currently used use this property is to provide the name of that RG
+    - `private_ip_address`        - (`string`, private LB only, optional, defaults to `null`) specify a static IP address that will be used by a listener
+    - `vnet_key`                  - (`string`, private LB only, optional, defaults to `null`) when `private_ip_address` is set, specifies a VNET's key (as defined in `vnet` variable). This will be the VNET hosting this Load Balancer
+    - `subnet_key`                - (`string`, private LB only, optional, defaults to `null`) when `private_ip_address` is set, specifies a subnet's key (as defined in `vnet` variable) to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
+    - `rules`       - (`map`, required) a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:
+      - `protocol`  - (`string`, required) protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule
+      - `port`      - (`number`, required) port used by the rule, for HA PORTS rule set this to `0`
 
   Example of a public Load Balancer:
 
@@ -257,21 +257,23 @@ variable "vmss" {
 
   Please take a closer look to the properties below. They are either required or control the most important aspects of the module:
 
-  - `name`                  - (`string`, required) name of the Virtual Machine Scale Set
-  - `vm_size`               - (`string`, optional, defaults to `var.vmseries_vm_size`) size of the VMSeries virtual machines created with this Scale Set, when specified overrides`var.vmseries_vm_size`
-  - `version`               - (`string`, optional, defaults to `var.vmseries_version`) PanOS version
-  - `vnet_key`              - (`string`, required) a key of a VNET defined in the `var.vnets` map
-  - `bootstrap_options`     - (`string`, optional, defaults to `''`) bootstrap options passed to every VM instance upon creation
-  - `zones`                 - (`list(string)`, optional, defaults to []) a list of Availability Zones to use for Zone redundancy
-  - `scale_in_policy`       - (`string`, optional, see module defaults) policy of removing VMs when scaling in
-  - `storage_account_type`  - (`string`, optional, see module defaults) type of managed disk that will be used on all VMs
-  - `interfaces`            - (`list`, required) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order **DOES** matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
-  -- `name`                    - (`string`, required) string that will form the NIC name
-  -- `subnet_key`              - (`string`, required) a key of a subnet as defined in `var.vnets`
-  -- `create_pip`              - (`bool`, optional, defaults to `false`) flag to create Public IP for an interface, defaults to `false`
-  -- `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the `var.loadbalancers` variable
-  -- `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the `var.appgws`
-  -- `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label for each VM instance
+  name                                  | type      | required  | description
+  ---                                   | :---:     | :---:     | ---
+  `name`                                | `string`  | yes       | name of the Virtual Machine Scale Set
+  `vm_size`                             | `string`  | no        | defaults to `var.vmseries_vm_size`, size of the VMSeries virtual machines created with this Scale Set, when specified overrides`var.vmseries_vm_size`
+  `version`                             | `string`  | no        | defaults to `var.vmseries_version`, PanOS version
+  `vnet_key`                            | `string`  | yes       | a key of a VNET defined in the `var.vnets` map
+  `bootstrap_options`                   | `string`  | no        | defaults to `''`, bootstrap options passed to every VM instance upon creation
+  `zones`                               | `list`    | no        | defaults to `[]`, a list of Availability Zones to use for Zone redundancy
+  `scale_in_policy`                     | `string`  | no        | see module defaults, policy of removing VMs when scaling in
+  `storage_account_type`                | `string`  | no        | see module defaults, type of managed disk that will be used on all VMs
+  `interfaces`                          | `list`    | yes       | configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order **DOES** matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
+  `interfaces.name`                     | `string` | yes       | string that will form the NIC name
+  `interfaces.subnet_key`               | `string` | yes       | a key of a subnet as defined in `var.vnets`
+  `interfaces.create_pip`               | `bool`   | no        | defaults to `false`, flag to create Public IP for an interface, defaults to `false`
+  `interfaces.load_balancer_key`        | `string` | no        | defaults to `null`, key of a Load Balancer defined in the `var.loadbalancers` variable
+  `interfaces.application_gateway_key`  | `string` | no        | defaults to `null`, key of an Application Gateway defined in the `var.appgws`
+  `interfaces.pip_domain_name_label`    | `string` | no        | defaults to `null`, prefix which should be used for the Domain Name Label for each VM instance
 
   If you would like to set up autoscaling, following additional options are available:
 
