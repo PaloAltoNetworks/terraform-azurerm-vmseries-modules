@@ -9,7 +9,7 @@ data "azurerm_virtual_network" "remote_peer" {
 }
 
 resource "azurerm_virtual_network_peering" "local" {
-  name                         = try(var.local_peer_config.name, "${var.name_prefix}${var.local_peer_config.vnet_name}-to-${var.remote_peer_config.vnet_name}")
+  name                         = try(var.local_peer_config.name, "${var.local_peer_config.vnet_name}-to-${var.remote_peer_config.vnet_name}")
   resource_group_name          = var.local_peer_config.resource_group_name
   virtual_network_name         = var.local_peer_config.vnet_name
   remote_virtual_network_id    = data.azurerm_virtual_network.remote_peer.id
@@ -20,7 +20,7 @@ resource "azurerm_virtual_network_peering" "local" {
 }
 
 resource "azurerm_virtual_network_peering" "remote" {
-  name                         = try(var.remote_peer_config.name, "${var.name_prefix}${var.remote_peer_config.vnet_name}-to-${var.local_peer_config.vnet_name}")
+  name                         = try(var.remote_peer_config.name, "${var.remote_peer_config.vnet_name}-to-${var.local_peer_config.vnet_name}")
   resource_group_name          = var.remote_peer_config.resource_group_name
   virtual_network_name         = var.remote_peer_config.vnet_name
   remote_virtual_network_id    = data.azurerm_virtual_network.local_peer.id
