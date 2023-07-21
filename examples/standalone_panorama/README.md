@@ -3,18 +3,13 @@ short_title: Standalone Panorama Deployment
 type: example
 show_in_hub: true
 ---
-# Palo Alto Networks Panorama Module Example
+# Standalone Panorama Deployment
 
->Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
+Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
 
-An example of a Terraform module that deploys a Panorama appliance in Azure.
+The Terraform code presented here will deploy Palo Alto Networks Panorama management platform in Azure in management only mode (without additional logging disks). For option on how to add additional logging disks - please refer to panorama [module documentation](../../modules/panorama/README.md#input_logging_disks)
 
-**NOTE:**
-
-* after the deployment Panorama remains not licensed and not configured
-* keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
-
-## Topology and resources
+## Topology
 
 This is a non zonal deployment. The deployed infrastructure consists of:
 
@@ -23,16 +18,24 @@ This is a non zonal deployment. The deployed infrastructure consists of:
   * a Network Security Group to give access to Panorama's public interface
 * a Panorama appliance with a public IP assigned to the management interface
 
+![standalone-panorama](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/2110772/a2394f73-c0a8-4878-8693-825356abbd23)
+
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
 
 * (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
 * [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
+* if you have not run Palo Alto Networks Panorama images in a subscription it might be necessary to accept the license first ([see this note](../../modules/panorama/README.md#accept-azure-marketplace-terms))
 
-## Deploy the infrastructure
+**NOTE:**
 
-Steps to deploy the infrastructure are as following:
+* after the deployment Panorama remains not licensed and not configured.
+* keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+
+## Usage
+
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
@@ -63,7 +66,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the Panorama to bootstrap.
 
-## Post deploy
+### Post deploy
 
 Panorama in this example is configured with password authentication. To retrieve the initial credentials run:
 
@@ -88,7 +91,7 @@ You can now login to the devices using either:
 
 You can now proceed with licensing and configuring the devices.
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 
