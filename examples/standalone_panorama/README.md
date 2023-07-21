@@ -6,7 +6,7 @@ show_in_hub: true
 
 Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
 
-The Terraform code presented here will deploy Palo Alto Networks Panorama management platform in Azure in management only mode (without additional logging disks). For option on how to add additional logging disks - please refer to panorama [module documentation](../../modules/panorama/README.md#inputs)
+The Terraform code presented here will deploy Palo Alto Networks Panorama management platform in Azure in management only mode (without additional logging disks). For option on how to add additional logging disks - please refer to panorama [module documentation](../../modules/panorama/README.md#input_logging_disks)
 
 ## Topology
 
