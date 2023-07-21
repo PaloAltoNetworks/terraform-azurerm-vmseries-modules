@@ -21,6 +21,9 @@ This is a non zonal deployment. The deployed infrastructure consists of:
   * a Network Security Group to give access to Panorama's public interface
 * a Panorama appliance with a public IP assigned to the management interface
 
+![Topology](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/2110772/8e7979aa-4147-4097-8304-81dfd469bfb9)
+
+
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
