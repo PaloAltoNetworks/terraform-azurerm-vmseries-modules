@@ -1,5 +1,6 @@
 ---
 short_title: Standalone Panorama Deployment
+type: example
 show_in_hub: true
 ---
 # Standalone Panorama Deployment
