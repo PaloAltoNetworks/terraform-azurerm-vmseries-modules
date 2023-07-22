@@ -29,7 +29,7 @@ This design uses a Transit VNet. Application functions and resources are deploye
 
 The common firewall option leverages a single set of VM-Series firewalls. The sole set of firewalls operates as a shared resource and may present scale limitations with all traffic flowing through a single set of firewalls due to the performance degradation that occurs when traffic crosses virtual routers. This option is suitable for smaller scale deployments because inbound and outbound traffic flows occur on the same set of firewalls. However, the technical integration complexity is high.
 
-![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6500664/5c8d056d-ecfb-4cba-895d-2ad345b0adc8)
+![Common-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6500664/4594683f-546c-4dc2-a4ea-cc211377bea8)
 
 This reference architecture consists of:
 
