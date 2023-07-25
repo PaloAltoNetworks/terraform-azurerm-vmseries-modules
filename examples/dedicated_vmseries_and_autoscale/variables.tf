@@ -302,7 +302,7 @@ variable "vmss" {
   "vmss" = {
     name              = "ngfw-vmss"
     vnet_key          = "transit"
-    bootstrap_options = "type=dhcp"
+    bootstrap_options = "type=dhcp-client"
 
     interfaces = [
       {

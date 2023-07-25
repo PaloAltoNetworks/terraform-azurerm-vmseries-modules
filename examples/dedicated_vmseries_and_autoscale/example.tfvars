@@ -202,7 +202,7 @@ vmss = {
   "inbound" = {
     name              = "inbound-vmss"
     vnet_key          = "transit"
-    bootstrap_options = "type=dhcp"
+    bootstrap_options = "type=dhcp-client"
 
     interfaces = [
       {
@@ -246,7 +246,7 @@ vmss = {
   "obew" = {
     name              = "obew-vmss"
     vnet_key          = "transit"
-    bootstrap_options = "type=dhcp"
+    bootstrap_options = "type=dhcp-client"
 
     interfaces = [
       {
