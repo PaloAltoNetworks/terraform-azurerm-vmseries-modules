@@ -110,7 +110,6 @@ module "load_balancer" {
       subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
       in_rules                 = try(v.in_rules, {})
       out_rules                = try(v.out_rules, {})
-      zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
     }
   }
 
@@ -153,7 +152,7 @@ module "appgw" {
   capacity_min       = try(each.value.capacity_min, null)
   capacity_max       = try(each.value.capacity_max, null)
   enable_http2       = try(each.value.enable_http2, null)
-  zones              = try(each.value.zones, null)
+  zones              = var.enable_zones ? try(each.value.zones, null) : null
 
   rules = each.value.rules
 

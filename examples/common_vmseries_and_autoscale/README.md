@@ -8,7 +8,7 @@ show_in_hub: false
 Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
 The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with common VM-Series with autoscaling(Virtual Machine Scale Sets); for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
-Virtual Machine Scale Sets (VMSS) are used for autoscaling to run the Next Generation Firewalls, with custom data plane oriented metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane utilization). Since firewalls are added or removed automatically, they cannot be managed in a classic way. Therefore they are not assigned with public IP addresses. To ease licensing, management and updates a Panorama appliance is suggested. Deployment of a Panorama instance is not covered in this example, but a [dedicated one exists](../standalone_panorama/README.md).
+Virtual Machine Scale Sets (VMSS) are used for autoscaling to run the Next Generation Firewalls, with custom data plane oriented metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane utilization). Since firewalls are added or removed automatically, they cannot be managed in a classic way. To ease licensing, management and updates a Panorama appliance is suggested. Deployment of a Panorama instance is not covered in this example, but a [dedicated one exists](../standalone_panorama/README.md).
 
 ## Reference Architecture Design
 
@@ -39,17 +39,17 @@ This reference architecture consists of:
     * one dedicated to an Application Gateway
   * Route Tables and Network Security Groups
 * 1 Virtual Machine Scale set:
+  * deployed across availability zones
   * for inbound, outbound and east-west traffic
   * with 3 network interfaces: management, public, private
-  * no public addresses are assigned to firewalls' interfaces
+  * with public IP addresses assigned to:
+    * management interface
+    * public interface - due to use of a public Load Balancer this public IP is used mainly for outgoing traffic
 * 2 Load Balancers:
   * public - with a public IP address assigned, in front of the public interfaces of the firewalls in VMSS, for incoming traffic
   * private - in front of the private interfaces of the firewalls in VMSS, for outgoing and east-west traffic
-* a NAT Gateway responsible for handling the outgoing traffic for the management (updates) and public interfaces
 * an Application Insights, used to store the custom PanOS metrics sent from firewalls in scale set
 * an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
-
-A note on resiliency - this is an example of a none zonal deployment. Resiliency is maintained by using fault domains (Scale Set's default mechanism).
 
 ### Auto Scaling VM-Series
 
@@ -96,7 +96,7 @@ A non-platform requirement would be a running Panorama instance. For full automa
 
   The deployment takes couple of minutes. Observe the output. At the end you should see a summary similar to this:
 
-      Apply complete! Resources: 48 added, 0 changed, 0 destroyed.
+      Apply complete! Resources: 43 added, 0 changed, 0 destroyed.
 
       Outputs:
 

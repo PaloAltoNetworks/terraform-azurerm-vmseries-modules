@@ -6,7 +6,7 @@ tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
+enable_zones = true
 
 # --- VNET PART --- #
 vnets = {
@@ -114,18 +114,6 @@ vnets = {
   }
 }
 
-natgws = {
-  "natgw" = {
-    name              = "public-natgw"
-    vnet_key          = "transit"
-    subnet_keys       = ["public", "management"]
-    create_pip        = false
-    create_pip_prefix = true
-    pip_prefix_length = 29
-  }
-}
-
-
 
 # --- LOAD BALANCING PART --- #
 load_balancers = {
@@ -136,6 +124,8 @@ load_balancers = {
       #  "x.x.x.x", # Put your own public IP address here  <-- TODO to be adjusted by the customer
       "0.0.0.0/0",
     ]
+    avzones = ["1", "2", "3"]
+
     frontend_ips = {
       "palo-lb-app1-pip" = {
         create_public_ip = true
@@ -149,7 +139,9 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name    = "private-lb"
+    avzones = ["1", "2", "3"]
+
     frontend_ips = {
       "ha-ports" = {
         vnet_key           = "transit"
@@ -171,6 +163,7 @@ appgws = {
     name       = "public-appgw"
     vnet_key   = "transit"
     subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity   = 2
     rules = {
       "minimum" = {
@@ -202,12 +195,14 @@ vmss = {
   "common" = {
     name              = "common-vmss"
     vnet_key          = "transit"
+    zones             = ["1", "2", "3"]
     bootstrap_options = "type=dhcp-client"
 
     interfaces = [
       {
         name       = "management"
         subnet_key = "management"
+        create_pip = true
       },
       {
         name              = "private"
@@ -219,6 +214,7 @@ vmss = {
         subnet_key              = "public"
         load_balancer_key       = "public"
         application_gateway_key = "public"
+        create_pip              = true
       }
     ]
 

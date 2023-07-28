@@ -110,7 +110,6 @@ module "load_balancer" {
       subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
       in_rules                 = try(v.in_rules, {})
       out_rules                = try(v.out_rules, {})
-      zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
     }
   }
 
