@@ -1,22 +1,37 @@
 ---
-show_in_hub: false
+short_title: Dedicated Firewall Option with Autoscaling
+type: refarch
+show_in_hub: true
 ---
-# Palo Alto Networks VM-Series Scaleset Module Example
+# Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture, Dedicated Inbound NGFW Option with Autoscaling
 
-An example of a Terraform module that deploys Next Generation Firewalls and related resources following the Dedicated Firewall reference architecture. In module a Virtual Machine Scale Set is used to run the Next Generation Firewalls. Thanks to custom, data plane oriented metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane utilization).
+Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
+The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with dedicated-inbound VM-Series with autoscaling(Virtual Machine Scale Sets); for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
 
-A Virtual Machine Scale Set is dynamic in nature, firewalls can be added or removed automatically, hence they cannot be managed in a classic way. Therefore they are not assigned with a public IP address. To ease licensing, management and updates a Panorama appliance is suggested. Deployment of a Panorama is not covered in this example, a [dedicated one exists](../standalone_panorama/README.md) though.
+Virtual Machine Scale Sets (VMSS) are used for autoscaling to run the Next Generation Firewalls, with custom data plane oriented metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane utilization). Since firewalls are added or removed automatically, they cannot be managed in a classic way. Therefore they are not assigned with public IP addresses. To ease licensing, management and updates a Panorama appliance is suggested. Deployment of a Panorama instance is not covered in this example, but a [dedicated one exists](../standalone_panorama/README.md).
 
-**NOTE:**
+## Reference Architecture Design
 
-* after the deployment the firewalls remain not configured and not licensed
-* this example contains some **files** that **can contain sensitive data**, namely the `TFVARS` file can contain bootstrap_options properties in `var.vmseries` definition. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
+![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
-## Topology and resources
+This code implements:
+- a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
+- the _dedicated inbound option_, which separates inbound traffic flows onto a separate set of VM-Series
+- _auto scaling_ for the VM-Series, where Virtual Machine Scale Sets (VMSS) are used to provision VM-Series that will scale in and out dynamically, as workload demands fluctuate
 
-A note on resiliency - this is an example of a none zonal deployment. Resiliency is maintained by using fault domains (Scale Set's default mechanism).
+## Detailed Architecture and Design
 
-This example architecture consists of:
+### Centralized Design
+
+This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+
+### Dedicated Inbound Option
+
+The dedicated inbound option separates traffic flows across two separate sets of VM-Series firewalls. One set of VM-Series firewalls is dedicated to inbound traffic flows, allowing for greater flexibility and scaling of inbound traffic loads. The second set of VM-Series firewalls services all outbound, east-west, and enterprise network traffic flows. This deployment choice offers increased scale and operational resiliency and reduces the chances of high bandwidth use from the inbound traffic flows affecting other traffic flows within the deployment.
+
+![Dedicated-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/2110772/be84d4cb-c4c0-4e62-8bd7-8f5050215876)
+
+This reference architecture consists of:
 
 * a VNET containing:
   * 4 subnets:
@@ -24,9 +39,9 @@ This example architecture consists of:
     * one dedicated to an Application Gateway
   * Route Tables and Network Security Groups
 * 2 Virtual Machine Scale sets:
-  * one for inbound, one for outbound, east-west traffic
+  * one for inbound, one for outbound and east-west traffic
   * with 3 network interfaces: management, public, private
-  * no public addresses are assigned to firewalls interfaces
+  * no public addresses are assigned to firewalls' interfaces
 * 2 Load Balancers:
   * public - with a public IP address assigned, in front of the public interfaces of the inbound VMSS, for incoming traffic
   * private - in front of the firewalls private interfaces of the OBEW VMSS, for outgoing and east-west traffic
@@ -34,9 +49,11 @@ This example architecture consists of:
 * 2 Application Insights, one per each scale set, used to store the custom PanOS metrics
 * an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
 
-### Architecture diagram
+A note on resiliency - this is an example of a none zonal deployment. Resiliency is maintained by using fault domains (Scale Set's default mechanism).
 
-![Scaling-Topology-Overview](https://user-images.githubusercontent.com/42772730/235161583-98475129-aee4-4cc9-9fd8-9f8784ad09a6.png)
+### Auto Scaling VM-Series
+
+Auto scaling: Public-cloud environments focus on scaling out a deployment instead of scaling up. This architectural difference stems primarily from the capability of public-cloud environments to dynamically increase or decrease the number of resources allocated to your environment. Using native Azure services like Virtual Machine Scale Sets (VMSS), Application Insights and VM-Series automation features, the guide implements VM-Series that will scale in and out dynamically, as your protected workload demands fluctuate. The VM-Series firewalls are deployed in separate Virtual Machine Scale Sets for inbound and outbound/east-west firewalls, and are automatically registered to Azure Load Balancers.
 
 ## Prerequisites
 
@@ -53,9 +70,14 @@ A non-platform requirement would be a running Panorama instance. For full automa
 * a [Panorama Software Firewall License](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/license-the-vm-series-firewall/use-panorama-based-software-firewall-license-management) plugin to automatically manage licenses on newly created devices
 * a [VM-Series](https://docs.paloaltonetworks.com/panorama/9-1/panorama-admin/panorama-plugins/plugins-types/install-the-vm-series-plugin-on-panorama) plugin to enable additional template options (custom metrics)
 
-## Deploy the infrastructure
+**NOTE:**
 
-Steps to deploy the infrastructure are as following:
+* after the deployment the firewalls remain not configured and not licensed.
+* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+
+## Usage
+
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers). If you already have a configured Panorama (with at least minimum configuration described above) you might want to also adjust the `bootstrap_options` for each scale set ([inbound](./example.tfvars#L205) and [obew](./example.tfvars#L249) separately).
@@ -92,7 +114,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
-## Post deploy
+### Post deploy
 
 The most important post-deployment action is (for deployments with auto scaling and Panorama) to retrieve the Application Insights instrumentation keys. This can be done by looking up the AI resources in the Azure portal, or directly from Terraform outputs:
 
@@ -100,7 +122,7 @@ The most important post-deployment action is (for deployments with auto scaling 
 terraform output metrics_instrumentation_keys
 ```
 
-The retrieved keys should be put into appropriate templates in Panorama and pushed to the devices. From this moment on custom metrics are being sent to Application Insights and retrieved by Virtual Machine Scale Sets to trigger scale-in and scale-out operations.
+The retrieved keys should be put into appropriate templates in Panorama and pushed to the devices. From this moment on, custom metrics are being sent to Application Insights and retrieved by Virtual Machine Scale Sets to trigger scale-in and scale-out operations.
 
 Although firewalls in a Scale Set are not meant to be managed directly, they are still configured with password authentication. To retrieve the initial credentials run:
 
@@ -112,7 +134,7 @@ Although firewalls in a Scale Set are not meant to be managed directly, they are
 
       terraform output password
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 
