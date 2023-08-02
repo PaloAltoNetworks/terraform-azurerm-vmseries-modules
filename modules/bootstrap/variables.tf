@@ -49,6 +49,13 @@ variable "files" {
   type        = map(string)
 }
 
+variable "bootstrap_files_dir" {
+  description = "Bootstrap file directory. If the variable has a value of `null` (default) - then it will not upload any other files other than the ones specified in the `files` variable. More information can be found at https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package."
+  default     = null
+  type        = string
+}
+
+
 variable "files_md5" {
   description = <<-EOF
   Optional map of MD5 hashes of file contents.
