@@ -152,7 +152,7 @@ module "appgw" {
   capacity_min       = try(each.value.capacity_min, null)
   capacity_max       = try(each.value.capacity_max, null)
   enable_http2       = try(each.value.enable_http2, null)
-  zones              = var.enable_zones ? try(each.value.zones, null) : null
+  zones              = try(each.value.zones, null)
 
   rules = each.value.rules
 

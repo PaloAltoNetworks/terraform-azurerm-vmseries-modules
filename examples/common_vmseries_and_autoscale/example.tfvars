@@ -202,7 +202,7 @@ vmss = {
       {
         name       = "management"
         subnet_key = "management"
-        create_pip = true
+        create_pip = true # see disclaimer on README for details
       },
       {
         name              = "private"
