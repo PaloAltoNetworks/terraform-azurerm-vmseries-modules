@@ -1,7 +1,7 @@
 ---
 short_title: Common Firewall Option with Autoscaling
 type: refarch
-show_in_hub: false
+show_in_hub: true
 ---
 # Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture, Common NGFW Option with Autoscaling
 
