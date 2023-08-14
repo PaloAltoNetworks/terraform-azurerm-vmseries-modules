@@ -1,12 +1,12 @@
 # --- GENERAL --- #
 location            = "North Europe"
-resource_group_name = "autoscale-dedicated"
+resource_group_name = "autoscale-common"
 name_prefix         = "example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
+enable_zones = true
 
 # --- VNET PART --- #
 vnets = {
@@ -114,18 +114,6 @@ vnets = {
   }
 }
 
-natgws = {
-  "natgw" = {
-    name              = "public-natgw"
-    vnet_key          = "transit"
-    subnet_keys       = ["public", "management"]
-    create_pip        = false
-    create_pip_prefix = true
-    pip_prefix_length = 29
-  }
-}
-
-
 
 # --- LOAD BALANCING PART --- #
 load_balancers = {
@@ -136,6 +124,8 @@ load_balancers = {
       #  "x.x.x.x", # Put your own public IP address here  <-- TODO to be adjusted by the customer
       "0.0.0.0/0",
     ]
+    avzones = ["1", "2", "3"]
+
     frontend_ips = {
       "palo-lb-app1-pip" = {
         create_public_ip = true
@@ -149,7 +139,9 @@ load_balancers = {
     }
   }
   "private" = {
-    name = "private-lb"
+    name    = "private-lb"
+    avzones = ["1", "2", "3"]
+
     frontend_ips = {
       "ha-ports" = {
         vnet_key           = "transit"
@@ -171,6 +163,7 @@ appgws = {
     name       = "public-appgw"
     vnet_key   = "transit"
     subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity   = 2
     rules = {
       "minimum" = {
@@ -199,25 +192,29 @@ application_insights = {}
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
 vmss = {
-  "inbound" = {
-    name              = "inbound-vmss"
+  "common" = {
+    name              = "common-vmss"
     vnet_key          = "transit"
+    zones             = ["1", "2", "3"]
     bootstrap_options = "type=dhcp-client"
 
     interfaces = [
       {
         name       = "management"
         subnet_key = "management"
+        create_pip = true # see disclaimer on README for details
       },
       {
-        name       = "private"
-        subnet_key = "private"
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
       },
       {
         name                    = "public"
         subnet_key              = "public"
         load_balancer_key       = "public"
         application_gateway_key = "public"
+        create_pip              = true
       }
     ]
 
@@ -229,49 +226,6 @@ vmss = {
     autoscale_metrics = {
       "DataPlaneCPUUtilizationPct" = {
         scaleout_threshold = 80
-        scalein_threshold  = 20
-      }
-    }
-    scaleout_config = {
-      statistic        = "Average"
-      time_aggregation = "Average"
-      window_minutes   = 10
-      cooldown_minutes = 30
-    }
-    scalein_config = {
-      window_minutes   = 10
-      cooldown_minutes = 300
-    }
-  }
-  "obew" = {
-    name              = "obew-vmss"
-    vnet_key          = "transit"
-    bootstrap_options = "type=dhcp-client"
-
-    interfaces = [
-      {
-        name       = "management"
-        subnet_key = "management"
-      },
-      {
-        name              = "private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
-        name       = "public"
-        subnet_key = "public"
-      }
-    ]
-
-    autoscale_config = {
-      count_default = 2
-      count_minimum = 1
-      count_maximum = 3
-    }
-    autoscale_metrics = {
-      "DataPlaneCPUUtilizationPct" = {
-        scaleout_threshold = 70
         scalein_threshold  = 20
       }
     }
