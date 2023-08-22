@@ -97,18 +97,9 @@ module "load_balancer" {
   enable_zones        = var.enable_zones
   avzones             = try(each.value.avzones, null)
 
-  network_security_group_name = try(
-    "${var.name_prefix}${var.vnets[each.value.nsg_vnet_key].network_security_groups[each.value.nsg_key].name}",
-    each.value.network_security_group_name,
-    null
-  )
-  # network_security_group_name          = try(each.value.network_security_group_name, null)
-  network_security_resource_group_name = try(
-    var.vnets[each.value.nsg_vnet_key].resource_group_name,
-    each.value.network_security_group_rg_name,
-    null
-  )
-  network_security_allow_source_ips = try(each.value.network_security_allow_source_ips, [])
+  network_security_group_name          = try(each.value.network_security_group_name, null)
+  network_security_resource_group_name = try(each.value.network_security_group_rg_name, null)
+  network_security_allow_source_ips    = try(each.value.network_security_allow_source_ips, [])
 
   frontend_ips = {
     for k, v in each.value.frontend_ips : k => {
