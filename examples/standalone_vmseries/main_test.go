@@ -7,7 +7,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 
-	"github.com/PaloAltoNetworks/terraform-azure-vmseries-modules/go/testskeleton"
+	"github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton/pkg/testskeleton"
 )
 
 func TestDeploy(t *testing.T) {

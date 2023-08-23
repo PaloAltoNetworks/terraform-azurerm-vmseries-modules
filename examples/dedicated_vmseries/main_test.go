@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/PaloAltoNetworks/terraform-azure-vmseries-modules/go/testskeleton"
+	"github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton/pkg/testskeleton"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
