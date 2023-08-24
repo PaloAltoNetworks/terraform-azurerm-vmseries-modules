@@ -7,10 +7,9 @@ inputs:
   path:
     description: 'Path to Terraform module.'
     required: true
-  do_apply:
-    description: When set to true runs also apply
-    type: boolean
-    default: false
+  terratest_action:
+    description: The action (name of a test in Terratest) that will be passed to the Makefile's ACTION parameter
+    type: string
 
 runs:
   using: "composite"
@@ -34,8 +33,6 @@ runs:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
         ARM_SKIP_PROVIDER_REGISTRATION: true
-        DO_APPLY: ${{ inputs.do_apply }}
+        ACTION: ${{ inputs.terratest_action }}
       shell: bash
-      run: |
-        cd "$GITHUB_WORKSPACE/$TPATH"
-        make test
+      run: make $TPATH ACTION=$ACTION
