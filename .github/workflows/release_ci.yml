@@ -15,9 +15,9 @@ on:
 jobs:
   release_wrkflw:
     name: Do release
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@v2
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@makefile-with-terratest
     secrets: inherit
     with:
       cloud: azure
       max_parallel: 10
-      do_apply: true
+      terratest_action: Idempotence # keep in mind that this has to start with capital letter
