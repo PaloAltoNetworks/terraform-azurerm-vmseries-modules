@@ -12,7 +12,7 @@ import (
 	"github.com/gruntwork-io/terratest/modules/terraform"
 )
 
-func TestDeploy(t *testing.T) {
+func CreateTerraformOptions(t *testing.T) *terraform.Options {
 	// prepare random prefix
 	randomNames := testskeleton.GenerateAzureRandomNames()
 	storageDefinition := fmt.Sprintf("{ bootstrap = { name = \"%s\", public_snet_key = \"public\", private_snet_key = \"private\", intranet_cidr = \"10.100.0.0/16\"} }", randomNames.StorageAccountName)
@@ -45,19 +45,36 @@ func TestDeploy(t *testing.T) {
 		SetVarsAfterVarFiles: true,
 	})
 
-	// prepare list of items to check
-	assertList := []testskeleton.AssertExpression{}
-
-	// if DO_APPLY is not empty and equal true, then Terraform apply is used, in other case only Terraform plan
-	if os.Getenv("DO_APPLY") == "true" {
-		// deploy test infrastructure and verify outputs and check if there are no planned changes after deployment
-		testskeleton.DeployInfraCheckOutputsVerifyChanges(t, terraformOptions, assertList)
-	} else {
-		// plan test infrastructure and verify outputs
-		testskeleton.PlanInfraCheckErrors(t, terraformOptions, assertList, "No errors are expected")
-	}
+	return terraformOptions
 }
 
 func TestValidate(t *testing.T) {
 	testskeleton.ValidateCode(t, nil)
+}
+
+func TestPlan(t *testing.T) {
+	// define options for Terraform
+	terraformOptions := CreateTerraformOptions(t)
+	// prepare list of items to check
+	assertList := []testskeleton.AssertExpression{}
+	// plan test infrastructure and verify outputs
+	testskeleton.PlanInfraCheckErrors(t, terraformOptions, assertList, "No errors are expected")
+}
+
+func TestApply(t *testing.T) {
+	// define options for Terraform
+	terraformOptions := CreateTerraformOptions(t)
+	// prepare list of items to check
+	assertList := []testskeleton.AssertExpression{}
+	// deploy test infrastructure and verify outputs and check if there are no planned changes after deployment
+	testskeleton.DeployInfraCheckOutputs(t, terraformOptions, assertList)
+}
+
+func TestIdempotence(t *testing.T) {
+	// define options for Terraform
+	terraformOptions := CreateTerraformOptions(t)
+	// prepare list of items to check
+	assertList := []testskeleton.AssertExpression{}
+	// deploy test infrastructure and verify outputs and check if there are no planned changes after deployment
+	testskeleton.DeployInfraCheckOutputsVerifyChanges(t, terraformOptions, assertList)
 }
