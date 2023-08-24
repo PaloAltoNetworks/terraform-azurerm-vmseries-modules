@@ -19,5 +19,6 @@ jobs:
     secrets: inherit
     with:
       cloud: azure
-      max_parallel: 10
+      validate_max_parallel: 20
+      test_max_parallel: 5
       terratest_action: Idempotence # keep in mind that this has to start with capital letter
