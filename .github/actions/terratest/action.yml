@@ -1,5 +1,5 @@
-name: 'TF plan/apply'
-description: 'Runs Terraform plan and/or apply for a specified path.'
+name: 'Terratest'
+description: 'Runs Terratest for a specified path.'
 inputs:
   tf_version:
     description: 'TF version used.'
@@ -10,6 +10,7 @@ inputs:
   terratest_action:
     description: The action (name of a test in Terratest) that will be passed to the Makefile's ACTION parameter
     type: string
+    required: true
 
 runs:
   using: "composite"
@@ -28,7 +29,7 @@ runs:
         tenant-id: ${{ env.ARM_TENANT_ID }}
         subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
-    - name: test infrastructure
+    - name: ${{ inputs.terratest_action }} infrastructure
       env:
         TPATH: ${{ inputs.path }}
         ARM_USE_OIDC: true
