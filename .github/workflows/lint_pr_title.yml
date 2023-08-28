@@ -8,6 +8,10 @@ run-name: "Lint PR - (#${{ github.event.number }}) ${{ github.event.pull_request
 permissions:
   pull-requests: read
 
+concurrency: 
+  group: lint-${{ github.event.number }}
+  cancel-in-progress: true
+
 on:
   pull_request_target:
     types:

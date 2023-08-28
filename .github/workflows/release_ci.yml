@@ -12,6 +12,8 @@ on:
   schedule:
     - cron: '0 1 * * 4' # this means every Thursday @1am UTC
 
+concurrency: release
+
 jobs:
   release_wrkflw:
     name: Do release
