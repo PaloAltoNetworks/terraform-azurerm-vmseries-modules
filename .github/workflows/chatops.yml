@@ -48,6 +48,7 @@ jobs:
             apply
             idempotence
             sca
+            help
           static-args: |
             comment-id=${{ github.event.comment.id }}
             pr-id=${{ github.event.issue.number }}

@@ -1,0 +1,67 @@
+name: ChatOPS Help
+run-name: "Display ChatOPS help (#${{ github.event.inputs.pr-id }}) ${{ github.event.inputs.pr-title }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr-id:
+        description: ID of the PR that triggered this workflow
+        type: string
+        required: true
+      pr-title: 
+        description: Title of the PR that triggered this workflow
+        type: string
+        required: true
+      comment-id:
+        description: 'The comment-id of the slash command'
+        type: string
+        required: true
+      branch:
+        description: Branch on which the tests should run
+        type: string
+        default: main
+
+jobs:
+  help:
+    name: Add help comment to originating PR
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: add help comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr-id }}
+          body: |
+
+            ## ChatOPS built in help:
+            
+            Currently supported commands include:
+
+            * `/sca` - run all SCA tests via `pre-commit`
+            * `/validate` - run `terraform validate`
+            * `/plan` - plan the infrastructure (only examples)
+            * `/apply` - deploy the infrastructure and destroy afterwards (only examples)
+            * `/idempotence` - test idempotence: deploy, plan and destroy afterwards (only examples).
+
+            The 1<sup>st</sup> command does not take arguments, the remaining take two:
+
+            * `paths` - a space delimitied list of module paths
+            * `tf_version` - (optional, defaults to the latest available) a space delimited list of Terraform versions to test the infrastrucure against.
+
+            Examples:
+
+            ```bash
+            # run idempotence tests on listed modules with Terraform versions: 1.2 (latest patch available), 1.4 (latest patch available), 1.5.4.
+            /idempotence paths="examples/common_vmseries examples/panorama_standalone" tf_version="1.2 1.4 1.5.4"
+            ```
+
+            ```bash
+            # run validation tests with the latest available Terraform version on listed modules.
+            /validate paths="modules/vmseries modules/vnet examples/dedicated_vmseries"
+            ```
+
+          reactions: '+1'
+          reactions-edit-mode: replace
