@@ -68,4 +68,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_public_ip"></a> [public\_ip](#output\_public\_ip) | Public IP addresses for Virtual Network Gateway |
+| <a name="output_ipsec_policy"></a> [ipsec\_policy](#output\_ipsec\_policy) | IPsec policy used for Virtual Network Gateway connection |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
