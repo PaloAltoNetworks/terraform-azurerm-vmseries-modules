@@ -188,8 +188,8 @@ dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
-github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton v1.0.3 h1:mdnVlxDNv2qnEQa2SO8LnbJJGVsjXKSH491hpZrZIiI=
-github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton v1.0.3/go.mod h1:xxVd295BDYzQ81QhtzrXIdk2XMvWT8NdX6aAKoAqvDI=
+github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton v1.0.4 h1:KgSidUZAaeN6NisnygD4QKnDPPldDxxh19hgIKaf2+E=
+github.com/PaloAltoNetworks/terraform-modules-vmseries-tests-skeleton v1.0.4/go.mod h1:xxVd295BDYzQ81QhtzrXIdk2XMvWT8NdX6aAKoAqvDI=
 github.com/agext/levenshtein v1.2.1/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=

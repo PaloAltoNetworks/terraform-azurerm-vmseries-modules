@@ -11,6 +11,11 @@ inputs:
     description: The action (name of a test in Terratest) that will be passed to the Makefile's ACTION parameter
     type: string
     required: true
+  pr-id:
+    description: A PR number. Optional value, you might want to use it to prefix resources created for a particular PR to identify them easly.
+    type: string
+    default: ""
+    required: false
 
 runs:
   using: "composite"
@@ -21,6 +26,11 @@ runs:
       with:
         terraform_version: ${{ inputs.tf_version }}
         terraform_wrapper: false
+
+    - name: setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.20'
 
     - name: login to Azure
       uses: azure/login@v1
@@ -35,5 +45,6 @@ runs:
         ARM_USE_OIDC: true
         ARM_SKIP_PROVIDER_REGISTRATION: true
         ACTION: ${{ inputs.terratest_action }}
+        PRID: ${{ inputs.pr-id }}
       shell: bash
       run: make $TPATH ACTION=$ACTION
