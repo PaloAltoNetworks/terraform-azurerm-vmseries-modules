@@ -7,8 +7,8 @@ The exmaple allows to deploy VM-Series firewalls for inbound and outbound traffi
 ### Deployment Steps
 
 * Checkout the code locally.
-* Copy the `example.tfvars` to `terraform.tfvars` and adjust it to your needs.
-* Copy the `init-cfg.txt.sample` to `init-cfg.txt` and fill it in with required bootstrap parameters (see this [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components) for details).
+* Copy `example.tfvars` to `terraform.tfvars` and adjust it to your needs.
+* Copy `files/init-cfg.txt.sample` to `files/init-cfg.txt` and fill it in with required bootstrap parameters (see this [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components) for details).
 * (optional) Authenticate to AzureRM, switch to the Subscription of your choice if necessary.
 * Initialize the Terraform module:
 
