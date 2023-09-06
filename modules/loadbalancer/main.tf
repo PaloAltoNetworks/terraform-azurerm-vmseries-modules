@@ -30,7 +30,6 @@ locals {
   out_rules = { for v in local.out_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 }
 
-
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if try(v.create_public_ip, false) }
 
@@ -70,6 +69,8 @@ resource "azurerm_lb" "lb" {
       private_ip_address_allocation = try(each.value.private_ip_address, null) != null ? "Static" : null
       private_ip_address            = try(each.value.private_ip_address, null)
       zones                         = try(each.value.subnet_id, null) != null ? var.avzones : []
+
+      gateway_load_balancer_frontend_ip_configuration_id = try(each.value.gateway_load_balancer_frontend_ip_configuration_id, null)
     }
   }
 }
