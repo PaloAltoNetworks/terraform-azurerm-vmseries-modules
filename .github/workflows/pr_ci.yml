@@ -22,7 +22,7 @@ on:
 jobs:
   pr_ci_wrkflw:
     name: Run CI
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@terratest-with-pr-id
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v2.1.1
     secrets: inherit
     if: github.actor != 'dependabot[bot]'
     with:
