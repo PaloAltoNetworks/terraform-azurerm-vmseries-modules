@@ -1,2 +1,0 @@
-validate:
-	@../../makefile.sh validate

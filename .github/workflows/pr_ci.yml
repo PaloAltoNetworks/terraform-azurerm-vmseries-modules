@@ -6,6 +6,10 @@ permissions:
   actions: read
   id-token: write
 
+concurrency: 
+  group: pr-${{ github.event.number }}
+  cancel-in-progress: true
+
 on:
   pull_request:
     types:
@@ -18,10 +22,12 @@ on:
 jobs:
   pr_ci_wrkflw:
     name: Run CI
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v1.2.0
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v2.1.1
     secrets: inherit
     if: github.actor != 'dependabot[bot]'
     with:
       cloud: azure
       tf_version: 1.2 1.3 1.4 1.5
-
+      validate_max_parallel: 20
+      test_max_parallel: 10
+      terratest_action: Plan # keep in mind that this has to start with capital letter
