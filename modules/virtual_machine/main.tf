@@ -42,6 +42,11 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
   backend_address_pool_id = each.value.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.this[each.key].ip_configuration[0].name
   network_interface_id    = azurerm_network_interface.this[each.key].id
+
+  depends_on = [
+    azurerm_network_interface.this,
+    azurerm_virtual_machine.this
+  ]
 }
 
 resource "azurerm_virtual_machine" "this" {
