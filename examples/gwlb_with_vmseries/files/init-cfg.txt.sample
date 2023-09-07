@@ -1,0 +1,2 @@
+type=dhcp-client
+plugin-op-commands=azure-gwlb-inspect:enable

@@ -166,6 +166,12 @@ variable "img_version" {
   type        = string
 }
 
+variable "enable_plan" {
+  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
+  default     = false
+  type        = bool
+}
+
 variable "vm_os_simple" {
   description = "Allows user to specify a simple name for the OS required and auto populate the publisher, offer, sku parameters"
   default     = "UbuntuServer"
