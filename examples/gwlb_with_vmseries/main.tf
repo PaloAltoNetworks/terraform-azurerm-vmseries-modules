@@ -6,7 +6,7 @@ locals {
 
 # Obtain Public IP address of deployment machine
 data "http" "this" {
-  count = length(var.bootstrap_storages) > 0 && contains([for v in values(var.bootstrap_storages) : v.storage_acl], true) ? 1 : 0
+  count = length(var.bootstrap_storages) > 0 && anytrue([for v in values(var.bootstrap_storages) : try(v.storage_acl, false)]) ? 1 : 0
   url   = "https://ifconfig.me"
 }
 

@@ -1,4 +1,4 @@
-package dedicated_vmseries
+package gwlb_with_vmseries
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 func CreateTerraformOptions(t *testing.T) *terraform.Options {
 	// prepare random prefix
 	randomNames := testskeleton.GenerateAzureRandomNames()
-	storageDefinition := fmt.Sprintf("{ bootstrap = { name = \"%s\", public_snet_key = \"public\", private_snet_key = \"private\", intranet_cidr = \"10.0.0.0/25\"} }", randomNames.StorageAccountName)
+	storageDefinition := fmt.Sprintf("{ bootstrap = { name = \"%s\", public_snet_key = \"public\", private_snet_key = \"private\", intranet_cidr = \"10.0.1.0/24\"} }", randomNames.StorageAccountName)
 
 	// copy the init-cfg.sample.txt file to init-cfg.txt for test purposes
 	_, err := os.Stat("files/init-cfg.txt")
@@ -36,7 +36,7 @@ func CreateTerraformOptions(t *testing.T) *terraform.Options {
 		Vars: map[string]interface{}{
 			"name_prefix":         randomNames.NamePrefix,
 			"resource_group_name": randomNames.ResourceGroupName,
-			"bootstrap_storage":   storageDefinition,
+			"bootstrap_storages":  storageDefinition,
 		},
 		Logger:               logger.Default,
 		Lock:                 true,
