@@ -100,9 +100,25 @@ variable "ip_configuration" {
 
   - name - name of the IP configuration
   - create_public_ip - boolean value, true if public IP needs to be created
+  - public_ip_name - name of the public IP resource used, when there is no need to create new one
   - private_ip_address_allocation - defines how the private IP address of the gateways virtual interface is assigned. Valid options are Static or Dynamic. Defaults to Dynamic.
   - public_ip_standard_sku - defaults to `false`, when set to `true` creates a Standard SKU, statically allocated public IP, otherwise it will be a Basic/Dynamic one.
   - subnet_id - the ID of the gateway subnet of a virtual network in which the virtual network gateway will be created.
+
+  Example:
+
+  ip_configuration = [
+    {
+      name             = "001"
+      create_public_ip = true
+      subnet_id        = "ID_for_subnet_GatewaySubnet"
+    },
+    {
+      name             = "002"
+      create_public_ip = true
+      subnet_id        = "ID_for_subnet_GatewaySubnet"
+    }
+  ]
 
   EOF
   type        = list(any)
@@ -132,6 +148,15 @@ variable "azure_bgp_peers_addresses" {
   - custom_bgp_addresses
   - peering_addresses in local_bgp_settings
 
+  Example:
+
+  azure_bgp_peers_addresses = {
+    primary_1   = "169.254.21.2"
+    secondary_1 = "169.254.22.2"
+    primary_2   = "169.254.21.6"
+    secondary_2 = "169.254.22.6"
+  }
+
   EOF
   type        = map(string)
 }
@@ -144,6 +169,20 @@ variable "local_bgp_settings" {
     - key is the ip configuration name
     - apipa_addresses is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
   - peer_weight - the weight added to routes which have been learned through BGP peering. Valid values can be between 0 and 100.
+
+  Example:
+
+  local_bgp_settings = {
+    asn = "65001"
+    peering_addresses = {
+      "001" = {
+        apipa_addresses = ["primary_1", "primary_2"]
+      },
+      "002" = {
+        apipa_addresses = ["secondary_1", "secondary_2"]
+      }
+    }
+  }
 
   EOF
   type        = list(any)
@@ -173,6 +212,71 @@ variable "local_network_gateways" {
     - primary - single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
     - secondary - single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
 
+  Example:
+
+  local_network_gateways = {
+    "lg1" = {
+      name            = "001"
+      connection      = "001"
+      gateway_address = "PUBLIC_IP_1"
+      remote_bgp_settings = [{
+        asn                 = "65002"
+        bgp_peering_address = "169.254.21.1"
+      }]
+      custom_bgp_addresses = [
+        {
+          primary   = "primary_1"
+          secondary = "secondary_1"
+        }
+      ]
+    }
+    "lg2" = {
+      name            = "002"
+      connection      = "002"
+      gateway_address = "PUBLIC_IP_2"
+      remote_bgp_settings = [{
+        asn                 = "65003"
+        bgp_peering_address = "169.254.21.5"
+      }]
+      custom_bgp_addresses = [
+        {
+          primary   = "primary_2"
+          secondary = "secondary_2"
+        }
+      ]
+    }
+    "lg3" = {
+      name            = "003"
+      connection      = "003"
+      gateway_address = "PUBLIC_IP_3"
+      remote_bgp_settings = [{
+        asn                 = "65002"
+        bgp_peering_address = "169.254.22.1"
+      }]
+      custom_bgp_addresses = [
+        {
+          primary   = "primary_1"
+          secondary = "secondary_1"
+        }
+      ]
+    }
+    "lg4" = {
+      name            = "004"
+      connection      = "004"
+      gateway_address = "PUBLIC_IP_4"
+      remote_bgp_settings = [{
+        asn                 = "65003"
+        bgp_peering_address = "169.254.22.5"
+      }]
+      custom_bgp_addresses = [
+        {
+          primary   = "primary_2"
+          secondary = "secondary_2"
+        }
+      ]
+    }
+  }
+
   EOF
   type        = any
 }
@@ -199,6 +303,21 @@ variable "ipsec_policy" {
   - pfs_group - The DH group used in IKE phase 2 for new child SA. Valid options are ECP256, ECP384, PFS1, PFS14, PFS2, PFS2048, PFS24, PFSMM, or None.
   - sa_datasize - The IPSec SA payload size in KB. Must be at least 1024 KB. Defaults to 102400000 KB.
   - sa_lifetime - The IPSec SA lifetime in seconds. Must be at least 300 seconds. Defaults to 27000 seconds.
+
+  Example:
+
+  ipsec_policy = [
+    {
+      dh_group         = "ECP384"
+      ike_encryption   = "AES256"
+      ike_integrity    = "SHA256"
+      ipsec_encryption = "AES256"
+      ipsec_integrity  = "SHA256"
+      pfs_group        = "ECP384"
+      sa_datasize      = "102400000"
+      sa_lifetime      = "27000"
+    }
+  ]
 
   EOF
   type        = any
