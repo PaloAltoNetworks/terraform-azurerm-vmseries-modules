@@ -1,5 +1,11 @@
 name: 'Subscription cleanup'
 description: 'Cleans up subscription in case the job was cancelled.'
+inputs:
+  pr-id:
+    description: A PR number. Optional value, you might want to use it to prefix resources created for a particular PR to identify them easly.
+    type: string
+    default: ""
+    required: false
 runs:
   using: "composite"
   steps:
@@ -13,11 +19,15 @@ runs:
 
     - name: delete resource groups
       shell: bash
+      env:
+        PRID: ${{ inputs.pr-id }}
       run: |
         echo "::group::CLEANUP"
 
         set +e
-        for RG in $(az group list --query "[?properties.provisioningState=='Succeeded']" | jq -r '.[] | select(.name | contains("ghci")) | .name'); do 
+        PRPREFIX=$(if [ "$PRID" ]; then  echo "-pr$PRID-"; fi)
+
+        for RG in $(az group list --query "[?properties.provisioningState=='Succeeded']" | jq -r ".[] | select(.name | contains(\"ghci$PRPREFIX\")) | .name"); do 
           echo "  deleting: $RG"
           az group delete -g ${RG} -y --no-wait
 

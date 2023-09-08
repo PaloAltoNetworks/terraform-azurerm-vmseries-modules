@@ -1,0 +1,77 @@
+name: ChatOPS dispatcher
+run-name: "ChatOPS bot for PR - (#${{ github.event.issue.number }}) ${{ github.event.issue.title }}"
+
+permissions:
+  contents: read
+
+on:
+  issue_comment:
+    types: [created]
+
+concurrency: 
+  group: chat-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  dispatch:
+    name: Dispatch a test job
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: get PR head branch
+        uses: actions/github-script@v6
+        id: pr
+        with:
+          result-encoding: string
+          script: |
+            let pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number,
+            })
+            console.log(pr.data.head.ref)
+            return pr.data.head.ref
+            
+      - name: "dispatch test command on branch: ${{ steps.pr.outputs.result }}"
+        id: scd
+        uses: peter-evans/slash-command-dispatch@v3
+        with:
+          token: ${{ secrets.CHATOPS }}
+          issue-type: pull-request
+          dispatch-type: workflow
+          permission: maintain
+          commands: |
+            validate
+            plan
+            apply
+            idempotence
+            sca
+            help
+          static-args: |
+            comment-id=${{ github.event.comment.id }}
+            pr-id=${{ github.event.issue.number }}
+            pr-title=${{ github.event.issue.title }}
+            branch=${{ steps.pr.outputs.result }}
+
+      - name: Edit comment with error message
+        if: steps.scd.outputs.error-message
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > ${{ steps.scd.outputs.error-message }}
+          reactions: '-1'
+          reactions-edit-mode: replace
+          
+      - name: Concurency ratio fallback
+        if: cancelled()
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ github.event.comment.id }}
+          body: |
+            > ChatOPS run cancelled.
+            > See [job run log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          reactions: 'confused'
+          reactions-edit-mode: replace
