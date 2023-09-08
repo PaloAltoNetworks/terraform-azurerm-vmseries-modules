@@ -126,6 +126,12 @@ variable "vpn_client_configuration" {
   type        = list(any)
 }
 
+variable "azure_bgp_peers_addresses" {
+  description = <<-EOF
+  EOF
+  type        = map(string)
+}
+
 variable "local_bgp_settings" {
   description = <<-EOF
   List of BGP settings - every object in the list contains attributes:

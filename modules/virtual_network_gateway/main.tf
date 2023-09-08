@@ -59,10 +59,10 @@ resource "azurerm_virtual_network_gateway" "this" {
     content {
       asn = try(bgp_settings.value.asn, null)
       dynamic "peering_addresses" {
-        for_each = try(bgp_settings.value.peering_addresses, null) != null ? { for t in bgp_settings.value.peering_addresses : t.ip_configuration_name => t } : {}
+        for_each = try(bgp_settings.value.peering_addresses, {})
         content {
-          ip_configuration_name = try(peering_addresses.value.ip_configuration_name, null)
-          apipa_addresses       = try(peering_addresses.value.apipa_addresses, null)
+          ip_configuration_name = try(peering_addresses.key, null)
+          apipa_addresses       = [for i in try(peering_addresses.value.apipa_addresses, []) : var.azure_bgp_peers_addresses[i]]
           default_addresses     = try(peering_addresses.value.default_addresses, null)
         }
       }
@@ -143,8 +143,8 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
   dynamic "custom_bgp_addresses" {
     for_each = try(each.value.custom_bgp_addresses, {})
     content {
-      primary   = try(custom_bgp_addresses.value.primary, null)
-      secondary = try(custom_bgp_addresses.value.secondary, null)
+      primary   = try(var.azure_bgp_peers_addresses[custom_bgp_addresses.value.primary], null)
+      secondary = try(var.azure_bgp_peers_addresses[custom_bgp_addresses.value.secondary], null)
     }
   }
 
