@@ -202,7 +202,7 @@ variable "local_network_gateways" {
   Map of local network gateways - every object in the map contains attributes:
   - name - the name of the local network gateway.
   - connection - the name of the virtual network gateway connection.
-  - bgp_settings - block containing Local Network Gateway's BGP speaker settings:
+  - remote_bgp_settings - block containing Local Network Gateway's BGP speaker settings:
     - asn - the BGP speaker's ASN.
     - bgp_peering_address - the BGP peering address and BGP identifier of this BGP speaker.
     - peer_weight - the weight added to routes learned from this BGP speaker.
