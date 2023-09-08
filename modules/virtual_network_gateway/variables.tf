@@ -100,9 +100,9 @@ variable "ip_configuration" {
 
   - name - name of the IP configuration
   - create_public_ip - boolean value, true if public IP needs to be created
-  - public_ip_name - name of the public IP resource used, when there is no need to create new one
   - private_ip_address_allocation - defines how the private IP address of the gateways virtual interface is assigned. Valid options are Static or Dynamic. Defaults to Dynamic.
   - public_ip_standard_sku - defaults to `false`, when set to `true` creates a Standard SKU, statically allocated public IP, otherwise it will be a Basic/Dynamic one.
+  - subnet_id - the ID of the gateway subnet of a virtual network in which the virtual network gateway will be created.
 
   EOF
   type        = list(any)
@@ -128,6 +128,10 @@ variable "vpn_client_configuration" {
 
 variable "azure_bgp_peers_addresses" {
   description = <<-EOF
+  Map of IP addresses used on Azure side for BGP. Map is used to not to duplicate IP address and refer to keys while configuring:
+  - custom_bgp_addresses
+  - peering_addresses in local_bgp_settings
+
   EOF
   type        = map(string)
 }
@@ -136,21 +140,13 @@ variable "local_bgp_settings" {
   description = <<-EOF
   List of BGP settings - every object in the list contains attributes:
   - asn - the Autonomous System Number (ASN) to use as part of the BGP.
-  - peering_addresses - a list of peering_addresses as defined below. Only one peering_addresses block can be specified except when active_active of this Virtual Network Gateway is true.
+  - peering_addresses - a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active) with:
+    - key is the ip configuration name
+    - apipa_addresses is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
   - peer_weight - the weight added to routes which have been learned through BGP peering. Valid values can be between 0 and 100.
 
   EOF
   type        = list(any)
-}
-
-variable "custom_bgp_addresses" {
-  description = <<-EOF
-  A custom_bgp_addresses (Border Gateway Protocol custom IP Addresses), whcih can only be used on IPSec / active-active connections. Object contains 2 attributes:
-  - primary - single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
-  - secondary - single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
-
-  EOF
-  type        = any
 }
 
 variable "custom_route" {
@@ -166,12 +162,16 @@ variable "local_network_gateways" {
   description = <<-EOF
   Map of local network gateways - every object in the map contains attributes:
   - name - the name of the local network gateway.
+  - connection - the name of the virtual network gateway connection.
   - bgp_settings - block containing Local Network Gateway's BGP speaker settings:
     - asn - the BGP speaker's ASN.
     - bgp_peering_address - the BGP peering address and BGP identifier of this BGP speaker.
     - peer_weight - the weight added to routes learned from this BGP speaker.
   - gateway_address - the gateway IP address to connect with.
   - address_space - the list of string CIDRs representing the address spaces the gateway exposes.
+  - custom_bgp_addresses - Border Gateway Protocol custom IP Addresses, which can only be used on IPSec / active-active connections. Object contains 2 attributes:
+    - primary - single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
+    - secondary - single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
 
   EOF
   type        = any
