@@ -1,4 +1,4 @@
-package vnet
+package virtual_network_gateway
 
 import (
 	"testing"
