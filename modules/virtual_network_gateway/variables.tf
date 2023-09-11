@@ -49,17 +49,29 @@ variable "avzones" {
 variable "type" {
   description = "The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created"
   type        = string
+  validation {
+    condition     = contains(["Vpn", "ExpressRoute"], var.type)
+    error_message = "Valid options are Vpn or ExpressRoute"
+  }
 }
 
 variable "vpn_type" {
   description = "The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created."
   default     = "RouteBased"
   type        = string
+  validation {
+    condition     = contains(["RouteBased", "PolicyBased"], coalesce(var.vpn_type, "PolicyBased"))
+    error_message = "Valid options are RouteBased or PolicyBased"
+  }
 }
 
 variable "sku" {
   description = "Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway."
   type        = string
+  validation {
+    condition     = contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4,VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku)
+    error_message = "Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments"
+  }
 }
 
 variable "active_active" {
@@ -87,6 +99,11 @@ variable "enable_bgp" {
 variable "generation" {
   description = "The Generation of the Virtual Network gateway. Possible values include Generation1, Generation2 or None"
   type        = string
+  default     = "Generation1"
+  validation {
+    condition     = contains(["Generation1", "Generation2", "None"], coalesce(var.generation, "Generation1"))
+    error_message = "Valid options are Generation1, Generation2 or None"
+  }
 }
 
 variable "private_ip_address_enabled" {
