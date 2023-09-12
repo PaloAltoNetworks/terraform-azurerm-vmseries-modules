@@ -55,7 +55,7 @@ resource "azurerm_virtual_network_gateway" "this" {
   }
 
   dynamic "bgp_settings" {
-    for_each = var.local_bgp_settings
+    for_each = [var.local_bgp_settings]
     content {
       asn = try(bgp_settings.value.asn, null)
       dynamic "peering_addresses" {
@@ -74,6 +74,22 @@ resource "azurerm_virtual_network_gateway" "this" {
     for_each = var.custom_route
     content {
       address_prefixes = try(custom_route.value.address_prefixes, null)
+    }
+  }
+
+  lifecycle {
+    precondition {
+      condition = (contains(["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation2"
+      ) || (contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw1AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation1")
+      error_message = "Generation2 is only value for a sku larger than VpnGw2 or VpnGw2AZ"
+    }
+    precondition {
+      condition     = var.active_active && length(keys(var.local_bgp_settings.peering_addresses)) == 2 || !var.active_active && length(keys(var.local_bgp_settings.peering_addresses)) == 1
+      error_message = "Map of peering addresses has to contain 1 (for active-standby) or 2 objects (for active-active)."
+    }
+    precondition {
+      condition     = var.active_active && length(keys(var.azure_bgp_peers_addresses)) >= 2 || !var.active_active && length(keys(var.azure_bgp_peers_addresses)) >= 1
+      error_message = "For active-standby you need to configure at least 1 custom Azure APIPA BGP IP address, for active-active at least 2."
     }
   }
 }
