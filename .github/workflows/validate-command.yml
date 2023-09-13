@@ -41,9 +41,10 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/test_command.yml@v2.1.2
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/test_command.yml@v2.2
     secrets: inherit
     with:
+      cloud: azure
       paths: ${{ inputs.paths }}
       tf_version: ${{ inputs.tf_version }}
       pr-id: ${{ inputs.pr-id }}
