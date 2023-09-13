@@ -40,7 +40,8 @@ jobs:
         with:
           app_id: ${{ secrets.CHATOPS_APP_ID }}
           private_key: ${{ secrets.CHATOPS_APP_PRIVATE_KEY }}
-          installation_id: ${{ secrets.CHATOPS_APP_INSTALLATION_ID }}
+          installation_retrieval_mode: id
+          installation_retrieval_payload: ${{ secrets.CHATOPS_APP_INSTALLATION_ID }}          
 
       - name: "dispatch test command on branch: ${{ steps.pr.outputs.result }}"
         id: scd
