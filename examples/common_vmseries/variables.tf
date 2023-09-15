@@ -299,7 +299,7 @@ variable "vmseries" {
   - `vnet_key` : a key of a VNET defined in the `var.vnets` map. This value will be used during network interfaces creation.
   - `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.
   - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1".
-  - `availability_set_name` : a name of an Availability Set as declared in `availability_set` property. Specify when HA is required but cannot go for zonal deployment.
+  - `availability_set_key` : a key of an Availability Set as declared in `availability_set` property. Specify when HA is required but cannot go for zonal deployment.
 
   - `bootstrap_options` : string, optional bootstrap options to pass to VM-Series instances, semicolon separated values. When defined this precedence over `bootstrap_storage`
   - `bootstrap_storage` : a map containing definition of the bootstrap package content. When present triggers a creation of a File Share in an existing Storage Account, following properties supported:

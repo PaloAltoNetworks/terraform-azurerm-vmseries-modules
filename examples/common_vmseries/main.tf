@@ -277,7 +277,7 @@ module "vmseries" {
   img_version = try(each.value.version, var.vmseries_version)
   img_sku     = var.vmseries_sku
   vm_size     = try(each.value.vm_size, var.vmseries_vm_size)
-  avset_id    = try(azurerm_availability_set.this[each.value.availability_set_name].id, null)
+  avset_id    = try(azurerm_availability_set.this[each.value.availability_set_key].id, null)
 
   enable_zones = var.enable_zones
   avzone       = try(each.value.avzone, 1)
