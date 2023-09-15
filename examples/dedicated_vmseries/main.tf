@@ -252,7 +252,7 @@ module "bootstrap_share" {
 
 
 resource "azurerm_availability_set" "this" {
-  for_each = var.availability_set
+  for_each = var.availability_sets
 
   name                         = "${var.name_prefix}${each.value.name}"
   resource_group_name          = local.resource_group.name
