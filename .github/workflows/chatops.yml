@@ -19,7 +19,6 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-      actions: write
     steps:
       - name: get PR head branch
         uses: actions/github-script@v6
@@ -35,11 +34,20 @@ jobs:
             console.log(pr.data.head.ref)
             return pr.data.head.ref
       
+      - name: Generate GitHub token
+        id: generate-token
+        uses: tibdex/github-app-token@v2
+        with:
+          app_id: ${{ secrets.CHATOPS_APP_ID }}
+          private_key: ${{ secrets.CHATOPS_APP_PRIVATE_KEY }}
+          installation_retrieval_mode: id
+          installation_retrieval_payload: ${{ secrets.CHATOPS_APP_INSTALLATION_ID }}          
+
       - name: "dispatch test command on branch: ${{ steps.pr.outputs.result }}"
         id: scd
         uses: peter-evans/slash-command-dispatch@v3
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ steps.generate-token.outputs.token }}
           issue-type: pull-request
           dispatch-type: workflow
           permission: maintain
