@@ -1,157 +1,243 @@
----
-short_title: Standalone Panorama Deployment
-type: example
-show_in_hub: true
----
-# Standalone Panorama Deployment
+<!-- BEGIN_TF_DOCS -->
 
-Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
 
-The Terraform code presented here will deploy Palo Alto Networks Panorama management platform in Azure in management only mode (without additional logging disks). For option on how to add additional logging disks - please refer to panorama [module documentation](../../modules/panorama/README.md#input_logging_disks)
+## Module's Required Inputs
 
-## Topology
 
-This is a non zonal deployment. The deployed infrastructure consists of:
+- [`location`](#location)
+- [`resource_group_name`](#resource_group_name)
+- [`vnets`](#vnets)
+- [`panorama_version`](#panorama_version)
 
-* a VNET containing:
-  * one subnet dedicated to host Panorama appliances
-  * a Network Security Group to give access to Panorama's public interface
-* a Panorama appliance with a public IP assigned to the management interface
 
-![standalone-panorama](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/2110772/a2394f73-c0a8-4878-8693-825356abbd23)
 
-## Prerequisites
+### location
 
-A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
+The Azure region to use.
 
-* (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
-* [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
-* if you have not run Palo Alto Networks Panorama images in a subscription it might be necessary to accept the license first ([see this note](../../modules/panorama/README.md#accept-azure-marketplace-terms))
+Type: `string`
 
-**NOTE:**
 
-* after the deployment Panorama remains not licensed and not configured.
-* keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
 
-## Usage
+### resource_group_name
 
-### Deployment Steps
+Name of the Resource Group to .
 
-* checkout the code locally (if you haven't done so yet)
-* copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
-* (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
-* initialize the Terraform module:
+Type: `string`
 
-      terraform init
 
-* (optional) plan you infrastructure to see what will be actually deployed:
+### vnets
 
-      terraform plan
+A map defining VNETs. A key is the VNET name, value is a set of properties like described below.
+  
+For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-* deploy the infrastructure (you will have to confirm it with typing in `yes`):
+- `name` : a name of a Virtual Network
+- `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET
+- `address_space` : a list of CIDRs for VNET
+- `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
 
-      terraform apply
+- `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets
+- `subnets` : map of Subnets to create
 
-  The deployment takes couple of minutes. Observe the output. At the end you should see a summary similar to this:
+- `network_security_groups` : map of Network Security Groups to create
+- `route_tables` : map of Route Tables to create.
 
-      Apply complete! Resources: 10 added, 0 changed, 0 destroyed.
 
-      Outputs:
+Type: `any`
 
-      panorama_mgmt_ips = {
-        "pn-1" = "1.2.3.4"
-      }
-      password = <sensitive>
-      username = "panadmin"
 
-* at this stage you have to wait couple of minutes for the Panorama to bootstrap.
 
-### Post deploy
+### panorama_version
 
-Panorama in this example is configured with password authentication. To retrieve the initial credentials run:
+Panorama PanOS version. It's also possible to specify the Pan-OS version per Panorama (in case you would like to deploy more than one), see `var.panoramas` variable.
 
-* for username:
+Type: `string`
 
-      terraform output username
 
-* for password:
 
-      terraform output password
 
-The management public IP addresses are available in the `panorama_mgmt_ips`:
 
-```sh
-terraform output panorama_mgmt_ips
+## Module's Optional Inputs
+
+
+- [`tags`](#tags)
+- [`name_prefix`](#name_prefix)
+- [`create_resource_group`](#create_resource_group)
+- [`enable_zones`](#enable_zones)
+- [`vmseries_username`](#vmseries_username)
+- [`vmseries_password`](#vmseries_password)
+- [`panorama_sku`](#panorama_sku)
+- [`panorama_size`](#panorama_size)
+- [`panoramas`](#panoramas)
+
+
+### tags
+
+Map of tags to assign to the created resources.
+
+Type: `map(string)`
+
+Default value: `map[]`
+
+
+### name_prefix
+
+A prefix that will be added to all created resources.
+There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+
+Example:
+```
+name_prefix = "test-"
+```
+  
+NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+
+
+Type: `string`
+
+Default value: ``
+
+### create_resource_group
+
+When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+
+
+Type: `bool`
+
+Default value: `true`
+
+
+### enable_zones
+
+If `true`, enable zone support for resources.
+
+Type: `bool`
+
+Default value: `true`
+
+
+### vmseries_username
+
+Initial administrative username to use for all systems.
+
+Type: `string`
+
+Default value: `panadmin`
+
+### vmseries_password
+
+Initial administrative password to use for all systems. Set to null for an auto-generated password.
+
+Type: `string`
+
+Default value: `&{}`
+
+
+### panorama_sku
+
+Panorama SKU, basically a type of licensing used in Azure.
+
+Type: `string`
+
+Default value: `byol`
+
+### panorama_size
+
+A size of a VM that will run Panorama. It's also possible to specify the the VM size per Panorama, see `var.panoramas` variable.
+
+Type: `string`
+
+Default value: `Standard_D5_v2`
+
+### panoramas
+
+A map containing Panorama definitions.
+  
+All definitions share a VM size, SKU and PanOS version (`panorama_size`, `panorama_sku`, `panorama_version` respectively). Defining more than one Panorama makes sense when creating for example HA pairs. 
+
+Following properties are available:
+
+- `name` : a name of a Panorama VM
+- `size` : size of the Panorama virtual machine, when specified overrides `var.panorama_size`.
+- `version` : PanOS version, when specified overrides `var.panorama_version`.
+- `vnet_key`: a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable
+- `subnet_key`: a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_key` property
+- `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed
+- `avzones`: when `enable_zones` is `true` these are availability zones used by Panorama's public IPs
+- `custom_image_id`: a custom build of Panorama to use, overrides the stock image version.
+
+- `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
+  - `name`: string that will form the NIC name
+  - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`
+  - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`
+  - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface
+  - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
+  - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
+
+- `logging_disks` : a map containing configuration of additional disks that should be attached to a Panorama appliance. Following properties are available:
+  - `size` : size of a disk, 2TB by default
+  - `lun` : slot to which the disk should be attached
+  - `disk_type` : type of a disk, determines throughput, `Standard_LRS` by default.
+
+Example:
+
+```
+  {
+    "pn-1" = {
+      name     = "panorama01"
+      vnet_key = "vnet"
+      interfaces = [
+        {
+          name               = "management"
+          subnet_key         = "panorama"
+          private_ip_address = "10.1.0.10"
+          create_pip         = true
+        },
+      ]
+    }
+  }
 ```
 
-You can now login to the devices using either:
 
-* cli - ssh client is required
-* Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
+Type: `any`
 
-You can now proceed with licensing and configuring the devices.
+Default value: `map[]`
 
-### Cleanup
 
-To remove the deployed infrastructure run:
+## Module's Outputs
 
-```sh
-terraform destroy
-```
 
-## Reference
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-### Requirements
+- [`username`](#username)
+- [`password`](#password)
+- [`panorama_mgmt_ips`](#panorama_mgmt_ips)
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
 
-### Providers
+* `username`: Initial administrative username to use for VM-Series.
+* `password`: Initial administrative password to use for VM-Series.
+* `panorama_mgmt_ips`: 
 
-| Name | Version |
-|------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | n/a |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+## Module's Nameplate
 
-### Modules
+Requirements needed by this module:
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
-| <a name="module_panorama"></a> [panorama](#module\_panorama) | ../../modules/panorama | n/a |
+- `terraform`, version: >= 1.2, < 2.0
 
-### Resources
+Providers used in this module:
 
-| Name | Type |
-|------|------|
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
-| [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
+- `random`
+- `azurerm`
 
-### Inputs
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
+`panorama` | - | ../../modules/panorama | 
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to assign to the created resources. | `map(string)` | `{}` | no |
-| <a name="input_location"></a> [location](#input\_location) | The Azure region to use. | `string` | n/a | yes |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix that will be added to all created resources.<br>There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.<br><br>Example:<pre>name_prefix = "test-"</pre>NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property. | `string` | `""` | no |
-| <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.<br>When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group. | `bool` | `true` | no |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to . | `string` | n/a | yes |
-| <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones) | If `true`, enable zone support for resources. | `bool` | `true` | no |
-| <a name="input_vnets"></a> [vnets](#input\_vnets) | A map defining VNETs. A key is the VNET name, value is a set of properties like described below.<br><br>For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)<br><br>- `name` : a name of a Virtual Network<br>- `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET<br>- `address_space` : a list of CIDRs for VNET<br>- `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside<br><br>- `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets<br>- `subnets` : map of Subnets to create<br><br>- `network_security_groups` : map of Network Security Groups to create<br>- `route_tables` : map of Route Tables to create. | `any` | n/a | yes |
-| <a name="input_vmseries_username"></a> [vmseries\_username](#input\_vmseries\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
-| <a name="input_vmseries_password"></a> [vmseries\_password](#input\_vmseries\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
-| <a name="input_panorama_version"></a> [panorama\_version](#input\_panorama\_version) | Panorama PanOS version. It's also possible to specify the Pan-OS version per Panorama (in case you would like to deploy more than one), see `var.panoramas` variable. | `string` | n/a | yes |
-| <a name="input_panorama_sku"></a> [panorama\_sku](#input\_panorama\_sku) | Panorama SKU, basically a type of licensing used in Azure. | `string` | `"byol"` | no |
-| <a name="input_panorama_size"></a> [panorama\_size](#input\_panorama\_size) | A size of a VM that will run Panorama. It's also possible to specify the the VM size per Panorama, see `var.panoramas` variable. | `string` | `"Standard_D5_v2"` | no |
-| <a name="input_panoramas"></a> [panoramas](#input\_panoramas) | A map containing Panorama definitions.<br><br>All definitions share a VM size, SKU and PanOS version (`panorama_size`, `panorama_sku`, `panorama_version` respectively). Defining more than one Panorama makes sense when creating for example HA pairs. <br><br>Following properties are available:<br><br>- `name` : a name of a Panorama VM<br>- `size` : size of the Panorama virtual machine, when specified overrides `var.panorama_size`.<br>- `version` : PanOS version, when specified overrides `var.panorama_version`.<br>- `vnet_key`: a VNET used to host Panorama VM, this is a key from a VNET definition stored in `vnets` variable<br>- `subnet_key`: a Subnet inside a VNET used to host Panorama VM, this is a key from a Subnet definition stored inside a VNET definition references by the `vnet_key` property<br>- `avzone`: when `enable_zones` is `true` this specifies the zone in which Panorama will be deployed<br>- `avzones`: when `enable_zones` is `true` these are availability zones used by Panorama's public IPs<br>- `custom_image_id`: a custom build of Panorama to use, overrides the stock image version.<br><br>- `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:<br>  - `name`: string that will form the NIC name<br>  - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`<br>  - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`<br>  - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface<br>  - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`<br>  - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)<br><br>- `logging_disks` : a map containing configuration of additional disks that should be attached to a Panorama appliance. Following properties are available:<br>  - `size` : size of a disk, 2TB by default<br>  - `lun` : slot to which the disk should be attached<br>  - `disk_type` : type of a disk, determines throughput, `Standard_LRS` by default.<br><br>Example:<pre>{<br>    "pn-1" = {<br>      name     = "panorama01"<br>      vnet_key = "vnet"<br>      interfaces = [<br>        {<br>          name               = "management"<br>          subnet_key         = "panorama"<br>          private_ip_address = "10.1.0.10"<br>          create_pip         = true<br>        },<br>      ]<br>    }<br>  }</pre> | `any` | `{}` | no |
+Resources used in this module:
 
-### Outputs
-
-| Name | Description |
-|------|-------------|
-| <a name="output_username"></a> [username](#output\_username) | Initial administrative username to use for VM-Series. |
-| <a name="output_password"></a> [password](#output\_password) | Initial administrative password to use for VM-Series. |
-| <a name="output_panorama_mgmt_ips"></a> [panorama\_mgmt\_ips](#output\_panorama\_mgmt\_ips) | n/a |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+- `resource_group` (managed)
+- `password` (managed)
+- `resource_group` (data)
+<!-- END_TF_DOCS -->

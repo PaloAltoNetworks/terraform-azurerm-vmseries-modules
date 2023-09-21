@@ -133,36 +133,88 @@ To remove the deployed infrastructure run:
 terraform destroy
 ```
 
-## Module's Required Inputs
+### Requirements
 
+The following requirements are needed by this module:
 
-- [`location`](#location)
-- [`resource_group_name`](#resource_group_name)
-- [`vnets`](#vnets)
-- [`vmseries_version`](#vmseries_version)
-- [`vmseries_vm_size`](#vmseries_vm_size)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.2, < 2.0)
 
+### Providers
 
+The following providers are used by this module:
 
-### location
+- <a name="provider_random"></a> [random](#provider\_random)
 
-The Azure region to use.
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm)
+
+### Modules
+
+The following Modules are called:
+
+#### <a name="module_vnet"></a> [vnet](#module\_vnet)
+
+Source: ../../modules/vnet
+
+Version:
+
+#### <a name="module_natgw"></a> [natgw](#module\_natgw)
+
+Source: ../../modules/natgw
+
+Version:
+
+#### <a name="module_load_balancer"></a> [load\_balancer](#module\_load\_balancer)
+
+Source: ../../modules/loadbalancer
+
+Version:
+
+#### <a name="module_ai"></a> [ai](#module\_ai)
+
+Source: ../../modules/application_insights
+
+Version:
+
+#### <a name="module_appgw"></a> [appgw](#module\_appgw)
+
+Source: ../../modules/appgw
+
+Version:
+
+#### <a name="module_vmss"></a> [vmss](#module\_vmss)
+
+Source: ../../modules/vmss
+
+Version:
+
+### Resources
+
+The following resources are used by this module:
+
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) (resource)
+- [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
+
+### Required Inputs
+
+The following input variables are required:
+
+#### <a name="input_location"></a> [location](#input\_location)
+
+Description: The Azure region to use.
 
 Type: `string`
 
+#### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
-
-### resource_group_name
-
-Name of the Resource Group.
+Description: Name of the Resource Group.
 
 Type: `string`
 
+#### <a name="input_vnets"></a> [vnets](#input\_vnets)
 
-### vnets
+Description: A map defining VNETs.  
 
-A map defining VNETs.
-  
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
 - `name` :  A name of a VNET.
@@ -176,98 +228,70 @@ For detailed documentation on each property refer to [module documentation](../.
 - `network_security_groups` : map of Network Security Groups to create
 - `route_tables` : map of Route Tables to create.
 
-
 Type: `any`
 
+#### <a name="input_vmseries_version"></a> [vmseries\_version](#input\_vmseries\_version)
 
-
-
-### vmseries_version
-
-VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per Scale Set, see `var.vmss` variable.
+Description: VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per Scale Set, see `var.vmss` variable.
 
 Type: `string`
 
-### vmseries_vm_size
+#### <a name="input_vmseries_vm_size"></a> [vmseries\_vm\_size](#input\_vmseries\_vm\_size)
 
-Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per Scale Set, see `var.vmss` variable.
+Description: Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per Scale Set, see `var.vmss` variable.
 
 Type: `string`
 
+### Optional Inputs
 
+The following input variables are optional (have default values):
 
+#### <a name="input_tags"></a> [tags](#input\_tags)
 
-
-
-
-## Module's Optional Inputs
-
-
-- [`tags`](#tags)
-- [`name_prefix`](#name_prefix)
-- [`create_resource_group`](#create_resource_group)
-- [`enable_zones`](#enable_zones)
-- [`natgws`](#natgws)
-- [`load_balancers`](#load_balancers)
-- [`application_insights`](#application_insights)
-- [`vmseries_sku`](#vmseries_sku)
-- [`vmseries_username`](#vmseries_username)
-- [`vmseries_password`](#vmseries_password)
-- [`vmss`](#vmss)
-- [`appgws`](#appgws)
-
-
-### tags
-
-Map of tags to assign to the created resources.
+Description: Map of tags to assign to the created resources.
 
 Type: `map(string)`
 
-Default value: `map[]`
+Default: `{}`
 
+#### <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix)
 
-### name_prefix
-
-A prefix that will be added to all created resources.
+Description: A prefix that will be added to all created resources.  
 There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
 
 Example:
 ```
 name_prefix = "test-"
-```
-  
-NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+```  
 
+NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
 
 Type: `string`
 
-Default value: ``
+Default: `""`
 
-### create_resource_group
+#### <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group)
 
-When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+Description: When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.  
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
 
+Type: `bool`
+
+Default: `true`
+
+#### <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones)
+
+Description: If `true`, enable zone support for resources.
 
 Type: `bool`
 
-Default value: `true`
+Default: `true`
 
+#### <a name="input_natgws"></a> [natgws](#input\_natgws)
 
-### enable_zones
+Description: A map defining Nat Gateways.
 
-If `true`, enable zone support for resources.
-
-Type: `bool`
-
-Default value: `true`
-
-
-### natgws
-
-A map defining Nat Gateways. 
-
-Please note that a NatGW is a zonal resource, this means it's always placed in a zone (even when you do not specify one explicitly). Please refer to Microsoft documentation for notes on NatGW's zonal resiliency. 
+Please note that a NatGW is a zonal resource, this means it's always placed in a zone (even when you do not specify one explicitly). Please refer to Microsoft documentation for notes on NatGW's zonal resiliency.
 
 Following properties are supported:
 
@@ -298,14 +322,13 @@ natgws = {
 }
 ```
 
-
 Type: `any`
 
-Default value: `map[]`
+Default: `{}`
 
-### load_balancers
+#### <a name="input_load_balancers"></a> [load\_balancers](#input\_load\_balancers)
 
-A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
+Description: A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
 
 Following properties are available (for details refer to module's documentation):
 
@@ -368,15 +391,13 @@ Example of a private Load Balancer with HA PORTS rule:
 }
 ```
 
-
-
 Type: `map`
 
-Default value: `map[]`
+Default: `{}`
 
-### application_insights
+#### <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights)
 
-A map defining Azure Application Insights. There are three ways to use this variable:
+Description: A map defining Azure Application Insights. There are three ways to use this variable:
 
 * when the value is set to `null` (default) no AI is created
 * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
@@ -384,7 +405,7 @@ A map defining Azure Application Insights. There are three ways to use this vari
 
 Names for all AI instances are prefixed with `var.name_prefix`.
 
-Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
+Properties supported (for details on each property see [modules documentation](../../modules/application\_insights/README.md)):
 
 - `name` : (optional, string) a name of a single AI instance
 - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
@@ -408,40 +429,37 @@ application_insights = {
 }
 ```
 
-
 Type: `map(string)`
 
-Default value: `&{}`
+Default: `null`
 
+#### <a name="input_vmseries_sku"></a> [vmseries\_sku](#input\_vmseries\_sku)
 
-
-### vmseries_sku
-
-VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`
+Description: VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`
 
 Type: `string`
 
-Default value: `byol`
+Default: `"byol"`
 
-### vmseries_username
+#### <a name="input_vmseries_username"></a> [vmseries\_username](#input\_vmseries\_username)
 
-Initial administrative username to use for all systems.
-
-Type: `string`
-
-Default value: `panadmin`
-
-### vmseries_password
-
-Initial administrative password to use for all systems. Set to null for an auto-generated password.
+Description: Initial administrative username to use for all systems.
 
 Type: `string`
 
-Default value: `&{}`
+Default: `"panadmin"`
 
-### vmss
+#### <a name="input_vmseries_password"></a> [vmseries\_password](#input\_vmseries\_password)
 
-A map defining all Virtual Machine Scale Sets.
+Description: Initial administrative password to use for all systems. Set to null for an auto-generated password.
+
+Type: `string`
+
+Default: `null`
+
+#### <a name="input_vmss"></a> [vmss](#input\_vmss)
+
+Description: A map defining all Virtual Machine Scale Sets.
 
 For detailed documentation on how to configure this resource, for available properties, especially for the defaults refer to [module documentation](../../modules/vmss/README.md)
 
@@ -522,15 +540,13 @@ Example, no auto scaling:
 }
 ```
 
-
-
 Type: `any`
 
-Default value: `map[]`
+Default: `{}`
 
-### appgws
+#### <a name="input_appgws"></a> [appgws](#input\_appgws)
 
-A map defining all Application Gateways in the current deployment.
+Description: A map defining all Application Gateways in the current deployment.
 
 For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](../../modules/appgw/README.md).
 
@@ -554,51 +570,27 @@ Following properties are supported:
 - `ssl_policy_cipher_suites` : (optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
 - `ssl_profiles` : (optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
 
-
-
 Type: `map`
 
-Default value: `map[]`
+Default: `{}`
 
+### Outputs
 
-## Module's Outputs
+The following outputs are exported:
 
+#### <a name="output_username"></a> [username](#output\_username)
 
-- [`username`](#username)
-- [`password`](#password)
-- [`metrics_instrumentation_keys`](#metrics_instrumentation_keys)
-- [`lb_frontend_ips`](#lb_frontend_ips)
+Description: Initial administrative username to use for VM-Series.
 
+#### <a name="output_password"></a> [password](#output\_password)
 
-* `username`: Initial administrative username to use for VM-Series.
-* `password`: Initial administrative password to use for VM-Series.
-* `metrics_instrumentation_keys`: The Instrumentation Key of the created instance(s) of Azure Application Insights.
-* `lb_frontend_ips`: IP Addresses of the load balancers.
+Description: Initial administrative password to use for VM-Series.
 
-## Module's Nameplate
+#### <a name="output_metrics_instrumentation_keys"></a> [metrics\_instrumentation\_keys](#output\_metrics\_instrumentation\_keys)
 
-Requirements needed by this module:
+Description: The Instrumentation Key of the created instance(s) of Azure Application Insights.
 
-- `terraform`, version: >= 1.2, < 2.0
+#### <a name="output_lb_frontend_ips"></a> [lb\_frontend\_ips](#output\_lb\_frontend\_ips)
 
-Providers used in this module:
-
-- `random`
-- `azurerm`
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`natgw` | - | ../../modules/natgw | 
-`load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
-`ai` | - | ../../modules/application_insights | Create the scale sets and related resources.
-`appgw` | - | ../../modules/appgw | 
-`vmss` | - | ../../modules/vmss | 
-
-Resources used in this module:
-
-- `resource_group` (managed)
-- `password` (managed)
-- `resource_group` (data)
+Description: IP Addresses of the load balancers.
 <!-- END_TF_DOCS -->

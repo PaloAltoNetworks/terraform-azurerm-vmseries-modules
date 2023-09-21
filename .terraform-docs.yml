@@ -12,3 +12,74 @@ sort:
 settings:
   indent: 3
   lockfile: false
+
+content: |-
+  {{ .Header }}
+
+  ## Module's Required Inputs
+
+  {{ range .Module.Inputs }}
+  {{- if .Required }}
+  - [`{{ .Name }}`](#{{ .Name }})
+  {{- end -}}
+  {{ end }}
+
+  {{ range .Module.Inputs }}
+  {{ if .Required -}}
+  ### {{ .Name }}
+
+  {{ .Description }}
+
+  Type: `{{ .Type }}`
+  {{ end }}
+  {{- end }}
+
+  ## Module's Optional Inputs
+
+  {{ range .Module.Inputs }}
+  {{- if not .Required }}
+  - [`{{ .Name }}`](#{{ .Name }})
+  {{- end -}}
+  {{ end }}
+
+  {{ range .Module.Inputs }}
+  {{ if not .Required -}}
+  ### {{ .Name }}
+
+  {{ .Description }}
+
+  Type: `{{ .Type }}`
+
+  Default value: `{{ .Default }}`
+  {{ end }}
+  {{- end }}
+
+  ## Module's Outputs
+
+  {{ range .Module.Outputs }}
+  * `{{ .Name }}`: {{ .Description }}
+  {{- end }}
+
+  ## Module's Nameplate
+
+  Requirements needed by this module:
+  {{ range .Module.Requirements }}
+  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
+  {{- end }}
+
+  Providers used in this module:
+  {{ range .Module.Providers }}
+  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
+  {{- end }}
+
+  Modules used in this module:
+  Name | Version | Source | Description
+  --- | --- | --- | ---
+  {{- range .Module.ModuleCalls }}
+  `{{ .Name }}` | {{ if .Version }}{{ .Version }}{{ else }}-{{ end }} | {{ .Source }} | {{ .Description }}
+  {{- end }}
+
+  Resources used in this module:
+  {{ range .Module.Resources }}
+  - `{{ .Type }}` ({{ .Mode }})
+  {{- end }}
