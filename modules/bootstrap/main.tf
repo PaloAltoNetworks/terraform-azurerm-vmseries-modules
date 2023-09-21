@@ -1,3 +1,12 @@
+locals {
+  bootstrap_filenames = { for f in try(fileset(var.bootstrap_files_dir, "**"), {}) : f => "${var.bootstrap_files_dir}/${f}" }
+  # invert var.files map 
+  inverted_files     = { for k, v in var.files : v => k }
+  inverted_filenames = merge(local.bootstrap_filenames, local.inverted_files)
+  # invert local.filenames map
+  filenames = { for k, v in local.inverted_filenames : v => k }
+}
+
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
@@ -18,7 +27,11 @@ resource "azurerm_storage_account" "this" {
       retention_policy_days = var.retention_policy_days
     }
   }
-
+  blob_properties {
+    delete_retention_policy {
+      days = var.blob_delete_retention_policy_days
+    }
+  }
   network_rules {
     default_action             = var.storage_acl == true ? "Deny" : "Allow"
     ip_rules                   = var.storage_acl == true ? var.storage_allow_inbound_public_ips : null
@@ -82,7 +95,7 @@ resource "azurerm_storage_share_directory" "this" {
 }
 
 resource "azurerm_storage_share_file" "this" {
-  for_each = var.storage_share_name != null ? var.files : {}
+  for_each = var.storage_share_name != null ? local.filenames : {}
 
   name             = regex("[^/]*$", each.value)
   path             = replace(each.value, "/[/]*[^/]*$/", "")

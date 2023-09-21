@@ -110,14 +110,11 @@ vnets = {
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name                        = "public-lb"
-    network_security_group_name = "example-public-nsg"
-    network_security_allow_source_ips = [
-      #  "x.x.x.x", # Put your own public IP address here  <-- TODO to be adjusted by the customer
-      "0.0.0.0/0",
-    ]
-    avzones = ["1", "2", "3"]
-
+    name                              = "public-lb"
+    nsg_vnet_key                      = "transit"
+    nsg_key                           = "public"
+    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    avzones                           = ["1", "2", "3"]
     frontend_ips = {
       "palo-lb-app1" = {
         create_public_ip = true
@@ -151,7 +148,7 @@ load_balancers = {
 
 
 
-# --- VMSERIES PART --- #
+# # --- VMSERIES PART --- #
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
@@ -206,7 +203,7 @@ vmseries = {
 }
 
 
-# --- APPLICATION GATEWAYs --- #
+# # --- APPLICATION GATEWAYs --- #
 appgws = {
   "public" = {
     name                     = "public-appgw"

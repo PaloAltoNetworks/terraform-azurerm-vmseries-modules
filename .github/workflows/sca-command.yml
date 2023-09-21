@@ -1,0 +1,79 @@
+name: ChatOPS SCA
+run-name: "On demand SCA test for PR - (#${{ github.event.inputs.pr-id }}) ${{ github.event.inputs.pr-title }}"
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr-id:
+        description: ID of the PR that triggered this workflow
+        type: string
+        required: true
+      pr-title: 
+        description: Title of the PR that triggered this workflow
+        type: string
+        required: true
+      comment-id:
+        description: 'The comment-id of the slash command'
+        type: string
+        required: true
+      branch:
+        description: Branch on which the tests should run
+        type: string
+        default: main
+
+jobs:
+  init:
+    name: Add a comment to originating PR with job ID
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    outputs:
+      paths: ${{ steps.paths_reformat.outputs.paths }}
+    steps:
+      - name: add comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr-id }}
+          body: |
+            > Testing job ID: [${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: reformat paths input property
+        id: paths_reformat
+        env:
+          IN_PATHS: ${{ inputs.paths }}
+        run: echo "paths=$(echo $IN_PATHS | tr " " "," )" >> $GITHUB_OUTPUT
+
+  test:
+    name: Run SCA test
+    needs: init
+    permissions:
+      contents: read
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@v2.2
+    secrets: inherit
+    with:
+      pre-commit-hooks: terraform_fmt terraform_docs terraform_tflint checkov
+      branch: ${{ inputs.branch }}
+
+  finish_comment_pr:
+    name: Add a comment to originating PR
+    needs: test
+    if: always()
+    permissions:
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: add comment
+        uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{ inputs.comment-id }}
+          issue-number: ${{ inputs.pr-id }}
+          body: |
+            > Job result: ${{ needs.test.result == 'success' && 'SUCCESS' || 'FAILURE' }}
+          reactions: ${{ needs.test.result == 'success' && '+1' || '-1' }}
+          reactions-edit-mode: replace

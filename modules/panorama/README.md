@@ -4,10 +4,22 @@ A terraform module for deploying a working Panorama instance in Azure.
 
 ## Usage
 
+## Accept Azure Marketplace Terms
+
+Accept the Azure Marketplace terms for the Panorama images. In a typical situation use these commands:
+
+```sh
+az vm image terms accept --publisher paloaltonetworks --offer panorama --plan byol --subscription MySubscription
+```
+
+You can revoke the acceptance later with the `az vm image terms cancel` command.
+The acceptance applies to the entirety of your Azure Subscription.
+
+## Example
+
 ```hcl
 module "panorama" {
   source  = "PaloAltoNetworks/vmseries-modules/azurerm//modules/panorama"
-  version = "0.1.0"
 
   panorama_name       = var.panorama_name
   resource_group_name = azurerm_resource_group.this.name

@@ -1,18 +1,15 @@
 ---
-show_in_hub: false
+short_title: Standalone Panorama Deployment
+type: example
+show_in_hub: true
 ---
-# Palo Alto Networks Panorama Module Example
+# Standalone Panorama Deployment
 
->Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
+Panorama is a centralized management system that provides global visibility and control over multiple Palo Alto Networks next generation firewalls through an easy to use web-based interface. Panorama enables administrators to view aggregate or device-specific application, user, and content data and manage multiple Palo Alto Networks firewalls—all from a central location.
 
-An example of a Terraform module that deploys a Panorama appliance in Azure.
+The Terraform code presented here will deploy Palo Alto Networks Panorama management platform in Azure in management only mode (without additional logging disks). For option on how to add additional logging disks - please refer to panorama [module documentation](../../modules/panorama/README.md#input_logging_disks)
 
-**NOTE:**
-
-* after the deployment Panorama remains not licensed and not configured
-* keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules. It's not meant to be run on production in this form.
-
-## Topology and resources
+## Topology
 
 This is a non zonal deployment. The deployed infrastructure consists of:
 
@@ -21,16 +18,24 @@ This is a non zonal deployment. The deployed infrastructure consists of:
   * a Network Security Group to give access to Panorama's public interface
 * a Panorama appliance with a public IP assigned to the management interface
 
+![standalone-panorama](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/2110772/a2394f73-c0a8-4878-8693-825356abbd23)
+
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
 
 * (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
 * [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
+* if you have not run Palo Alto Networks Panorama images in a subscription it might be necessary to accept the license first ([see this note](../../modules/panorama/README.md#accept-azure-marketplace-terms))
 
-## Deploy the infrastructure
+**NOTE:**
 
-Steps to deploy the infrastructure are as following:
+* after the deployment Panorama remains not licensed and not configured.
+* keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+
+## Usage
+
+### Deployment Steps
 
 * checkout the code locally (if you haven't done so yet)
 * copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers)
@@ -61,7 +66,7 @@ Steps to deploy the infrastructure are as following:
 
 * at this stage you have to wait couple of minutes for the Panorama to bootstrap.
 
-## Post deploy
+### Post deploy
 
 Panorama in this example is configured with password authentication. To retrieve the initial credentials run:
 
@@ -86,7 +91,7 @@ You can now login to the devices using either:
 
 You can now proceed with licensing and configuring the devices.
 
-## Cleanup
+### Cleanup
 
 To remove the deployed infrastructure run:
 
@@ -134,7 +139,7 @@ terraform destroy
 | <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.<br>When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group. | `bool` | `true` | no |
 | <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group to . | `string` | n/a | yes |
 | <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones) | If `true`, enable zone support for resources. | `bool` | `true` | no |
-| <a name="input_vnets"></a> [vnets](#input\_vnets) | A map defining VNETs. A key is the VNET name, value is a set of properties like described below.<br><br>For detailed documentation on each property refer to [module documentation](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/blob/v0.5.0/modules/vnet/README.md)<br><br>- `name` : a name of a Virtual Network<br>- `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET<br>- `address_space` : a list of CIDRs for VNET<br>- `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside<br><br>- `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets<br>- `subnets` : map of Subnets to create<br><br>- `network_security_groups` : map of Network Security Groups to create<br>- `route_tables` : map of Route Tables to create. | `any` | n/a | yes |
+| <a name="input_vnets"></a> [vnets](#input\_vnets) | A map defining VNETs. A key is the VNET name, value is a set of properties like described below.<br><br>For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)<br><br>- `name` : a name of a Virtual Network<br>- `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET<br>- `address_space` : a list of CIDRs for VNET<br>- `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside<br><br>- `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets<br>- `subnets` : map of Subnets to create<br><br>- `network_security_groups` : map of Network Security Groups to create<br>- `route_tables` : map of Route Tables to create. | `any` | n/a | yes |
 | <a name="input_vmseries_username"></a> [vmseries\_username](#input\_vmseries\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
 | <a name="input_vmseries_password"></a> [vmseries\_password](#input\_vmseries\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
 | <a name="input_panorama_version"></a> [panorama\_version](#input\_panorama\_version) | Panorama PanOS version. It's also possible to specify the Pan-OS version per Panorama (in case you would like to deploy more than one), see `var.panoramas` variable. | `string` | n/a | yes |

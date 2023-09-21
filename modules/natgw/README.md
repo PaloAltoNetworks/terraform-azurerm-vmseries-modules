@@ -12,7 +12,7 @@ To deploy this resource in it's minimum configuration following code snippet can
 
 ```terraform
 module "natgw" {
-  source = "../modules/natgw"
+  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/natgw"
 
   name                = "NATGW_name"
   resource_group_name = "resource_group_name"

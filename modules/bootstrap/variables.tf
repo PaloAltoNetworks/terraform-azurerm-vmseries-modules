@@ -49,6 +49,13 @@ variable "files" {
   type        = map(string)
 }
 
+variable "bootstrap_files_dir" {
+  description = "Bootstrap file directory. If the variable has a value of `null` (default) - then it will not upload any other files other than the ones specified in the `files` variable. More information can be found at https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package."
+  default     = null
+  type        = string
+}
+
+
 variable "files_md5" {
   description = <<-EOF
   Optional map of MD5 hashes of file contents.
@@ -101,6 +108,16 @@ variable "retention_policy_days" {
   default     = 7
   validation {
     condition     = var.retention_policy_days > 0 && var.retention_policy_days < 365
+    error_message = "Enter a value between 1 and 365."
+  }
+}
+
+variable "blob_delete_retention_policy_days" {
+  description = "Specifies the number of days that the blob should be retained"
+  type        = number
+  default     = 7
+  validation {
+    condition     = var.blob_delete_retention_policy_days > 0 && var.blob_delete_retention_policy_days < 365
     error_message = "Enter a value between 1 and 365."
   }
 }

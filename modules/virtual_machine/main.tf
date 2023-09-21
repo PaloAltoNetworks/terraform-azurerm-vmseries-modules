@@ -42,6 +42,11 @@ resource "azurerm_network_interface_backend_address_pool_association" "this" {
   backend_address_pool_id = each.value.lb_backend_pool_id
   ip_configuration_name   = azurerm_network_interface.this[each.key].ip_configuration[0].name
   network_interface_id    = azurerm_network_interface.this[each.key].id
+
+  depends_on = [
+    azurerm_network_interface.this,
+    azurerm_virtual_machine.this
+  ]
 }
 
 resource "azurerm_virtual_machine" "this" {
@@ -62,6 +67,16 @@ resource "azurerm_virtual_machine" "this" {
     offer     = var.custom_image_id == null ? coalesce(var.img_offer, local.img_offer) : null
     sku       = var.custom_image_id == null ? coalesce(var.img_sku, local.img_sku) : null
     version   = var.custom_image_id == null ? var.img_version : null
+  }
+
+  dynamic "plan" {
+    for_each = var.enable_plan ? ["one"] : []
+
+    content {
+      name      = var.img_sku
+      publisher = var.img_publisher
+      product   = var.img_offer
+    }
   }
 
   storage_os_disk {
