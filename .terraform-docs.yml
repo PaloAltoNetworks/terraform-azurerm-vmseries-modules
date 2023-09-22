@@ -14,50 +14,34 @@ settings:
   lockfile: false
 
 content: |-
-  {{ .Header }}
+  #   {{ .Header }}
 
   ## Module's Required Inputs
 
-  {{ range .Module.Inputs }}
+  Name | Type | Description
+  --- | --- | ---
+  {{- range .Module.Inputs }}
   {{- if .Required }}
-  - [`{{ .Name }}`](#{{ .Name }})
+  [`{{ .Name }}`](#{{ .Name }}) | `{{ .Type }}` | {{ (split "." .Description.Raw)._0 }}.
   {{- end -}}
   {{ end }}
-
-  {{ range .Module.Inputs }}
-  {{ if .Required -}}
-  ### {{ .Name }}
-
-  {{ .Description }}
-
-  Type: `{{ .Type }}`
-  {{ end }}
-  {{- end }}
 
   ## Module's Optional Inputs
 
-  {{ range .Module.Inputs }}
+  Name | Type | Description
+  --- | --- | ---
+  {{- range .Module.Inputs }}
   {{- if not .Required }}
-  - [`{{ .Name }}`](#{{ .Name }})
+  [`{{ .Name }}`](#{{ .Name }}) | `{{ .Type }}` | {{ (split "." .Description.Raw)._0 }}.
   {{- end -}}
   {{ end }}
 
-  {{ range .Module.Inputs }}
-  {{ if not .Required -}}
-  ### {{ .Name }}
-
-  {{ .Description }}
-
-  Type: `{{ .Type }}`
-
-  Default value: `{{ .Default }}`
-  {{ end }}
-  {{- end }}
-
   ## Module's Outputs
 
-  {{ range .Module.Outputs }}
-  * `{{ .Name }}`: {{ .Description }}
+  Name |  Description
+  --- | ---
+  {{- range .Module.Outputs }}
+  [`{{ .Name }}`](#{{ .Name }}) | {{ (split "." .Description.Raw)._0 }}
   {{- end }}
 
   ## Module's Nameplate
@@ -82,4 +66,46 @@ content: |-
   Resources used in this module:
   {{ range .Module.Resources }}
   - `{{ .Type }}` ({{ .Mode }})
+  {{- end }}
+
+  ## Inputs/Outpus details
+
+  ### Required Inputs
+
+  {{ range .Module.Inputs }}
+  {{ if .Required -}}
+  #### {{ .Name }}
+  
+  {{ .Description }}
+  
+  Type: `{{ .Type }}`
+  
+  <sup>[back to list](#modules-required-inputs)</sup>
+  {{ end }}
+  {{- end }}
+
+  ### Optional Inputs
+
+  {{ range .Module.Inputs }}
+  {{ if not .Required -}}
+  #### {{ .Name }}
+
+  {{ .Description }}
+
+  Type: `{{ .Type }}`
+
+  Default value: `{{ .Default }}`
+
+  <sup>[back to list](#modules-optional-inputs)</sup>
+  {{ end }}
+  {{- end }}
+
+  ### Outputs
+
+  {{ range .Module.Outputs }}
+  #### `{{ .Name }}`
+  
+  {{ .Description }}
+
+  <sup>[back to list](#modules-outputs)</sup>
   {{- end }}
