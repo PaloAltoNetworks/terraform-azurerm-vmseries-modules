@@ -1,46 +1,114 @@
 <!-- BEGIN_TF_DOCS -->
+# Palo Alto Networks VNet Module for Azure
 
+A terraform module for deploying a Virtual Network and its components required for the VM-Series firewalls in Azure.
+
+## Usage
+
+For usage refer to any example module.
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | The name of the Azure Virtual Network.
+[`location`](#location) | `string` | Location of the resources that will be deployed.
+[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group to use.
+[`address_space`](#address_space) | `list(string)` | The address space used by the virtual network.
+[`network_security_groups`](#network_security_groups) | `any` | Map of Network Security Groups to create.
+[`subnets`](#subnets) | `any` | Map of subnet objects to create within a virtual network.
 
-- [`name`](#name)
-- [`location`](#location)
-- [`resource_group_name`](#resource_group_name)
-- [`address_space`](#address_space)
-- [`network_security_groups`](#network_security_groups)
-- [`subnets`](#subnets)
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name_prefix`](#name_prefix) | `string` | A prefix added to all resource names created by this module: VNET, NSGs, RTs.
+[`create_virtual_network`](#create_virtual_network) | `bool` | If true, create the Virtual Network, otherwise just use a pre-existing network.
+[`create_subnets`](#create_subnets) | `bool` | If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets.
+[`tags`](#tags) | `map(any)` | Map of tags to assign to all of the created resources.
+[`route_tables`](#route_tables) | `map` | Map of objects describing a Route Table.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`virtual_network_id`](#virtual_network_id) | The identifier of the created or sourced Virtual Network
+[`vnet_cidr`](#vnet_cidr) | VNET address space
+[`subnet_ids`](#subnet_ids) | The identifiers of the created or sourced Subnets
+[`subnet_cidrs`](#subnet_cidrs) | Subnet CIDRs (sourced or created)
+[`network_security_group_ids`](#network_security_group_ids) | The identifiers of the created Network Security Groups
+[`route_table_ids`](#route_table_ids) | The identifiers of the created Route Tables
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.2, < 2.0
+- `azurerm`, version: ~> 3.25
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+
+Resources used in this module:
+
+- `network_security_group` (managed)
+- `network_security_rule` (managed)
+- `route` (managed)
+- `route_table` (managed)
+- `subnet` (managed)
+- `subnet_network_security_group_association` (managed)
+- `subnet_route_table_association` (managed)
+- `virtual_network` (managed)
+- `subnet` (data)
+- `virtual_network` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
 
-### name
+#### name
 
 The name of the Azure Virtual Network.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### location
+
+#### location
 
 Location of the resources that will be deployed.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### resource_group_name
+
+#### resource_group_name
 
 Name of the Resource Group to use.
 
 Type: `string`
 
-### address_space
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### address_space
 
 The address space used by the virtual network. You can supply more than one address space.
 
 Type: `list(string)`
 
-### network_security_groups
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### network_security_groups
 
 Map of Network Security Groups to create.
 List of available attributes of each Network Security Group entry:
@@ -112,8 +180,10 @@ Example:
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### subnets
+
+#### subnets
 
 Map of subnet objects to create within a virtual network. If `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
   
@@ -151,18 +221,13 @@ Example:
 
 Type: `any`
 
-
-## Module's Optional Inputs
-
-
-- [`name_prefix`](#name_prefix)
-- [`create_virtual_network`](#create_virtual_network)
-- [`create_subnets`](#create_subnets)
-- [`tags`](#tags)
-- [`route_tables`](#route_tables)
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### name_prefix
+### Optional Inputs
+
+
+#### name_prefix
 
 A prefix added to all resource names created by this module: VNET, NSGs, RTs. Subnet, as a sub-resource is not prefixed.
 
@@ -170,8 +235,10 @@ Type: `string`
 
 Default value: ``
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### create_virtual_network
+
+#### create_virtual_network
 
 If true, create the Virtual Network, otherwise just use a pre-existing network.
 
@@ -179,7 +246,9 @@ Type: `bool`
 
 Default value: `true`
 
-### create_subnets
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### create_subnets
 
 If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets.
 
@@ -187,8 +256,10 @@ Type: `bool`
 
 Default value: `true`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### tags
+
+#### tags
 
 Map of tags to assign to all of the created resources.
 
@@ -196,10 +267,12 @@ Type: `map(any)`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 
-### route_tables
+
+#### route_tables
 
 Map of objects describing a Route Table.
 List of available attributes of each Route Table entry:
@@ -247,51 +320,41 @@ Type: `map`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-## Module's Outputs
+
+### Outputs
 
 
-- [`virtual_network_id`](#virtual_network_id)
-- [`vnet_cidr`](#vnet_cidr)
-- [`subnet_ids`](#subnet_ids)
-- [`subnet_cidrs`](#subnet_cidrs)
-- [`network_security_group_ids`](#network_security_group_ids)
-- [`route_table_ids`](#route_table_ids)
+#### `virtual_network_id`
 
+The identifier of the created or sourced Virtual Network.
 
-* `virtual_network_id`: The identifier of the created or sourced Virtual Network.
-* `vnet_cidr`: VNET address space.
-* `subnet_ids`: The identifiers of the created or sourced Subnets.
-* `subnet_cidrs`: Subnet CIDRs (sourced or created).
-* `network_security_group_ids`: The identifiers of the created Network Security Groups.
-* `route_table_ids`: The identifiers of the created Route Tables.
+<sup>[back to list](#modules-outputs)</sup>
+#### `vnet_cidr`
 
-## Module's Nameplate
+VNET address space.
 
-Requirements needed by this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `subnet_ids`
 
-- `terraform`, version: >= 1.2, < 2.0
-- `azurerm`, version: ~> 3.25
+The identifiers of the created or sourced Subnets.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `subnet_cidrs`
 
-- `azurerm`, version: ~> 3.25
+Subnet CIDRs (sourced or created).
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
+<sup>[back to list](#modules-outputs)</sup>
+#### `network_security_group_ids`
 
-Resources used in this module:
+The identifiers of the created Network Security Groups.
 
-- `network_security_group` (managed)
-- `network_security_rule` (managed)
-- `route` (managed)
-- `route_table` (managed)
-- `subnet` (managed)
-- `subnet_network_security_group_association` (managed)
-- `subnet_route_table_association` (managed)
-- `virtual_network` (managed)
-- `subnet` (data)
-- `virtual_network` (data)
+<sup>[back to list](#modules-outputs)</sup>
+#### `route_table_ids`
+
+The identifiers of the created Route Tables.
+
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

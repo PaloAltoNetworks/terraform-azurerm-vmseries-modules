@@ -1,5 +1,5 @@
 <!-- BEGIN_TF_DOCS -->
-#   ---
+---
 show\_in\_hub: false
 ---
 # Palo Alto Networks VM-Series Scaleset Module Example
