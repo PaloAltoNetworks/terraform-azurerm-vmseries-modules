@@ -3,32 +3,105 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`location`](#location) | `string` | The Azure region to use.
+[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
+[`vnets`](#vnets) | `any` | A map defining VNETs.
+[`vmseries_version`](#vmseries_version) | `string` | VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`.
+[`vmseries_vm_size`](#vmseries_vm_size) | `string` | Azure VM size (type) to be created.
+[`vmseries`](#vmseries) | `any` | Map of virtual machines to create to run VM-Series - inbound firewalls.
 
-- [`location`](#location)
-- [`resource_group_name`](#resource_group_name)
-- [`vnets`](#vnets)
-- [`vmseries_version`](#vmseries_version)
-- [`vmseries_vm_size`](#vmseries_vm_size)
-- [`vmseries`](#vmseries)
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map(string)` | Map of tags to assign to the created resources.
+[`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
+[`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
+[`natgws`](#natgws) | `any` | A map defining Nat Gateways.
+[`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
+[`vmseries_sku`](#vmseries_sku) | `string` | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`.
+[`vmseries_username`](#vmseries_username) | `string` | Initial administrative username to use for all systems.
+[`vmseries_password`](#vmseries_password) | `string` | Initial administrative password to use for all systems.
+[`availability_set`](#availability_set) | `any` | A map defining availability sets.
+[`application_insights`](#application_insights) | `map(string)` | A map defining Azure Application Insights.
+[`bootstrap_storage`](#bootstrap_storage) | `any` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
+[`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`username`](#username) | Initial administrative username to use for VM-Series
+[`password`](#password) | Initial administrative password to use for VM-Series
+[`natgw_public_ips`](#natgw_public_ips) | Nat Gateways Public IP resources
+[`metrics_instrumentation_keys`](#metrics_instrumentation_keys) | The Instrumentation Key of the created instance(s) of Azure Application Insights
+[`lb_frontend_ips`](#lb_frontend_ips) | IP Addresses of the load balancers
+[`vmseries_mgmt_ips`](#vmseries_mgmt_ips) | IP addresses for the VMSeries management interface
+[`bootstrap_storage_urls`](#bootstrap_storage_urls) | 
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.2, < 2.0
+
+Providers used in this module:
+
+- `random`
+- `http`
+- `azurerm`
+- `local`
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
+`natgw` | - | ../../modules/natgw | 
+`load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
+`ai` | - | ../../modules/application_insights | create the actual VMSeries VMs and resources
+`bootstrap` | - | ../../modules/bootstrap | 
+`bootstrap_share` | - | ../../modules/bootstrap | 
+`vmseries` | - | ../../modules/vmseries | 
+`appgw` | - | ../../modules/appgw | 
+
+Resources used in this module:
+
+- `availability_set` (managed)
+- `resource_group` (managed)
+- `file` (managed)
+- `password` (managed)
+- `resource_group` (data)
+- `http` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
 
-### location
+#### location
 
 The Azure region to use.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### resource_group_name
+
+#### resource_group_name
 
 Name of the Resource Group.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### vnets
+
+#### vnets
 
 A map defining VNETs.
   
@@ -48,27 +121,33 @@ For detailed documentation on each property refer to [module documentation](../.
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### vmseries_version
+
+#### vmseries_version
 
 VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per firewall, see `var.vmseries` variable.
 
 Type: `string`
 
-### vmseries_vm_size
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### vmseries_vm_size
 
 Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per firewall, see `var.vmseries` variable.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
 
 
 
-### vmseries
+
+#### vmseries
 
 Map of virtual machines to create to run VM-Series - inbound firewalls. Following properties are supported:
 
@@ -141,27 +220,14 @@ Example:
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-## Module's Optional Inputs
+
+### Optional Inputs
 
 
-- [`tags`](#tags)
-- [`name_prefix`](#name_prefix)
-- [`create_resource_group`](#create_resource_group)
-- [`enable_zones`](#enable_zones)
-- [`natgws`](#natgws)
-- [`load_balancers`](#load_balancers)
-- [`vmseries_sku`](#vmseries_sku)
-- [`vmseries_username`](#vmseries_username)
-- [`vmseries_password`](#vmseries_password)
-- [`availability_set`](#availability_set)
-- [`application_insights`](#application_insights)
-- [`bootstrap_storage`](#bootstrap_storage)
-- [`appgws`](#appgws)
-
-
-### tags
+#### tags
 
 Map of tags to assign to the created resources.
 
@@ -169,8 +235,10 @@ Type: `map(string)`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### name_prefix
+
+#### name_prefix
 
 A prefix that will be added to all created resources.
 There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
@@ -187,7 +255,9 @@ Type: `string`
 
 Default value: ``
 
-### create_resource_group
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### create_resource_group
 
 When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
@@ -197,8 +267,10 @@ Type: `bool`
 
 Default value: `true`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### enable_zones
+
+#### enable_zones
 
 If `true`, enable zone support for resources.
 
@@ -206,8 +278,10 @@ Type: `bool`
 
 Default value: `true`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### natgws
+
+#### natgws
 
 A map defining Nat Gateways. 
 
@@ -247,7 +321,9 @@ Type: `any`
 
 Default value: `map[]`
 
-### load_balancers
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### load_balancers
 
 A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
 
@@ -320,9 +396,11 @@ Type: `map`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-### vmseries_sku
+
+#### vmseries_sku
 
 VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`
 
@@ -330,7 +408,9 @@ Type: `string`
 
 Default value: `byol`
 
-### vmseries_username
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### vmseries_username
 
 Initial administrative username to use for all systems.
 
@@ -338,7 +418,9 @@ Type: `string`
 
 Default value: `panadmin`
 
-### vmseries_password
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### vmseries_password
 
 Initial administrative password to use for all systems. Set to null for an auto-generated password.
 
@@ -346,7 +428,9 @@ Type: `string`
 
 Default value: `&{}`
 
-### availability_set
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### availability_set
 
 A map defining availability sets. Can be used to provide infrastructure high availability when zones cannot be used.
 
@@ -362,7 +446,9 @@ Type: `any`
 
 Default value: `map[]`
 
-### application_insights
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### application_insights
 
 A map defining Azure Application Insights. There are three ways to use this variable:
 
@@ -401,7 +487,9 @@ Type: `map(string)`
 
 Default value: `&{}`
 
-### bootstrap_storage
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### bootstrap_storage
 
 A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs. This variable defines only Storage Accounts, file shares are defined per each VM. See `vmseries` variable, `bootstrap_storage` property.
 
@@ -427,8 +515,10 @@ Type: `any`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### appgws
+
+#### appgws
 
 A map defining all Application Gateways in the current deployment.
 
@@ -458,58 +548,45 @@ Type: `map`
 
 Default value: `map[]`
 
-
-## Module's Outputs
-
-
-- [`username`](#username)
-- [`password`](#password)
-- [`natgw_public_ips`](#natgw_public_ips)
-- [`metrics_instrumentation_keys`](#metrics_instrumentation_keys)
-- [`lb_frontend_ips`](#lb_frontend_ips)
-- [`vmseries_mgmt_ips`](#vmseries_mgmt_ips)
-- [`bootstrap_storage_urls`](#bootstrap_storage_urls)
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-* `username`: Initial administrative username to use for VM-Series.
-* `password`: Initial administrative password to use for VM-Series.
-* `natgw_public_ips`: Nat Gateways Public IP resources.
-* `metrics_instrumentation_keys`: The Instrumentation Key of the created instance(s) of Azure Application Insights.
-* `lb_frontend_ips`: IP Addresses of the load balancers.
-* `vmseries_mgmt_ips`: IP addresses for the VMSeries management interface.
-* `bootstrap_storage_urls`: 
+### Outputs
 
-## Module's Nameplate
 
-Requirements needed by this module:
+#### `username`
 
-- `terraform`, version: >= 1.2, < 2.0
+Initial administrative username to use for VM-Series.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `password`
 
-- `random`
-- `http`
-- `azurerm`
-- `local`
+Initial administrative password to use for VM-Series.
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`natgw` | - | ../../modules/natgw | 
-`load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
-`ai` | - | ../../modules/application_insights | create the actual VMSeries VMs and resources
-`bootstrap` | - | ../../modules/bootstrap | 
-`bootstrap_share` | - | ../../modules/bootstrap | 
-`vmseries` | - | ../../modules/vmseries | 
-`appgw` | - | ../../modules/appgw | 
+<sup>[back to list](#modules-outputs)</sup>
+#### `natgw_public_ips`
 
-Resources used in this module:
+Nat Gateways Public IP resources.
 
-- `availability_set` (managed)
-- `resource_group` (managed)
-- `file` (managed)
-- `password` (managed)
-- `resource_group` (data)
-- `http` (data)
+<sup>[back to list](#modules-outputs)</sup>
+#### `metrics_instrumentation_keys`
+
+The Instrumentation Key of the created instance(s) of Azure Application Insights.
+
+<sup>[back to list](#modules-outputs)</sup>
+#### `lb_frontend_ips`
+
+IP Addresses of the load balancers.
+
+<sup>[back to list](#modules-outputs)</sup>
+#### `vmseries_mgmt_ips`
+
+IP addresses for the VMSeries management interface.
+
+<sup>[back to list](#modules-outputs)</sup>
+#### `bootstrap_storage_urls`
+
+
+
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

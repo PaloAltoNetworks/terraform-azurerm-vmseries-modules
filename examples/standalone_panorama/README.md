@@ -3,30 +3,84 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`location`](#location) | `string` | The Azure region to use.
+[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group to .
+[`vnets`](#vnets) | `any` | A map defining VNETs.
+[`panorama_version`](#panorama_version) | `string` | Panorama PanOS version.
 
-- [`location`](#location)
-- [`resource_group_name`](#resource_group_name)
-- [`vnets`](#vnets)
-- [`panorama_version`](#panorama_version)
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map(string)` | Map of tags to assign to the created resources.
+[`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
+[`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
+[`vmseries_username`](#vmseries_username) | `string` | Initial administrative username to use for all systems.
+[`vmseries_password`](#vmseries_password) | `string` | Initial administrative password to use for all systems.
+[`panorama_sku`](#panorama_sku) | `string` | Panorama SKU, basically a type of licensing used in Azure.
+[`panorama_size`](#panorama_size) | `string` | A size of a VM that will run Panorama.
+[`panoramas`](#panoramas) | `any` | A map containing Panorama definitions.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`username`](#username) | Initial administrative username to use for VM-Series
+[`password`](#password) | Initial administrative password to use for VM-Series
+[`panorama_mgmt_ips`](#panorama_mgmt_ips) | 
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.2, < 2.0
+
+Providers used in this module:
+
+- `random`
+- `azurerm`
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
+`panorama` | - | ../../modules/panorama | 
+
+Resources used in this module:
+
+- `resource_group` (managed)
+- `password` (managed)
+- `resource_group` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
 
-### location
+#### location
 
 The Azure region to use.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### resource_group_name
+
+#### resource_group_name
 
 Name of the Resource Group to .
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### vnets
+
+#### vnets
 
 A map defining VNETs. A key is the VNET name, value is a set of properties like described below.
   
@@ -46,33 +100,26 @@ For detailed documentation on each property refer to [module documentation](../.
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### panorama_version
+
+#### panorama_version
 
 Panorama PanOS version. It's also possible to specify the Pan-OS version per Panorama (in case you would like to deploy more than one), see `var.panoramas` variable.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
 
-## Module's Optional Inputs
+
+### Optional Inputs
 
 
-- [`tags`](#tags)
-- [`name_prefix`](#name_prefix)
-- [`create_resource_group`](#create_resource_group)
-- [`enable_zones`](#enable_zones)
-- [`vmseries_username`](#vmseries_username)
-- [`vmseries_password`](#vmseries_password)
-- [`panorama_sku`](#panorama_sku)
-- [`panorama_size`](#panorama_size)
-- [`panoramas`](#panoramas)
-
-
-### tags
+#### tags
 
 Map of tags to assign to the created resources.
 
@@ -80,8 +127,10 @@ Type: `map(string)`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### name_prefix
+
+#### name_prefix
 
 A prefix that will be added to all created resources.
 There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
@@ -98,7 +147,9 @@ Type: `string`
 
 Default value: ``
 
-### create_resource_group
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### create_resource_group
 
 When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
@@ -108,8 +159,10 @@ Type: `bool`
 
 Default value: `true`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### enable_zones
+
+#### enable_zones
 
 If `true`, enable zone support for resources.
 
@@ -117,8 +170,10 @@ Type: `bool`
 
 Default value: `true`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### vmseries_username
+
+#### vmseries_username
 
 Initial administrative username to use for all systems.
 
@@ -126,7 +181,9 @@ Type: `string`
 
 Default value: `panadmin`
 
-### vmseries_password
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### vmseries_password
 
 Initial administrative password to use for all systems. Set to null for an auto-generated password.
 
@@ -134,8 +191,10 @@ Type: `string`
 
 Default value: `&{}`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### panorama_sku
+
+#### panorama_sku
 
 Panorama SKU, basically a type of licensing used in Azure.
 
@@ -143,7 +202,9 @@ Type: `string`
 
 Default value: `byol`
 
-### panorama_size
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panorama_size
 
 A size of a VM that will run Panorama. It's also possible to specify the the VM size per Panorama, see `var.panoramas` variable.
 
@@ -151,7 +212,9 @@ Type: `string`
 
 Default value: `Standard_D5_v2`
 
-### panoramas
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panoramas
 
 A map containing Panorama definitions.
   
@@ -205,39 +268,25 @@ Type: `any`
 
 Default value: `map[]`
 
-
-## Module's Outputs
-
-
-- [`username`](#username)
-- [`password`](#password)
-- [`panorama_mgmt_ips`](#panorama_mgmt_ips)
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-* `username`: Initial administrative username to use for VM-Series.
-* `password`: Initial administrative password to use for VM-Series.
-* `panorama_mgmt_ips`: 
+### Outputs
 
-## Module's Nameplate
 
-Requirements needed by this module:
+#### `username`
 
-- `terraform`, version: >= 1.2, < 2.0
+Initial administrative username to use for VM-Series.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `password`
 
-- `random`
-- `azurerm`
+Initial administrative password to use for VM-Series.
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
-`panorama` | - | ../../modules/panorama | 
+<sup>[back to list](#modules-outputs)</sup>
+#### `panorama_mgmt_ips`
 
-Resources used in this module:
 
-- `resource_group` (managed)
-- `password` (managed)
-- `resource_group` (data)
+
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

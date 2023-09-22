@@ -3,32 +3,111 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`location`](#location) | `string` | Location where the resources will be deployed.
+[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group to create or use.
+[`vnets`](#vnets) | `any` | Map with VNet definitions.
+[`vmseries_common`](#vmseries_common) | `any` | Configuration common for all firewall instances.
+[`vmseries`](#vmseries) | `map(any)` | Map with VM-Series instance specific configuration.
+[`appvms_common`](#appvms_common) | `any` | Common settings for sample applications:
+- `username` - (required|string)
+- `password` - (optional|string)
+- `ssh_keys` - (optional|list(string)
+- `vm_size` - (optional|string)
+- `disk_type` - (optional|string)
+- `accelerated_networking` - (optional|bool)
 
-- [`location`](#location)
-- [`resource_group_name`](#resource_group_name)
-- [`vnets`](#vnets)
-- [`vmseries_common`](#vmseries_common)
-- [`vmseries`](#vmseries)
-- [`appvms_common`](#appvms_common)
+At least one of `password` or `ssh_keys` has to be provided.
+
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name_prefix`](#name_prefix) | `string` | Prefix for resource names.
+[`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
+[`tags`](#tags) | `map(string)` | Map of tags to assign to all of the created resources.
+[`gateway_load_balancers`](#gateway_load_balancers) | `any` | Map with Gateway Load Balancer definitions.
+[`application_insights`](#application_insights) | `map(string)` | A map defining Azure Application Insights.
+[`bootstrap_storages`](#bootstrap_storages) | `any` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
+[`availability_sets`](#availability_sets) | `any` | A map defining availability sets.
+[`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
+[`appvms`](#appvms) | `any` | Configuration for sample application VMs.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`username`](#username) | Initial administrative username to use for VM-Series
+[`password`](#password) | Initial administrative password to use for VM-Series
+[`vmseries_mgmt_ips`](#vmseries_mgmt_ips) | IP addresses for VM-Series management
+[`gwlb_frontend_ip_configuration_ids`](#gwlb_frontend_ip_configuration_ids) | Configuration IDs of Gateway Load Balancers' frontends
+[`appvms_username`](#appvms_username) | Initial administrative username to use for application VMs
+[`appvms_password`](#appvms_password) | Initial administrative password to use for application VMs
+[`lb_frontend_ips`](#lb_frontend_ips) | IP addresses of the Load Balancers serving applications
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.0.0, < 2.0
+
+Providers used in this module:
+
+- `http`
+- `azurerm`
+- `local`
+- `random`
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | VNets
+`gwlb` | - | ../../modules/gwlb | Gateway Load Balancers
+`ai` | - | ../../modules/application_insights | VM-Series
+`bootstrap` | - | ../../modules/bootstrap | 
+`bootstrap_share` | - | ../../modules/bootstrap | 
+`vmseries` | - | ../../modules/vmseries | 
+`load_balancer` | - | ../../modules/loadbalancer | Sample application VMs and Load Balancers
+`appvm` | - | ../../modules/virtual_machine | 
+
+Resources used in this module:
+
+- `availability_set` (managed)
+- `resource_group` (managed)
+- `file` (managed)
+- `password` (managed)
+- `password` (managed)
+- `resource_group` (data)
+- `http` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
 
-### location
+#### location
 
 Location where the resources will be deployed.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### resource_group_name
+
+#### resource_group_name
 
 Name of the Resource Group to create or use.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### vnets
+
+#### vnets
 
 Map with VNet definitions. Each item supports following inputs for `vnet` module:
 - `name`                    - (required|string) VNet name.
@@ -45,10 +124,12 @@ Please consult [module documentation](../../modules/vnet/README.md) for details.
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
-### vmseries_common
+
+#### vmseries_common
 
 Configuration common for all firewall instances. Following settings can be specified:
 - `username`           - (required|string)
@@ -69,7 +150,9 @@ All are used directly as inputs for `vmseries` module (please see [documentation
 
 Type: `any`
 
-### vmseries
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### vmseries
 
 Map with VM-Series instance specific configuration. Following properties are supported:
 - `name`                 - (required|string) Instance name.
@@ -94,9 +177,11 @@ Additionally, it's possible to override following settings from `var.vmseries_co
 
 Type: `map(any)`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### appvms_common
+
+#### appvms_common
 
 Common settings for sample applications:
 - `username` - (required|string)
@@ -111,24 +196,14 @@ At least one of `password` or `ssh_keys` has to be provided.
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-## Module's Optional Inputs
+
+### Optional Inputs
 
 
-- [`name_prefix`](#name_prefix)
-- [`create_resource_group`](#create_resource_group)
-- [`enable_zones`](#enable_zones)
-- [`tags`](#tags)
-- [`gateway_load_balancers`](#gateway_load_balancers)
-- [`application_insights`](#application_insights)
-- [`bootstrap_storages`](#bootstrap_storages)
-- [`availability_sets`](#availability_sets)
-- [`load_balancers`](#load_balancers)
-- [`appvms`](#appvms)
-
-
-### name_prefix
+#### name_prefix
 
 Prefix for resource names.
 
@@ -136,8 +211,10 @@ Type: `string`
 
 Default value: ``
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### create_resource_group
+
+#### create_resource_group
 
 When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
@@ -147,8 +224,10 @@ Type: `bool`
 
 Default value: `true`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### enable_zones
+
+#### enable_zones
 
 If `true`, enable zone support for resources.
 
@@ -156,7 +235,9 @@ Type: `bool`
 
 Default value: `true`
 
-### tags
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### tags
 
 Map of tags to assign to all of the created resources.
 
@@ -164,8 +245,10 @@ Type: `map(string)`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### gateway_load_balancers
+
+#### gateway_load_balancers
 
 Map with Gateway Load Balancer definitions. Following settings are supported:
 - `name`                - (required|string) Gateway Load Balancer name.
@@ -183,7 +266,9 @@ Type: `any`
 
 Default value: `map[]`
 
-### application_insights
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### application_insights
 
 A map defining Azure Application Insights. There are three ways to use this variable:
 
@@ -222,7 +307,9 @@ Type: `map(string)`
 
 Default value: `&{}`
 
-### bootstrap_storages
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### bootstrap_storages
 
 A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs. This variable defines only Storage Accounts, file shares are defined per each VM. See `vmseries` variable, `bootstrap_storage` property.
 Following properties are supported:
@@ -238,9 +325,11 @@ Type: `any`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-### availability_sets
+
+#### availability_sets
 
 A map defining availability sets. Can be used to provide infrastructure high availability when zones cannot be used.
 
@@ -256,7 +345,9 @@ Type: `any`
 
 Default value: `map[]`
 
-### load_balancers
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### load_balancers
 
 A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
 Following properties are available (for details refer to module's documentation):
@@ -323,8 +414,10 @@ Type: `map`
 
 Default value: `map[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### appvms
+
+#### appvms
 
 Configuration for sample application VMs. Available settings:
 - `name`              - (required|string) Instance name.
@@ -338,59 +431,45 @@ Type: `any`
 
 Default value: `map[]`
 
-
-## Module's Outputs
-
-
-- [`username`](#username)
-- [`password`](#password)
-- [`vmseries_mgmt_ips`](#vmseries_mgmt_ips)
-- [`gwlb_frontend_ip_configuration_ids`](#gwlb_frontend_ip_configuration_ids)
-- [`appvms_username`](#appvms_username)
-- [`appvms_password`](#appvms_password)
-- [`lb_frontend_ips`](#lb_frontend_ips)
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-* `username`: Initial administrative username to use for VM-Series.
-* `password`: Initial administrative password to use for VM-Series.
-* `vmseries_mgmt_ips`: IP addresses for VM-Series management.
-* `gwlb_frontend_ip_configuration_ids`: Configuration IDs of Gateway Load Balancers' frontends.
-* `appvms_username`: Initial administrative username to use for application VMs.
-* `appvms_password`: Initial administrative password to use for application VMs.
-* `lb_frontend_ips`: IP addresses of the Load Balancers serving applications.
+### Outputs
 
-## Module's Nameplate
 
-Requirements needed by this module:
+#### `username`
 
-- `terraform`, version: >= 1.0.0, < 2.0
+Initial administrative username to use for VM-Series.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `password`
 
-- `http`
-- `azurerm`
-- `local`
-- `random`
+Initial administrative password to use for VM-Series.
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-`vnet` | - | ../../modules/vnet | VNets
-`gwlb` | - | ../../modules/gwlb | Gateway Load Balancers
-`ai` | - | ../../modules/application_insights | VM-Series
-`bootstrap` | - | ../../modules/bootstrap | 
-`bootstrap_share` | - | ../../modules/bootstrap | 
-`vmseries` | - | ../../modules/vmseries | 
-`load_balancer` | - | ../../modules/loadbalancer | Sample application VMs and Load Balancers
-`appvm` | - | ../../modules/virtual_machine | 
+<sup>[back to list](#modules-outputs)</sup>
+#### `vmseries_mgmt_ips`
 
-Resources used in this module:
+IP addresses for VM-Series management.
 
-- `availability_set` (managed)
-- `resource_group` (managed)
-- `file` (managed)
-- `password` (managed)
-- `password` (managed)
-- `resource_group` (data)
-- `http` (data)
+<sup>[back to list](#modules-outputs)</sup>
+#### `gwlb_frontend_ip_configuration_ids`
+
+Configuration IDs of Gateway Load Balancers' frontends.
+
+<sup>[back to list](#modules-outputs)</sup>
+#### `appvms_username`
+
+Initial administrative username to use for application VMs.
+
+<sup>[back to list](#modules-outputs)</sup>
+#### `appvms_password`
+
+Initial administrative password to use for application VMs.
+
+<sup>[back to list](#modules-outputs)</sup>
+#### `lb_frontend_ips`
+
+IP addresses of the Load Balancers serving applications.
+
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

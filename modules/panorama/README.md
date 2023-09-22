@@ -3,35 +3,100 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`location`](#location) | `string` | Region to deploy Panorama into.
+[`name`](#name) | `string` | The Panorama common name.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the existing resource group where to place all the resources created by this module.
+[`interfaces`](#interfaces) | `list(any)` | List of the network interface specifications.
 
-- [`location`](#location)
-- [`name`](#name)
-- [`resource_group_name`](#resource_group_name)
-- [`interfaces`](#interfaces)
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`enable_zones`](#enable_zones) | `bool` | If false, the input `avzone` is ignored and all created public IPs default not to use Availability Zones (the `No-Zone` setting).
+[`avzone`](#avzone) | `any` | The availability zone to use, for example "1", "2", "3".
+[`avzones`](#avzones) | `list(string)` | After provider version 3.
+[`os_disk_name`](#os_disk_name) | `string` | The name of OS disk.
+[`panorama_size`](#panorama_size) | `string` | Virtual Machine size.
+[`username`](#username) | `string` | Initial administrative username to use for Panorama.
+[`password`](#password) | `string` | Initial administrative password to use for Panorama.
+[`ssh_keys`](#ssh_keys) | `list(string)` | A list of initial administrative SSH public keys that allow key-pair authentication.
+[`enable_plan`](#enable_plan) | `bool` | Enable usage of the Offer/Plan on Azure Marketplace.
+[`panorama_disk_type`](#panorama_disk_type) | `string` | Specifies the type of managed disk to create.
+[`panorama_sku`](#panorama_sku) | `string` | Panorama SKU.
+[`panorama_version`](#panorama_version) | `string` | Panorama PAN-OS Software version.
+[`panorama_publisher`](#panorama_publisher) | `string` | Panorama Publisher.
+[`panorama_offer`](#panorama_offer) | `string` | Panorama offer.
+[`custom_image_id`](#custom_image_id) | `string` | Absolute ID of your own Custom Image to be used for creating Panorama.
+[`logging_disks`](#logging_disks) | `map(any)` |  A map of objects describing the additional disk configuration.
+[`boot_diagnostic_storage_uri`](#boot_diagnostic_storage_uri) | `string` | Existing diagnostic storage uri.
+[`tags`](#tags) | `map(any)` | A map of tags to be associated with the resources created.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`mgmt_ip_address`](#mgmt_ip_address) | Panorama management IP address
+[`interfaces`](#interfaces) | Map of VM-Series network interfaces
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.2, < 2.0
+- `azurerm`, version: ~> 3.25
+- `random`, version: ~> 3.1
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+
+Resources used in this module:
+
+- `managed_disk` (managed)
+- `network_interface` (managed)
+- `public_ip` (managed)
+- `virtual_machine` (managed)
+- `virtual_machine_data_disk_attachment` (managed)
+- `public_ip` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
-### location
+#### location
 
 Region to deploy Panorama into.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
-### name
+
+#### name
 
 The Panorama common name.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### resource_group_name
+
+#### resource_group_name
 
 The name of the existing resource group where to place all the resources created by this module.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
@@ -43,7 +108,8 @@ Type: `string`
 
 
 
-### interfaces
+
+#### interfaces
 
 List of the network interface specifications.
 
@@ -74,35 +140,17 @@ Example:
 
 Type: `list(any)`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
 
-## Module's Optional Inputs
 
-
-- [`enable_zones`](#enable_zones)
-- [`avzone`](#avzone)
-- [`avzones`](#avzones)
-- [`os_disk_name`](#os_disk_name)
-- [`panorama_size`](#panorama_size)
-- [`username`](#username)
-- [`password`](#password)
-- [`ssh_keys`](#ssh_keys)
-- [`enable_plan`](#enable_plan)
-- [`panorama_disk_type`](#panorama_disk_type)
-- [`panorama_sku`](#panorama_sku)
-- [`panorama_version`](#panorama_version)
-- [`panorama_publisher`](#panorama_publisher)
-- [`panorama_offer`](#panorama_offer)
-- [`custom_image_id`](#custom_image_id)
-- [`logging_disks`](#logging_disks)
-- [`boot_diagnostic_storage_uri`](#boot_diagnostic_storage_uri)
-- [`tags`](#tags)
+### Optional Inputs
 
 
 
-### enable_zones
+#### enable_zones
 
 If false, the input `avzone` is ignored and all created public IPs default not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones.
 
@@ -110,7 +158,9 @@ Type: `bool`
 
 Default value: `true`
 
-### avzone
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### avzone
 
 The availability zone to use, for example "1", "2", "3". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones.
 
@@ -118,7 +168,9 @@ Type: `any`
 
 Default value: `&{}`
 
-### avzones
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### avzones
 
 After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 ie: for zone-redundant with 3 availability zone in current region value will be:
@@ -129,8 +181,10 @@ Type: `list(string)`
 
 Default value: `[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### os_disk_name
+
+#### os_disk_name
 
 The name of OS disk. The name is auto-generated when not provided.
 
@@ -138,8 +192,10 @@ Type: `string`
 
 Default value: `&{}`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### panorama_size
+
+#### panorama_size
 
 Virtual Machine size.
 
@@ -147,7 +203,9 @@ Type: `string`
 
 Default value: `Standard_D5_v2`
 
-### username
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### username
 
 Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm).
 
@@ -155,7 +213,9 @@ Type: `string`
 
 Default value: `panadmin`
 
-### password
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### password
 
 Initial administrative password to use for Panorama. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm).
 
@@ -163,7 +223,9 @@ Type: `string`
 
 Default value: `&{}`
 
-### ssh_keys
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### ssh_keys
 
 A list of initial administrative SSH public keys that allow key-pair authentication.
   
@@ -183,7 +245,9 @@ Type: `list(string)`
 
 Default value: `[]`
 
-### enable_plan
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### enable_plan
 
 Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku "byol", which means "bring your own license", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image.
 
@@ -191,7 +255,9 @@ Type: `bool`
 
 Default value: `true`
 
-### panorama_disk_type
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panorama_disk_type
 
 Specifies the type of managed disk to create. Possible values are either Standard_LRS, StandardSSD_LRS, Premium_LRS or UltraSSD_LRS.
 
@@ -199,7 +265,9 @@ Type: `string`
 
 Default value: `StandardSSD_LRS`
 
-### panorama_sku
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panorama_sku
 
 Panorama SKU.
 
@@ -207,7 +275,9 @@ Type: `string`
 
 Default value: `byol`
 
-### panorama_version
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panorama_version
 
 Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama`
 
@@ -215,7 +285,9 @@ Type: `string`
 
 Default value: `10.0.3`
 
-### panorama_publisher
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panorama_publisher
 
 Panorama Publisher.
 
@@ -223,7 +295,9 @@ Type: `string`
 
 Default value: `paloaltonetworks`
 
-### panorama_offer
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### panorama_offer
 
 Panorama offer.
 
@@ -231,7 +305,9 @@ Type: `string`
 
 Default value: `panorama`
 
-### custom_image_id
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### custom_image_id
 
 Absolute ID of your own Custom Image to be used for creating Panorama. If set, the `username`, `password`, `panorama_version`, `panorama_publisher`, `panorama_offer`, `panorama_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software.
 
@@ -239,8 +315,10 @@ Type: `string`
 
 Default value: `&{}`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### logging_disks
+
+#### logging_disks
 
  A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zone, lun }. 
  The size value is provided in GB. The recommended size for additional (optional) disks is at least 2TB (2048 GB). Example:
@@ -267,7 +345,9 @@ Type: `map(any)`
 
 Default value: `map[]`
 
-### boot_diagnostic_storage_uri
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### boot_diagnostic_storage_uri
 
 Existing diagnostic storage uri
 
@@ -275,7 +355,9 @@ Type: `string`
 
 Default value: `&{}`
 
-### tags
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### tags
 
 A map of tags to be associated with the resources created.
 
@@ -283,39 +365,20 @@ Type: `map(any)`
 
 Default value: `map[]`
 
-
-## Module's Outputs
-
-
-- [`mgmt_ip_address`](#mgmt_ip_address)
-- [`interfaces`](#interfaces)
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-* `mgmt_ip_address`: Panorama management IP address. If `public_ip` was `true`, it is a public IP address, otherwise a private IP address.
-* `interfaces`: Map of VM-Series network interfaces. Keys are equal to var.interfaces `name` properties.
+### Outputs
 
-## Module's Nameplate
 
-Requirements needed by this module:
+#### `mgmt_ip_address`
 
-- `terraform`, version: >= 1.2, < 2.0
-- `azurerm`, version: ~> 3.25
-- `random`, version: ~> 3.1
+Panorama management IP address. If `public_ip` was `true`, it is a public IP address, otherwise a private IP address.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `interfaces`
 
-- `azurerm`, version: ~> 3.25
+Map of VM-Series network interfaces. Keys are equal to var.interfaces `name` properties.
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-
-Resources used in this module:
-
-- `managed_disk` (managed)
-- `network_interface` (managed)
-- `public_ip` (managed)
-- `virtual_machine` (managed)
-- `virtual_machine_data_disk_attachment` (managed)
-- `public_ip` (data)
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

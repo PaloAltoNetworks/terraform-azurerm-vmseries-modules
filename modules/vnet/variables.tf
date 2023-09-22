@@ -67,7 +67,7 @@ variable "network_security_groups" {
       - `destination_address_prefixes` : A list of destination address prefixes. Tags are not allowed. Can be specified only if `destination_address_prefix` was not used.
 
   Example:
-  ```
+  ```hcl
   {
     "nsg_1" = {
       name = "network_security_group_1"

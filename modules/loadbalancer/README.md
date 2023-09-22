@@ -3,14 +3,68 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`frontend_ips`](#frontend_ips) | `any` | A map of objects describing LB Frontend IP configurations, inbound and outbound rules.
+[`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
+[`location`](#location) | `string` | Region to deploy load balancer and dependencies.
+[`name`](#name) | `string` | The name of the load balancer.
 
-- [`frontend_ips`](#frontend_ips)
-- [`resource_group_name`](#resource_group_name)
-- [`location`](#location)
-- [`name`](#name)
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
+[`probe_name`](#probe_name) | `string` | The name of the load balancer probe.
+[`probe_port`](#probe_port) | `string` | Health check port number of the load balancer probe.
+[`network_security_allow_source_ips`](#network_security_allow_source_ips) | `list(string)` | List of IP CIDR ranges (such as `["192.
+[`network_security_resource_group_name`](#network_security_resource_group_name) | `string` | Name of the Resource Group where the `network_security_group_name` resides.
+[`network_security_group_name`](#network_security_group_name) | `string` | Name of the pre-existing Network Security Group (NSG) where to add auto-generated rules.
+[`network_security_base_priority`](#network_security_base_priority) | `number` | The base number from which the auto-generated priorities of the NSG rules grow.
+[`enable_zones`](#enable_zones) | `bool` | If `false`, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting).
+[`tags`](#tags) | `map(string)` | Azure tags to apply to the created resources.
+[`avzones`](#avzones) | `list(string)` | Controls zones for load balancer's Fronted IP configurations.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`backend_pool_id`](#backend_pool_id) | The identifier of the backend pool
+[`frontend_ip_configs`](#frontend_ip_configs) | Map of IP addresses, one per each entry of `frontend_ips` input
+[`health_probe`](#health_probe) | The health probe object
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.2, < 2.0
+- `azurerm`, version: ~> 3.25
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+
+Resources used in this module:
+
+- `lb` (managed)
+- `lb_backend_address_pool` (managed)
+- `lb_outbound_rule` (managed)
+- `lb_probe` (managed)
+- `lb_rule` (managed)
+- `network_security_rule` (managed)
+- `public_ip` (managed)
+- `public_ip` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
-### frontend_ips
+#### frontend_ips
 
 A map of objects describing LB Frontend IP configurations, inbound and outbound rules. Used for both public or private load balancers. 
 Keys of the map are names of LB Frontend IP configurations.
@@ -156,25 +210,32 @@ frontend_ips = {
 
 Type: `any`
 
-### resource_group_name
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### resource_group_name
 
 Name of a pre-existing Resource Group to place the resources in.
 
 Type: `string`
 
-### location
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### location
 
 Region to deploy load balancer and dependencies.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### name
+
+#### name
 
 The name of the load balancer.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
@@ -185,25 +246,14 @@ Type: `string`
 
 
 
-## Module's Optional Inputs
 
-
-- [`backend_name`](#backend_name)
-- [`probe_name`](#probe_name)
-- [`probe_port`](#probe_port)
-- [`network_security_allow_source_ips`](#network_security_allow_source_ips)
-- [`network_security_resource_group_name`](#network_security_resource_group_name)
-- [`network_security_group_name`](#network_security_group_name)
-- [`network_security_base_priority`](#network_security_base_priority)
-- [`enable_zones`](#enable_zones)
-- [`tags`](#tags)
-- [`avzones`](#avzones)
+### Optional Inputs
 
 
 
 
 
-### backend_name
+#### backend_name
 
 The name of the backend pool to create. All the frontends of the load balancer always use the same single backend.
 
@@ -212,8 +262,10 @@ Type: `string`
 
 Default value: `vmseries_backend`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### probe_name
+
+#### probe_name
 
 The name of the load balancer probe.
 
@@ -221,7 +273,9 @@ Type: `string`
 
 Default value: `vmseries_probe`
 
-### probe_port
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### probe_port
 
 Health check port number of the load balancer probe.
 
@@ -229,7 +283,9 @@ Type: `string`
 
 Default value: `80`
 
-### network_security_allow_source_ips
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### network_security_allow_source_ips
 
 List of IP CIDR ranges (such as `["192.168.0.0/16"]` or `["*"]`) from which the inbound traffic to all frontends should be allowed.
 If it's empty, user is responsible for configuring a Network Security Group separately.
@@ -240,7 +296,9 @@ Type: `list(string)`
 
 Default value: `[]`
 
-### network_security_resource_group_name
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### network_security_resource_group_name
 
 Name of the Resource Group where the `network_security_group_name` resides. If empty, defaults to `resource_group_name`.
 
@@ -248,7 +306,9 @@ Type: `string`
 
 Default value: ``
 
-### network_security_group_name
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### network_security_group_name
 
 Name of the pre-existing Network Security Group (NSG) where to add auto-generated rules. Each NSG rule corresponds to a single `in_rule` on the load balancer.
 User is responsible to associate the NSG with the load balancer's subnet, the module only supplies the rules.
@@ -259,7 +319,9 @@ Type: `string`
 
 Default value: `&{}`
 
-### network_security_base_priority
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### network_security_base_priority
 
 The base number from which the auto-generated priorities of the NSG rules grow.
 Ignored if `network_security_group_name` is empty or if `network_security_allow_source_ips` is empty.
@@ -269,7 +331,9 @@ Type: `number`
 
 Default value: `1000`
 
-### enable_zones
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### enable_zones
 
 If `false`, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones.
 
@@ -277,7 +341,9 @@ Type: `bool`
 
 Default value: `true`
 
-### tags
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### tags
 
 Azure tags to apply to the created resources.
 
@@ -285,7 +351,9 @@ Type: `map(string)`
 
 Default value: `map[]`
 
-### avzones
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### avzones
 
 Controls zones for load balancer's Fronted IP configurations. For:
 
@@ -300,42 +368,25 @@ Type: `list(string)`
 
 Default value: `[]`
 
-
-## Module's Outputs
-
-
-- [`backend_pool_id`](#backend_pool_id)
-- [`frontend_ip_configs`](#frontend_ip_configs)
-- [`health_probe`](#health_probe)
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-* `backend_pool_id`: The identifier of the backend pool.
-* `frontend_ip_configs`: Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise.
-* `health_probe`: The health probe object.
+### Outputs
 
-## Module's Nameplate
 
-Requirements needed by this module:
+#### `backend_pool_id`
 
-- `terraform`, version: >= 1.2, < 2.0
-- `azurerm`, version: ~> 3.25
+The identifier of the backend pool.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `frontend_ip_configs`
 
-- `azurerm`, version: ~> 3.25
+Map of IP addresses, one per each entry of `frontend_ips` input. Contains public IP address for the frontends that have it, private IP address otherwise.
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
+<sup>[back to list](#modules-outputs)</sup>
+#### `health_probe`
 
-Resources used in this module:
+The health probe object.
 
-- `lb` (managed)
-- `lb_backend_address_pool` (managed)
-- `lb_outbound_rule` (managed)
-- `lb_probe` (managed)
-- `lb_rule` (managed)
-- `network_security_rule` (managed)
-- `public_ip` (managed)
-- `public_ip` (data)
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

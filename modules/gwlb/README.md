@@ -3,33 +3,81 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | The name of the gateway load balancer.
+[`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing resource group to place resources in.
+[`location`](#location) | `string` | Region to deploy load balancer and related resources in.
+[`frontend_ip_config`](#frontend_ip_config) | `any` | Frontend IP configuration of the gateway load balancer.
+[`health_probe`](#health_probe) | `map(any)` | Health probe configuration for the gateway load balancer backends.
 
-- [`name`](#name)
-- [`resource_group_name`](#resource_group_name)
-- [`location`](#location)
-- [`frontend_ip_config`](#frontend_ip_config)
-- [`health_probe`](#health_probe)
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`backends`](#backends) | `map(any)` | Map with backend configurations for the gateway load balancer.
+[`lb_rule`](#lb_rule) | `map(string)` | Load balancing rule config.
+[`tags`](#tags) | `map(string)` | Azure tags to apply to the created resources.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`backend_pool_ids`](#backend_pool_ids) | Backend pools' identifiers
+[`frontend_ip_config_id`](#frontend_ip_config_id) | Frontend IP configuration identifier
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.0, < 2.0
+- `azurerm`, version: ~> 3.25
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+
+Resources used in this module:
+
+- `lb` (managed)
+- `lb_backend_address_pool` (managed)
+- `lb_probe` (managed)
+- `lb_rule` (managed)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
-### name
+#### name
 
 The name of the gateway load balancer.
 
 Type: `string`
 
-### resource_group_name
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### resource_group_name
 
 Name of a pre-existing resource group to place resources in.
 
 Type: `string`
 
-### location
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### location
 
 Region to deploy load balancer and related resources in.
 
 Type: `string`
 
-### frontend_ip_config
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### frontend_ip_config
 
 Frontend IP configuration of the gateway load balancer. Following settings are available:
 - `name`                          - (Optional|string) Name of the frontend IP configuration. `var.name` by default.
@@ -42,7 +90,9 @@ Frontend IP configuration of the gateway load balancer. Following settings are a
 
 Type: `any`
 
-### health_probe
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### health_probe
 
 Health probe configuration for the gateway load balancer backends. Following settings are available:
 - `name`                - (Optional|string) Name of the health probe. Defaults to `name` variable value.
@@ -58,16 +108,13 @@ For details, please refer to [provider documentation](https://registry.terraform
 
 Type: `map(any)`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
 
-## Module's Optional Inputs
 
-
-- [`backends`](#backends)
-- [`lb_rule`](#lb_rule)
-- [`tags`](#tags)
+### Optional Inputs
 
 
 
@@ -75,7 +122,7 @@ Type: `map(any)`
 
 
 
-### backends
+#### backends
 
 Map with backend configurations for the gateway load balancer. Azure GWLB rule can have up to two backends.
 Following settings are available:
@@ -100,7 +147,9 @@ Type: `map(any)`
 
 Default value: `map[ext-int:map[tunnel_interfaces:map[external:map[identifier:801 port:2001 protocol:VXLAN type:External] internal:map[identifier:800 port:2000 protocol:VXLAN type:Internal]]]]`
 
-### lb_rule
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### lb_rule
 
 Load balancing rule config. Available options:
 - `name`              - (Optional|string) Name for the rule. Defaults to `var.frontend_ip_config.name`.
@@ -111,7 +160,9 @@ Type: `map(string)`
 
 Default value: `&{}`
 
-### tags
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### tags
 
 Azure tags to apply to the created resources.
 
@@ -119,36 +170,20 @@ Type: `map(string)`
 
 Default value: `map[]`
 
-
-## Module's Outputs
-
-
-- [`backend_pool_ids`](#backend_pool_ids)
-- [`frontend_ip_config_id`](#frontend_ip_config_id)
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-* `backend_pool_ids`: Backend pools' identifiers.
-* `frontend_ip_config_id`: Frontend IP configuration identifier.
+### Outputs
 
-## Module's Nameplate
 
-Requirements needed by this module:
+#### `backend_pool_ids`
 
-- `terraform`, version: >= 1.0, < 2.0
-- `azurerm`, version: ~> 3.25
+Backend pools' identifiers.
 
-Providers used in this module:
+<sup>[back to list](#modules-outputs)</sup>
+#### `frontend_ip_config_id`
 
-- `azurerm`, version: ~> 3.25
+Frontend IP configuration identifier.
 
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-
-Resources used in this module:
-
-- `lb` (managed)
-- `lb_backend_address_pool` (managed)
-- `lb_probe` (managed)
-- `lb_rule` (managed)
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->

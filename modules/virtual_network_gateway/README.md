@@ -3,84 +3,159 @@
 
 ## Module's Required Inputs
 
+Name | Type | Description
+--- | --- | ---
+[`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
+[`location`](#location) | `string` | Region to deploy load balancer and dependencies.
+[`name`](#name) | `string` | The name of the Virtual Network Gateway.
+[`type`](#type) | `string` | The type of the Virtual Network Gateway.
+[`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
+[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
+[`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
+[`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Should private IP be enabled on this gateway for connections?.
+[`ip_configuration`](#ip_configuration) | `list(any)` | List of IP configurations - every object in the list contains attributes:
 
-- [`resource_group_name`](#resource_group_name)
-- [`location`](#location)
-- [`name`](#name)
-- [`type`](#type)
-- [`sku`](#sku)
-- [`default_local_network_gateway_id`](#default_local_network_gateway_id)
-- [`edge_zone`](#edge_zone)
-- [`private_ip_address_enabled`](#private_ip_address_enabled)
-- [`ip_configuration`](#ip_configuration)
-- [`vpn_client_configuration`](#vpn_client_configuration)
-- [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses)
-- [`local_bgp_settings`](#local_bgp_settings)
-- [`custom_route`](#custom_route)
-- [`local_network_gateways`](#local_network_gateways)
-- [`ipsec_shared_key`](#ipsec_shared_key)
-- [`connection_mode`](#connection_mode)
-- [`ipsec_policy`](#ipsec_policy)
+- name - name of the IP configuration
+- create_public_ip - boolean value, true if public IP needs to be created
+- public_ip_name - name of the public IP resource used, when there is no need to create new one
+- private_ip_address_allocation - defines how the private IP address of the gateways virtual interface is assigned.
+[`vpn_client_configuration`](#vpn_client_configuration) | `list(any)` | List of VPN client configurations - every object in the list contains attributes:
+- address_space - the address space out of which IP addresses for vpn clients will be taken.
+[`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map(string)` | Map of IP addresses used on Azure side for BGP.
+[`local_bgp_settings`](#local_bgp_settings) | `any` | Map of BGP settings:
+- asn - the Autonomous System Number (ASN) to use as part of the BGP.
+[`custom_route`](#custom_route) | `list(any)` | List of custom routes - every object in the list contains attributes:
+- address_prefixes - a list of address blocks reserved for this virtual network in CIDR notation as defined below.
+[`local_network_gateways`](#local_network_gateways) | `any` | Map of local network gateways - every object in the map contains attributes:
+- name - the name of the local network gateway.
+[`ipsec_shared_key`](#ipsec_shared_key) | `string` | The shared IPSec key.
+[`connection_mode`](#connection_mode) | `string` | Connection mode to use.
+[`ipsec_policy`](#ipsec_policy) | `any` | IPsec policy used for Virtual Network Connection with attributes:
+- dh_group - The DH group used in IKE phase 1 for initial SA.
+
+## Module's Optional Inputs
+
+Name | Type | Description
+--- | --- | ---
+[`name_prefix`](#name_prefix) | `string` | A prefix added to all resource names created by this module.
+[`name_suffix`](#name_suffix) | `string` | A suffix added to all resource names created by this module.
+[`tags`](#tags) | `map(string)` | Azure tags to apply to the created resources.
+[`enable_zones`](#enable_zones) | `bool` | If false, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting).
+[`avzones`](#avzones) | `list(string)` | After provider version 3.
+[`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
+[`active_active`](#active_active) | `bool` | If true, an active-active Virtual Network Gateway will be created.
+[`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
+[`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
+
+## Module's Outputs
+
+Name |  Description
+--- | ---
+[`public_ip`](#public_ip) | Public IP addresses for Virtual Network Gateway
+[`ipsec_policy`](#ipsec_policy) | IPsec policy used for Virtual Network Gateway connection
+
+## Module's Nameplate
+
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.2, < 2.0
+- `azurerm`, version: ~> 3.25
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+
+Resources used in this module:
+
+- `local_network_gateway` (managed)
+- `public_ip` (managed)
+- `virtual_network_gateway` (managed)
+- `virtual_network_gateway_connection` (managed)
+- `public_ip` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
 
 
-### resource_group_name
+#### resource_group_name
 
 Name of a pre-existing Resource Group to place the resources in.
 
 Type: `string`
 
-### location
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### location
 
 Region to deploy load balancer and dependencies.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### name
+
+#### name
 
 The name of the Virtual Network Gateway. Changing this forces a new resource to be created
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
-### type
+
+#### type
 
 The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### sku
+
+#### sku
 
 Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-### default_local_network_gateway_id
+
+#### default_local_network_gateway_id
 
 The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)
 
 Type: `string`
 
-### edge_zone
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### edge_zone
 
 Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 
 Type: `string`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
-### private_ip_address_enabled
+
+#### private_ip_address_enabled
 
 Should private IP be enabled on this gateway for connections?
 
 Type: `bool`
 
-### ip_configuration
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### ip_configuration
 
 List of IP configurations - every object in the list contains attributes:
 
@@ -110,7 +185,9 @@ ip_configuration = [
 
 Type: `list(any)`
 
-### vpn_client_configuration
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### vpn_client_configuration
 
 List of VPN client configurations - every object in the list contains attributes:
 - address_space - the address space out of which IP addresses for vpn clients will be taken. You can provide more than one address space, e.g. in CIDR notation.
@@ -128,7 +205,9 @@ List of VPN client configurations - every object in the list contains attributes
 
 Type: `list(any)`
 
-### azure_bgp_peers_addresses
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### azure_bgp_peers_addresses
 
 Map of IP addresses used on Azure side for BGP. Map is used to not to duplicate IP address and refer to keys while configuring:
 - custom_bgp_addresses
@@ -147,7 +226,9 @@ azure_bgp_peers_addresses = {
 
 Type: `map(string)`
 
-### local_bgp_settings
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### local_bgp_settings
 
 Map of BGP settings:
 - asn - the Autonomous System Number (ASN) to use as part of the BGP.
@@ -174,7 +255,9 @@ local_bgp_settings = {
 
 Type: `any`
 
-### custom_route
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### custom_route
 
 List of custom routes - every object in the list contains attributes:
 - address_prefixes - a list of address blocks reserved for this virtual network in CIDR notation as defined below.
@@ -183,7 +266,9 @@ List of custom routes - every object in the list contains attributes:
 
 Type: `list(any)`
 
-### local_network_gateways
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### local_network_gateways
 
 Map of local network gateways - every object in the map contains attributes:
 - name - the name of the local network gateway.
@@ -267,19 +352,25 @@ local_network_gateways = {
 
 Type: `any`
 
-### ipsec_shared_key
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### ipsec_shared_key
 
 The shared IPSec key.
 
 Type: `string`
 
-### connection_mode
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### connection_mode
 
 Connection mode to use. Possible values are Default, InitiatorOnly and ResponderOnly. Defaults to Default. Changing this value will force a resource to be created.
 
 Type: `string`
 
-### ipsec_policy
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### ipsec_policy
 
 IPsec policy used for Virtual Network Connection with attributes:
 - dh_group - The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None.
@@ -310,24 +401,15 @@ ipsec_policy = [
 
 Type: `any`
 
+<sup>[back to list](#modules-required-inputs)</sup>
 
-## Module's Optional Inputs
 
-
-- [`name_prefix`](#name_prefix)
-- [`name_suffix`](#name_suffix)
-- [`tags`](#tags)
-- [`enable_zones`](#enable_zones)
-- [`avzones`](#avzones)
-- [`vpn_type`](#vpn_type)
-- [`active_active`](#active_active)
-- [`enable_bgp`](#enable_bgp)
-- [`generation`](#generation)
+### Optional Inputs
 
 
 
 
-### name_prefix
+#### name_prefix
 
 A prefix added to all resource names created by this module
 
@@ -335,7 +417,9 @@ Type: `string`
 
 Default value: ``
 
-### name_suffix
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### name_suffix
 
 A suffix added to all resource names created by this module
 
@@ -343,8 +427,10 @@ Type: `string`
 
 Default value: ``
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### tags
+
+#### tags
 
 Azure tags to apply to the created resources.
 
@@ -352,7 +438,9 @@ Type: `map(string)`
 
 Default value: `map[]`
 
-### enable_zones
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### enable_zones
 
 If false, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones.
 
@@ -360,7 +448,9 @@ Type: `bool`
 
 Default value: `true`
 
-### avzones
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### avzones
 
 After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 ie: for zone-redundant with 3 availability zone in current region value will be:
@@ -371,8 +461,10 @@ Type: `list(string)`
 
 Default value: `[]`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### vpn_type
+
+#### vpn_type
 
 The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
 
@@ -380,8 +472,10 @@ Type: `string`
 
 Default value: `RouteBased`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
-### active_active
+
+#### active_active
 
 If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
 
@@ -389,9 +483,11 @@ Type: `bool`
 
 Default value: `false`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
-### enable_bgp
+
+#### enable_bgp
 
 If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway. Defaults to false
 
@@ -399,7 +495,9 @@ Type: `bool`
 
 Default value: `false`
 
-### generation
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### generation
 
 The Generation of the Virtual Network gateway. Possible values include Generation1, Generation2 or None
 
@@ -407,6 +505,7 @@ Type: `string`
 
 Default value: `Generation1`
 
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 
@@ -418,36 +517,18 @@ Default value: `Generation1`
 
 
 
-## Module's Outputs
+
+### Outputs
 
 
-- [`public_ip`](#public_ip)
-- [`ipsec_policy`](#ipsec_policy)
+#### `public_ip`
 
+Public IP addresses for Virtual Network Gateway
 
-* `public_ip`: Public IP addresses for Virtual Network Gateway
-* `ipsec_policy`: IPsec policy used for Virtual Network Gateway connection
+<sup>[back to list](#modules-outputs)</sup>
+#### `ipsec_policy`
 
-## Module's Nameplate
+IPsec policy used for Virtual Network Gateway connection
 
-Requirements needed by this module:
-
-- `terraform`, version: >= 1.2, < 2.0
-- `azurerm`, version: ~> 3.25
-
-Providers used in this module:
-
-- `azurerm`, version: ~> 3.25
-
-Modules used in this module:
-Name | Version | Source | Description
---- | --- | --- | ---
-
-Resources used in this module:
-
-- `local_network_gateway` (managed)
-- `public_ip` (managed)
-- `virtual_network_gateway` (managed)
-- `virtual_network_gateway_connection` (managed)
-- `public_ip` (data)
+<sup>[back to list](#modules-outputs)</sup>
 <!-- END_TF_DOCS -->
