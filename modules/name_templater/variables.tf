@@ -14,21 +14,21 @@ variable "name_template" {
 
   Consist of two elements:
 
-  * `parts` - a list of elements that will form the template name
-  * `delimiter` - a string that will be used to separate the elements.
+  - `parts` - a list of elements that will form the template name
+  - `delimiter` - a string that will be used to separate the elements.
 
   There are couple of rules to be followed:
 
-  1. the order **DOES** matter
-  1. `parts` is a list of single element maps, where:
-    a. keys will be dropped, they are only informational, only values will be used
-    a. a value for the `prefix` key will be replaced with the `var.name_prefix` value
-    a. a value of `__default__` will be replaced with an abbreviation defined in the `var.abbrevations` and matching `var.resource_type`.
-  1. since this module generates template name do **REMEMBER** to include a part with `%s` value 
+  - the order **DOES** matter
+  - `parts` is a list of single element maps
+  - keys in `parts` elements will be dropped, they are only informational, only values will be used
+  - value for the `prefix` key will be replaced with the `var.name_prefix` value
+  - a value of `__default__` will be replaced with an abbreviation defined in the `var.abbrevations` and matching `var.resource_type`.
+  - since this module generates template name do **REMEMBER** to include a part with `%s` value 
 
   Example:
 
-  ```hcl
+  ```
   default = {
     default = {
       delimiter = "-"
