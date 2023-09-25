@@ -90,6 +90,9 @@ resource "azurerm_network_interface" "vm" {
 resource "azurerm_linux_virtual_machine" "this" {
   for_each = var.test_vms
 
+  # checkov:skip=CKV_AZURE_178:This is a test, non-production VM
+  # checkov:skip=CKV_AZURE_149:This is a test, non-production VM
+
   name                            = "${var.name_prefix}${each.value.name}"
   resource_group_name             = local.resource_group.name
   location                        = var.location
@@ -98,6 +101,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   admin_password                  = local.password
   disable_password_authentication = false
   network_interface_ids           = [azurerm_network_interface.vm[each.key].id]
+  allow_extension_operations      = false
 
   os_disk {
     caching              = "ReadWrite"
