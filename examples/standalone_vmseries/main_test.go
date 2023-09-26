@@ -11,7 +11,7 @@ import (
 
 func CreateTerraformOptions(t *testing.T) *terraform.Options {
 	// prepare random prefix
-	randomNames := testskeleton.GenerateAzureRandomNames()
+	randomNames, _ := testskeleton.GenerateTerraformVarsInfo("azure")
 
 	// define options for Terraform
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
@@ -19,7 +19,7 @@ func CreateTerraformOptions(t *testing.T) *terraform.Options {
 		VarFiles:     []string{"example.tfvars"},
 		Vars: map[string]interface{}{
 			"name_prefix":         randomNames.NamePrefix,
-			"resource_group_name": randomNames.ResourceGroupName,
+			"resource_group_name": randomNames.AzureResourceGroupName,
 		},
 		Logger:               logger.Default,
 		Lock:                 true,
