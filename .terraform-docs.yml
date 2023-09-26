@@ -1,0 +1,111 @@
+formatter: "markdown document" # this is required
+version: ""
+header-from: ".header.md"
+
+output:
+  file: README.md
+  mode: replace
+
+sort:
+  enabled: false
+
+settings:
+  indent: 3
+  lockfile: false
+
+content: |-
+  {{ .Header }}
+
+  ## Module's Required Inputs
+
+  Name | Type | Description
+  --- | --- | ---
+  {{- range .Module.Inputs }}
+  {{- if .Required }}
+  [`{{ .Name }}`](#{{ .Name }}) | `{{ .Type }}` | {{ (split "." .Description.Raw)._0 }}.
+  {{- end -}}
+  {{ end }}
+
+  ## Module's Optional Inputs
+
+  Name | Type | Description
+  --- | --- | ---
+  {{- range .Module.Inputs }}
+  {{- if not .Required }}
+  [`{{ .Name }}`](#{{ .Name }}) | `{{ .Type }}` | {{ (split "." .Description.Raw)._0 }}.
+  {{- end -}}
+  {{ end }}
+
+  ## Module's Outputs
+
+  Name |  Description
+  --- | ---
+  {{- range .Module.Outputs }}
+  [`{{ .Name }}`](#{{ .Name }}) | {{ (split "." .Description.Raw)._0 }}
+  {{- end }}
+
+  ## Module's Nameplate
+
+  Requirements needed by this module:
+  {{ range .Module.Requirements }}
+  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
+  {{- end }}
+
+  Providers used in this module:
+  {{ range .Module.Providers }}
+  - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
+  {{- end }}
+
+  Modules used in this module:
+  Name | Version | Source | Description
+  --- | --- | --- | ---
+  {{- range .Module.ModuleCalls }}
+  `{{ .Name }}` | {{ if .Version }}{{ .Version }}{{ else }}-{{ end }} | {{ .Source }} | {{ .Description }}
+  {{- end }}
+
+  Resources used in this module:
+  {{ range .Module.Resources }}
+  - `{{ .Type }}` ({{ .Mode }})
+  {{- end }}
+
+  ## Inputs/Outpus details
+
+  ### Required Inputs
+
+  {{ range .Module.Inputs }}
+  {{ if .Required -}}
+  #### {{ .Name }}
+  
+  {{ .Description }}
+  
+  Type: `{{ .Type }}`
+  
+  <sup>[back to list](#modules-required-inputs)</sup>
+  {{ end }}
+  {{- end }}
+
+  ### Optional Inputs
+
+  {{ range .Module.Inputs }}
+  {{ if not .Required -}}
+  #### {{ .Name }}
+
+  {{ .Description }}
+
+  Type: `{{ .Type }}`
+
+  Default value: `{{ .Default }}`
+
+  <sup>[back to list](#modules-optional-inputs)</sup>
+  {{ end }}
+  {{- end }}
+
+  ### Outputs
+
+  {{ range .Module.Outputs }}
+  #### `{{ .Name }}`
+  
+  {{ .Description }}
+
+  <sup>[back to list](#modules-outputs)</sup>
+  {{- end }}

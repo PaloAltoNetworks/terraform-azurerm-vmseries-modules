@@ -1,7 +1,7 @@
 resource "azurerm_virtual_network" "this" {
   count = var.create_virtual_network ? 1 : 0
 
-  name                = "${var.name_prefix}${var.name}"
+  name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
   address_space       = var.address_space
@@ -44,8 +44,8 @@ locals {
 resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
-  name                = "${var.name_prefix}${each.value.name}"
-  location            = try(each.value.location, var.location)
+  name                = each.value.name
+  location            = coalesce(each.value.location, var.location)
   resource_group_name = var.resource_group_name
   tags                = var.tags
 }
@@ -53,10 +53,10 @@ resource "azurerm_network_security_group" "this" {
 locals {
   nsg_rules = flatten([
     for nsg_key, nsg in var.network_security_groups : [
-      for rule_name, rule in lookup(nsg, "rules", {}) : {
+      for rule_key, rule in try(nsg.rules, {}) : {
         nsg_key   = nsg_key
         nsg_name  = nsg.name
-        rule_name = rule_name
+        rule_name = rule.name
         rule      = rule
       }
     ]
@@ -75,14 +75,14 @@ resource "azurerm_network_security_rule" "this" {
   direction                    = each.value.rule.direction
   access                       = each.value.rule.access
   protocol                     = each.value.rule.protocol
-  source_port_range            = try(each.value.rule.source_port_range, null)
-  source_port_ranges           = try(each.value.rule.source_port_ranges, null)
-  destination_port_range       = try(each.value.rule.destination_port_range, null)
-  destination_port_ranges      = try(each.value.rule.destination_port_ranges, null)
-  source_address_prefix        = try(each.value.rule.source_address_prefix, null)
-  source_address_prefixes      = try(each.value.rule.source_address_prefixes, null)
-  destination_address_prefix   = try(each.value.rule.destination_address_prefix, null)
-  destination_address_prefixes = try(each.value.rule.destination_address_prefixes, null)
+  source_port_range            = each.value.rule.source_port_range
+  source_port_ranges           = each.value.rule.source_port_ranges
+  destination_port_range       = each.value.rule.destination_port_range
+  destination_port_ranges      = each.value.rule.destination_port_ranges
+  source_address_prefix        = each.value.rule.source_address_prefix
+  source_address_prefixes      = each.value.rule.source_address_prefixes
+  destination_address_prefix   = each.value.rule.destination_address_prefix
+  destination_address_prefixes = each.value.rule.destination_address_prefixes
 
   depends_on = [azurerm_network_security_group.this]
 }
@@ -90,7 +90,7 @@ resource "azurerm_network_security_rule" "this" {
 resource "azurerm_route_table" "this" {
   for_each = var.route_tables
 
-  name                = "${var.name_prefix}${each.value.name}"
+  name                = each.value.name
   location            = try(each.value.location, var.location)
   resource_group_name = var.resource_group_name
   tags                = var.tags
@@ -99,10 +99,10 @@ resource "azurerm_route_table" "this" {
 locals {
   route = flatten([
     for route_table_key, route_table in var.route_tables : [
-      for route_name, route in route_table.routes : {
+      for route_key, route in route_table.routes : {
         route_table_name = route_table.name
         route_table_key  = route_table_key
-        route_name       = route_name
+        route_name       = route.name
         route            = route
       }
     ]
