@@ -52,6 +52,8 @@ variable "vnets" {
   - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `name`
   - `address_space` : a list of CIDRs for VNET
   - `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside
+  - `hub_vnet_name` : (default: `null`) name of an existing transit VNET. Setting this value triggers peering between the spoke and the transit VNET
+  - `hub_resource_group_name`: (default: current RG) name of a Resource Group hosting a transit VNET, when skipped, the local Resource Group will be used
 
   - `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets
   - `subnets` : map of Subnets to create
@@ -62,19 +64,16 @@ variable "vnets" {
   type        = any
 }
 
-variable "nva_ilb_ip" {
-  description = "An IP address of the private Load Balancer in front of the NGFWs. This IP will be used to create UDRs for the spoke VNETs."
-  type        = string
-}
-
 variable "hub_resource_group_name" {
   description = "Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke and the hub VNET."
   type        = string
+  default     = null
 }
 
 variable "hub_vnet_name" {
   description = "Name of the hub/transit VNET. This value is required to create peering between the spoke and the hub VNET."
   type        = string
+  default     = null
 }
 
 variable "vm_size" {

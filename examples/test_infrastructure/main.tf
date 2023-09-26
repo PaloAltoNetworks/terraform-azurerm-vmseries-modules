@@ -57,22 +57,22 @@ module "vnet" {
 
 module "vnet_peering" {
   source   = "../../modules/vnet_peering"
-  for_each = var.vnets
+  for_each = { for k, v in var.vnets : k => v if can(v.hub_vnet_name) }
+
 
   local_peer_config = {
     resource_group_name = local.resource_group.name
     vnet_name           = "${var.name_prefix}${each.value.name}"
   }
   remote_peer_config = {
-    resource_group_name = var.hub_resource_group_name
-    vnet_name           = var.hub_vnet_name
+    resource_group_name = try(each.value.hub_resource_group_name, local.resource_group.name)
+    vnet_name           = each.value.hub_vnet_name
   }
 
   depends_on = [module.vnet]
 }
 
 # Create test VM running a web server
-
 resource "azurerm_network_interface" "vm" {
   for_each = var.test_vms
 
