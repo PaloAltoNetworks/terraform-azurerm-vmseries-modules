@@ -1,9 +1,3 @@
-variable "name_prefix" {
-  description = "A prefix added to all resource names created by this module: VNET, NSGs, RTs. Subnet, as a sub-resource is not prefixed."
-  default     = ""
-  type        = string
-}
-
 variable "name" {
   description = "The name of the Azure Virtual Network."
   type        = string
@@ -45,26 +39,31 @@ variable "address_space" {
 variable "network_security_groups" {
   description = <<-EOF
   Map of Network Security Groups to create.
-  List of available attributes of each Network Security Group entry:
-  - `name` : Name of the Network Security Group.
-  - `location` : (Optional) Specifies the Azure location where to deploy the resource.
-  - `rules`: (Optional) A list of objects representing a Network Security Rule. The key of each entry acts as the name of the rule and
-      needs to be unique across all rules in the Network Security Group.
-      List of attributes available to define a Network Security Rule.
-      Notice, all port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value, example: `21-23`:
-      - `priority` : Numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection.
-      The lower the priority number, the higher the priority of the rule.
-      - `direction` : The direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
-      - `access` : Specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-      - `protocol` : Network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule#protocol)
-      - `source_port_range` : A source port or a range of ports. This can also be an `*` to match all.
-      - `source_port_ranges` : A list of source ports or ranges of ports. This can be specified only if `source_port_range` was not used.
-      - `destination_port_range` : A destination port or a range of ports. This can also be an `*` to match all.
-      - `destination_port_ranges` : A list of destination ports or a ranges of ports. This can be specified only if `destination_port_range` was not used.
-      - `source_address_prefix` : Source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
-      - `source_address_prefixes` : A list of source address prefixes. Tags are not allowed. Can be specified only if `source_address_prefix` was not used.
-      - `destination_address_prefix` : Destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
-      - `destination_address_prefixes` : A list of destination address prefixes. Tags are not allowed. Can be specified only if `destination_address_prefix` was not used.
+
+  List of either required or important properties:
+
+  - `name`   -  (`string`, required) name of the Network Security Group.
+  - `rules`  - (`map`, optional) A list of objects representing Network Security Rules.
+
+    Notice, all port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value, example: `21-23`. Following attributes are available:
+
+    - `name`                          - (`string`, required) name of the rule
+    - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection. The lower the priority number, the higher the priority of the rule.
+    - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
+    - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
+    - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule#protocol)
+    - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or a range of ports. This can also be an `*` to match all.
+    - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports or ranges of ports.
+    - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port or a range of ports. This can also be an `*` to match all.
+    - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of destination ports or a ranges of ports.
+    - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
+    - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefixe`) a list of source address prefixes. Tags are not allowed.
+    - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
+    - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of destination address prefixes. Tags are not allowed.
+
+  List of optional properties:
+
+  - `location` : (`string`, optional, defaults to VNET's location) specifies the Azure location where to deploy the resource.
 
   Example:
   ```
@@ -111,6 +110,26 @@ variable "network_security_groups" {
   }
   ```
   EOF
+  type = map(object({
+    name     = string
+    location = optional(string)
+    rules = optional(map(object({
+      name                         = string
+      priority                     = number
+      direction                    = string
+      access                       = string
+      protocol                     = string
+      source_port_range            = optional(string)
+      source_port_ranges           = optional(list(string))
+      destination_port_range       = optional(string)
+      destination_port_ranges      = optional(list(string))
+      source_address_prefix        = optional(string)
+      source_address_prefixes      = optional(list(string))
+      destination_address_prefix   = optional(string)
+      destination_address_prefixes = optional(list(string))
+    })), {})
+  }))
+  default = {}
 }
 
 variable "route_tables" {
