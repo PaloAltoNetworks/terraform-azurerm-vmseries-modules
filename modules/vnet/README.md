@@ -105,7 +105,7 @@ Type: string
 
 The address space used by the virtual network. You can supply more than one address space.
 
-Type: list(map(string))
+Type: list(string)
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
@@ -167,16 +167,11 @@ List of either required or important properties:
   - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
   - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of destination address prefixes. Tags are not allowed.
 
-List of optional properties:
-
-- `location` : (`string`, optional, defaults to VNET's location) specifies the Azure location where to deploy the resource.
-
 Example:
 ```hcl
 {
   "nsg_1" = {
     name = "network_security_group_1"
-    location = "Australia Central"
     rules = {
       "AllOutbound" = {
         priority                   = 100
@@ -219,10 +214,9 @@ Example:
 
 Type: 
 
-```
+```hcl
 map(object({
-    name     = string
-    location = optional(string)
+    name = string
     rules = optional(map(object({
       name                         = string
       priority                     = number
@@ -261,10 +255,6 @@ List of either required or important properties:
   - `next_hop_in_ip_address`  - (`string`, required) contains the IP address packets should be forwarded to.
     Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
 
-List of optional properties:
-
-- `location`  - (`string`, optional, defaults to VNET's location) Specifies the Azure location where to deploy the resource.
-
 Example:
 ```hcl
 {
@@ -297,10 +287,9 @@ Example:
 
 Type: 
 
-```
+```hcl
 map(object({
-    name     = string
-    location = optional(string)
+    name = string
     routes = map(object({
       name                   = string
       address_prefix         = string
@@ -335,8 +324,8 @@ List of available attributes of each subnet entry:
 
 - `name`                            - (`string`, required) name of a subnet.
 - `address_prefixes`                - (`list(string)`, required when `create_subnets = true`) a list of address prefixes within VNET's address space to assign to a created subnet.
-- `network_security_group`          - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
-- `route_table_id`                  - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
+- `network_security_group_key`          - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
+- `route_table_key`                  - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
 - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service endpoint on a subnet. This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used.
 
 Example:
@@ -367,12 +356,12 @@ Example:
 
 Type: 
 
-```
+```hcl
 map(object({
     name                            = string
     address_prefixes                = optional(list(string), [])
-    network_security_group          = optional(string)
-    route_table                     = optional(string)
+    network_security_group_key      = optional(string)
+    route_table_key                 = optional(string)
     enable_storage_service_endpoint = optional(bool, false)
   }))
 ```

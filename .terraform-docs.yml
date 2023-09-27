@@ -95,7 +95,7 @@ content: |-
   
   Type: {{ if lt (len (split "\n" .Type.Raw)) 2 }}{{ .Type }}{{ else }}
 
-  ```
+  ```hcl
   {{ .Type }}
   ```
   {{ end }}
@@ -115,7 +115,7 @@ content: |-
 
   Type: {{ if lt (len (split "\n" .Type.Raw)) 2 }}{{ .Type }}{{ else }}
 
-  ```
+  ```hcl
   {{ .Type }}
   ```
   {{ end }}
