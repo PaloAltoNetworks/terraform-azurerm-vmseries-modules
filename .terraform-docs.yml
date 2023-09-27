@@ -22,50 +22,65 @@ content: |-
   --- | --- | ---
   {{- range .Module.Inputs }}
   {{- if .Required }}
-  [`{{ .Name }}`](#{{ .Name }}) | `{{ .Type }}` | {{ (split "." .Description.Raw)._0 }}.
+  [`{{ .Name }}`](#{{ .Name }}) | `{{ (split "(" .Type.Raw)._0 }}` | {{ (split "." .Description.Raw)._0 }}.
   {{- end -}}
   {{ end }}
 
+  {{- $optional := false }}
+  {{- range .Module.Inputs }}{{ if not .Required }}{{ $optional = true }}{{ end }}{{ end }}
+
+  {{ if $optional }}
   ## Module's Optional Inputs
 
   Name | Type | Description
   --- | --- | ---
   {{- range .Module.Inputs }}
   {{- if not .Required }}
-  [`{{ .Name }}`](#{{ .Name }}) | `{{ .Type }}` | {{ (split "." .Description.Raw)._0 }}.
+  [`{{ .Name }}`](#{{ .Name }}) | `{{ (split "(" .Type.Raw)._0 }}` | {{ (split "." .Description.Raw)._0 }}.
   {{- end -}}
   {{ end }}
+  {{ end }}
 
+  {{ if ne (len .Module.Outputs) 0 }}
   ## Module's Outputs
 
   Name |  Description
   --- | ---
   {{- range .Module.Outputs }}
-  [`{{ .Name }}`](#{{ .Name }}) | {{ (split "." .Description.Raw)._0 }}
+  `{{ .Name }}` | {{ .Description.Raw }}
+  {{- end }}
   {{- end }}
 
   ## Module's Nameplate
 
+  {{ if ne (len .Module.Requirements) 0 }}
   Requirements needed by this module:
   {{ range .Module.Requirements }}
   - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
   {{- end }}
+  {{- end }}
 
+  {{ if ne (len .Module.Providers) 0 }}
   Providers used in this module:
   {{ range .Module.Providers }}
   - `{{ .Name }}`{{ if .Version }}, version: {{ .Version }}{{ end }}
   {{- end }}
+  {{- end }}
 
+  {{ if ne (len .Module.ModuleCalls) 0 }}
   Modules used in this module:
   Name | Version | Source | Description
   --- | --- | --- | ---
   {{- range .Module.ModuleCalls }}
   `{{ .Name }}` | {{ if .Version }}{{ .Version }}{{ else }}-{{ end }} | {{ .Source }} | {{ .Description }}
   {{- end }}
+  {{- end }}
 
+  {{ if ne (len .Module.Resources) 0 }}
   Resources used in this module:
   {{ range .Module.Resources }}
   - `{{ .Type }}` ({{ .Mode }})
+  {{- end }}
   {{- end }}
 
   ## Inputs/Outpus details
@@ -78,12 +93,18 @@ content: |-
   
   {{ .Description }}
   
-  Type: `{{ .Type }}`
+  Type: {{ if lt (len (split "\n" .Type.Raw)) 2 }}{{ .Type }}{{ else }}
+
+  ```
+  {{ .Type }}
+  ```
+  {{ end }}
   
   <sup>[back to list](#modules-required-inputs)</sup>
   {{ end }}
   {{- end }}
 
+  {{ if $optional }}
   ### Optional Inputs
 
   {{ range .Module.Inputs }}
@@ -92,20 +113,16 @@ content: |-
 
   {{ .Description }}
 
-  Type: `{{ .Type }}`
+  Type: {{ if lt (len (split "\n" .Type.Raw)) 2 }}{{ .Type }}{{ else }}
+
+  ```
+  {{ .Type }}
+  ```
+  {{ end }}
 
   Default value: `{{ .Default }}`
 
   <sup>[back to list](#modules-optional-inputs)</sup>
   {{ end }}
   {{- end }}
-
-  ### Outputs
-
-  {{ range .Module.Outputs }}
-  #### `{{ .Name }}`
-  
-  {{ .Description }}
-
-  <sup>[back to list](#modules-outputs)</sup>
-  {{- end }}
+  {{ end }}

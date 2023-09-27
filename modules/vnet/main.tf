@@ -45,7 +45,7 @@ resource "azurerm_network_security_group" "this" {
   for_each = var.network_security_groups
 
   name                = each.value.name
-  location            = coalesce(each.value.location, var.location)
+  location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 }
@@ -91,7 +91,7 @@ resource "azurerm_route_table" "this" {
   for_each = var.route_tables
 
   name                = each.value.name
-  location            = try(each.value.location, var.location)
+  location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 }
@@ -119,19 +119,19 @@ resource "azurerm_route" "this" {
   route_table_name       = azurerm_route_table.this[each.value.route_table_key].name
   address_prefix         = each.value.route.address_prefix
   next_hop_type          = each.value.route.next_hop_type
-  next_hop_in_ip_address = try(each.value.route.next_hop_in_ip_address, null)
+  next_hop_in_ip_address = each.value.route.next_hop_in_ip_address
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
-  for_each = { for k, v in var.subnets : k => v if can(v.network_security_group) }
+  for_each = { for k, v in var.subnets : k => v if v.network_security_group_key != null }
 
   subnet_id                 = local.subnets[each.key].id
-  network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group].id
+  network_security_group_id = azurerm_network_security_group.this[each.value.network_security_group_key].id
 }
 
 resource "azurerm_subnet_route_table_association" "this" {
-  for_each = { for k, v in var.subnets : k => v if can(v.route_table) }
+  for_each = { for k, v in var.subnets : k => v if v.route_table_key != null }
 
   subnet_id      = local.subnets[each.key].id
-  route_table_id = azurerm_route_table.this[each.value.route_table].id
+  route_table_id = azurerm_route_table.this[each.value.route_table_key].id
 }
