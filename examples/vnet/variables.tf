@@ -16,7 +16,7 @@ variable "name_prefix" {
   There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
 
   Example:
-  ```
+  ```hcl
   name_prefix = "test-"
   ```
   
@@ -48,17 +48,18 @@ variable "vnets" {
   
   For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-  - `name` :  A name of a VNET.
-  - `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `name`
-  - `address_space` : a list of CIDRs for VNET
-  - `resource_group_name` :  (default: current RG) a name of an existing Resource Group in which the VNET will reside
+  - `create_virtual_network`  - (`bool`, optional, defaults to `false`) when set to `true` will create a VNET, `false` will source an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a full resource name, including prefixes.
+  - `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the VNET will reside or is sourced from
 
-  - `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets
-  - `subnets` : map of Subnets to create
+  - `create_subnets`          - (`bool`, optinoal, defaults to `true`) if `true`, create Subnets inside the Virtual Network, otherwise use source existing subnets
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see [VNET module documentation](../../modules/vnet/README.md#subnets)
 
-  - `network_security_groups` : map of Network Security Groups to create
-  - `route_tables` : map of Route Tables to create.
+  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see [VNET module documentation](../../modules/vnet/README.md#route_tables)
   EOF
+
   type = map(object({
     name                   = string
     create_virtual_network = optional(bool, true)
