@@ -26,7 +26,7 @@ resource "azurerm_subnet" "this" {
   resource_group_name  = var.resource_group_name
   virtual_network_name = local.virtual_network.name
   address_prefixes     = each.value.address_prefixes
-  service_endpoints    = try(each.value.enable_storage_service_endpoint, false) ? ["Microsoft.Storage"] : null
+  service_endpoints    = each.value.enable_storage_service_endpoint ? ["Microsoft.Storage"] : null
 }
 
 data "azurerm_subnet" "this" {
@@ -53,7 +53,7 @@ resource "azurerm_network_security_group" "this" {
 locals {
   nsg_rules = flatten([
     for nsg_key, nsg in var.network_security_groups : [
-      for rule_key, rule in try(nsg.rules, {}) : {
+      for rule_key, rule in nsg.rules : {
         nsg_key   = nsg_key
         nsg_name  = nsg.name
         rule_name = rule.name
