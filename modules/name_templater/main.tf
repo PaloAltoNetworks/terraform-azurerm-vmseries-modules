@@ -1,3 +1,12 @@
+resource "random_pet" "this" {
+  count = contains(
+    flatten([for e in var.name_template.parts : [for _, v in e : v]]),
+    "__random__"
+  ) ? 1 : 0
+  separator = ""
+  length    = 2
+}
+
 locals {
   template_parts = flatten([
     for part in var.name_template.parts : [
@@ -13,6 +22,12 @@ locals {
     try(var.abbreviations[var.resource_type], "")
   )
 
-  template_trimmed = trim(local.template_abbreviated, var.name_template.delimiter)
+  template_randomized = can(random_pet.this[0].id) ? replace(
+    local.template_abbreviated,
+    "__random__",
+    try(random_pet.this[0].id, "")
+  ) : local.template_abbreviated
+
+  template_trimmed = trim(local.template_randomized, var.name_template.delimiter)
 
 }

@@ -22,6 +22,7 @@ module "name_templates" {
     parts = [
       { prefix = null },
       { bu = "rnd" },
+      { randomize = "__random__" },
       { env = "prd" },
       { name = "%s" },
       { abbreviation = "__default__" },
@@ -31,15 +32,16 @@ module "name_templates" {
 }
 ```
 
-The value the module will output for such invocation would be `"a_prefix-rnd-prd-%s-vnet"`.
+The value the module will output for such invocation would be `"a_prefix-rnd-crediblefrog-prd-%s-vnet"`.
 
 As you can see:
 
 * all `parts` values are *glued* together to form a template name
 * the `prefix` key is just a placeholder that eventually is replaced with the value of `name_prefix`
+* the `__random__` string is replaced with a name of a [random pet](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) (in case you need to randomize some name, for testing purposes for example)
 * the `__default__` string is replaced with a resource abbreviation.
   
-  This abbreviations are defined with `var.abbreviations` variable. The module contains basic abbreviations following Microsoft suggestions, but they can be overriden with custom definitions. 
+  This abbreviations are defined with `var.abbreviations` variable. The module contains basic abbreviations following Microsoft suggestions, but they can be overriden with custom definitions.
   
   The important part is that the `resource_type` has to match an entry in `abbreviations` variable, otherwise the abbreviation will be replaced with an empty string.
 
@@ -49,7 +51,7 @@ To create the actual resource name the following code can be used:
 vnet_name = format(module.name_templates.template, "transit")
 ```
 
-Following the values above the actual resource name would be `"a_prefix-rnd-prd-transit-vnet"`.
+Following the values above the actual resource name would be `"a_prefix-rnd-crediblefrog-prd-transit-vnet"`.
 
 ## Reference
 
@@ -59,10 +61,13 @@ Following the values above the actual resource name would be `"a_prefix-rnd-prd-
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
+| <a name="requirement_random"></a> [random](#requirement\_random) | ~> 3.5 |
 
 ### Providers
 
-No providers.
+| Name | Version |
+|------|---------|
+| <a name="provider_random"></a> [random](#provider\_random) | ~> 3.5 |
 
 ### Modules
 
@@ -70,7 +75,9 @@ No modules.
 
 ### Resources
 
-No resources.
+| Name | Type |
+|------|------|
+| [random_pet.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/pet) | resource |
 
 ### Inputs
 
