@@ -109,8 +109,8 @@ resource "azurerm_application_gateway" "this" {
       ssl_policy {
         policy_name          = var.ssl_policy_type == "Predefined" ? var.ssl_policy_name : null
         policy_type          = ssl_profile.value.ssl_policy_type
-        min_protocol_version = try(ssl_profile.value.ssl_policy_min_protocol_version, null)
-        cipher_suites        = try(ssl_profile.value.ssl_policy_cipher_suites, null)
+        min_protocol_version = ssl_profile.value.ssl_policy_min_protocol_version
+        cipher_suites        = ssl_profile.value.ssl_policy_cipher_suites
       }
     }
   }
