@@ -17,7 +17,8 @@ vnets = {
       "management" = {
         name = "mgmt-nsg"
         rules = {
-          vmseries_mgmt_allow_inbound = {
+          mgmt_inbound = {
+            name                       = "vmseries-management-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
@@ -38,10 +39,12 @@ vnets = {
         name = "mgmt-rt"
         routes = {
           "private_blackhole" = {
+            name           = "private-blackhole-udr"
             address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
           "public_blackhole" = {
+            name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
@@ -51,15 +54,18 @@ vnets = {
         name = "private-rt"
         routes = {
           "default" = {
+            name                   = "default-udr"
             address_prefix         = "0.0.0.0/0"
             next_hop_type          = "VirtualAppliance"
             next_hop_in_ip_address = "10.0.0.30"
           }
           "mgmt_blackhole" = {
+            name           = "mgmt-blackhole-udr"
             address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
           "public_blackhole" = {
+            name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
@@ -69,10 +75,12 @@ vnets = {
         name = "public-rt"
         routes = {
           "mgmt_blackhole" = {
+            name           = "mgmt-blackhole-udr"
             address_prefix = "10.0.0.0/28"
             next_hop_type  = "None"
           }
           "private_blackhole" = {
+            name           = "private-blackhole-udr"
             address_prefix = "10.0.0.16/28"
             next_hop_type  = "None"
           }
