@@ -181,6 +181,7 @@ variable "route_tables" {
 variable "create_subnets" {
   description = "If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets."
   default     = true
+  nullable    = false
   type        = bool
 }
 
