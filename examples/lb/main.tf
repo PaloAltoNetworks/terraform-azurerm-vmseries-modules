@@ -41,3 +41,44 @@ module "vnet" {
 
   tags = var.tags
 }
+
+module "load_balancer" {
+  source = "../../modules/loadbalancer"
+
+  for_each = var.load_balancers
+
+  name                = "${var.name_prefix}${each.value.name}"
+  location            = var.location
+  resource_group_name = local.resource_group.name
+  zones               = each.value.zones
+
+  nsg_auto_rules_settings = try(
+    {
+      nsg_name = try(
+        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[each.value.nsg_auto_rules_settings.nsg_key].name}",
+        each.value.nsg_auto_rules_settings.nsg_name
+      )
+      nsg_resource_group_name = try(
+        var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].resource_group_name,
+        each.value.nsg_auto_rules_settings.nsg_resource_group_name,
+        null
+      )
+      source_ips    = each.value.nsg_auto_rules_settings.source_ips
+      base_priority = each.value.nsg_auto_rules_settings.base_priority
+    },
+    null
+  )
+
+  frontend_ips = {
+    for k, v in each.value.frontend_ips : k => merge(
+      v,
+      {
+        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
+        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+      }
+    )
+  }
+
+  tags       = var.tags
+  depends_on = [module.vnet]
+}

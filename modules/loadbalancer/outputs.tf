@@ -1,6 +1,6 @@
 output "backend_pool_id" {
   description = "The identifier of the backend pool."
-  value       = azurerm_lb_backend_address_pool.lb_backend.id
+  value       = azurerm_lb_backend_address_pool.this.id
 }
 
 output "frontend_ip_configs" {
@@ -11,5 +11,5 @@ output "frontend_ip_configs" {
 
 output "health_probe" {
   description = "The health probe object."
-  value       = azurerm_lb_probe.probe
+  value       = azurerm_lb_probe.this
 }

@@ -1,3 +1,11 @@
+# output "fronts" {
+#   value = local.fronts
+# }
+
+
+
+
+
 # output "username" {
 #   description = "Initial administrative username to use for VM-Series."
 #   value       = var.vmseries_username

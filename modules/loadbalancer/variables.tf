@@ -1,29 +1,93 @@
+variable "name" {
+  description = "The name of the load balancer."
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "Name of a pre-existing Resource Group to place the resources in."
+  type        = string
+}
+
+variable "location" {
+  description = "Region to deploy the resources."
+  type        = string
+}
+
+variable "zones" {
+  description = <<-EOF
+  Controls zones for load balancer's Fronted IP configurations.
+
+  For:
+
+  - public IPs    - these are zones in which the public IP resource is available
+  - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are affected)
+
+  Setting this variable to explicit `null` disables a zonal deployment.
+  This can be helpful in regions where Availability Zones are not available.
+  
+  For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones available in a region (typically 3): `["1","2","3"]`
+  EOF
+  default     = ["1", "2", "3"]
+  type        = list(string)
+}
+
+variable "tags" {
+  description = "Azure tags to apply to the created resources."
+  default     = {}
+  nullable    = false
+  type        = map(string)
+}
+
 variable "frontend_ips" {
   description = <<-EOF
-  A map of objects describing LB Frontend IP configurations, inbound and outbound rules. Used for both public or private load balancers. 
-  Keys of the map are names of LB Frontend IP configurations.
+  A map of objects describing LB Frontend IP configurations, inbound and outbound rules.
+  
+  Each Frontend IP configuration can have multiple rules assigned. They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively. 
 
-  Each Frontend IP configuration can have multiple rules assigned. They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively. A key in this map is the name of the rule, while value is the actual rule configuration. To understand this structure please see examples below.
+  Since this module can be used to create either a private or a public Load Balancer some properties can be mutually exclusive. To ease configuration they were grouped per Load Balancer type.
 
-  **Inbound rules.**
+  Private Load Balancer:
 
-  Here is a list of properties supported by each `in_rule`:
+  - `name`                    - (`string`, required) name of a frontend IP configuration
+  - `subnet_id`               - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
+  - `private_ip_address`      - (`string`, optional, defaults to `null`) when assigned it will become the IP address of the Load Balancer, when skipped the IP will be assigned from DHCP.
+  - `gateway_load_balancer_frontend_ip_configuration_id` - ????
+  - `in_rules`                - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
 
-  - `protocol` : required, communication protocol, either 'Tcp', 'Udp' or 'All'.
-  - `port` : required, communication port, this is both the front- and the backend port if `backend_port` is not given.
-  - `backend_port` : optional, this is the backend port to forward traffic to in the backend pool.
-  - `floating_ip` : optional, defaults to `true`, enables floating IP for this rule.
-  - `session_persistence` : optional, defaults to 5 tuple (Azure default), see `Session persistence/Load distribution` below for details.
+  Public Load Balancer:
 
-  Public LB
+  - `name`                    - (`string`, required) name of a frontend IP configuration
+  - `public_ip_name`          - (`string`, required) name of a public IP resource
+  - `create_public_ip`        - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be created, otherwise an existing resource will be used; in both cases the name of the resource is controled by `public_ip_name`
+  - `public_ip_resource_group`  - (`string`, optional, defaults to `null`) name of a Resource Group hosting an existing public IP resource
+  - `in_rules`                - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
+  - `out_rules`               - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
+ 
+  Below are the properties for the **inbound rules** map:
 
-  - `create_public_ip` : Optional. Set to `true` to create a public IP.
-  - `public_ip_name` : Ignored if `create_public_ip` is `true`. The existing public IP resource name to use.
-  - `public_ip_resource_group` : Ignored if `create_public_ip` is `true` or if `public_ip_name` is null. The name of the resource group which holds `public_ip_name`.
+  - `name`                - (`string`, required) a name of an inbound rule
+  - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
+  - `port`                - (`number`, required) communication port, this is both the front- and the backend port if `backend_port` is not set; value of `0` means all ports
+  - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic to in the backend pool
+  - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
+  - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution, three values are possible:
+    - `Default` : this is the 5 tuple hash
+    - `SourceIP` : a 2 tuple hash is used
+    - `SourceIPProtocol` : a 3 tuple hash is used
+  - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule, when skipped the rule priority will be auto-calculated, for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
 
-  Example
+  Below are the properties for outbound rules map. Setting at least one `out_rule` switches the outgoing traffic from SNAT to Outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and Outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
 
-  ```
+  - `name`                      - (`string`, required) a name of an outbound rule
+  - `protocol`                  - (`string`, required) protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted
+  - `allocated_outbound_ports`  - (`number`, optional, defaults to `1024`) number of ports allocated per instance
+  - `enable_tcp_reset`          - (`bool`, optional, defaults to `false`) ignored when `protocol` is set to `Udp`
+  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to `4`) TCP connection timeout in minutes in case the connection is idle, ignored when `protocol` is set to `Udp`
+
+  Examples
+
+  ```hcl
+  # rules for a public LB, reusing an existing public IP and doing port translation
   frontend_ips = {
     pip_existing = {
       create_public_ip         = false
@@ -33,41 +97,15 @@ variable "frontend_ips" {
         HTTP = {
           port         = 80
           protocol     = "Tcp"
-        }
-      }
-    }
-  }
-  ```
-
-  Forward to a different port on backend pool
-
-  ```
-  frontend_ips = {
-    pip_existing = {
-      create_public_ip         = false
-      public_ip_name           = "my_ip"
-      public_ip_resource_group = "my_rg_name"
-      in_rules = {
-        HTTP = {
-          port         = 80
           backend_port = 8080
-          protocol     = "Tcp"
         }
       }
     }
   }
-  ```
 
-  Private LB
-
-  - `subnet_id` : Identifier of an existing subnet. This also trigger creation of an internal LB.
-  - `private_ip_address` : A static IP address of the Frontend IP configuration, has to be in limits of the subnet's (specified by `subnet_id`) address space. When not set, changes the address allocation from `Static` to `Dynamic`.
-
-  Example
-
-  ```
+  # rules for a private LB, with a static private IP address and one HA PORTs rule
   frontend_ips = {
-    internal_fe = {
+    internal = {
       subnet_id                     = azurerm_subnet.this.id
       private_ip_address            = "192.168.0.10"
       in_rules = {
@@ -78,47 +116,8 @@ variable "frontend_ips" {
       }
     }
   }
-  ```
 
-  Session persistence/Load distribution
-
-  By default the Load Balancer uses a 5 tuple hash to map traffic to available servers. This can be controlled using `session_persistence` property defined inside a rule. Available values are:
-
-  - `Default` : this is the 5 tuple hash - this method is also used when no property is defined
-  - `SourceIP` : a 2 tuple hash is used
-  - `SourceIPProtocol` : a 3 tuple hash is used
-
-  Example
-
-  ```
-    frontend_ips = {
-      rule_1 = {
-        create_public_ip = true
-        in_rules = {
-          HTTP = {
-            port     = 80
-            protocol = "Tcp"
-            session_persistence = "SourceIP"
-          }
-        }
-      }
-    }
-  ```
-
-  **Outbound rules.**
-
-  Each Frontend IP config can have outbound rules specified. Setting at least one `out_rule` switches the outgoing traffic from SNAT to Outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and Outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
-
-  Following properties are available:
-
-  - `protocol` : Protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted.
-  - `allocated_outbound_ports` : Number of ports allocated per instance. Defaults to `1024`.
-  - `enable_tcp_reset` : Ignored when `protocol` is set to `Udp`, defaults to `False` (Azure defaults).
-  - `idle_timeout_in_minutes` : Ignored when `protocol` is set to `Udp`. TCP connection timeout in case the connection is idle. Defaults to 4 minutes (Azure defaults).
-
-  Example:
-
-  ```
+  # rules for a public LB, session persistance with 2 tuple hash outbound rule defined
   frontend_ips = {
     rule_1 = {
       create_public_ip = true
@@ -129,114 +128,88 @@ variable "frontend_ips" {
           session_persistence = "SourceIP"
         }
       }
-      out_rules = {
-        "outbound_tcp" = {
-          protocol                 = "Tcp"
-          allocated_outbound_ports = 2048
-          enable_tcp_reset         = true
-          idle_timeout_in_minutes  = 10
-        }
+    }
+    out_rules = {
+      "outbound_tcp" = {
+        protocol                 = "Tcp"
+        allocated_outbound_ports = 2048
+        enable_tcp_reset         = true
+        idle_timeout_in_minutes  = 10
       }
     }
   }
-
+  ```
   EOF
-}
-
-variable "resource_group_name" {
-  description = "Name of a pre-existing Resource Group to place the resources in."
-  type        = string
-}
-
-variable "location" {
-  description = "Region to deploy load balancer and dependencies."
-  type        = string
+  type = map(object({
+    name                                               = string
+    public_ip_name                                     = optional(string)
+    create_public_ip                                   = optional(bool, false)
+    public_ip_resource_group                           = optional(string)
+    subnet_id                                          = optional(string)
+    private_ip_address                                 = optional(string)
+    gateway_load_balancer_frontend_ip_configuration_id = optional(string)
+    in_rules = optional(map(object({
+      name                = string
+      protocol            = string
+      port                = number
+      backend_port        = optional(number)
+      floating_ip         = optional(bool, true)
+      session_persistence = optional(string, "Default")
+      nsg_priority        = optional(number)
+    })), {})
+    out_rules = optional(map(object({
+      name                     = string
+      protocol                 = string
+      allocated_outbound_ports = optional(number, 1024)
+      enable_tcp_reset         = optional(bool, false)
+      idle_timeout_in_minutes  = optional(number, 4)
+    })), {})
+  }))
 }
 
 variable "backend_name" {
-  description = <<-EOF
-    The name of the backend pool to create. All the frontends of the load balancer always use the same single backend.
-  EOF
+  description = "The name of the backend pool to create. All frontends of the load balancer always use the same backend."
   default     = "vmseries_backend"
-  type        = string
   nullable    = false
-}
-
-variable "name" {
-  description = "The name of the load balancer."
   type        = string
 }
 
-variable "probe_name" {
-  description = "The name of the load balancer probe."
-  default     = "vmseries_probe"
-  type        = string
-  nullable    = false
-}
-
-variable "probe_port" {
-  description = "Health check port number of the load balancer probe."
-  default     = "80"
-  type        = string
-}
-
-variable "network_security_allow_source_ips" {
+variable "health_probe" {
   description = <<-EOF
-    List of IP CIDR ranges (such as `["192.168.0.0/16"]` or `["*"]`) from which the inbound traffic to all frontends should be allowed.
-    If it's empty, user is responsible for configuring a Network Security Group separately.
-    The list cannot include Azure tags like "Internet" or "Sql.EastUS".
+  Backend's health probe definition.
+
+  Following properties are available:
+
+  - `name`  - (`string`, optional, defaults to `"vmseries_probe"`) name of the health check probe
+  - `port`  - (`number`, optional, defaults to `80`) port to run the probe against
   EOF
-  default     = []
-  type        = list(string)
+  default = {
+    name = "vmseries_probe"
+    port = 80
+  }
+  nullable = false
+  type = object({
+    name = optional(string, "vmseries_probe")
+    port = optional(number, 80)
+  })
 }
 
-variable "network_security_resource_group_name" {
-  description = "Name of the Resource Group where the `network_security_group_name` resides. If empty, defaults to `resource_group_name`."
-  default     = ""
-  type        = string
-}
-
-variable "network_security_group_name" {
+variable "nsg_auto_rules_settings" {
   description = <<-EOF
-    Name of the pre-existing Network Security Group (NSG) where to add auto-generated rules. Each NSG rule corresponds to a single `in_rule` on the load balancer.
-    User is responsible to associate the NSG with the load balancer's subnet, the module only supplies the rules.
-    If empty, user is responsible for configuring an NSG separately.
+  Controls automatic creation of NSG rules for all defined inbound rules.
+
+  Following properties are supported:
+
+  - `nsg_name`            - (`string`, required) name of an existing Network Security Group
+  - `resource_group_name  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group hosting the NSG
+  - `source_ips`          - (`list`, required) either `*` or a list of CIDRs/IP addresses from which access to the frontends will be allowed
+  - `base_priority`       - (`nubmer`, optional, defaults to `1000`) minimum rule priority from which all auto-generated rules grow
   EOF
   default     = null
-  type        = string
-}
-
-variable "network_security_base_priority" {
-  description = <<-EOF
-    The base number from which the auto-generated priorities of the NSG rules grow.
-    Ignored if `network_security_group_name` is empty or if `network_security_allow_source_ips` is empty.
-  EOF
-  default     = 1000
-  type        = number
-}
-
-variable "enable_zones" {
-  description = "If `false`, all the subnet-associated frontends and also all created Public IP addresses default to not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
-  default     = true
-  type        = bool
-}
-
-variable "tags" {
-  description = "Azure tags to apply to the created resources."
-  default     = {}
-  type        = map(string)
-}
-
-variable "avzones" {
-  description = <<-EOF
-  Controls zones for load balancer's Fronted IP configurations. For:
-
-  * public IPs - these are regions in which the IP resource is available
-  * private IPs - this represents Zones to which Azure will deploy paths leading to this Frontend IP.
-
-  For public IPs, after provider version 3.x (Azure API upgrade) you need to specify all zones available in a region (typically 3), ie: for zone-redundant with 3 availability zone in current region value will be:
-  ```["1","2","3"]```
-  EOF
-  default     = []
-  type        = list(string)
+  type = object({
+    nsg_name                = string
+    nsg_resource_group_name = optional(string)
+    source_ips              = list(string)
+    base_priority           = optional(number, 1000)
+  })
 }
