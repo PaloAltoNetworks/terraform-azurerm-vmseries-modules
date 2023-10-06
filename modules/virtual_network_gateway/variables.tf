@@ -114,7 +114,7 @@ variable "private_ip_address_enabled" {
 
 variable "local_azure_ip_address_enabled" {
   description = "Use private local Azure IP for the connection."
-  default     = true
+  default     = null
   type        = bool
 }
 

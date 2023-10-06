@@ -5,7 +5,7 @@ A terraform module for deploying a Virtual Network Gateway and its components re
 
 ## Usage
 
-For usage refer to any example module.
+For usage refer to variables description, which include example for complex map of objects.
 
 ## Module's Required Inputs
 
@@ -528,7 +528,7 @@ Use private local Azure IP for the connection.
 
 Type: bool
 
-Default value: `true`
+Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
