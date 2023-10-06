@@ -2,7 +2,7 @@
 resource "azurerm_virtual_network_gateway" "this" {
   location            = var.location
   resource_group_name = var.resource_group_name
-  name                = "${var.name_prefix}vgw${var.name_suffix}-${var.name}"
+  name                = var.name
   tags                = var.tags
 
   type     = var.type
@@ -97,22 +97,25 @@ resource "azurerm_virtual_network_gateway" "this" {
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   for_each = { for ip_configuration in var.ip_configuration :
-    ip_configuration.name => ip_configuration.public_ip_standard_sku
+    ip_configuration.name => {
+      name                   = ip_configuration.public_ip_name
+      public_ip_standard_sku = ip_configuration.public_ip_standard_sku
+    }
   if ip_configuration.create_public_ip }
 
   resource_group_name = var.resource_group_name
   location            = var.location
-  name                = "${var.name_prefix}pip-vgw${var.name_suffix}-${each.key}"
+  name                = each.value.name
 
-  allocation_method = each.value ? "Static" : "Dynamic"
+  allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
   zones             = try(length(var.avzones) > 0, false) ? var.avzones : null
   tags              = var.tags
-  sku               = each.value ? "Standard" : "Basic"
+  sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "exists" {
-  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if ip_configuration.public_ip_name != null }
+  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if !ip_configuration.create_public_ip }
 
   name                = each.value
   resource_group_name = var.resource_group_name
@@ -122,7 +125,7 @@ data "azurerm_public_ip" "exists" {
 resource "azurerm_local_network_gateway" "this" {
   for_each = var.local_network_gateways
 
-  name                = "${var.name_prefix}lgw-vgw${var.name_suffix}-${each.value.name}"
+  name                = each.value.local_ng_name
   resource_group_name = var.resource_group_name
   location            = var.location
   gateway_address     = each.value.gateway_address
@@ -144,7 +147,7 @@ resource "azurerm_local_network_gateway" "this" {
 resource "azurerm_virtual_network_gateway_connection" "this" {
   for_each = var.local_network_gateways
 
-  name                = "${var.name_prefix}con-vgw${var.name_suffix}-${each.value.connection}"
+  name                = each.value.connection_name
   location            = var.location
   resource_group_name = var.resource_group_name
 

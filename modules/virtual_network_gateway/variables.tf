@@ -8,18 +8,6 @@ variable "location" {
   type        = string
 }
 
-variable "name_prefix" {
-  description = "A prefix added to all resource names created by this module"
-  default     = ""
-  type        = string
-}
-
-variable "name_suffix" {
-  description = "A suffix added to all resource names created by this module"
-  default     = ""
-  type        = string
-}
-
 variable "name" {
   description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
   type        = string
@@ -269,8 +257,8 @@ variable "local_network_gateways" {
   Map of local network gateways.
 
   Every object in the map contains attributes:
-  - name                    - (`string`, required) the name of the local network gateway.
-  - connection              - (`string`, required) the name of the virtual network gateway connection.
+  - local_ng_name           - (`string`, required) the name of the local network gateway.
+  - connection_name         - (`string`, required) the name of the virtual network gateway connection.
   - remote_bgp_settings     - (`list`, optional) block containing Local Network Gateway's BGP speaker settings:
     - asn                   - (`string`, required) the BGP speaker's ASN.
     - bgp_peering_address   - (`string`, required) the BGP peering address and BGP identifier of this BGP speaker.
@@ -286,8 +274,8 @@ variable "local_network_gateways" {
   ```hcl
   local_network_gateways = {
     "lg1" = {
-      name            = "001"
-      connection      = "001"
+      local_ng_name   = "001"
+      connection_name = "001"
       gateway_address = "PUBLIC_IP_1"
       remote_bgp_settings = [{
         asn                 = "65002"
@@ -301,8 +289,8 @@ variable "local_network_gateways" {
       ]
     }
     "lg2" = {
-      name            = "002"
-      connection      = "002"
+      local_ng_name   = "002"
+      connection_name = "002"
       gateway_address = "PUBLIC_IP_2"
       remote_bgp_settings = [{
         asn                 = "65003"
@@ -316,8 +304,8 @@ variable "local_network_gateways" {
       ]
     }
     "lg3" = {
-      name            = "003"
-      connection      = "003"
+      local_ng_name   = "003"
+      connection_name = "003"
       gateway_address = "PUBLIC_IP_3"
       remote_bgp_settings = [{
         asn                 = "65002"
@@ -331,8 +319,8 @@ variable "local_network_gateways" {
       ]
     }
     "lg4" = {
-      name            = "004"
-      connection      = "004"
+      local_ng_name   = "004"
+      connection_name = "004"
       gateway_address = "PUBLIC_IP_4"
       remote_bgp_settings = [{
         asn                 = "65003"
@@ -349,8 +337,8 @@ variable "local_network_gateways" {
   ```
   EOF
   type = map(object({
-    name       = string
-    connection = string
+    local_ng_name   = string
+    connection_name = string
     remote_bgp_settings = optional(list(object({
       asn                 = string
       bgp_peering_address = string
