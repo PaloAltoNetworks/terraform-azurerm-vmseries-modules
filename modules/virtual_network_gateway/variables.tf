@@ -80,13 +80,11 @@ variable "active_active" {
 
 variable "default_local_network_gateway_id" {
   description = "The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)"
-  default     = null
   type        = string
 }
 
 variable "edge_zone" {
   description = "Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist."
-  default     = null
   type        = string
 }
 
@@ -108,13 +106,7 @@ variable "generation" {
 
 variable "private_ip_address_enabled" {
   description = "Should private IP be enabled on this gateway for connections?"
-  default     = null
-  type        = bool
-}
-
-variable "local_azure_ip_address_enabled" {
-  description = "Use private local Azure IP for the connection."
-  default     = null
+  default     = false
   type        = bool
 }
 

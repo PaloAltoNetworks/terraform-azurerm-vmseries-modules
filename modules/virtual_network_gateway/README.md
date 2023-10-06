@@ -14,6 +14,8 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
 [`location`](#location) | `string` | Region to deploy load balancer and dependencies.
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
+[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
+[`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
 [`local_bgp_settings`](#local_bgp_settings) | `object` | BGP settings.
 [`local_network_gateways`](#local_network_gateways) | `map` | Map of local network gateways.
@@ -33,12 +35,9 @@ Name | Type | Description
 [`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
 [`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
 [`active_active`](#active_active) | `bool` | If true, an active-active Virtual Network Gateway will be created.
-[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
-[`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
 [`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Should private IP be enabled on this gateway for connections?.
-[`local_azure_ip_address_enabled`](#local_azure_ip_address_enabled) | `bool` | Use private local Azure IP for the connection.
 [`ip_configuration`](#ip_configuration) | `list` | IP configurations.
 [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
 [`custom_route`](#custom_route) | `list` | List of custom routes.
@@ -115,8 +114,21 @@ Type: string
 
 
 
+#### default_local_network_gateway_id
 
+The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)
 
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### edge_zone
+
+Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
@@ -472,25 +484,7 @@ Default value: `false`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### default_local_network_gateway_id
 
-The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)
-
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### edge_zone
-
-Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
-
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### enable_bgp
 
@@ -518,17 +512,7 @@ Should private IP be enabled on this gateway for connections?
 
 Type: bool
 
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### local_azure_ip_address_enabled
-
-Use private local Azure IP for the connection.
-
-Type: bool
-
-Default value: `&{}`
+Default value: `false`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

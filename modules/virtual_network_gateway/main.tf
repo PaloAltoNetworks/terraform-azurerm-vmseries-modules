@@ -153,7 +153,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
   local_network_gateway_id   = azurerm_local_network_gateway.this[each.key].id
 
   enable_bgp                     = var.enable_bgp
-  local_azure_ip_address_enabled = var.local_azure_ip_address_enabled
+  local_azure_ip_address_enabled = var.private_ip_address_enabled
   shared_key                     = var.ipsec_shared_key
 
   dynamic "custom_bgp_addresses" {
