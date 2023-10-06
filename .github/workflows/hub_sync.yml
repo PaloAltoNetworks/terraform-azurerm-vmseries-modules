@@ -25,6 +25,6 @@ jobs:
         with:
           workflow: run.yml
           repo: PaloAltoNetworks/automation-metadata-collector
-          ref: main
+          ref: fix-broken-module-links
           token: ${{ steps.generate-token.outputs.token }}
           inputs: '{"cloud-id": "azure"}'
