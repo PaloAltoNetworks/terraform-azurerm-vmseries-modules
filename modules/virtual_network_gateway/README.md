@@ -15,8 +15,7 @@ Name | Type | Description
 [`location`](#location) | `string` | Region to deploy load balancer and dependencies.
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
-[`local_bgp_settings`](#local_bgp_settings) | `object` | Map of BGP settings:
-- `asn`                 - (`string`, optional) the Autonomous System Number (ASN) to use as part of the BGP.
+[`local_bgp_settings`](#local_bgp_settings) | `object` | BGP settings.
 [`local_network_gateways`](#local_network_gateways) | `object` | Map of local network gateways.
 [`ipsec_shared_key`](#ipsec_shared_key) | `string` | The shared IPSec key.
 [`ipsec_policy`](#ipsec_policy) | `list` | IPsec policies used for Virtual Network Connection.
@@ -170,7 +169,9 @@ list(object({
 
 #### local_bgp_settings
 
-Map of BGP settings:
+BGP settings.
+
+Attributes:
 - `asn`                 - (`string`, optional) the Autonomous System Number (ASN) to use as part of the BGP.
 - `peering_addresses`   - (`map`, optional) a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active), where key is the ip configuration name and with attributes:
   - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
