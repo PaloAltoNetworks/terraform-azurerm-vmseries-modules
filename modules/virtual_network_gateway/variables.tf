@@ -277,13 +277,13 @@ variable "local_network_gateways" {
   Every object in the map contains attributes:
   - name                    - (`string`, required) the name of the local network gateway.
   - connection              - (`string`, required) the name of the virtual network gateway connection.
-  - remote_bgp_settings     - (`object`, optional) block containing Local Network Gateway's BGP speaker settings:
+  - remote_bgp_settings     - (`list`, optional) block containing Local Network Gateway's BGP speaker settings:
     - asn                   - (`string`, required) the BGP speaker's ASN.
     - bgp_peering_address   - (`string`, required) the BGP peering address and BGP identifier of this BGP speaker.
     - peer_weight           - (`number`, optional) the weight added to routes learned from this BGP speaker.
   - gateway_address         - (`string`, optional) the gateway IP address to connect with.
   - address_space           - (`list`, optional) the list of string CIDRs representing the address spaces the gateway exposes.
-  - custom_bgp_addresses    - (`object`, optional) Border Gateway Protocol custom IP Addresses, which can only be used on IPSec / active-active connections. Object contains 2 attributes:
+  - custom_bgp_addresses    - (`list`, optional) Border Gateway Protocol custom IP Addresses, which can only be used on IPSec / active-active connections. Object contains 2 attributes:
     - primary               - (`string`, required) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
     - secondary             - (`string`, optional) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
 
@@ -357,17 +357,17 @@ variable "local_network_gateways" {
   type = object({
     name       = string
     connection = string
-    remote_bgp_settings = optional(object({
+    remote_bgp_settings = optional(list(object({
       asn                 = string
       bgp_peering_address = string
       peer_weight         = optional(number)
-    }))
+    })))
     gateway_address = optional(string)
     address_space   = optional(list(string))
-    custom_bgp_addresses = optional(object({
+    custom_bgp_addresses = optional(list(object({
       primary   = string
       secondary = optional(string)
-    }))
+    })))
   })
 }
 
