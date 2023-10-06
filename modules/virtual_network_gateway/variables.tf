@@ -229,6 +229,7 @@ variable "local_bgp_settings" {
   - `asn`                 - (`string`, optional) the Autonomous System Number (ASN) to use as part of the BGP.
   - `peering_addresses`   - (`map`, optional) a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active), where key is the ip configuration name and with attributes:
     - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
+    - `default_addresses` - (`list`, optional) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
   - `peer_weight`         - (`number`, optional) the weight added to routes which have been learned through BGP peering. Valid values can be between 0 and 100.
 
   Example:
@@ -250,7 +251,8 @@ variable "local_bgp_settings" {
   type = object({
     asn = optional(string)
     peering_addresses = optional(map(object({
-      apipa_addresses = list(string)
+      apipa_addresses   = list(string)
+      default_addresses = optional(list(string))
     })))
     peer_weight = optional(number)
   })
@@ -354,7 +356,7 @@ variable "local_network_gateways" {
   }
   ```
   EOF
-  type = object({
+  type = map(object({
     name       = string
     connection = string
     remote_bgp_settings = optional(list(object({
@@ -368,7 +370,7 @@ variable "local_network_gateways" {
       primary   = string
       secondary = optional(string)
     })))
-  })
+  }))
 }
 
 variable "ipsec_shared_key" {

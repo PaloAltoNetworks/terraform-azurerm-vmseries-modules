@@ -16,7 +16,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
 [`local_bgp_settings`](#local_bgp_settings) | `object` | BGP settings.
-[`local_network_gateways`](#local_network_gateways) | `object` | Map of local network gateways.
+[`local_network_gateways`](#local_network_gateways) | `map` | Map of local network gateways.
 [`ipsec_shared_key`](#ipsec_shared_key) | `string` | The shared IPSec key.
 [`ipsec_policy`](#ipsec_policy) | `list` | IPsec policies used for Virtual Network Connection.
 
@@ -175,6 +175,7 @@ Attributes:
 - `asn`                 - (`string`, optional) the Autonomous System Number (ASN) to use as part of the BGP.
 - `peering_addresses`   - (`map`, optional) a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active), where key is the ip configuration name and with attributes:
   - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
+  - `default_addresses` - (`list`, optional) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
 - `peer_weight`         - (`number`, optional) the weight added to routes which have been learned through BGP peering. Valid values can be between 0 and 100.
 
 Example:
@@ -200,7 +201,8 @@ Type:
 object({
     asn = optional(string)
     peering_addresses = optional(map(object({
-      apipa_addresses = list(string)
+      apipa_addresses   = list(string)
+      default_addresses = optional(list(string))
     })))
     peer_weight = optional(number)
   })
@@ -298,7 +300,7 @@ local_network_gateways = {
 Type: 
 
 ```hcl
-object({
+map(object({
     name       = string
     connection = string
     remote_bgp_settings = optional(list(object({
@@ -312,7 +314,7 @@ object({
       primary   = string
       secondary = optional(string)
     })))
-  })
+  }))
 ```
 
 

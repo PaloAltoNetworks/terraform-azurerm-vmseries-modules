@@ -105,7 +105,7 @@ resource "azurerm_public_ip" "this" {
   name                = "${var.name_prefix}pip-vgw${var.name_suffix}-${each.key}"
 
   allocation_method = each.value ? "Static" : "Dynamic"
-  zones             = var.avzones != null && length(var.avzones) > 0 ? var.avzones : null
+  zones             = try(length(var.avzones) > 0, false) ? var.avzones : null
   tags              = var.tags
   sku               = each.value ? "Standard" : "Basic"
 }
