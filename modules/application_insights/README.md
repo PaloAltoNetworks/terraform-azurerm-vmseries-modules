@@ -1,3 +1,4 @@
+<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Application Insights Module for Azure
 
 A Terraform module for deploying a Application Insights in Azure cloud.
@@ -8,7 +9,7 @@ In both situations the instrumentation key for the Application Insights has to b
 
 **NOTICE**
 
-* Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions. This module by default deploys Application Insights in Workspace mode.
+* This module deploys Application Insights in Workspace mode (together with a Log Analytics Workspace). Azure support for classic Application Insights mode will end on Feb 29th 2024 hence it is not supported in the module.
 
 * The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split back to obtain a result for a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
 
@@ -16,15 +17,15 @@ In both situations the instrumentation key for the Application Insights has to b
 
       provider "azurerm" {
         features {
-          resource_group {
-            prevent_deletion_if_contains_resources = false
+          resource\_group {
+            prevent\_deletion\_if\_contains\_resources = false
           }
         }
       }
 
 ## Usage
 
-The following snippet deploys Application Insights in Workspace mode, setting the retention to 1 year.
+The following snippet deploys Application Insights and Log Analytics Workspace, setting the retention to 1 year.
 
 ```hcl
 module "ai" {
@@ -35,51 +36,134 @@ module "ai" {
   location                  = "West US"
   resource_group_name       = "vmseries-rg"
 }
-```  
+```
 
-## Reference
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-### Requirements
+## Module's Required Inputs
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.25 |
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | Name of the Application Insights instance.
+[`workspace_name`](#workspace_name) | `string` | The name of the Log Analytics workspace.
+[`location`](#location) | `string` | A name of a region in which the resources will be created.
+[`resource_group_name`](#resource_group_name) | `string` | A name of an existing Resource Group.
 
-### Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.25 |
+## Module's Optional Inputs
 
-### Modules
+Name | Type | Description
+--- | --- | ---
+[`workspace_sku`](#workspace_sku) | `string` | Azure Log Analytics Workspace mode SKU.
+[`metrics_retention_in_days`](#metrics_retention_in_days) | `number` | Specifies the retention period in days.
+[`tags`](#tags) | `map` | A map of tags assigned to all resources created by this module.
 
-No modules.
 
-### Resources
 
-| Name | Type |
-|------|------|
-| [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
-| [azurerm_log_analytics_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
+## Module's Outputs
 
-### Inputs
+Name |  Description
+--- | ---
+`metrics_instrumentation_key` | The Instrumentation Key of the created instance of Azure Application Insights.
+`application_insights_id` | An Azure ID of the Application Insights resource created by this module.
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_name"></a> [name](#input\_name) | Name of the Application Insights instance. | `string` | n/a | yes |
-| <a name="input_workspace_mode"></a> [workspace\_mode](#input\_workspace\_mode) | Application Insights mode. If `true` (default), the 'Workspace-based' mode is used. With `false`, the mode is set to legacy 'Classic'.<br><br>NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions. | `bool` | `true` | no |
-| <a name="input_workspace_name"></a> [workspace\_name](#input\_workspace\_name) | The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
-| <a name="input_workspace_sku"></a> [workspace\_sku](#input\_workspace\_sku) | Azure Log Analytics Workspace mode SKU. For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model). | `string` | `"PerGB2018"` | no |
-| <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90. | `number` | `null` | no |
-| <a name="input_location"></a> [location](#input\_location) | A name of a region in which the resources will be creatied. | `string` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | A name of an existing Resource Group. | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags assigned to all resources created by this module. | `map(string)` | `{}` | no |
+## Module's Nameplate
 
-### Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_metrics_instrumentation_key"></a> [metrics\_instrumentation\_key](#output\_metrics\_instrumentation\_key) | The Instrumentation Key of the created instance of Azure Application Insights. <br><br>The instance is unused by default, but is ready to receive custom PAN-OS metrics from the firewalls. To use it, paste this Instrumentation Key into PAN-OS -> Device -> VM-Series -> Azure. |
-| <a name="output_application_insights_id"></a> [application\_insights\_id](#output\_application\_insights\_id) | An Azure ID of the Application Insights resource created by this module. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.3, < 2.0
+- `azurerm`, version: ~> 3.25
+
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+
+
+
+Resources used in this module:
+
+- `application_insights` (managed)
+- `log_analytics_workspace` (managed)
+
+## Inputs/Outpus details
+
+### Required Inputs
+
+
+#### name
+
+Name of the Application Insights instance.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### workspace_name
+
+The name of the Log Analytics workspace.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+#### location
+
+A name of a region in which the resources will be created.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### resource_group_name
+
+A name of an existing Resource Group.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+
+### Optional Inputs
+
+
+
+
+#### workspace_sku
+
+Azure Log Analytics Workspace mode SKU. For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model).
+
+Type: string
+
+Default value: `PerGB2018`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### metrics_retention_in_days
+
+Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90.
+
+Type: number
+
+Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+
+#### tags
+
+A map of tags assigned to all resources created by this module.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+<!-- END_TF_DOCS -->

@@ -1,23 +1,13 @@
 variable "name" {
   description = "Name of the Application Insights instance."
   type        = string
-}
-
-variable "workspace_mode" {
-  description = <<-EOF
-  Application Insights mode. If `true` (default), the 'Workspace-based' mode is used. With `false`, the mode is set to legacy 'Classic'.
-
-  NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions.
-  EOF
-  default     = true
-  type        = bool
   nullable    = false
 }
 
 variable "workspace_name" {
-  description = "The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated."
-  default     = null
+  description = "The name of the Log Analytics workspace."
   type        = string
+  nullable    = false
 }
 
 variable "workspace_sku" {
@@ -33,13 +23,15 @@ variable "metrics_retention_in_days" {
 }
 
 variable "location" {
-  description = "A name of a region in which the resources will be creatied."
+  description = "A name of a region in which the resources will be created."
   type        = string
+  nullable    = false
 }
 
 variable "resource_group_name" {
   description = "A name of an existing Resource Group."
   type        = string
+  nullable    = false
 }
 
 variable "tags" {
