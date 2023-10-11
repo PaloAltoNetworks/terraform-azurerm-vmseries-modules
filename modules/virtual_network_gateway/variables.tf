@@ -1,4 +1,10 @@
-# Common variables
+# Main resource
+variable "name" {
+  description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
+  type        = string
+}
+
+# Common settings
 variable "resource_group_name" {
   description = "Name of a pre-existing Resource Group to place the resources in."
   type        = string
@@ -16,11 +22,6 @@ variable "tags" {
 }
 
 # Virtual Network Gateway
-variable "name" {
-  description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
-  type        = string
-}
-
 variable "type" {
   description = "The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created"
   default     = "Vpn"
