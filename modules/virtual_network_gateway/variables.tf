@@ -1,3 +1,4 @@
+# Common variables
 variable "resource_group_name" {
   description = "Name of a pre-existing Resource Group to place the resources in."
   type        = string
@@ -8,26 +9,16 @@ variable "location" {
   type        = string
 }
 
-variable "name" {
-  description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
-  type        = string
-}
-
 variable "tags" {
   description = "Azure tags to apply to the created resources."
   default     = {}
   type        = map(string)
 }
 
-variable "avzones" {
-  description = <<-EOF
-  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-
-  For zone-redundant with 3 availability zone in current region value will be:
-  ```["1","2","3"]```
-  EOF
-  default     = []
-  type        = list(string)
+# Virtual Network Gateway
+variable "name" {
+  description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
+  type        = string
 }
 
 variable "type" {
@@ -96,6 +87,17 @@ variable "private_ip_address_enabled" {
   description = "Should private IP be enabled on this gateway for connections?"
   default     = false
   type        = bool
+}
+
+variable "avzones" {
+  description = <<-EOF
+  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+
+  For zone-redundant with 3 availability zone in current region value will be:
+  ```["1","2","3"]```
+  EOF
+  default     = []
+  type        = list(string)
 }
 
 variable "ip_configuration" {
@@ -252,6 +254,7 @@ variable "custom_route" {
   }))
 }
 
+# Local network gateways
 variable "local_network_gateways" {
   description = <<-EOF
   Map of local network gateways.
@@ -353,12 +356,7 @@ variable "local_network_gateways" {
   }))
 }
 
-variable "ipsec_shared_key" {
-  description = "The shared IPSec key."
-  type        = string
-  sensitive   = true
-}
-
+# Virtual Network Gateway connection
 variable "connection_type" {
   description = "The type of VNG connection."
   default     = "IPsec"
@@ -377,6 +375,12 @@ variable "connection_mode" {
     condition     = contains(["Default", "InitiatorOnly", "ResponderOnly"], var.connection_mode)
     error_message = "Possible values are Default, InitiatorOnly and ResponderOnly"
   }
+}
+
+variable "ipsec_shared_key" {
+  description = "The shared IPSec key."
+  type        = string
+  sensitive   = true
 }
 
 variable "ipsec_policy" {
