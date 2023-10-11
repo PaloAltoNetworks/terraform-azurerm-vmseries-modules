@@ -13,6 +13,12 @@ variable "location" {
   type        = string
 }
 
+variable "tags" {
+  description = "Map of tags to assign to all of the created resources."
+  default     = {}
+  type        = map(string)
+}
+
 variable "create_virtual_network" {
   description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
   default     = true
@@ -228,10 +234,4 @@ variable "subnets" {
     route_table_key                 = optional(string)
     enable_storage_service_endpoint = optional(bool, false)
   }))
-}
-
-variable "tags" {
-  description = "Map of tags to assign to all of the created resources."
-  default     = {}
-  type        = map(string)
 }

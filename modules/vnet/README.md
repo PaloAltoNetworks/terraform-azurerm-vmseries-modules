@@ -135,13 +135,13 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
+[`tags`](#tags) | `map` | Map of tags to assign to all of the created resources.
 [`create_virtual_network`](#create_virtual_network) | `bool` | If true, create the Virtual Network, otherwise just use a pre-existing network.
 [`address_space`](#address_space) | `list` | The address space used by the virtual network.
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
 [`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
 [`create_subnets`](#create_subnets) | `bool` | If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets.
 [`subnets`](#subnets) | `map` | Map of objects describing subnets to create within a virtual network.
-[`tags`](#tags) | `map` | Map of tags to assign to all of the created resources.
 
 
 
@@ -228,6 +228,16 @@ Type: string
 
 
 
+
+#### tags
+
+Map of tags to assign to all of the created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### create_virtual_network
 
@@ -473,16 +483,6 @@ map(object({
   }))
 ```
 
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### tags
-
-Map of tags to assign to all of the created resources.
-
-Type: map(string)
 
 Default value: `map[]`
 

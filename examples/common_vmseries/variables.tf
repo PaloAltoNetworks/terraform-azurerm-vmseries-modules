@@ -69,9 +69,9 @@ variable "vnets" {
 
   type = map(object({
     name                   = string
+    resource_group_name    = optional(string)
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
-    resource_group_name    = optional(string)
     network_security_groups = optional(map(object({
       name = string
       rules = optional(map(object({
