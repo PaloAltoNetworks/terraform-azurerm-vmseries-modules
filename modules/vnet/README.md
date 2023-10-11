@@ -1,20 +1,134 @@
 <!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VNet Module for Azure
 
-A terraform module for deploying a Virtual Network and its components required for the VM-Series firewalls in Azure.
+A Terraform module for deploying a Virtual Network and its components required for the VM-Series firewalls in Azure.
 
 ## Usage
 
-For usage refer to any example module.
+This module is designed to work in several *modes* depending on which variables or flags are set. Most common usage scenarios are:
+
+- create all -  creates a VNET, Subnet, NSGs and Route Tables. In this example the two latter are assigned to the Subnet. The NSG and Route Table have rules defined:
+  ```hcl
+  name                = "transit"
+  resource_group_name = "existing-rg"
+  address_space       = ["10.0.0.0/25"]
+  network_security_groups = {
+    inbound = {
+      name = "inbound-nsg"
+      rules = {
+        mgmt_inbound = {
+          name                       = "allow-traffic"
+          priority                   = 100
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_address_prefixes    = ["1.2.3.4"]
+          source_port_range          = "*"
+          destination_address_prefix = "10.0.0.0/28"
+          destination_port_ranges    = ["22", "443"]
+        }
+      }
+    }
+  }
+  route_tables = {
+    default = {
+      name = "default-rt"
+      routes = {
+        "default" = {
+          name                   = "default-udr"
+          address_prefix         = "0.0.0.0/0"
+          next_hop_type          = "VirtualAppliance"
+          next_hop_in_ip_address = "5.6.7.8"
+        }
+      }
+    }
+  }
+  subnets = {
+    "subnet" = {
+      name                   = "snet"
+      address_prefixes       = ["10.0.0.0/28"]
+      network_security_group = "inbound"
+      route_table            = "default"
+    }
+  }
+  ```
+
+- source a VNET but create Subnets, NSGs and Route Tables. This is a similar example to the above one, NSG and Route Table are empty this time:
+
+  ```hcl
+  create_virtual_network = false
+  name                   = "existing-vnet"
+  resource_group_name    = "existing-rg"
+  network_security_groups = {
+    inbound = { name = "inbound-nsg" }
+  }
+  route_tables = {
+    default = { name = "default-rt" }
+  }
+  subnets = {
+    "subnet" = {
+      name                   = "snet"
+      address_prefixes       = ["10.0.0.0/28"]
+      network_security_group = "inbound"
+      route_table            = "default"
+    }
+  }
+  ```
+
+- source a VNET and Subnet, but create NSGs and Route Tables. This is a common brownfield use case: we will source Subnets, and create and assign NSGs and Route Tables to them:
+
+  ```hcl
+  create_virtual_network = false
+  name                   = "existing-vnet"
+  resource_group_name    = "existing-rg"
+  network_security_groups = {
+    inbound = {
+      name = "inbound-nsg"
+      rules = {
+        mgmt_inbound = {
+          name                       = "allow-traffic"
+          priority                   = 100
+          direction                  = "Inbound"
+          access                     = "Allow"
+          protocol                   = "Tcp"
+          source_address_prefixes    = ["1.2.3.4"]
+          source_port_range          = "*"
+          destination_address_prefix = "10.0.0.0/28"
+          destination_port_ranges    = ["22", "443"]
+        }
+      }
+    }
+  }
+  route_tables = {
+    default = {
+      name = "default-rt"
+      routes = {
+        "default" = {
+          name                   = "default-udr"
+          address_prefix         = "0.0.0.0/0"
+          next_hop_type          = "VirtualAppliance"
+          next_hop_in_ip_address = "5.6.7.8"
+        }
+      }
+    }
+  }
+  create_subnets = false
+  subnets = {
+    "subnet" = {
+      name                   = "snet"
+      network_security_group = "inbound"
+      route_table            = "default"
+    }
+  }
+  ```
 
 ## Module's Required Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Virtual Network.
-[`location`](#location) | `string` | Location of the resources that will be deployed.
 [`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group to use.
-[`address_space`](#address_space) | `list` | The address space used by the virtual network.
+[`location`](#location) | `string` | Location of the resources that will be deployed.
 
 
 ## Module's Optional Inputs
@@ -22,11 +136,12 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`create_virtual_network`](#create_virtual_network) | `bool` | If true, create the Virtual Network, otherwise just use a pre-existing network.
-[`tags`](#tags) | `map` | Map of tags to assign to all of the created resources.
+[`address_space`](#address_space) | `list` | The address space used by the virtual network.
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
 [`route_tables`](#route_tables) | `map` | Map of objects describing a Route Tables.
 [`create_subnets`](#create_subnets) | `bool` | If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets.
 [`subnets`](#subnets) | `map` | Map of objects describing subnets to create within a virtual network.
+[`tags`](#tags) | `map` | Map of tags to assign to all of the created resources.
 
 
 
@@ -83,6 +198,13 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+#### resource_group_name
+
+Name of the Resource Group to use.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### location
 
@@ -93,21 +215,7 @@ Type: string
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
-#### resource_group_name
 
-Name of the Resource Group to use.
-
-Type: string
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-#### address_space
-
-The address space used by the virtual network. You can supply more than one address space.
-
-Type: list(string)
-
-<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
@@ -116,6 +224,8 @@ Type: list(string)
 
 
 ### Optional Inputs
+
+
 
 
 
@@ -129,18 +239,15 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+#### address_space
 
-#### tags
+The address space used by the virtual network. You can supply more than one address space. Required only when you create a VNET.
 
-Map of tags to assign to all of the created resources.
+Type: list(string)
 
-Type: map(string)
-
-Default value: `map[]`
+Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
-
-
 
 #### network_security_groups
 
@@ -366,6 +473,16 @@ map(object({
   }))
 ```
 
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### tags
+
+Map of tags to assign to all of the created resources.
+
+Type: map(string)
 
 Default value: `map[]`
 

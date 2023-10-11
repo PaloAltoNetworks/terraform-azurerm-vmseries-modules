@@ -70,11 +70,10 @@ variable "vnets" {
   type = map(object({
     name                   = string
     create_virtual_network = optional(bool, true)
-    address_space          = optional(list(string), [])
+    address_space          = optional(list(string))
     resource_group_name    = optional(string)
     network_security_groups = optional(map(object({
-      name     = string
-      location = optional(string)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -92,8 +91,7 @@ variable "vnets" {
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name     = string
-      location = optional(string)
+      name = string
       routes = map(object({
         name                   = string
         address_prefix         = string

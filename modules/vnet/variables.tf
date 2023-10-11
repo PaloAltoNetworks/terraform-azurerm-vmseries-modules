@@ -3,10 +3,9 @@ variable "name" {
   type        = string
 }
 
-variable "create_virtual_network" {
-  description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
-  default     = true
-  type        = bool
+variable "resource_group_name" {
+  description = "Name of the Resource Group to use."
+  type        = string
 }
 
 variable "location" {
@@ -14,19 +13,15 @@ variable "location" {
   type        = string
 }
 
-variable "tags" {
-  description = "Map of tags to assign to all of the created resources."
-  default     = {}
-  type        = map(string)
-}
-
-variable "resource_group_name" {
-  description = "Name of the Resource Group to use."
-  type        = string
+variable "create_virtual_network" {
+  description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
+  default     = true
+  type        = bool
 }
 
 variable "address_space" {
-  description = "The address space used by the virtual network. You can supply more than one address space."
+  description = "The address space used by the virtual network. You can supply more than one address space. Required only when you create a VNET."
+  default     = null
   type        = list(string)
 }
 
@@ -233,4 +228,10 @@ variable "subnets" {
     route_table_key                 = optional(string)
     enable_storage_service_endpoint = optional(bool, false)
   }))
+}
+
+variable "tags" {
+  description = "Map of tags to assign to all of the created resources."
+  default     = {}
+  type        = map(string)
 }
