@@ -11,9 +11,9 @@ For usage refer to variables description, which include example for complex map 
 
 Name | Type | Description
 --- | --- | ---
+[`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
 [`location`](#location) | `string` | Region to deploy load balancer and dependencies.
-[`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
 [`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
@@ -28,7 +28,6 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | Azure tags to apply to the created resources.
-[`avzones`](#avzones) | `list` | After provider version 3.
 [`type`](#type) | `string` | The type of the Virtual Network Gateway.
 [`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
 [`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
@@ -36,6 +35,7 @@ Name | Type | Description
 [`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
 [`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Should private IP be enabled on this gateway for connections?.
+[`avzones`](#avzones) | `list` | After provider version 3.
 [`ip_configuration`](#ip_configuration) | `list` | IP configurations.
 [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
 [`custom_route`](#custom_route) | `list` | List of custom routes.
@@ -80,6 +80,14 @@ Resources used in this module:
 ### Required Inputs
 
 
+#### name
+
+The name of the Virtual Network Gateway. Changing this forces a new resource to be created
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 #### resource_group_name
 
 Name of a pre-existing Resource Group to place the resources in.
@@ -95,15 +103,6 @@ Region to deploy load balancer and dependencies.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-#### name
-
-The name of the Virtual Network Gateway. Changing this forces a new resource to be created
-
-Type: string
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
 
 
 
@@ -125,6 +124,7 @@ Specifies the Edge Zone within the Azure Region where this Virtual Network Gatew
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
 
 
 
@@ -328,6 +328,8 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+
+
 #### ipsec_shared_key
 
 The shared IPSec key.
@@ -335,8 +337,6 @@ The shared IPSec key.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 #### ipsec_policy
 
@@ -403,20 +403,6 @@ Azure tags to apply to the created resources.
 Type: map(string)
 
 Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### avzones
-
-After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-
-For zone-redundant with 3 availability zone in current region value will be:
-```["1","2","3"]```
-
-
-Type: list(string)
-
-Default value: `[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
@@ -489,6 +475,20 @@ Should private IP be enabled on this gateway for connections?
 Type: bool
 
 Default value: `false`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### avzones
+
+After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
+
+For zone-redundant with 3 availability zone in current region value will be:
+```["1","2","3"]```
+
+
+Type: list(string)
+
+Default value: `[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
@@ -592,7 +592,6 @@ Default value: `[]`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
-
 #### connection_type
 
 The type of VNG connection.
@@ -612,6 +611,7 @@ Type: string
 Default value: `Default`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 
