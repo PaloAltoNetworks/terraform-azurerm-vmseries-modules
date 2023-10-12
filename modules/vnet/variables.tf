@@ -9,19 +9,20 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  description = "Location of the resources that will be deployed."
+  description = "Location of the deployed resources."
   type        = string
 }
 
 variable "tags" {
-  description = "Map of tags to assign to all of the created resources."
+  description = "Map of tags to assign to all created resources."
   default     = {}
   type        = map(string)
 }
 
 variable "create_virtual_network" {
-  description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
+  description = "Controls Virtual Network creation. If `true`, create the Virtual Network, otherwise just use a pre-existing network."
   default     = true
+  nullable    = false
   type        = bool
 }
 
@@ -35,9 +36,9 @@ variable "network_security_groups" {
   description = <<-EOF
   Map of objects describing Network Security Groups.
 
-  List of either required or important properties:
+  List of available properties:
 
-  - `name`   -  (`string`, required) name of the Network Security Group.
+  - `name`   - (`string`, required) name of the Network Security Group.
   - `rules`  - (`map`, optional) A list of objects representing Network Security Rules.
 
     Notice, all port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value, example: `21-23`. Following attributes are available:
@@ -94,8 +95,8 @@ variable "network_security_groups" {
         }
       }
     },
-    "network_security_group_2" = {
-      rules = {}
+    "nsg_2" = {
+      name = "empty-nsg
     }
   }
   ```
@@ -126,16 +127,16 @@ variable "route_tables" {
   description = <<-EOF
   Map of objects describing a Route Tables.
 
-  List of either required or important properties:
+  List of available properties:
 
-  - `name`      - (`string`, required) name of a Route Table.
-  - `routes`    - (`map`, required) a map of Route Table entries (UDRs):
+  - `name`          - (`string`, required) name of a Route Table.
+  - `routes`        - (`map`, required) a map of Route Table entries (UDRs):
     - `name`                    - (`string`, required) a name of a UDR.
     - `address_prefix`          - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type`           - (`string`, required) the type of Azure hop the packet should be sent to.
-      Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
+                                  Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
     - `next_hop_in_ip_address`  - (`string`, required) contains the IP address packets should be forwarded to.
-      Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
+                                  Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
 
   Example:
   ```hcl
@@ -144,12 +145,14 @@ variable "route_tables" {
       name = "route_table_1"
       routes = {
         "route_1" = {
+          name           = "route-1"
           address_prefix = "10.1.0.0/16"
-          next_hop_type  = "vnetlocal"
+          next_hop_type  = "VnetLocal"
         },
         "route_2" = {
+          name           = "route-2"
           address_prefix = "10.2.0.0/16"
-          next_hop_type  = "vnetlocal"
+          next_hop_type  = "VnetLocal"
         },
       }
     },
@@ -157,6 +160,7 @@ variable "route_tables" {
       name = "route_table_2"
       routes = {
         "route_3" = {
+          name                   = "default-nva-route"
           address_prefix         = "0.0.0.0/0"
           next_hop_type          = "VirtualAppliance"
           next_hop_in_ip_address = "10.112.0.100"
@@ -180,7 +184,15 @@ variable "route_tables" {
 }
 
 variable "create_subnets" {
-  description = "If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets."
+  description = <<-EOF
+  Controls subnet creation.
+  
+  Possible variants:
+
+  - `true`  - create subnets described in `var.subnets`
+  - `false` - source subnets described in `var.subnets`
+  - `false` and `var.subnets` is empty - skip subnets management.
+  EOF
   default     = true
   nullable    = false
   type        = bool
@@ -188,17 +200,19 @@ variable "create_subnets" {
 
 variable "subnets" {
   description = <<-EOF
-  Map of objects describing subnets to create within a virtual network.
+  Map of objects describing subnets to manage.
   
-  By the default the described subnets will be created. If however `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
+  By the default the described subnets will be created. 
+  If however `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
   
   List of available attributes of each subnet entry:
 
   - `name`                            - (`string`, required) name of a subnet.
   - `address_prefixes`                - (`list(string)`, required when `create_subnets = true`) a list of address prefixes within VNET's address space to assign to a created subnet.
-  - `network_security_group_key`          - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
-  - `route_table_key`                  - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
-  - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service endpoint on a subnet. This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used.
+  - `network_security_group_key`      - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
+  - `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
+  - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service endpoint on a subnet.
+                                        This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used.
 
   Example:
   ```hcl
@@ -206,22 +220,18 @@ variable "subnets" {
     "management" = {
       name                            = "management-snet"
       address_prefixes                = ["10.100.0.0/24"]
-      network_security_group          = "network_security_group_1"
-      route_table                     = "route_table_1"
+      network_security_group_key      = "network_security_group_1"
       enable_storage_service_endpoint = true
     },
     "private" = {
-      name                   = "private-snet"
-      address_prefixes       = ["10.100.1.0/24"]
-      network_security_group = "network_security_group_2"
-      route_table            = "route_table_2"
+      name                       = "private-snet"
+      address_prefixes           = ["10.100.1.0/24"]
+      route_table_key            = "route_table_2"
     },
     "public" = {
-      name                   = "public-snet"
-      address_prefixes       = ["10.100.2.0/24"]
-      network_security_group = "network_security_group_3"
-      route_table            = "route_table_3"
-    },
+      name                       = "public-snet"
+      address_prefixes           = ["10.100.2.0/24"]
+    }
   }
   ```
   EOF
