@@ -46,64 +46,32 @@ module "vng" {
   location            = var.location
   resource_group_name = local.resource_group.name
   name                = each.value.name
-  avzones             = try(each.value.avzones, null)
+  avzones             = each.value.avzones
 
-  type     = try(each.value.type, null)
-  vpn_type = try(each.value.vpn_type, null)
-  sku      = try(each.value.sku, null)
+  type     = each.value.type
+  vpn_type = each.value.vpn_type
+  sku      = each.value.sku
 
-  active_active                    = try(each.value.active_active, null)
-  default_local_network_gateway_id = try(each.value.default_local_network_gateway_id, null)
-  edge_zone                        = try(each.value.edge_zone, null)
-  enable_bgp                       = try(each.value.enable_bgp, null)
-  generation                       = try(each.value.generation, null)
-  private_ip_address_enabled       = try(each.value.private_ip_address_enabled, null)
+  active_active                    = each.value.active_active
+  default_local_network_gateway_id = each.value.default_local_network_gateway_id
+  edge_zone                        = each.value.edge_zone
+  enable_bgp                       = each.value.enable_bgp
+  generation                       = each.value.generation
+  private_ip_address_enabled       = each.value.private_ip_address_enabled
 
   ip_configuration = [
-    for ip_configuration in each.value.ip_configuration : {
-      name                          = try(ip_configuration.name, null)
-      create_public_ip              = try(ip_configuration.create_public_ip, null)
-      public_ip_name                = try(ip_configuration.public_ip_name, null)
-      private_ip_address_allocation = try(ip_configuration.private_ip_address_allocation, null)
-      subnet_id                     = try(module.vnet[ip_configuration.vnet_key].subnet_ids[ip_configuration.subnet_name], null)
-    }
+    for ip_configuration in each.value.ip_configuration :
+    merge(ip_configuration, { subnet_id = module.vnet[ip_configuration.vnet_key].subnet_ids[ip_configuration.subnet_name] })
   ]
 
-  vpn_client_configuration = [
-    for vpn_client_configuration in try(each.value.vpn_client_configuration, []) : {
-      address_space = try(vpn_client_configuration.address_space, null)
-      aad_tenant    = try(vpn_client_configuration.aad_tenant, null)
-      aad_audience  = try(vpn_client_configuration.aad_audience, null)
-      aad_issuer    = try(vpn_client_configuration.aad_issuer, null)
-      root_certificate = [
-        for root_certificate in vpn_client_configuration.root_certificate : {
-          name             = root_certificate.name
-          public_cert_data = root_certificate.public_cert_data
-        }
-      ]
-      revoked_certificate = [
-        for revoked_certificate in vpn_client_configuration.revoked_certificate : {
-          name       = revoked_certificate.name
-          thumbprint = revoked_certificate.thumbprint
-        }
-      ]
-      radius_server_address = try(vpn_client_configuration.radius_server_address, null)
-      radius_server_secret  = try(vpn_client_configuration.radius_server_secret, null)
-      vpn_client_protocols  = try(vpn_client_configuration.vpn_client_protocols, null)
-      vpn_auth_types        = try(vpn_client_configuration.vpn_auth_types, null)
-    }
-  ]
+  vpn_client_configuration  = each.value.vpn_client_configuration
   azure_bgp_peers_addresses = each.value.azure_bgp_peers_addresses
   local_bgp_settings        = each.value.local_bgp_settings
-  custom_route = [
-    for custom_route in try(each.value.custom_route, []) : {
-      address_prefixes = try(custom_route.address_prefixes, null)
-    }
-  ]
-  ipsec_shared_key       = each.value.ipsec_shared_key
-  local_network_gateways = each.value.local_network_gateways
-  connection_mode        = try(each.value.connection_mode, null)
-  ipsec_policy           = try(each.value.ipsec_policy, [])
+  custom_route              = each.value.custom_route
+  ipsec_shared_key          = each.value.ipsec_shared_key
+  local_network_gateways    = each.value.local_network_gateways
+  connection_mode           = each.value.connection_mode
+  ipsec_policy              = each.value.ipsec_policy
 
   tags = var.tags
 }

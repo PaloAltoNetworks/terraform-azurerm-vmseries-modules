@@ -108,6 +108,86 @@ variable "vnets" {
 ### Virtual Network Gateway
 variable "virtual_network_gateways" {
   description = "Map of virtual_network_gateways to create"
-  default     = {}
-  type        = any
+  type = map(object({
+    name     = string
+    avzones  = optional(list(string))
+    type     = optional(string)
+    vpn_type = optional(string)
+    sku      = optional(string)
+
+    active_active                    = optional(bool)
+    default_local_network_gateway_id = optional(string)
+    edge_zone                        = optional(string)
+    enable_bgp                       = optional(bool)
+    generation                       = optional(string)
+    private_ip_address_enabled       = optional(bool)
+
+    ip_configuration = list(object({
+      name                          = optional(string)
+      create_public_ip              = bool
+      public_ip_name                = optional(string)
+      private_ip_address_allocation = optional(string)
+      public_ip_standard_sku        = optional(bool)
+      vnet_key                      = string
+      subnet_name                   = string
+    }))
+
+    vpn_client_configuration = optional(list(object({
+      address_space = string
+      aad_tenant    = optional(string)
+      aad_audience  = optional(string)
+      aad_issuer    = optional(string)
+      root_certificate = optional(object({
+        name             = string
+        public_cert_data = string
+      }))
+      revoked_certificate = optional(object({
+        name       = string
+        thumbprint = string
+      }))
+      radius_server_address = optional(string)
+      radius_server_secret  = optional(string)
+      vpn_client_protocols  = optional(list(string))
+      vpn_auth_types        = optional(list(string))
+    })), [])
+    azure_bgp_peers_addresses = map(string)
+    local_bgp_settings = object({
+      asn = optional(string)
+      peering_addresses = optional(map(object({
+        apipa_addresses   = list(string)
+        default_addresses = optional(list(string))
+      })))
+      peer_weight = optional(number)
+    })
+    custom_route = optional(list(object({
+      address_prefixes = optional(list(string))
+    })), [])
+    ipsec_shared_key = optional(string)
+    local_network_gateways = map(object({
+      local_ng_name   = string
+      connection_name = string
+      remote_bgp_settings = optional(list(object({
+        asn                 = string
+        bgp_peering_address = string
+        peer_weight         = optional(number)
+      })))
+      gateway_address = optional(string)
+      address_space   = optional(list(string))
+      custom_bgp_addresses = optional(list(object({
+        primary   = string
+        secondary = optional(string)
+      })))
+    }))
+    connection_mode = optional(string)
+    ipsec_policy = list(object({
+      dh_group         = string
+      ike_encryption   = string
+      ike_integrity    = string
+      ipsec_encryption = string
+      ipsec_integrity  = string
+      pfs_group        = string
+      sa_datasize      = optional(string)
+      sa_lifetime      = optional(string)
+    }))
+  }))
 }
