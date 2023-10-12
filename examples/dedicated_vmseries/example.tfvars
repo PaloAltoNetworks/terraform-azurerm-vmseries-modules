@@ -54,10 +54,10 @@ vnets = {
         name = "private-rt"
         routes = {
           "default" = {
-            name                   = "default-udr"
-            address_prefix         = "0.0.0.0/0"
-            next_hop_type          = "VirtualAppliance"
-            next_hop_in_ip_address = "10.0.0.30"
+            name                = "default-udr"
+            address_prefix      = "0.0.0.0/0"
+            next_hop_type       = "VirtualAppliance"
+            next_hop_ip_address = "10.0.0.30"
           }
           "mgmt_blackhole" = {
             name           = "mgmt-blackhole-udr"

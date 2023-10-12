@@ -369,8 +369,8 @@ List of available properties:
   - `address_prefix`          - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
   - `next_hop_type`           - (`string`, required) the type of Azure hop the packet should be sent to.
                                 Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
-  - `next_hop_in_ip_address`  - (`string`, required) contains the IP address packets should be forwarded to.
-                                Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
+  - `next_hop_ip_address`     - (`string`, required) contains the IP address packets should be forwarded to.
+                                Used only when `next_hop_type` is set to `VirtualAppliance`, ignored otherwise.
 
 Example:
 ```hcl
@@ -397,7 +397,7 @@ Example:
         name                   = "default-nva-route"
         address_prefix         = "0.0.0.0/0"
         next_hop_type          = "VirtualAppliance"
-        next_hop_in_ip_address = "10.112.0.100"
+        next_hop_ip_address = "10.112.0.100"
       }
     },
   },
@@ -411,10 +411,10 @@ Type:
 map(object({
     name = string
     routes = map(object({
-      name                   = string
-      address_prefix         = string
-      next_hop_type          = string
-      next_hop_in_ip_address = optional(string)
+      name                = string
+      address_prefix      = string
+      next_hop_type       = string
+      next_hop_ip_address = optional(string)
     }))
   }))
 ```

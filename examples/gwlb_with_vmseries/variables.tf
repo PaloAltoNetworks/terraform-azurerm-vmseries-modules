@@ -81,10 +81,10 @@ variable "vnets" {
     route_tables = optional(map(object({
       name = string
       routes = map(object({
-        name                   = string
-        address_prefix         = string
-        next_hop_type          = string
-        next_hop_in_ip_address = optional(string)
+        name                = string
+        address_prefix      = string
+        next_hop_type       = string
+        next_hop_ip_address = optional(string)
       }))
     })), {})
     create_subnets = optional(bool, true)
