@@ -43,18 +43,18 @@ module "ai" {
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | Name of the Application Insights instance.
-[`workspace_name`](#workspace_name) | `string` | The name of the Log Analytics workspace.
-[`location`](#location) | `string` | A name of a region in which the resources will be created.
 [`resource_group_name`](#resource_group_name) | `string` | A name of an existing Resource Group.
+[`location`](#location) | `string` | A name of a region in which the resources will be created.
+[`workspace_name`](#workspace_name) | `string` | The name of the Log Analytics workspace.
 
 
 ## Module's Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
+[`tags`](#tags) | `map` | A map of tags assigned to all resources created by this module.
 [`workspace_sku`](#workspace_sku) | `string` | Azure Log Analytics Workspace mode SKU.
 [`metrics_retention_in_days`](#metrics_retention_in_days) | `number` | Specifies the retention period in days.
-[`tags`](#tags) | `map` | A map of tags assigned to all resources created by this module.
 
 
 
@@ -99,6 +99,23 @@ Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
+#### resource_group_name
+
+A name of an existing Resource Group.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### location
+
+A name of a region in which the resources will be created.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
 #### workspace_name
 
 The name of the Log Analytics workspace.
@@ -109,28 +126,23 @@ Type: string
 
 
 
-#### location
-
-A name of a region in which the resources will be created.
-
-Type: string
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-#### resource_group_name
-
-A name of an existing Resource Group.
-
-Type: string
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 
 ### Optional Inputs
 
 
+
+
+
+#### tags
+
+A map of tags assigned to all resources created by this module.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 #### workspace_sku
@@ -150,18 +162,6 @@ Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 
 Type: number
 
 Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-
-
-#### tags
-
-A map of tags assigned to all resources created by this module.
-
-Type: map(string)
-
-Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
