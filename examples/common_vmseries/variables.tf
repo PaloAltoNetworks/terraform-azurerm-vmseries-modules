@@ -273,40 +273,33 @@ variable "availability_set" {
 
 variable "application_insights" {
   description = <<-EOF
-  A map defining Azure Application Insights. There are three ways to use this variable:
+  A map defining Azure Application Insights.
 
-  * when the value is set to `null` (default) no AI is created
-  * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-  * when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+  For detailed documentation on each property refer to [module documentation](../../modules/application_insights/README.md)
 
-  Names for all AI instances are prefixed with `var.name_prefix`.
+  - `name`                      - (`string`, required) name of the Application Insights instance.
+  - `workspace_name`            - (`string`, required) name of the Log Analytics Workspace to be created together with the AI instance.
+  - `workspace_sku`             - (`string`, optional, defaults "PerGB2018") SKU used by WAL, for details see [Application Insights module documentation](../../modules/application_insights/README.md#workspace_sku).
+  - `metrics_retention_in_days` - (`number`, optional, defaults to current Azure default value) specifies the retention period in days, for details see [Application Insights module documentation](../../modules/application_insights/README.md#metrics_retention_in_days).
 
-  Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
-
-  - `name` : (optional, string) a name of a single AI instance
-  - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
-  - `workspace_name` : (optional, string) defaults to AI name suffixed with `-wrkspc`, name of the Log Analytics Workspace created when AI is deployed in Workspace mode
-  - `workspace_sku` : (optional, string) defaults to PerGB2018, SKU used by WAL, see module documentation for details
-  - `metrics_retention_in_days` : (optional, number) defaults to current Azure default value, see module documentation for details
-
-  Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
+  Example:
   ```
-  vmseries = {
-    'vm-1' = {
-      ....
+  {
+    "ai" = {
+      name                      = "vmseries-ai"
+      workspace_name            = "vmseries-wrkspc"
+      metrics_retention_in_days = 365
     }
-    'vm-2' = {
-      ....
-    }
-  }
-
-  application_insights = {
-    metrics_retention_in_days = 365
   }
   ```
   EOF
-  default     = null
-  type        = map(string)
+  default     = {}
+  type = map(object({
+    name                      = string
+    workspace_name            = string
+    workspace_sku             = optional(string, "PerGB2018")
+    metrics_retention_in_days = optional(number)
+  }))
 }
 
 variable "bootstrap_storage" {
@@ -322,10 +315,11 @@ variable "bootstrap_storage" {
   - `storage_allow_vnet_subnets` : (defaults to `[]`) whitelist containing the allowed vnet and associated subnets that are allowed to access the Storage Account. Note that the respective subnets require `enable_storage_service_endpoint` set to `true` to work properly.
   - `storage_allow_inbound_public_ips` : (defaults to `[]`) whitelist containing the allowed public IP subnets that can access the Storage Account. Note that the code automatically tries to query https://ifconfig.me/ip to obtain the public IP address of the machine executing the code so that the bootstrap files can be successfully uploaded to the Storage Account.
 
-  The properties below do not directly change anything in the Storage Account settings. They can be used to control common parts of the `DAY0` configuration (used only when full bootstrap is used). These properties can also be specified per firewall, but when specified here they tak higher precedence:
+  The properties below do not directly change anything in the Storage Account settings. They can be used to control common parts of the `DAY0` configuration (used only when full bootstrap is used). These properties can also be specified per firewall, and firewall specific configurations take higher precedence:
   - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
   - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
   - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.
+  - `ai_key` : optional, name of the key in `var.application_insights` map defining an Application Insights instance, used to fetch metrics instrumentation key from AI instance.
   - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).
 
   EOF
@@ -353,6 +347,7 @@ variable "vmseries" {
     - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
     - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
     - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.
+    - `ai_key` : optional, name of the key in `var.application_insights` map defining an Application Insights instance, used to fetch metrics instrumentation key from AI instance.
     - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).
 
   - `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:

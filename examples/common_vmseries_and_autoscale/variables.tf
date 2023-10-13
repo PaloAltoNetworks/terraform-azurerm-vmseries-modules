@@ -228,40 +228,33 @@ variable "load_balancers" {
 
 variable "application_insights" {
   description = <<-EOF
-  A map defining Azure Application Insights. There are three ways to use this variable:
+  A map defining Azure Application Insights.
 
-  * when the value is set to `null` (default) no AI is created
-  * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-  * when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+  For detailed documentation on each property refer to [module documentation](../../modules/application_insights/README.md)
 
-  Names for all AI instances are prefixed with `var.name_prefix`.
+  - `name`                      - (`string`, required) name of the Application Insights instance.
+  - `workspace_name`            - (`string`, required) name of the Log Analytics Workspace to be created together with the AI instance.
+  - `workspace_sku`             - (`string`, optional, defaults "PerGB2018") SKU used by WAL, for details see [Application Insights module documentation](../../modules/application_insights/README.md#workspace_sku).
+  - `metrics_retention_in_days` - (`number`, optional, defaults to current Azure default value) specifies the retention period in days, for details see [Application Insights module documentation](../../modules/application_insights/README.md#metrics_retention_in_days).
 
-  Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
-
-  - `name` : (optional, string) a name of a single AI instance
-  - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
-  - `workspace_name` : (optional, string) defaults to AI name suffixed with `-wrkspc`, name of the Log Analytics Workspace created when AI is deployed in Workspace mode
-  - `workspace_sku` : (optional, string) defaults to PerGB2018, SKU used by WAL, see module documentation for details
-  - `metrics_retention_in_days` : (optional, number) defaults to current Azure default value, see module documentation for details
-
-  Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
+  Example:
   ```
-  vmseries = {
-    'vm-1' = {
-      ....
+  {
+    "ai" = {
+      name                      = "vmseries-ai"
+      workspace_name            = "vmseries-wrkspc"
+      metrics_retention_in_days = 365
     }
-    'vm-2' = {
-      ....
-    }
-  }
-
-  application_insights = {
-    metrics_retention_in_days = 365
   }
   ```
   EOF
-  default     = null
-  type        = map(string)
+  default     = {}
+  type = map(object({
+    name                      = string
+    workspace_name            = string
+    workspace_sku             = optional(string, "PerGB2018")
+    metrics_retention_in_days = optional(number)
+  }))
 }
 
 
@@ -320,7 +313,6 @@ variable "vmss" {
   - `accelerated_networking` : (bool|`null`- module defaults) enable Azure accelerated networking for all dataplane network interfaces
   - `use_custom_image` : (bool|`false`) 
   - `custom_image_id` : (string|reqquired when `use_custom_image` is `true`) absolute ID of your own Custom Image to be used for creating new VM-Series
-  - `application_insights_id` : (string|`null`) ID of Application Insights instance that should be used to provide metrics for autoscaling
   - `interfaces` : (list(string)|`[]`) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
     - `name` : (string|required) string that will form the NIC name
     - `subnet_key` : (string|required) a key of a subnet as defined in `var.vnets`
@@ -328,6 +320,7 @@ variable "vmss" {
     - `load_balancer_key` : (string|`null`) key of a Load Balancer defined in the `var.loadbalancers` variable
     - `application_gateway_key` : (string|`null`) key of an Application Gateway defined in the `var.appgws`
     - `pip_domain_name_label` : (string|`null`) prefix which should be used for the Domain Name Label for each VM instance
+  - `autoscale_ai_key` : (string|`null`) name of the key in `var.application_insights` map defining an Application Insights instance that should be used to provide metrics for autoscaling
   - `autoscale_config` : (map|`{}`) map containing basic autoscale configuration
     - `count_default` : (number|`null` - module defaults) default number or instances when autoscalling is not available
     - `count_minimum` : (number|`null` - module defaults) minimum number of instances to reach when scaling in

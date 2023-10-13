@@ -134,16 +134,15 @@ module "load_balancer" {
 module "ai" {
   source = "../../modules/application_insights"
 
-  for_each = { for k, v in var.vmss : k => "${v.name}-ai" if can(v.autoscale_metrics) }
+  for_each = var.application_insights
 
-  name                = "${var.name_prefix}${each.value}"
+  name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+  workspace_name            = "${var.name_prefix}${each.value.workspace_name}"
+  workspace_sku             = each.value.workspace_sku
+  metrics_retention_in_days = each.value.metrics_retention_in_days
 
   tags = var.tags
 }
@@ -222,7 +221,7 @@ module "vmss" {
 
   bootstrap_options = each.value.bootstrap_options
 
-  application_insights_id = can(each.value.autoscale_metrics) ? module.ai[each.key].application_insights_id : null
+  application_insights_id = try(module.ai[each.value.autoscale_ai_key].application_insights_id, null)
 
   autoscale_count_default       = try(each.value.autoscale_config.count_default, null)
   autoscale_count_minimum       = try(each.value.autoscale_config.count_minimum, null)

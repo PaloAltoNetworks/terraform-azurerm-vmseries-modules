@@ -140,20 +140,15 @@ module "load_balancer" {
 module "ai" {
   source = "../../modules/application_insights"
 
-  for_each = toset(
-    var.application_insights != null ? flatten(
-      try([var.application_insights.name], [for _, v in var.vmseries : "${v.name}-ai"])
-    ) : []
-  )
+  for_each = var.application_insights
 
-  name                = "${var.name_prefix}${each.key}"
+  name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+  workspace_name            = "${var.name_prefix}${each.value.workspace_name}"
+  workspace_sku             = each.value.workspace_sku
+  metrics_retention_in_days = each.value.metrics_retention_in_days
 
   tags = var.tags
 }
@@ -181,7 +176,11 @@ resource "local_file" "bootstrap_xml" {
         1
       )
 
-      ai_instr_key = try(module.ai[try(var.application_insights.name, "${each.value.name}-ai")].metrics_instrumentation_key, null)
+      ai_instr_key = try(
+        module.ai[each.value.bootstrap_storage.ai_key].metrics_instrumentation_key,
+        module.ai[var.bootstrap_storage[each.value.bootstrap_storage.name].ai_key].metrics_instrumentation_key,
+        null
+      )
 
       ai_update_interval = try(
         each.value.bootstrap_storage.ai_update_interval,

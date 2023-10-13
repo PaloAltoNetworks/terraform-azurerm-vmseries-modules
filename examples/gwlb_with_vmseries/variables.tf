@@ -121,43 +121,36 @@ variable "gateway_load_balancers" {
 # VM-Series
 variable "application_insights" {
   description = <<-EOF
-  A map defining Azure Application Insights. There are three ways to use this variable:
+  A map defining Azure Application Insights.
 
-  * when the value is set to `null` (default) no AI is created
-  * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-  * when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+  For detailed documentation on each property refer to [module documentation](../../modules/application_insights/README.md)
 
-  Names for all AI instances are prefixed with `var.name_prefix`.
+  - `name`                      - (`string`, required) name of the Application Insights instance.
+  - `workspace_name`            - (`string`, required) name of the Log Analytics Workspace to be created together with the AI instance.
+  - `workspace_sku`             - (`string`, optional, defaults "PerGB2018") SKU used by WAL, for details see [Application Insights module documentation](../../modules/application_insights/README.md#workspace_sku).
+  - `metrics_retention_in_days` - (`number`, optional, defaults to current Azure default value) specifies the retention period in days, for details see [Application Insights module documentation](../../modules/application_insights/README.md#metrics_retention_in_days).
 
-  Properties supported (for details on each property see [module documentation](../modules/application_insights/README.md)):
-
-  - `name`                      - (optional|string) Name of a single AI instance
-  - `workspace_mode`            - (optional|bool) Use AI Workspace mode instead of the Classical (deprecated), defaults to `true`.
-  - `workspace_name`            - (optional|string) Name of the Log Analytics Workspace created when AI is deployed in Workspace mode, defaults to AI name suffixed with `-wrkspc`.
-  - `workspace_sku`             - (optional|string) SKU used by WAL, see module documentation for details, defaults to PerGB2018.
-  - `metrics_retention_in_days` - (optional|number) Defaults to current Azure default value, see module documentation for details.
-
-  Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
+  Example:
   ```
-  vmseries = {
-    'vm-1' = {
-      ....
+  {
+    "ai" = {
+      name                      = "vmseries-ai"
+      workspace_name            = "vmseries-wrkspc"
+      metrics_retention_in_days = 365
     }
-    'vm-2' = {
-      ....
-    }
-  }
-
-  application_insights = {
-    metrics_retention_in_days = 365
   }
   ```
   EOF
-  default     = null
-  type        = map(string)
+  default     = {}
+  type = map(object({
+    name                      = string
+    workspace_name            = string
+    workspace_sku             = optional(string, "PerGB2018")
+    metrics_retention_in_days = optional(number)
+  }))
 }
 
-variable "bootstrap_storages" {
+variable "bootstrap_storage" {
   description = <<-EOF
   A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs. This variable defines only Storage Accounts, file shares are defined per each VM. See `vmseries` variable, `bootstrap_storage` property.
   Following properties are supported:
@@ -167,6 +160,10 @@ variable "bootstrap_storages" {
   - `storage_acl`                      - (optional|bool) Allows to enable network ACLs on the Storage Account. If set to `true`,  `storage_allow_vnet_subnets` and `storage_allow_inbound_public_ips` options become available. Defaults to `false`.
   - `storage_allow_vnet_subnets`       - (optional|map) Map with objects that contains `vnet_key`/`subnet_key` used to identify subnets allowed to access the Storage Account. Note that `enable_storage_service_endpoint` has to be set to `true` in the corresponding subnet configuration.
   - `storage_allow_inbound_public_ips` - (optional|list) Whitelist that contains public IPs/ranges allowed to access the Storage Account. Note that the code automatically to queries https://ifcondif.me to obtain the public IP address of the machine executing the code to enable bootstrap files upload.
+
+  The properties below do not directly change anything in the Storage Account settings. They can be used to control common parts of the `DAY0` configuration (used only when full bootstrap is used). These properties can also be specified per firewall, and firewall specific configurations take higher precedence:
+  - `ai_key`             - (optional|string) Name of the key in `var.application_insights` map defining an Application Insights instance, used to fetch metrics instrumentation key from AI instance.
+  - `ai_update_interval` - (optional|number) If Application Insights are used this property can override the default metrics update interval (in minutes).
   EOF
   default     = {}
   type        = any
@@ -183,12 +180,9 @@ variable "vmseries_common" {
   - `vm_size`            - (optional|string)
   - `bootstrap_options`  - (optional|string)
   - `vnet_key`           - (optional|string)
-  - `interfaces`         - (optional|list(object))
-  - `ai_update_interval` - (optional|number)
 
-  All are used directly as inputs for `vmseries` module (please see [documentation](../../modules/vmseries/README.md) for details), except for the last three:
+  All are used directly as inputs for `vmseries` module (please see [documentation](../../modules/vmseries/README.md) for details), except for the last:
   - `vnet_key`           - (required|string) Used to identify VNet in which subnets for interfaces exist.
-  - `ai_update_interval` - (optional|number) If Application Insights are used this property can override the default metrics update interval (in minutes).
   EOF
   type        = any
 }
@@ -200,9 +194,12 @@ variable "vmseries" {
   - `avzone`               - (optional|string) AZ to deploy instance in, defaults to "1".
   - `availability_set_key` - (optional|string) Key from `var.availability_sets`, used to determine Availabbility Set ID.
   - `bootstrap_storage`    - (optional|map) Map that contains bootstrap package contents definition, when present triggers creation of a File Share in an existing Storage Account. Following properties supported:
-    - `key`                    - (required|string) Identifies Storage Account to use from `var.bootstrap_storages`.
+    - `key`                    - (required|string) Identifies Storage Account to use from `var.bootstrap_storage`.
     - `static_files`           - (optional|map) Map where keys are local file paths, values determine destination in the bootstrap package (file share) where the file will be copied.
-    - `template_bootstrap_xml` - (optional|string) Path to the `bootstrap.xml` template. When defined it will trigger creation of the `bootstrap.xml` file and it's upload to the boostrap package. This is a simple `day 0` configuration file that should set up only basic networking. Specifying this property forces additional properties that are required to properly template the file. They can be defined per each VM or globally for all VMs (in `var.vmseries_common`). The properties are listed below.
+    - `template_bootstrap_xml` - (optional|string) Path to the `bootstrap.xml` template. When defined it will trigger creation of the `bootstrap.xml` file and the file will be uploaded to the storage account. This is a simple `day 0` configuration file that should set up only basic networking. Specifying this property forces additional properties that are required to properly template the file. They can be defined per each VM or globally for all VMs (in this case place them in the bootstrap storage definition). The properties are listed below.
+    - `ai_key`                 - (optional|string) Name of the key in `var.application_insights` map defining an Application Insights instance, used to fetch metrics instrumentation key from AI instance.
+    - `ai_update_interval`     - (optional|number) If Application Insights are used this property can override the default metrics update interval (in minutes).
+
   - `interfaces`         - List of objects with interface definitions. Utilizes all properties of `interfaces` input (see [documantation](../../modules/vmseries/README.md#inputs)), expect for `subnet_id` and `lb_backend_pool_id`, which are determined based on the following new items:
     - `subnet_key`       - (optional|string) Key of a subnet from `var.vnets[vnet_key]` to associate interface with.
     - `gwlb_key`         - (optional|string) Key from `var.gwlbs` that identifies GWLB that will be associated with the interface, required when `enable_backend_pool` is `true`.
@@ -213,9 +210,8 @@ variable "vmseries" {
   - `img_version`
   - `img_sku`
   - `vm_size`
-  - `ai_update_interval`
   EOF
-  type        = map(any)
+  type        = any
 }
 
 variable "availability_sets" {

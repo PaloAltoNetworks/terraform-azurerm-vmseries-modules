@@ -133,7 +133,7 @@ gateway_load_balancers = {
 }
 
 # VMseries
-bootstrap_storages = {
+bootstrap_storage = {
   bootstrap = {
     name        = "vmseriesgwlbboostrap"
     storage_acl = true

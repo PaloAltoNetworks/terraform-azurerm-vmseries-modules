@@ -202,7 +202,16 @@ appgws = {
 
 
 # --- VMSERIES PART --- #
-application_insights = {}
+application_insights = {
+  inbound_vmss = {
+    name           = "inbound-vmss-ai"
+    workspace_name = "inbound-vmss-workspace"
+  }
+  obew_vmss = {
+    name           = "obew-vmss-ai"
+    workspace_name = "obew-vmss-workspace"
+  }
+}
 
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
@@ -229,6 +238,7 @@ vmss = {
       }
     ]
 
+    autoscale_ai_key = "inbound_vmss"
     autoscale_config = {
       count_default = 2
       count_minimum = 1
@@ -272,6 +282,7 @@ vmss = {
       }
     ]
 
+    autoscale_ai_key = "obew_vmss"
     autoscale_config = {
       count_default = 2
       count_minimum = 1

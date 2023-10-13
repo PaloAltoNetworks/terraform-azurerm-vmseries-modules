@@ -194,7 +194,12 @@ appgws = {
 
 
 # --- VMSERIES PART --- #
-application_insights = {}
+application_insights = {
+  common_vmss = {
+    name           = "common-vmss-ai"
+    workspace_name = "common-vmss-workspace"
+  }
+}
 
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
@@ -225,6 +230,7 @@ vmss = {
       }
     ]
 
+    autoscale_ai_key = "common_vmss"
     autoscale_config = {
       count_default = 2
       count_minimum = 1

@@ -6,7 +6,7 @@ locals {
 
 # Obtain Public IP address of deployment machine
 data "http" "this" {
-  count = length(var.bootstrap_storages) > 0 && anytrue([for v in values(var.bootstrap_storages) : try(v.storage_acl, false)]) ? 1 : 0
+  count = length(var.bootstrap_storage) > 0 && anytrue([for v in values(var.bootstrap_storage) : try(v.storage_acl, false)]) ? 1 : 0
   url   = "https://ifconfig.me"
 }
 
@@ -79,23 +79,19 @@ module "gwlb" {
 module "ai" {
   source = "../../modules/application_insights"
 
-  for_each = toset(
-    var.application_insights != null ? flatten(
-      try([var.application_insights.name], [for _, v in var.vmseries : "${v.name}-ai"])
-    ) : []
-  )
+  for_each = var.application_insights
 
-  name                = "${var.name_prefix}${each.key}"
+  name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+  workspace_name            = "${var.name_prefix}${each.value.workspace_name}"
+  workspace_sku             = each.value.workspace_sku
+  metrics_retention_in_days = each.value.metrics_retention_in_days
 
   tags = var.tags
 }
+
 
 resource "local_file" "bootstrap_xml" {
   for_each = { for k, v in var.vmseries : k => v if can(v.bootstrap_storage.template_bootstrap_xml) }
@@ -109,11 +105,15 @@ resource "local_file" "bootstrap_xml" {
         1
       )
 
-      ai_instr_key = try(module.ai[try(var.application_insights.name, "${var.name_prefix}${each.value.name}-ai")].metrics_instrumentation_key, null)
+      ai_instr_key = try(
+        module.ai[each.value.bootstrap_storage.ai_key].metrics_instrumentation_key,
+        module.ai[var.bootstrap_storage[each.value.bootstrap_storage.key].ai_key].metrics_instrumentation_key,
+        null
+      )
 
       ai_update_interval = try(
-        each.value.ai_update_interval,
-        var.vmseries_common.ai_update_interval,
+        each.value.bootstrap_storage.ai_update_interval,
+        var.bootstrap_storage[each.value.bootstrap_storage.key].ai_update_interval,
         5
       )
     }
@@ -126,7 +126,7 @@ resource "local_file" "bootstrap_xml" {
 }
 
 module "bootstrap" {
-  for_each = var.bootstrap_storages
+  for_each = var.bootstrap_storage
   source   = "../../modules/bootstrap"
 
   name                   = each.value.name
@@ -148,7 +148,7 @@ module "bootstrap_share" {
 
   create_storage_account = false
   name                   = module.bootstrap[each.value.bootstrap_storage.key].storage_account.name
-  resource_group_name    = try(var.bootstrap_storages[each.value.bootstrap_storage.key].resource_group_name, local.resource_group.name)
+  resource_group_name    = try(var.bootstrap_storage[each.value.bootstrap_storage.key].resource_group_name, local.resource_group.name)
   location               = var.location
   storage_share_name     = "${var.name_prefix}${each.value.name}"
 
