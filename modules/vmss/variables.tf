@@ -57,7 +57,7 @@ variable "interfaces" {
   ]
   ```
   EOF
-  type        = list(any)
+  type        = any
 }
 
 variable "username" {
