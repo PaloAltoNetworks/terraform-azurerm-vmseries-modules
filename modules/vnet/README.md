@@ -274,13 +274,13 @@ List of available properties:
   - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection. The lower the priority number, the higher the priority of the rule.
   - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
   - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-  - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule#protocol)
+  - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol)
   - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or a range of ports. This can also be an `*` to match all.
   - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports or ranges of ports.
   - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port or a range of ports. This can also be an `*` to match all.
   - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of destination ports or a ranges of ports.
   - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
-  - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefixe`) a list of source address prefixes. Tags are not allowed.
+  - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source address prefixes. Tags are not allowed.
   - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
   - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of destination address prefixes. Tags are not allowed.
 
@@ -430,9 +430,9 @@ Controls subnet creation.
   
 Possible variants:
 
-- `true`  - create subnets described in `var.subnets`
-- `false` - source subnets described in `var.subnets`
-- `false` and `var.subnets` is empty - skip subnets management.
+- `true`      - create subnets described in `var.subnets`
+- `false`     - source subnets described in `var.subnets`
+- `false` and `var.subnets` is empty  - skip subnets management.
 
 
 Type: bool
