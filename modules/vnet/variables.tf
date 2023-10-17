@@ -132,7 +132,7 @@ variable "network_security_groups" {
         rule.priority >= 100 && rule.priority <= 4096
       ]
     ]))
-    error_message = "The [priority] should be a value between 100 and 4096."
+    error_message = "The `priority` should be a value between 100 and 4096."
   }
   validation {
     condition = alltrue(flatten([
@@ -141,7 +141,7 @@ variable "network_security_groups" {
         contains(["Inbound", "Outbound"], rule.direction)
       ]
     ]))
-    error_message = "The [direction] property should be one of Inbound or Outbound."
+    error_message = "The `direction` property should be one of Inbound or Outbound."
   }
   validation {
     condition = alltrue(flatten([
@@ -150,7 +150,7 @@ variable "network_security_groups" {
         contains(["Allow", "Deny"], rule.access)
       ]
     ]))
-    error_message = "The [access] property should be one of Allow or Deny."
+    error_message = "The `access` property should be one of Allow or Deny."
   }
   validation {
     condition = alltrue(flatten([
@@ -159,7 +159,7 @@ variable "network_security_groups" {
         contains(["Tcp", "Udp", "Icmp", "*"], rule.protocol)
       ]
     ]))
-    error_message = "The [protocol] property should be one of Tcp, Udp, Icmp or *."
+    error_message = "The `protocol` property should be one of Tcp, Udp, Icmp or *."
   }
   validation {
     condition = alltrue(flatten([
@@ -168,7 +168,7 @@ variable "network_security_groups" {
         rule.source_port_range == null ? true : can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.source_port_range))
       ]
     ]))
-    error_message = "The [source_port_range] can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
+    error_message = "The `source_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
   }
   validation {
     condition = alltrue(flatten([
@@ -179,7 +179,7 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The [source_port_ranges] is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
+    error_message = "The `source_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
   }
   validation {
     condition = alltrue(flatten([
@@ -188,7 +188,7 @@ variable "network_security_groups" {
         rule.destination_port_range == null ? true : can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.destination_port_range))
       ]
     ]))
-    error_message = "The [destination_port_range] can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
+    error_message = "The `destination_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
   }
   validation {
     condition = alltrue(flatten([
@@ -199,7 +199,7 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The [destination_port_ranges] is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
+    error_message = "The `destination_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
   }
   validation {
     condition = alltrue(flatten([
@@ -209,7 +209,7 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The [source_address_prefix] can be either '*', a CIDR or an Azure Service Tag."
+    error_message = "The `source_address_prefix` can be either '*', a CIDR or an Azure Service Tag."
   }
   validation {
     condition = alltrue(flatten([
@@ -220,7 +220,7 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The [source_address_prefixes] can be a list of CIDRs."
+    error_message = "The `source_address_prefixes` can be a list of CIDRs."
   }
   validation {
     condition = alltrue(flatten([
@@ -230,7 +230,7 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The [destination_address_prefix] can be either '*', a CIDR or an Azure Service Tag."
+    error_message = "The `destination_address_prefix` can be either '*', a CIDR or an Azure Service Tag."
   }
   validation {
     condition = alltrue(flatten([
@@ -241,7 +241,7 @@ variable "network_security_groups" {
         ]
       ]
     ]))
-    error_message = "The [destination_address_prefixes] can be a list of CIDRs."
+    error_message = "The `destination_address_prefixes` can be a list of CIDRs."
   }
 }
 
@@ -311,7 +311,7 @@ variable "route_tables" {
         ]
       ]
     ]))
-    error_message = "The [address_prefix] should be in CIDR notation."
+    error_message = "The `address_prefix` should be in CIDR notation."
   }
   validation {
     condition = alltrue(flatten([
@@ -319,7 +319,7 @@ variable "route_tables" {
         for _, udr in rt.routes : can(udr.next_hop_type) ? contains(["VirtualNetworkGateway", "VnetLocal", "Internet", "VirtualAppliance", "None"], udr.next_hop_type) : true
       ]
     ]))
-    error_message = "The [next_hop_type] route property should have value of either: \"VirtualNetworkGateway\", \"VnetLocal\", \"Internet\", \"VirtualAppliance\" or \"None\"."
+    error_message = "The `next_hop_type` route property should have value of either: \"VirtualNetworkGateway\", \"VnetLocal\", \"Internet\", \"VirtualAppliance\" or \"None\"."
   }
   validation {
     condition = alltrue(flatten([
@@ -329,7 +329,7 @@ variable "route_tables" {
         ]
       ]
     ]))
-    error_message = "The [next_hop_ip_address] should be a valid IPv4 address."
+    error_message = "The `next_hop_ip_address` should be a valid IPv4 address."
   }
 }
 
@@ -401,6 +401,6 @@ variable "subnets" {
         can(regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/[12]?[0-9]$", cidr))
       ]
     ]))
-    error_message = "The [address_prefixes] should be list of CIDR blocks, with the maximum subnet of /29."
+    error_message = "The `address_prefixes` should be list of CIDR blocks, with the maximum subnet of /29."
   }
 }
