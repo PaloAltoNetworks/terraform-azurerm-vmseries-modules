@@ -165,7 +165,7 @@ variable "network_security_groups" {
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        rule.source_port_range == null ? true : can(regex("^\\*|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.source_port_range))
+        rule.source_port_range == null ? true : can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.source_port_range))
       ]
     ]))
     error_message = "The [source_port_range] can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
@@ -185,7 +185,7 @@ variable "network_security_groups" {
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules :
-        rule.destination_port_range == null ? true : can(regex("^\\*|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.destination_port_range))
+        rule.destination_port_range == null ? true : can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.destination_port_range))
       ]
     ]))
     error_message = "The [destination_port_range] can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
@@ -205,7 +205,7 @@ variable "network_security_groups" {
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
-          rule.source_address_prefix != null ? can(regex("^[A-Za-z]+$|^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", rule.source_address_prefix)) : true
+          rule.source_address_prefix != null ? can(regex("^\\*$|^[A-Za-z]+$|^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", rule.source_address_prefix)) : true
         ]
       ]
     ]))
@@ -226,7 +226,7 @@ variable "network_security_groups" {
     condition = alltrue(flatten([
       for _, nsg in var.network_security_groups : [
         for _, rule in nsg.rules : [
-          rule.destination_address_prefix != null ? can(regex("^[A-Za-z]+$|^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", rule.destination_address_prefix)) : true
+          rule.destination_address_prefix != null ? can(regex("^\\*$|^[A-Za-z]+$|^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", rule.destination_address_prefix)) : true
         ]
       ]
     ]))
