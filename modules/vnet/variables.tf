@@ -3,40 +3,46 @@ variable "name" {
   type        = string
 }
 
-variable "create_virtual_network" {
-  description = "If true, create the Virtual Network, otherwise just use a pre-existing network."
-  default     = true
-  type        = bool
-}
-
-variable "location" {
-  description = "Location of the resources that will be deployed."
-  type        = string
-}
-
-variable "tags" {
-  description = "Map of tags to assign to all of the created resources."
-  default     = {}
-  type        = map(string)
-}
-
 variable "resource_group_name" {
   description = "Name of the Resource Group to use."
   type        = string
 }
 
+variable "location" {
+  description = "Location of the deployed resources."
+  type        = string
+}
+
+variable "tags" {
+  description = "Map of tags to assign to all created resources."
+  default     = {}
+  type        = map(string)
+}
+
+variable "create_virtual_network" {
+  description = "Controls Virtual Network creation. If `true`, create the Virtual Network, otherwise just use a pre-existing network."
+  default     = true
+  nullable    = false
+  type        = bool
+}
+
 variable "address_space" {
-  description = "The address space used by the virtual network. You can supply more than one address space."
+  description = "The address space used by the virtual network. You can supply more than one address space. Required only when you create a VNET."
+  default     = null
   type        = list(string)
+  validation {
+    condition     = alltrue([for v in var.address_space : can(regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/[12]?[0-9]$", v))])
+    error_message = "All items in var.address_space should be in CIDR notation, with the maximum subnet of /29."
+  }
 }
 
 variable "network_security_groups" {
   description = <<-EOF
   Map of objects describing Network Security Groups.
 
-  List of either required or important properties:
+  List of available properties:
 
-  - `name`   -  (`string`, required) name of the Network Security Group.
+  - `name`   - (`string`, required) name of the Network Security Group.
   - `rules`  - (`map`, optional) A list of objects representing Network Security Rules.
 
     Notice, all port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value, example: `21-23`. Following attributes are available:
@@ -45,13 +51,13 @@ variable "network_security_groups" {
     - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection. The lower the priority number, the higher the priority of the rule.
     - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
     - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-    - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_security_rule#protocol)
+    - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol)
     - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or a range of ports. This can also be an `*` to match all.
     - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports or ranges of ports.
     - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port or a range of ports. This can also be an `*` to match all.
     - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of destination ports or a ranges of ports.
     - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
-    - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefixe`) a list of source address prefixes. Tags are not allowed.
+    - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source address prefixes. Tags are not allowed.
     - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
     - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of destination address prefixes. Tags are not allowed.
 
@@ -93,8 +99,8 @@ variable "network_security_groups" {
         }
       }
     },
-    "network_security_group_2" = {
-      rules = {}
+    "nsg_2" = {
+      name = "empty-nsg
     }
   }
   ```
@@ -119,22 +125,140 @@ variable "network_security_groups" {
       destination_address_prefixes = optional(list(string))
     })), {})
   }))
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules :
+        rule.priority >= 100 && rule.priority <= 4096
+      ]
+    ]))
+    error_message = "The `priority` should be a value between 100 and 4096."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules :
+        contains(["Inbound", "Outbound"], rule.direction)
+      ]
+    ]))
+    error_message = "The `direction` property should be one of Inbound or Outbound."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules :
+        contains(["Allow", "Deny"], rule.access)
+      ]
+    ]))
+    error_message = "The `access` property should be one of Allow or Deny."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules :
+        contains(["Tcp", "Udp", "Icmp", "*"], rule.protocol)
+      ]
+    ]))
+    error_message = "The `protocol` property should be one of Tcp, Udp, Icmp or *."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules :
+        rule.source_port_range == null ? true : can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.source_port_range))
+      ]
+    ]))
+    error_message = "The `source_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules : [
+          for _, range in(rule.source_port_ranges != null ? rule.source_port_ranges : []) :
+          can(regex("^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", range))
+        ]
+      ]
+    ]))
+    error_message = "The `source_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules :
+        rule.destination_port_range == null ? true : can(regex("^\\*$|^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", rule.destination_port_range))
+      ]
+    ]))
+    error_message = "The `destination_port_range` can be either an '*' or a port number (between 0 and 65535) or a range of ports (delimited with a '-')."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules : [
+          for _, range in(rule.destination_port_ranges != null ? rule.destination_port_ranges : []) :
+          can(regex("^\\d{1,4}[0-5]?(\\-\\d{1,4}[0-5])?$", range))
+        ]
+      ]
+    ]))
+    error_message = "The `destination_port_ranges` is a list of port numbers (between 0 and 65535) or a ranges of ports (delimited with a '-')."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules : [
+          rule.source_address_prefix != null ? can(regex("^\\*$|^[A-Za-z]+$|^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", rule.source_address_prefix)) : true
+        ]
+      ]
+    ]))
+    error_message = "The `source_address_prefix` can be either '*', a CIDR or an Azure Service Tag."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules : [
+          for _, prefix in(rule.source_address_prefixes != null ? rule.source_address_prefixes : []) :
+          can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", prefix))
+        ]
+      ]
+    ]))
+    error_message = "The `source_address_prefixes` can be a list of CIDRs."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules : [
+          rule.destination_address_prefix != null ? can(regex("^\\*$|^[A-Za-z]+$|^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", rule.destination_address_prefix)) : true
+        ]
+      ]
+    ]))
+    error_message = "The `destination_address_prefix` can be either '*', a CIDR or an Azure Service Tag."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, nsg in var.network_security_groups : [
+        for _, rule in nsg.rules : [
+          for _, prefix in(rule.destination_address_prefixes != null ? rule.destination_address_prefixes : []) :
+          can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", prefix))
+        ]
+      ]
+    ]))
+    error_message = "The `destination_address_prefixes` can be a list of CIDRs."
+  }
 }
 
 variable "route_tables" {
   description = <<-EOF
   Map of objects describing a Route Tables.
 
-  List of either required or important properties:
+  List of available properties:
 
-  - `name`      - (`string`, required) name of a Route Table.
-  - `routes`    - (`map`, required) a map of Route Table entries (UDRs):
+  - `name`          - (`string`, required) name of a Route Table.
+  - `routes`        - (`map`, required) a map of Route Table entries (UDRs):
     - `name`                    - (`string`, required) a name of a UDR.
     - `address_prefix`          - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type`           - (`string`, required) the type of Azure hop the packet should be sent to.
-      Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
-    - `next_hop_in_ip_address`  - (`string`, required) contains the IP address packets should be forwarded to.
-      Next hop values are only allowed in routes where the next hop type is `VirtualAppliance`.
+                                  Possible values are: `VirtualNetworkGateway`, `VnetLocal`, `Internet`, `VirtualAppliance` and `None`.
+    - `next_hop_ip_address`     - (`string`, required) contains the IP address packets should be forwarded to.
+                                  Used only when `next_hop_type` is set to `VirtualAppliance`, ignored otherwise.
 
   Example:
   ```hcl
@@ -143,12 +267,14 @@ variable "route_tables" {
       name = "route_table_1"
       routes = {
         "route_1" = {
+          name           = "route-1"
           address_prefix = "10.1.0.0/16"
-          next_hop_type  = "vnetlocal"
+          next_hop_type  = "VnetLocal"
         },
         "route_2" = {
+          name           = "route-2"
           address_prefix = "10.2.0.0/16"
-          next_hop_type  = "vnetlocal"
+          next_hop_type  = "VnetLocal"
         },
       }
     },
@@ -156,9 +282,10 @@ variable "route_tables" {
       name = "route_table_2"
       routes = {
         "route_3" = {
+          name                   = "default-nva-route"
           address_prefix         = "0.0.0.0/0"
           next_hop_type          = "VirtualAppliance"
-          next_hop_in_ip_address = "10.112.0.100"
+          next_hop_ip_address = "10.112.0.100"
         }
       },
     },
@@ -170,16 +297,52 @@ variable "route_tables" {
   type = map(object({
     name = string
     routes = map(object({
-      name                   = string
-      address_prefix         = string
-      next_hop_type          = string
-      next_hop_in_ip_address = optional(string)
+      name                = string
+      address_prefix      = string
+      next_hop_type       = string
+      next_hop_ip_address = optional(string)
     }))
   }))
+  validation {
+    condition = alltrue(flatten([
+      for _, rt in var.route_tables : [
+        for _, udr in rt.routes : [
+          can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", udr.address_prefix))
+        ]
+      ]
+    ]))
+    error_message = "The `address_prefix` should be in CIDR notation."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, rt in var.route_tables : [
+        for _, udr in rt.routes : can(udr.next_hop_type) ? contains(["VirtualNetworkGateway", "VnetLocal", "Internet", "VirtualAppliance", "None"], udr.next_hop_type) : true
+      ]
+    ]))
+    error_message = "The `next_hop_type` route property should have value of either: \"VirtualNetworkGateway\", \"VnetLocal\", \"Internet\", \"VirtualAppliance\" or \"None\"."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, rt in var.route_tables : [
+        for _, udr in rt.routes : [
+          udr.next_hop_ip_address != null ? can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", udr.next_hop_ip_address)) : true
+        ]
+      ]
+    ]))
+    error_message = "The `next_hop_ip_address` should be a valid IPv4 address."
+  }
 }
 
 variable "create_subnets" {
-  description = "If true, create the Subnets inside the Virtual Network, otherwise use a pre-existing subnets."
+  description = <<-EOF
+  Controls subnet creation.
+  
+  Possible variants:
+
+  - `true`      - create subnets described in `var.subnets`
+  - `false`     - source subnets described in `var.subnets`
+  - `false` and `var.subnets` is empty  - skip subnets management.
+  EOF
   default     = true
   nullable    = false
   type        = bool
@@ -187,17 +350,19 @@ variable "create_subnets" {
 
 variable "subnets" {
   description = <<-EOF
-  Map of objects describing subnets to create within a virtual network.
+  Map of objects describing subnets to manage.
   
-  By the default the described subnets will be created. If however `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
+  By the default the described subnets will be created. 
+  If however `create_subnets` is set to `false` this is just a mapping between the existing subnets and UDRs and NSGs that should be assigned to them.
   
   List of available attributes of each subnet entry:
 
   - `name`                            - (`string`, required) name of a subnet.
   - `address_prefixes`                - (`list(string)`, required when `create_subnets = true`) a list of address prefixes within VNET's address space to assign to a created subnet.
-  - `network_security_group_key`          - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
-  - `route_table_key`                  - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
-  - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service endpoint on a subnet. This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used.
+  - `network_security_group_key`      - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
+  - `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
+  - `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service endpoint on a subnet.
+                                        This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used.
 
   Example:
   ```hcl
@@ -205,22 +370,18 @@ variable "subnets" {
     "management" = {
       name                            = "management-snet"
       address_prefixes                = ["10.100.0.0/24"]
-      network_security_group          = "network_security_group_1"
-      route_table                     = "route_table_1"
+      network_security_group_key      = "network_security_group_1"
       enable_storage_service_endpoint = true
     },
     "private" = {
-      name                   = "private-snet"
-      address_prefixes       = ["10.100.1.0/24"]
-      network_security_group = "network_security_group_2"
-      route_table            = "route_table_2"
+      name                       = "private-snet"
+      address_prefixes           = ["10.100.1.0/24"]
+      route_table_key            = "route_table_2"
     },
     "public" = {
-      name                   = "public-snet"
-      address_prefixes       = ["10.100.2.0/24"]
-      network_security_group = "network_security_group_3"
-      route_table            = "route_table_3"
-    },
+      name                       = "public-snet"
+      address_prefixes           = ["10.100.2.0/24"]
+    }
   }
   ```
   EOF
@@ -233,4 +394,13 @@ variable "subnets" {
     route_table_key                 = optional(string)
     enable_storage_service_endpoint = optional(bool, false)
   }))
+  validation {
+    condition = alltrue(flatten([
+      for _, snet in var.subnets : [
+        for _, cidr in snet.address_prefixes :
+        can(regex("^(\\d{1,3}\\.){3}\\d{1,3}\\/[12]?[0-9]$", cidr))
+      ]
+    ]))
+    error_message = "The `address_prefixes` should be list of CIDR blocks, with the maximum subnet of /29."
+  }
 }

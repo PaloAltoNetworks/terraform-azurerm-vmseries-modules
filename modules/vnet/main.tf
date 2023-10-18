@@ -119,7 +119,7 @@ resource "azurerm_route" "this" {
   route_table_name       = azurerm_route_table.this[each.value.route_table_key].name
   address_prefix         = each.value.route.address_prefix
   next_hop_type          = each.value.route.next_hop_type
-  next_hop_in_ip_address = each.value.route.next_hop_in_ip_address
+  next_hop_in_ip_address = each.value.route.next_hop_type == "VirtualAppliance" ? each.value.route.next_hop_ip_address : null
 }
 
 resource "azurerm_subnet_network_security_group_association" "this" {
