@@ -1,18 +1,15 @@
 locals {
   # Calculate a map of unique frontend ports based on the `listener.port` values defined in `rules` map.
   # A unque set of ports will be created upfront and then referenced in the listener's config.
-  front_ports_list = distinct([for k, v in var.rules : v.listener.port])
+  front_ports_list = distinct([for k, v in var.listeners : v.port])
   front_ports_map  = { for v in local.front_ports_list : v => v }
 
   # Calculate a flat map of all backend's trusted root certificates.
   # Root certs are created upfront and then referenced in a single list in the http setting's config.
   root_certs_flat_list = flatten([
-    for k, v in var.rules : [
-      for name, path in v.backend.root_certs : {
-        name = "${k}-${name}"
-        path = path
-      }
-    ] if can(v.backend.root_certs)
+    for k, v in var.backends : [
+      for key, root_cert in v.root_certs : root_cert
+    ] if can(v.root_certs)
   ])
 
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
@@ -34,7 +31,7 @@ locals {
 }
 
 resource "azurerm_public_ip" "this" {
-  name                = "${var.name}-pip"
+  name                = var.public_ip_name
   resource_group_name = var.resource_group_name
   location            = var.location
 
@@ -60,11 +57,11 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "autoscale_configuration" {
-    for_each = try(var.capacity_min, null) != null ? [1] : []
+    for_each = var.capacity_min != null ? [1] : []
 
     content {
       min_capacity = var.capacity_min
-      max_capacity = try(var.capacity_max, null)
+      max_capacity = var.capacity_max
     }
   }
 
@@ -83,14 +80,14 @@ resource "azurerm_application_gateway" "this" {
   }
 
   frontend_ip_configuration {
-    name                 = "public_ipconfig"
+    name                 = var.frontend_ip_configuration_name
     public_ip_address_id = azurerm_public_ip.this.id
   }
 
   # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
   backend_address_pool {
-    name         = "vmseries"
-    ip_addresses = var.vmseries_ips
+    name         = var.backend_pool.name
+    ip_addresses = var.backend_pool.vmseries_ips
   }
 
   ssl_policy {
@@ -105,12 +102,12 @@ resource "azurerm_application_gateway" "this" {
     for_each = var.ssl_profiles
 
     content {
-      name = ssl_profile.key
+      name = ssl_profile.value.name
       ssl_policy {
         policy_name          = var.ssl_policy_type == "Predefined" ? var.ssl_policy_name : null
         policy_type          = ssl_profile.value.ssl_policy_type
-        min_protocol_version = try(ssl_profile.value.ssl_policy_min_protocol_version, null)
-        cipher_suites        = try(ssl_profile.value.ssl_policy_cipher_suites, null)
+        min_protocol_version = ssl_profile.value.ssl_policy_min_protocol_version
+        cipher_suites        = ssl_profile.value.ssl_policy_cipher_suites
       }
     }
   }
@@ -124,25 +121,25 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "probe" {
-    for_each = { for k, v in merge(var.rules, local.url_path_maps_settings) : k => v if can(v.probe.path) }
+    for_each = { for k, v in merge(var.probes, local.url_path_maps_settings) : k => v if can(v.path) }
 
     content {
-      name                                      = probe.key
-      path                                      = probe.value.probe.path
-      protocol                                  = try(probe.value.backend.protocol, "Http")
-      host                                      = try(probe.value.probe.host, null)
-      pick_host_name_from_backend_http_settings = !can(probe.value.probe.host)
-      port                                      = try(probe.value.probe.port, null)
-      interval                                  = try(probe.value.probe.interval, 5)
-      timeout                                   = try(probe.value.probe.timeout, 30)
-      unhealthy_threshold                       = try(probe.value.probe.threshold, 2)
+      name                                      = probe.value.name
+      path                                      = probe.value.path
+      protocol                                  = probe.value.protocol
+      host                                      = probe.value.host
+      pick_host_name_from_backend_http_settings = probe.value.host == null
+      port                                      = probe.value.port
+      interval                                  = probe.value.interval
+      timeout                                   = probe.value.timeout
+      unhealthy_threshold                       = probe.value.threshold
 
       dynamic "match" {
-        for_each = can(probe.value.probe.match_code) ? [1] : []
+        for_each = probe.value.match_code != null ? [1] : []
 
         content {
-          status_code = probe.value.probe.match_code
-          body        = try(probe.value.probe.match_body, null)
+          status_code = probe.value.match_code
+          body        = probe.value.match_body
         }
       }
     }
@@ -159,49 +156,49 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "backend_http_settings" {
-    for_each = { for k, v in merge(var.rules, local.url_path_maps_settings) : k => v if !can(v.redirect.type) }
+    for_each = { for k, v in merge(var.backends, local.url_path_maps_settings) : k => v if !can(v.redirect.type) }
 
     content {
-      name                                = backend_http_settings.key
-      port                                = try(backend_http_settings.value.backend.port, 80)
-      protocol                            = try(backend_http_settings.value.backend.protocol, "Http")
-      pick_host_name_from_backend_address = try(backend_http_settings.value.backend.hostname_from_backend, null)
-      host_name                           = try(backend_http_settings.value.backend.hostname, null)
-      path                                = try(backend_http_settings.value.backend.path, null)
-      request_timeout                     = try(backend_http_settings.value.backend.timeout, 60)
-      probe_name                          = can(backend_http_settings.value.probe.path) ? backend_http_settings.key : null
-      cookie_based_affinity               = try(backend_http_settings.value.backend.cookie_based_affinity, "Enabled")
-      affinity_cookie_name                = try(backend_http_settings.value.backend.affinity_cookie_name, null)
-      trusted_root_certificate_names = can(backend_http_settings.value.backend.root_certs) ? (
-      [for k, v in backend_http_settings.value.backend.root_certs : "${backend_http_settings.key}-${k}"]) : null
+      name                                = backend_http_settings.value.name
+      port                                = backend_http_settings.value.port
+      protocol                            = backend_http_settings.value.protocol
+      pick_host_name_from_backend_address = backend_http_settings.value.hostname_from_backend
+      host_name                           = backend_http_settings.value.hostname
+      path                                = backend_http_settings.value.path
+      request_timeout                     = backend_http_settings.value.timeout
+      probe_name                          = backend_http_settings.value.probe != null && var.probes != null ? var.probes[backend_http_settings.value.probe].name : null
+      cookie_based_affinity               = backend_http_settings.value.cookie_based_affinity
+      affinity_cookie_name                = backend_http_settings.value.affinity_cookie_name
+      trusted_root_certificate_names = can(backend_http_settings.value.root_certs) ? (
+      [for k, v in backend_http_settings.value.root_certs : v.name]) : null
     }
   }
 
   dynamic "ssl_certificate" {
-    for_each = { for k, v in var.rules : k => v if try(v.listener.ssl_certificate_path, v.listener.ssl_certificate_vault_id, null) != null }
+    for_each = { for k, v in var.listeners : k => v if try(v.ssl_certificate_path, v.ssl_certificate_vault_id, null) != null }
 
     content {
       name                = ssl_certificate.key
-      data                = try(filebase64(ssl_certificate.value.listener.ssl_certificate_path), null)
-      password            = try(ssl_certificate.value.listener.ssl_certificate_pass, null)
-      key_vault_secret_id = try(ssl_certificate.value.listener.ssl_certificate_vault_id, null)
+      data                = filebase64(ssl_certificate.value.ssl_certificate_path)
+      password            = ssl_certificate.value.ssl_certificate_pass
+      key_vault_secret_id = ssl_certificate.value.ssl_certificate_vault_id
     }
   }
 
   dynamic "http_listener" {
-    for_each = var.rules
+    for_each = var.listeners
 
     content {
-      name                           = http_listener.key
-      frontend_ip_configuration_name = "public_ipconfig"
-      frontend_port_name             = http_listener.value.listener.port
-      protocol                       = try(http_listener.value.listener.protocol, "Http")
-      host_names                     = try(http_listener.value.listener.host_names, null)
-      ssl_certificate_name           = try(http_listener.value.listener.ssl_certificate_path, http_listener.value.listener.ssl_certificate_vault_id, null) != null ? http_listener.key : null
-      ssl_profile_name               = try(http_listener.value.listener.ssl_profile_name, null)
+      name                           = http_listener.value.name
+      frontend_ip_configuration_name = var.frontend_ip_configuration_name
+      frontend_port_name             = http_listener.value.port
+      protocol                       = http_listener.value.protocol
+      host_names                     = http_listener.value.host_names
+      ssl_certificate_name           = try(http_listener.value.ssl_certificate_path, http_listener.value.ssl_certificate_vault_id, null) != null ? http_listener.key : null
+      ssl_profile_name               = http_listener.value.ssl_profile_name
 
       dynamic "custom_error_configuration" {
-        for_each = try(http_listener.value.listener.custom_error_pages, {})
+        for_each = http_listener.value.custom_error_pages
 
         content {
           status_code           = custom_error_configuration.key
@@ -217,38 +214,38 @@ resource "azurerm_application_gateway" "this" {
     content {
       name                 = redirect_configuration.key
       redirect_type        = redirect_configuration.value.redirect.type
-      target_listener_name = try(redirect_configuration.value.redirect.target_listener_name, null)
-      target_url           = try(redirect_configuration.value.redirect.target_url, null)
-      include_path         = try(redirect_configuration.value.redirect.include_path, null)
-      include_query_string = try(redirect_configuration.value.redirect.include_query_string, null)
+      target_listener_name = redirect_configuration.value.redirect.target_listener_name
+      target_url           = redirect_configuration.value.redirect.target_url
+      include_path         = redirect_configuration.value.redirect.include_path
+      include_query_string = redirect_configuration.value.redirect.include_query_string
     }
   }
 
   dynamic "rewrite_rule_set" {
-    for_each = { for k, v in var.rules : k => v if can(v.rewrite_sets) }
+    for_each = { for k, v in var.rules : k => v if can(v.rewrite_rules) }
 
     content {
-      name = rewrite_rule_set.key
+      name = rewrite_rule_set.value.rewrite_set_name
 
       dynamic "rewrite_rule" {
-        for_each = rewrite_rule_set.value.rewrite_sets
+        for_each = rewrite_rule_set.value.rewrite_rules
 
         content {
-          name          = rewrite_rule.key
+          name          = rewrite_rule.value.name
           rule_sequence = rewrite_rule.value.sequence
 
           dynamic "condition" {
-            for_each = try(rewrite_rule.value.conditions, [])
+            for_each = rewrite_rule.value.conditions
             content {
               variable    = condition.key
               pattern     = condition.value.pattern
-              ignore_case = try(condition.value.ignore_case, null)
-              negate      = try(condition.value.negate, null)
+              ignore_case = condition.value.ignore_case
+              negate      = condition.value.negate
             }
           }
 
           dynamic "request_header_configuration" {
-            for_each = try(rewrite_rule.value.request_headers, [])
+            for_each = rewrite_rule.value.request_headers
             content {
               header_name  = request_header_configuration.key
               header_value = request_header_configuration.value
@@ -256,7 +253,7 @@ resource "azurerm_application_gateway" "this" {
           }
 
           dynamic "response_header_configuration" {
-            for_each = try(rewrite_rule.value.response_headers, [])
+            for_each = rewrite_rule.value.response_headers
             content {
               header_name  = response_header_configuration.key
               header_value = response_header_configuration.value
@@ -268,11 +265,11 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "url_path_map" {
-    for_each = { for k, v in var.rules : k => v if can(v.url_path_maps) }
+    for_each = { for k, v in var.rules : k => v if length(v.url_path_maps) > 0 }
 
     content {
       name                               = url_path_map.key
-      default_backend_address_pool_name  = "vmseries"
+      default_backend_address_pool_name  = var.backend_pool.name
       default_backend_http_settings_name = url_path_map.key
 
       dynamic "path_rule" {
@@ -281,7 +278,7 @@ resource "azurerm_application_gateway" "this" {
         content {
           name                        = path_rule.key
           paths                       = [path_rule.value.path]
-          backend_address_pool_name   = can(path_rule.value.redirect.type) ? null : "vmseries"
+          backend_address_pool_name   = can(path_rule.value.redirect.type) ? null : var.backend_pool.name
           backend_http_settings_name  = can(path_rule.value.redirect.type) ? null : "${url_path_map.key}-${path_rule.key}"
           redirect_configuration_name = can(path_rule.value.redirect.type) ? "${url_path_map.key}-${path_rule.key}" : null
         }
@@ -293,20 +290,20 @@ resource "azurerm_application_gateway" "this" {
     for_each = var.rules
 
     content {
-      name      = request_routing_rule.key
-      rule_type = can(request_routing_rule.value.url_path_maps) ? "PathBasedRouting" : "Basic"
-      priority  = try(request_routing_rule.value.priority, null)
+      name      = request_routing_rule.value.name
+      rule_type = length(request_routing_rule.value.url_path_maps) > 0 ? "PathBasedRouting" : "Basic"
+      priority  = request_routing_rule.value.priority
 
-      http_listener_name = request_routing_rule.key
+      http_listener_name = var.listeners[request_routing_rule.value.listener].name
 
-      backend_address_pool_name  = can(request_routing_rule.value.redirect.type) || can(request_routing_rule.value.url_path_maps) ? null : "vmseries"
-      backend_http_settings_name = can(request_routing_rule.value.redirect.type) || can(request_routing_rule.value.url_path_maps) ? null : request_routing_rule.key
+      backend_address_pool_name  = can(request_routing_rule.value.redirect.type) || length(request_routing_rule.value.url_path_maps) > 0 ? null : var.backend_pool.name
+      backend_http_settings_name = can(request_routing_rule.value.redirect.type) || length(request_routing_rule.value.url_path_maps) > 0 ? null : var.backends[request_routing_rule.value.backend].name
 
       redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? request_routing_rule.key : null
 
-      rewrite_rule_set_name = can(request_routing_rule.value.rewrite_sets) ? request_routing_rule.key : null
+      rewrite_rule_set_name = can(request_routing_rule.value.rewrite_rules) ? request_routing_rule.value.rewrite_set_name : null
 
-      url_path_map_name = can(request_routing_rule.value.url_path_maps) ? request_routing_rule.key : null
+      url_path_map_name = length(request_routing_rule.value.url_path_maps) > 0 ? request_routing_rule.key : null
     }
   }
 
