@@ -39,19 +39,63 @@ variable "tags" {
 # VNets
 variable "vnets" {
   description = <<-EOF
-  Map with VNet definitions. Each item supports following inputs for `vnet` module:
-  - `name`                    - (required|string) VNet name.
-  - `create_virtual_network`  - (optional|bool) Whether to create a new or source an existing VNet, defaults to `true`.
-  - `address_space`           - (optional|list) List of CIDRs for the new VNet.
-  - `resource_group_name`     - (optional|string) VNet's Resource Group, by default the one specified by `var.resource_group_name`.
-  - `create_subnets`          - (optional|bool) Whether to create or source items from `subnets`, defaults to `true`.
-  - `subnets`                 - (required|map) Subnet definitions.
-  - `network_security_groups` - (optional|map) NSGs to create.
-  - `route_tables`            - (optional|map) Route Tables to create.
+  A map defining VNETs.
+  
+  For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-  Please consult [module documentation](../../modules/vnet/README.md) for details.
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a full resource name, including prefixes.
+  - `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the VNET will reside or is sourced from
+
+  - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network, otherwise use source existing subnets
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see [VNET module documentation](../../modules/vnet/README.md#subnets)
+
+  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see [VNET module documentation](../../modules/vnet/README.md#route_tables)
   EOF
-  type        = any
+
+  type = map(object({
+    name                   = string
+    resource_group_name    = optional(string)
+    create_virtual_network = optional(bool, true)
+    address_space          = optional(list(string))
+    network_security_groups = optional(map(object({
+      name = string
+      rules = optional(map(object({
+        name                         = string
+        priority                     = number
+        direction                    = string
+        access                       = string
+        protocol                     = string
+        source_port_range            = optional(string)
+        source_port_ranges           = optional(list(string))
+        destination_port_range       = optional(string)
+        destination_port_ranges      = optional(list(string))
+        source_address_prefix        = optional(string)
+        source_address_prefixes      = optional(list(string))
+        destination_address_prefix   = optional(string)
+        destination_address_prefixes = optional(list(string))
+      })), {})
+    })), {})
+    route_tables = optional(map(object({
+      name = string
+      routes = map(object({
+        name                = string
+        address_prefix      = string
+        next_hop_type       = string
+        next_hop_ip_address = optional(string)
+      }))
+    })), {})
+    create_subnets = optional(bool, true)
+    subnets = optional(map(object({
+      name                            = string
+      address_prefixes                = optional(list(string), [])
+      network_security_group_key      = optional(string)
+      route_table_key                 = optional(string)
+      enable_storage_service_endpoint = optional(bool, false)
+    })), {})
+  }))
 }
 
 # GWLB

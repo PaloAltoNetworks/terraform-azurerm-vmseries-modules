@@ -45,19 +45,22 @@ module "vnet" {
 
   for_each = var.vnets
 
-  name                   = each.value.name
-  name_prefix            = var.name_prefix
-  create_virtual_network = try(each.value.create_virtual_network, true)
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
+  name                   = "${var.name_prefix}${each.value.name}"
+  create_virtual_network = each.value.create_virtual_network
+  resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
 
-  address_space = try(each.value.create_virtual_network, true) ? each.value.address_space : []
+  address_space = each.value.address_space
 
-  create_subnets = try(each.value.create_subnets, true)
-  subnets        = each.value.subnets
+  create_subnets = each.value.create_subnets
+  subnets = each.value.create_subnets ? {
+    for k, v in each.value.subnets : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  } : each.value.subnets
 
-  network_security_groups = try(each.value.network_security_groups, {})
-  route_tables            = try(each.value.route_tables, {})
+  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
+  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
 
   tags = var.tags
 }
@@ -252,7 +255,7 @@ module "bootstrap_share" {
 
 
 resource "azurerm_availability_set" "this" {
-  for_each = var.availability_set
+  for_each = var.availability_sets
 
   name                         = "${var.name_prefix}${each.value.name}"
   resource_group_name          = local.resource_group.name
@@ -277,7 +280,7 @@ module "vmseries" {
   img_version = try(each.value.version, var.vmseries_version)
   img_sku     = var.vmseries_sku
   vm_size     = try(each.value.vm_size, var.vmseries_vm_size)
-  avset_id    = try(azurerm_availability_set.this[each.value.availability_set_name].id, null)
+  avset_id    = try(azurerm_availability_set.this[each.value.availability_set_key].id, null)
 
   enable_zones = var.enable_zones
   avzone       = try(each.value.avzone, 1)
