@@ -67,12 +67,43 @@ appgws = {
       }
     }
     rules = {
-      "minimum" = {
+      minimum = {
         name     = "minimum-rule"
         priority = 1
         backend  = "minimum"
         listener = "minimum"
         rewrite  = "minimum"
+      }
+    }
+  }
+  "public-http" = {
+    name           = "appgw-http"
+    public_ip_name = "pip-http"
+    vnet_key       = "transit"
+    subnet_key     = "appgw"
+    zones          = ["1", "2", "3"]
+    capacity       = 2
+    backends = {
+      http = {
+        name                  = "http-backend"
+        port                  = 80
+        protocol              = "Http"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+      }
+    }
+    listeners = {
+      http = {
+        name = "http-listener"
+        port = 80
+      }
+    }
+    rules = {
+      http = {
+        name     = "http-rule"
+        priority = 1
+        backend  = "http"
+        listener = "http"
       }
     }
   }
