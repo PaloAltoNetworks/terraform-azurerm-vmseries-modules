@@ -9,7 +9,7 @@ locals {
   root_certs_flat_list = flatten([
     for k, v in var.backends : [
       for key, root_cert in v.root_certs : root_cert
-    ] if can(v.root_certs)
+    ]
   ])
 
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
@@ -121,7 +121,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "probe" {
-    for_each = { for k, v in merge(var.probes, local.url_path_maps_settings) : k => v if can(v.path) }
+    for_each = { for k, v in merge(var.probes, local.url_path_maps_settings) : k => v }
 
     content {
       name                                      = probe.value.name
@@ -169,8 +169,7 @@ resource "azurerm_application_gateway" "this" {
       probe_name                          = backend_http_settings.value.probe != null && var.probes != null ? var.probes[backend_http_settings.value.probe].name : null
       cookie_based_affinity               = backend_http_settings.value.cookie_based_affinity
       affinity_cookie_name                = backend_http_settings.value.affinity_cookie_name
-      trusted_root_certificate_names = can(backend_http_settings.value.root_certs) ? (
-      [for k, v in backend_http_settings.value.root_certs : v.name]) : null
+      trusted_root_certificate_names      = [for k, v in backend_http_settings.value.root_certs : v.name]
     }
   }
 
