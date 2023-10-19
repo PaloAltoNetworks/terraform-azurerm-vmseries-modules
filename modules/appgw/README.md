@@ -303,12 +303,12 @@ map(object({
 A map of URL path maps for the Application Gateway.
 
 Every URL path map contains attributes:
-- `name`
-- `backend`
-- `path_rules`
-    - `paths`
-    - `backend`
-    - `redirect`
+- `name`                                 - (`string`, required) The name of redirect.
+- `backend`                              - (`string`, required) The default backend for redirect.
+- `path_rules`                           - (`map`, optional) The map of rules, where every object has attributes:
+    - `paths`                            - (`list`, required) List of paths
+    - `backend`                          - (`string`, optional) Backend's key
+    - `redirect`                         - (`string`, optional) Redirect's key
 
 
 Type: 
@@ -558,7 +558,7 @@ Every backend contains attributes:
 - `timeout`                                    - (`number`, required) The request timeout in seconds, which must be between 1 and 86400 seconds.
 - `cookie_based_affinity`                      - (`string`, required) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
 - `affinity_cookie_name`                       - (`string`, optional) The name of the affinity cookie.
-- `probe`                                 - (`string`, optional) Probe's key.
+- `probe`                                      - (`string`, optional) Probe's key.
 - `root_certs`                                 - (`map`, optional) A list of trusted_root_certificate names.
 
 
