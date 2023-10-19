@@ -16,8 +16,10 @@ Name | Type | Description
 [`location`](#location) | `string` | Location to place the Application Gateway in.
 [`public_ip_name`](#public_ip_name) | `string` | Name for the public IP address.
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
+[`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
 [`backend_pool`](#backend_pool) | `object` | Backend pool.
+[`probes`](#probes) | `map` | A map of probes for the Application Gateway.
 [`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
 [`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
@@ -41,10 +43,8 @@ Name | Type | Description
 [`ssl_policy_name`](#ssl_policy_name) | `string` | Name of an SSL policy.
 [`ssl_policy_min_protocol_version`](#ssl_policy_min_protocol_version) | `string` | Minimum version of the TLS protocol for SSL Policy.
 [`ssl_policy_cipher_suites`](#ssl_policy_cipher_suites) | `list` | A list of accepted cipher suites.
-[`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
 [`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | Frontend IP configuration name.
 [`backends`](#backends) | `map` | A map of backend settings for the Application Gateway.
-[`probes`](#probes) | `map` | A map of probes for the Application Gateway.
 
 
 
@@ -135,6 +135,34 @@ Type: string
 
 
 
+#### ssl_profiles
+
+A map of SSL profiles.
+
+SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property.
+For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply.
+The only difference is that you cannot name an SSL policy inside an SSL profile.
+
+Every SSL profile contains attributes:
+- `name`                            - (`string`, required) name of the SSL profile
+- `ssl_policy_type`                 - (`string`, optional) the Type of the Policy. Possible values are Predefined, Custom and CustomV2
+- `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version. Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3
+- `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites. Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384
+
+
+Type: 
+
+```hcl
+map(object({
+    name                            = string
+    ssl_policy_type                 = optional(string)
+    ssl_policy_min_protocol_version = optional(string)
+    ssl_policy_cipher_suites        = optional(list(string))
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 
 #### listeners
@@ -194,6 +222,42 @@ object({
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
+#### probes
+
+A map of probes for the Application Gateway.
+
+Every probe contains attributes:
+- `name`                                       - (`string`, required) The name used for this Probe
+- `path`                                       - (`string`, required) The path used for this Probe
+- `host`                                       - (`string`, optional) The hostname used for this Probe
+- `port`                                       - (`number`, optional) Custom port which will be used for probing the backend servers.
+- `protocol`                                   - (`string`, optional) The protocol which should be used. Possible values are Http and Https.
+- `interval`                                   - (`number`, optional) The interval between two consecutive probes in seconds.
+- `timeout`                                    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
+- `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates the amount of retries which should be attempted before a node is deemed unhealthy.
+- `match_code`                                 - (`list`, optional) The list of allowed status codes for this Health Probe.
+- `match_body`                                 - (`string`, optional) A snippet from the Response Body which must be present in the Response.
+
+
+Type: 
+
+```hcl
+map(object({
+    name       = string
+    path       = string
+    host       = optional(string)
+    port       = optional(number)
+    protocol   = optional(string, "Http")
+    interval   = optional(number, 5)
+    timeout    = optional(number, 30)
+    threshold  = optional(number, 2)
+    match_code = optional(list(number))
+    match_body = optional(string)
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
 
 #### rewrites
 
@@ -501,36 +565,6 @@ Default value: `[TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 TLS_ECDHE_ECDSA_WITH_AE
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### ssl_profiles
-
-A map of SSL profiles.
-
-SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property.
-For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply.
-The only difference is that you cannot name an SSL policy inside an SSL profile.
-
-Every SSL profile contains attributes:
-- `name`                            - (`string`, required) name of the SSL profile
-- `ssl_policy_type`                 - (`string`, optional) the Type of the Policy. Possible values are Predefined, Custom and CustomV2
-- `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version. Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3
-- `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites. Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384
-
-
-Type: 
-
-```hcl
-map(object({
-    name                            = string
-    ssl_policy_type                 = optional(string)
-    ssl_policy_min_protocol_version = optional(string)
-    ssl_policy_cipher_suites        = optional(list(string))
-  }))
-```
-
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### frontend_ip_configuration_name
 
@@ -588,44 +622,6 @@ Default value: `map[vmseries:map[cookie_based_affinity:Enabled port:80 protocol:
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### probes
-
-A map of probes for the Application Gateway.
-
-Every probe contains attributes:
-- `name`                                       - (`string`, required) The name used for this Probe
-- `path`                                       - (`string`, required) The path used for this Probe
-- `host`                                       - (`string`, optional) The hostname used for this Probe
-- `port`                                       - (`number`, optional) Custom port which will be used for probing the backend servers.
-- `protocol`                                   - (`string`, optional) The protocol which should be used. Possible values are Http and Https.
-- `interval`                                   - (`number`, optional) The interval between two consecutive probes in seconds.
-- `timeout`                                    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
-- `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates the amount of retries which should be attempted before a node is deemed unhealthy.
-- `match_code`                                 - (`list`, optional) The list of allowed status codes for this Health Probe.
-- `match_body`                                 - (`string`, optional) A snippet from the Response Body which must be present in the Response.
-
-
-Type: 
-
-```hcl
-map(object({
-    name       = string
-    path       = string
-    host       = optional(string)
-    port       = optional(number)
-    protocol   = optional(string, "Http")
-    interval   = optional(number, 5)
-    timeout    = optional(number, 30)
-    threshold  = optional(number, 2)
-    match_code = optional(list(number))
-    match_body = optional(string)
-  }))
-```
-
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
 
 
 

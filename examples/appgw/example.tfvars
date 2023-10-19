@@ -107,6 +107,7 @@ appgws = {
       }
     }
   }
+  # If you test example for Application Gateway with SSL, you need to created directory files and create keys and certs using commands:
   # 1. Create CA private key and certificate:
   #    openssl genrsa 2048 > ca-key1.pem
   #    openssl req -new -x509 -nodes -days 365000 -key ca-key1.pem -out ca-cert1.pem

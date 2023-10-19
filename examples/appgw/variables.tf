@@ -205,7 +205,7 @@ variable "appgws" {
       threshold  = optional(number, 2)
       match_code = optional(list(number))
       match_body = optional(string)
-    })))
+    })), {})
     rewrites = optional(map(object({
       name = optional(string)
       rules = optional(map(object({
@@ -219,7 +219,7 @@ variable "appgws" {
         request_headers  = optional(map(string), {})
         response_headers = optional(map(string), {})
       })))
-    })))
+    })), {})
     rules = map(object({
       name         = string
       priority     = number
@@ -236,7 +236,7 @@ variable "appgws" {
       target_url           = optional(string)
       include_path         = optional(bool, false)
       include_query_string = optional(bool, false)
-    })))
+    })), {})
     url_path_maps = optional(map(object({
       name    = string
       backend = string
@@ -245,7 +245,7 @@ variable "appgws" {
         backend  = optional(string)
         redirect = optional(string)
       })))
-    })))
+    })), {})
     ssl_policy_type                 = optional(string)
     ssl_policy_name                 = optional(string)
     ssl_policy_min_protocol_version = optional(string)

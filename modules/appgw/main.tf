@@ -105,7 +105,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "probe" {
-    for_each = coalesce(var.probes, {})
+    for_each = var.probes
 
     content {
       name                                      = probe.value.name
@@ -140,7 +140,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "backend_http_settings" {
-    for_each = coalesce(var.backends, {})
+    for_each = var.backends
 
     content {
       name                                = backend_http_settings.value.name
@@ -192,7 +192,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "redirect_configuration" {
-    for_each = coalesce(var.redirects, {})
+    for_each = var.redirects
 
     content {
       name                 = redirect_configuration.value.name
@@ -205,7 +205,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "rewrite_rule_set" {
-    for_each = coalesce(var.rewrites, {})
+    for_each = var.rewrites
 
     content {
       name = rewrite_rule_set.value.name
@@ -248,7 +248,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "url_path_map" {
-    for_each = coalesce(var.url_path_maps, {})
+    for_each = var.url_path_maps
 
     content {
       name                               = url_path_map.value.name
