@@ -76,7 +76,10 @@ variable "frontend_ips" {
     - `SourceIPProtocol` : a 3 tuple hash is used
   - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule, when skipped the rule priority will be auto-calculated, for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
 
-  Below are the properties for outbound rules map. Setting at least one `out_rule` switches the outgoing traffic from SNAT to Outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and Outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
+  Below are the properties for **outbound rules** map. 
+  
+  > [!Warning]
+  > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
 
   - `name`                      - (`string`, required) a name of an outbound rule
   - `protocol`                  - (`string`, required) protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted
