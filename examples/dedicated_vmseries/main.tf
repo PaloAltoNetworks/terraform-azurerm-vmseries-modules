@@ -320,31 +320,40 @@ module "appgw" {
 
   for_each = var.appgws
 
-  name                = "${var.name_prefix}${each.value.name}"
+  name                = each.value.name
+  public_ip_name      = each.value.public_ip_name
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  managed_identities = try(each.value.managed_identities, null)
-  waf_enabled        = try(each.value.waf_enabled, false)
-  capacity           = try(each.value.capacity, null)
-  capacity_min       = try(each.value.capacity_min, null)
-  capacity_max       = try(each.value.capacity_max, null)
-  enable_http2       = try(each.value.enable_http2, null)
-  zones              = try(each.value.zones, null)
+  managed_identities = each.value.managed_identities
+  waf_enabled        = each.value.waf_enabled
+  capacity           = each.value.capacity
+  capacity_min       = each.value.capacity_min
+  capacity_max       = each.value.capacity_max
+  enable_http2       = each.value.enable_http2
+  zones              = each.value.zones
 
-  vmseries_ips = [for k, v in var.vmseries : module.vmseries[k].interfaces[
-    "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}"
-  ].private_ip_address if try(v.add_to_appgw_backend, false)]
+  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
+  listeners                      = each.value.listeners
+  backend_pool = merge(each.value.backend_pool, {
+    vmseries_ips = [for k, v in var.vmseries : module.vmseries[k].interfaces[
+      "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}"
+    ].private_ip_address if try(v.add_to_appgw_backend, false)]
+  })
+  backends      = each.value.backends
+  probes        = each.value.probes
+  rewrites      = each.value.rewrites
+  rules         = each.value.rules
+  redirects     = each.value.redirects
+  url_path_maps = each.value.url_path_maps
 
-  rules = each.value.rules
-
-  ssl_policy_type                 = try(each.value.ssl_policy_type, null)
-  ssl_policy_name                 = try(each.value.ssl_policy_name, null)
-  ssl_policy_min_protocol_version = try(each.value.ssl_policy_min_protocol_version, null)
-  ssl_policy_cipher_suites        = try(each.value.ssl_policy_cipher_suites, [])
-  ssl_profiles                    = try(each.value.ssl_profiles, {})
+  ssl_policy_type                 = each.value.ssl_policy_type
+  ssl_policy_name                 = each.value.ssl_policy_name
+  ssl_policy_min_protocol_version = each.value.ssl_policy_min_protocol_version
+  ssl_policy_cipher_suites        = each.value.ssl_policy_cipher_suites
+  ssl_profiles                    = each.value.ssl_profiles
 
   tags       = var.tags
-  depends_on = [module.vmseries]
+  depends_on = [module.vnet]
 }

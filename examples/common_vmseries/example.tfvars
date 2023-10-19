@@ -1,7 +1,7 @@
 # --- GENERAL --- #
 location            = "North Europe"
 resource_group_name = "transit-vnet-common"
-name_prefix         = "example-"
+name_prefix         = "sczech-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -156,7 +156,7 @@ load_balancers = {
 
 
 
-# # --- VMSERIES PART --- #
+# --- VMSERIES PART --- #
 vmseries_version = "10.2.3"
 vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
@@ -183,6 +183,7 @@ vmseries = {
         create_pip        = true
       }
     ]
+    add_to_appgw_backend = true
   }
   "fw-2" = {
     name              = "firewall02"
@@ -207,33 +208,47 @@ vmseries = {
         create_pip        = true
       }
     ]
+    add_to_appgw_backend = true
   }
 }
 
 
-# # --- APPLICATION GATEWAYs --- #
+# --- APPLICATION GATEWAYs --- #
 appgws = {
   "public" = {
-    name                     = "public-appgw"
-    vnet_key                 = "transit"
-    subnet_key               = "appgw"
-    zones                    = ["1", "2", "3"]
-    capacity                 = 2
-    vmseries_public_nic_name = "public"
-    rules = {
-      "minimum" = {
-        priority = 1
-        listener = {
-          port = 80
-        }
-        rewrite_sets = {
+    name           = "appgw"
+    public_ip_name = "pip"
+    vnet_key       = "transit"
+    subnet_key     = "appgw"
+    zones          = ["1", "2", "3"]
+    capacity       = 2
+    listeners = {
+      minimum = {
+        name = "minimum-listener"
+        port = 80
+      }
+    }
+    rewrites = {
+      minimum = {
+        name = "minimum-set"
+        rules = {
           "xff-strip-port" = {
+            name     = "minimum-xff-strip-port"
             sequence = 100
             request_headers = {
               "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
             }
           }
         }
+      }
+    }
+    rules = {
+      minimum = {
+        name     = "minimum-rule"
+        priority = 1
+        backend  = "minimum"
+        listener = "minimum"
+        rewrite  = "minimum"
       }
     }
   }

@@ -148,7 +148,7 @@ map(object({
 
 A map defining all Application Gateways in the current deployment.
 
-For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](../../modules/appgw/README.md).
+For detailed documentation on how to configure this resource, for available properties, especially for the defaults, refer to [module documentation](../../modules/appgw/README.md).
 
 Following properties are supported:
 - `name`                              - (`string`, required) name of the Application Gateway.
@@ -163,6 +163,7 @@ Following properties are supported:
 - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
 - `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
 - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
+- `vmseries_public_nic_name`          - (`string`, optional) VM-Series NIC name, for which IP address will be used in backend pool
 - `listeners`                         - (`map`, required) map of listeners (refer to [module documentation](../../modules/appgw/README.md) for details)
 - `backend_pool`                      - (`object`, optional) backend pool (refer to [module documentation](../../modules/appgw/README.md) for details)
 - `backends`                          - (`map`, optional) map of backends (refer to [module documentation](../../modules/appgw/README.md) for details)
@@ -194,6 +195,7 @@ map(object({
     enable_http2                   = optional(bool)
     zones                          = list(string)
     frontend_ip_configuration_name = optional(string, "public_ipconfig")
+    vmseries_public_nic_name       = optional(string, "public")
     listeners = map(object({
       name                     = string
       port                     = number
