@@ -143,7 +143,7 @@ Below are the properties for **outbound rules** map.
 > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
 
 - `name`                      - (`string`, required) a name of an outbound rule
-- `protocol`                  - (`string`, required) protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted
+- `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
 - `allocated_outbound_ports`  - (`number`, optional, defaults to `1024`) number of ports allocated per instance
 - `enable_tcp_reset`          - (`bool`, optional, defaults to `false`) ignored when `protocol` is set to `Udp`
 - `idle_timeout_in_minutes`   - (`number`, optional, defaults to `4`) TCP connection timeout in minutes in case the connection is idle, ignored when `protocol` is set to `Udp`

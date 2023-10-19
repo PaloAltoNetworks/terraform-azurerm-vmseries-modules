@@ -29,6 +29,10 @@ variable "zones" {
   EOF
   default     = ["1", "2", "3"]
   type        = list(string)
+  validation {
+    condition     = length(var.zones) > 0 || var.zones == null
+    error_message = "The `var.zones` can either bea non empty list of Availability Zones or `null`."
+  }
 }
 
 variable "tags" {
@@ -82,7 +86,7 @@ variable "frontend_ips" {
   > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
 
   - `name`                      - (`string`, required) a name of an outbound rule
-  - `protocol`                  - (`string`, required) protocol used by the rule. On of `All`, `Tcp` or `Udp` is accepted
+  - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
   - `allocated_outbound_ports`  - (`number`, optional, defaults to `1024`) number of ports allocated per instance
   - `enable_tcp_reset`          - (`bool`, optional, defaults to `false`) ignored when `protocol` is set to `Udp`
   - `idle_timeout_in_minutes`   - (`number`, optional, defaults to `4`) TCP connection timeout in minutes in case the connection is idle, ignored when `protocol` is set to `Udp`
@@ -168,6 +172,58 @@ variable "frontend_ips" {
       idle_timeout_in_minutes  = optional(number, 4)
     })), {})
   }))
+  validation {
+    condition = alltrue([
+      for _, fip in var.frontend_ips :
+      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
+      if fip.private_ip_address != null
+    ])
+    error_message = "The `private_ip_address` property should be in IPv4 format."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules : contains(["Tcp", "Udp", "All"], in_rule.protocol)
+      ]
+    ]))
+    error_message = "The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules : (in_rule.port >= 0 && in_rule.port <= 65535)
+      ]
+    ]))
+    error_message = "The `in_rule.port` should be a valid TCP port number or `0` for all ports."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules :
+        (in_rule.backend_port > 0 && in_rule.backend_port <= 65535)
+        if in_rule.backend_port != null
+      ]
+    ]))
+    error_message = "The `in_rule.backend_port` should be a valid TCP port number."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], in_rule.session_persistence)
+      ]
+    ]))
+    error_message = "The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\"."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules :
+        in_rule.nsg_priority >= 100 && in_rule.nsg_priority <= 4000
+        if in_rule.nsg_priority != null
+      ]
+    ]))
+    error_message = "The `in_rule.nsg_priority` property be a number between 100 and 4096."
+  }
 }
 
 variable "backend_name" {

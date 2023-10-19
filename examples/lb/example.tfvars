@@ -76,9 +76,11 @@ load_balancers = {
         private_ip_address = "10.0.0.21"
         in_rules = {
           HA_PORTS = {
-            name     = "HA"
-            port     = 0
-            protocol = "All"
+            name                = "HA"
+            port                = 0
+            protocol            = "All"
+            session_persistence = "SourceIP"
+            nsg_priority        = 2000
           }
         }
       }
