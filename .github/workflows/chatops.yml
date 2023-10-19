@@ -15,6 +15,7 @@ concurrency:
 jobs:
   dispatch:
     name: Dispatch a test job
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
