@@ -245,21 +245,9 @@ map(object({
       match_code = optional(list(number))
       match_body = optional(string)
     })))
-    rules = map(object({
-      name          = string
-      priority      = number
-      backend       = string
-      listener      = string
-      url_path_maps = optional(map(string), {})
-      redirect = optional(object({
-        type                 = string
-        target_listener_name = string
-        target_url           = string
-        include_path         = string
-        include_query_string = string
-      }))
-      rewrite_set_name = optional(string)
-      rewrite_rules = map(object({
+    rewrites = optional(map(object({
+      name = optional(string)
+      rules = optional(map(object({
         name     = string
         sequence = number
         conditions = optional(map(object({
@@ -269,6 +257,21 @@ map(object({
         })), {})
         request_headers  = optional(map(string), {})
         response_headers = optional(map(string), {})
+      })))
+    })))
+    rules = map(object({
+      name          = string
+      priority      = number
+      backend       = string
+      listener      = string
+      rewrite       = optional(string)
+      url_path_maps = optional(map(string), {})
+      redirect = optional(object({
+        type                 = string
+        target_listener_name = string
+        target_url           = string
+        include_path         = string
+        include_query_string = string
       }))
     }))
     ssl_policy_type                 = optional(string)

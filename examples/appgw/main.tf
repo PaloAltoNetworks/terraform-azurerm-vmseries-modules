@@ -62,6 +62,7 @@ module "appgw" {
   backend_pool                   = each.value.backend_pool
   backends                       = each.value.backends
   probes                         = each.value.probes
+  rewrites                       = each.value.rewrites
   rules                          = each.value.rules
 
   ssl_policy_type                 = each.value.ssl_policy_type

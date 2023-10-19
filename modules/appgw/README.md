@@ -18,6 +18,7 @@ Name | Type | Description
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
 [`backend_pool`](#backend_pool) | `object` | Backend pool.
+[`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
 
 
@@ -192,6 +193,46 @@ object({
 
 
 
+#### rewrites
+
+A map of rewrites for the Application Gateway.
+
+Every rewrite contains attributes:
+- `name`                                       - (`string`, optional) Rewrite Rule Set name
+- `rules`                                      - (`object`, optional) Rewrite Rule Set defined with attributes:
+    - `name`                                   - (`string`, required) Rewrite Rule name.
+    - `sequence`                               - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
+    - `conditions`                             - (`map`, optional) One or more condition blocks as defined below:
+      - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression, that evaluates the truthfulness of the condition.
+      - `ignore_case`                          - (`string`, required) Perform a case in-sensitive comparison.
+      - `negate`                               - (`bool`, required) Negate the result of the condition evaluation.
+    - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key, header value is the value of the object in the map.
+    - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key, header value is the value of the object in the map.
+
+
+
+Type: 
+
+```hcl
+map(object({
+    name = optional(string)
+    rules = optional(map(object({
+      name     = string
+      sequence = number
+      conditions = optional(map(object({
+        pattern     = string
+        ignore_case = string
+        negate      = bool
+      })), {})
+      request_headers  = optional(map(string), {})
+      response_headers = optional(map(string), {})
+    })))
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
 #### rules
 
 A map of rules for the Application Gateway.
@@ -204,6 +245,7 @@ Every rule contains attributes:
 - `priority`                                   - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
 - `backend`                                    - (`string`, required) Backend settings` key
 - `listener`                                   - (`string`, required) Listener's key
+- `rewrite`                                    - (`string`, optional) Rewrite's key
 - `url_path_maps`                              - (`map`, optional) URL Path Map.
 - `redirect`                                   - (`object`, optional) Redirect object defined with attributes:
     - `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
@@ -211,16 +253,6 @@ Every rule contains attributes:
     - `target_url`                             - (`string`, required) The URL to redirect the request to.
     - `include_path`                           - (`string`, required) Whether or not to include the path in the redirected URL.
     - `include_query_string`                   - (`string`, required) Whether or not to include the query string in the redirected URL.
-- `rewrite_set_name`                           - (`string`, optional) Rewrite Rule Set name
-- `rewrite_rules`                              - (`object`, optional) Rewrite Rule Set defined with attributes:
-    - `name`                                   - (`string`, required) Rewrite Rule name.
-    - `sequence`                               - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
-    - `conditions`                             - (`map`, optional) One or more condition blocks as defined below:
-      - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression, that evaluates the truthfulness of the condition.
-      - `ignore_case`                          - (`string`, required) Perform a case in-sensitive comparison.
-      - `negate`                               - (`bool`, required) Negate the result of the condition evaluation.
-    - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key, header value is the value of the object in the map.
-    - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key, header value is the value of the object in the map.
 
 
 Type: 
@@ -231,6 +263,7 @@ map(object({
     priority      = number
     backend       = string
     listener      = string
+    rewrite       = optional(string)
     url_path_maps = optional(map(string), {})
     redirect = optional(object({
       type                 = string
@@ -239,18 +272,6 @@ map(object({
       include_path         = string
       include_query_string = string
     }))
-    rewrite_set_name = optional(string)
-    rewrite_rules = optional(map(object({
-      name     = string
-      sequence = number
-      conditions = optional(map(object({
-        pattern     = string
-        ignore_case = string
-        negate      = bool
-      })), {})
-      request_headers  = optional(map(string), {})
-      response_headers = optional(map(string), {})
-    })))
   }))
 ```
 
@@ -555,6 +576,7 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
 
 
 

@@ -52,14 +52,10 @@ appgws = {
         port = 80
       }
     }
-    rules = {
-      "minimum" = {
-        name             = "minimum-rule"
-        priority         = 1
-        backend          = "minimum"
-        listener         = "minimum"
-        rewrite_set_name = "minimum-set"
-        rewrite_rules = {
+    rewrites = {
+      minimum = {
+        name = "minimum-set"
+        rules = {
           "xff-strip-port" = {
             name     = "minimum-xff-strip-port"
             sequence = 100
@@ -68,6 +64,15 @@ appgws = {
             }
           }
         }
+      }
+    }
+    rules = {
+      "minimum" = {
+        name     = "minimum-rule"
+        priority = 1
+        backend  = "minimum"
+        listener = "minimum"
+        rewrite  = "minimum"
       }
     }
   }
@@ -189,14 +194,10 @@ appgws = {
         timeout  = 10
       }
     }
-    rules = {
-      "http" = {
-        name             = "http-rule"
-        priority         = 1
-        backend          = "http"
-        listener         = "http"
-        rewrite_set_name = "http-set"
-        rewrite_rules = {
+    rewrites = {
+      http = {
+        name = "http-set"
+        rules = {
           "xff-strip-port" = {
             name     = "http-xff-strip-port"
             sequence = 100
@@ -206,13 +207,9 @@ appgws = {
           }
         }
       }
-      "https1" = {
-        name             = "https1-rule"
-        priority         = 2
-        backend          = "https1"
-        listener         = "https1"
-        rewrite_set_name = "https1-set"
-        rewrite_rules = {
+      https1 = {
+        name = "https1-set"
+        rules = {
           "xff-strip-port" = {
             name     = "https1-xff-strip-port"
             sequence = 100
@@ -230,13 +227,9 @@ appgws = {
           }
         }
       }
-      "https2" = {
-        name             = "https2-rule"
-        priority         = 3
-        backend          = "https2"
-        listener         = "https2"
-        rewrite_set_name = "https2-set"
-        rewrite_rules = {
+      https2 = {
+        name = "https2-set"
+        rules = {
           "xff-strip-port" = {
             name     = "https2-xff-strip-port"
             sequence = 100
@@ -253,6 +246,29 @@ appgws = {
             }
           }
         }
+      }
+    }
+    rules = {
+      "http" = {
+        name     = "http-rule"
+        priority = 1
+        backend  = "http"
+        listener = "http"
+        rewrite  = "http"
+      }
+      "https1" = {
+        name     = "https1-rule"
+        priority = 2
+        backend  = "https1"
+        listener = "https1"
+        rewrite  = "https1"
+      }
+      "https2" = {
+        name     = "https2-rule"
+        priority = 3
+        backend  = "https2"
+        listener = "https2"
+        rewrite  = "https2"
       }
     }
   }

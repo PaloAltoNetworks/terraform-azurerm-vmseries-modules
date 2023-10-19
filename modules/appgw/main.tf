@@ -222,13 +222,13 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "rewrite_rule_set" {
-    for_each = { for k, v in var.rules : k => v if can(v.rewrite_rules) }
+    for_each = coalesce(var.rewrites, {})
 
     content {
-      name = rewrite_rule_set.value.rewrite_set_name
+      name = rewrite_rule_set.value.name
 
       dynamic "rewrite_rule" {
-        for_each = rewrite_rule_set.value.rewrite_rules
+        for_each = rewrite_rule_set.value.rules
 
         content {
           name          = rewrite_rule.value.name
@@ -301,7 +301,7 @@ resource "azurerm_application_gateway" "this" {
 
       redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? request_routing_rule.key : null
 
-      rewrite_rule_set_name = can(request_routing_rule.value.rewrite_rules) ? request_routing_rule.value.rewrite_set_name : null
+      rewrite_rule_set_name = var.rewrites != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
 
       url_path_map_name = length(request_routing_rule.value.url_path_maps) > 0 ? request_routing_rule.key : null
     }
