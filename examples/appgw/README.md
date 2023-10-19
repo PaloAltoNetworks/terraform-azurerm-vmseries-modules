@@ -169,6 +169,8 @@ Following properties are supported:
 - `probes`                            - (`map`, optional) map of probes (refer to [module documentation](../../modules/appgw/README.md) for details)
 - `rewrites`                          - (`map`, optional) map of rewrites (refer to [module documentation](../../modules/appgw/README.md) for details)
 - `rules`                             - (`map`, required) map of rules (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `redirects`                         - (`map`, optional) map of redirects (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `url_path_maps`                     - (`map`, optional) map of URL path maps (refer to [module documentation](../../modules/appgw/README.md) for details)
 - `ssl_policy_type`                   - (`string`, optional) type of an SSL policy, defaults to `Predefined`
 - `ssl_policy_name`                   - (`string`, optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
 - `ssl_policy_min_protocol_version`   - (`string`, optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
@@ -261,20 +263,31 @@ map(object({
       })))
     })))
     rules = map(object({
-      name          = string
-      priority      = number
-      backend       = optional(string)
-      listener      = string
-      rewrite       = optional(string)
-      url_path_maps = optional(map(string), {})
-      redirect = optional(object({
-        type                 = string
-        target_listener      = optional(string)
-        target_url           = optional(string)
-        include_path         = optional(bool, false)
-        include_query_string = optional(bool, false)
-      }))
+      name         = string
+      priority     = number
+      backend      = optional(string)
+      listener     = string
+      rewrite      = optional(string)
+      url_path_map = optional(string)
+      redirect     = optional(string)
     }))
+    redirects = optional(map(object({
+      name                 = string
+      type                 = string
+      target_listener      = optional(string)
+      target_url           = optional(string)
+      include_path         = optional(bool, false)
+      include_query_string = optional(bool, false)
+    })))
+    url_path_maps = optional(map(object({
+      name    = string
+      backend = string
+      path_rules = optional(map(object({
+        paths    = list(string)
+        backend  = optional(string)
+        redirect = optional(string)
+      })))
+    })))
     ssl_policy_type                 = optional(string)
     ssl_policy_name                 = optional(string)
     ssl_policy_min_protocol_version = optional(string)

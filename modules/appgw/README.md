@@ -20,6 +20,8 @@ Name | Type | Description
 [`backend_pool`](#backend_pool) | `object` | Backend pool.
 [`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
+[`redirects`](#redirects) | `map` | A map of redirects for the Application Gateway.
+[`url_path_maps`](#url_path_maps) | `map` | A map of URL path maps for the Application Gateway.
 
 
 ## Module's Optional Inputs
@@ -246,32 +248,80 @@ Every rule contains attributes:
 - `backend`                                    - (`string`, optional) Backend settings` key
 - `listener`                                   - (`string`, required) Listener's key
 - `rewrite`                                    - (`string`, optional) Rewrite's key
-- `url_path_maps`                              - (`map`, optional) URL Path Map.
-- `redirect`                                   - (`object`, optional) Redirect object defined with attributes:
-    - `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
-    - `target_listener`                        - (`string`, optional) The name of the listener to redirect to.
-    - `target_url`                             - (`string`, optional) The URL to redirect the request to.
-    - `include_path`                           - (`bool`, optional) Whether or not to include the path in the redirected URL.
-    - `include_query_string`                   - (`bool`, optional) Whether or not to include the query string in the redirected URL.
+- `url_path_map`                               - (`string`, optional) URL Path Map's key
+- `redirect`                                   - (`string`, optional) Redirect's ky
 
 
 Type: 
 
 ```hcl
 map(object({
-    name          = string
-    priority      = number
-    backend       = optional(string)
-    listener      = string
-    rewrite       = optional(string)
-    url_path_maps = optional(map(string), {})
-    redirect = optional(object({
-      type                 = string
-      target_listener      = optional(string)
-      target_url           = optional(string)
-      include_path         = optional(bool, false)
-      include_query_string = optional(bool, false)
-    }))
+    name         = string
+    priority     = number
+    backend      = optional(string)
+    listener     = string
+    rewrite      = optional(string)
+    url_path_map = optional(string)
+    redirect     = optional(string)
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### redirects
+
+A map of redirects for the Application Gateway.
+
+Every redirect contains attributes:
+- `name`                                   - (`string`, required) The name of redirect.
+- `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
+- `target_listener`                        - (`string`, optional) The name of the listener to redirect to.
+- `target_url`                             - (`string`, optional) The URL to redirect the request to.
+- `include_path`                           - (`bool`, optional) Whether or not to include the path in the redirected URL.
+- `include_query_string`                   - (`bool`, optional) Whether or not to include the query string in the redirected URL.
+
+
+Type: 
+
+```hcl
+map(object({
+    name                 = string
+    type                 = string
+    target_listener      = optional(string)
+    target_url           = optional(string)
+    include_path         = optional(bool, false)
+    include_query_string = optional(bool, false)
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### url_path_maps
+
+A map of URL path maps for the Application Gateway.
+
+Every URL path map contains attributes:
+- `name`
+- `backend`
+- `path_rules`
+    - `paths`
+    - `backend`
+    - `redirect`
+
+
+Type: 
+
+```hcl
+map(object({
+    name    = string
+    backend = string
+    path_rules = optional(map(object({
+      paths    = list(string)
+      backend  = optional(string)
+      redirect = optional(string)
+    })))
   }))
 ```
 
@@ -576,6 +626,8 @@ map(object({
 Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
+
+
 
 
 

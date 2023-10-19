@@ -64,6 +64,8 @@ module "appgw" {
   probes                         = each.value.probes
   rewrites                       = each.value.rewrites
   rules                          = each.value.rules
+  redirects                      = each.value.redirects
+  url_path_maps                  = each.value.url_path_maps
 
   ssl_policy_type                 = each.value.ssl_policy_type
   ssl_policy_name                 = each.value.ssl_policy_name

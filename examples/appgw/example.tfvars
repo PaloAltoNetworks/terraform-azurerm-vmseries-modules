@@ -135,13 +135,25 @@ appgws = {
         ssl_certificate_pass = ""
         host_names           = ["test2.appgw.local"]
       }
-      tomcat = {
-        name = "tomcat-listener"
-        port = 8080
+      redirect_listener = {
+        name = "redirect-listener-listener"
+        port = 521
       }
-      custom = {
-        name = "custom-listener"
-        port = 9090
+      redirect_url = {
+        name = "redirect-url-listener"
+        port = 522
+      }
+      path_based_backend = {
+        name = "path-backend-listener"
+        port = 641
+      }
+      path_based_redirect_listener = {
+        name = "path-redirect-listener-listener"
+        port = 642
+      }
+      path_based_redirect_url = {
+        name = "path-redirect-rul-listener"
+        port = 643
       }
     }
     backend_pool = {
@@ -278,26 +290,86 @@ appgws = {
         listener = "https2"
         rewrite  = "https2"
       }
-      tomcat = {
-        name     = "tomcat-rule"
+      redirect_listener = {
+        name     = "redirect-listener-rule"
         priority = 4
-        listener = "tomcat"
-        redirect = {
-          type                 = "Permanent"
-          target_listener      = "http"
-          include_path         = true
-          include_query_string = true
+        listener = "redirect_listener"
+        redirect = "redirect_listener"
+      }
+      redirect_url = {
+        name     = "redirect-url-rule"
+        priority = 5
+        listener = "redirect_url"
+        redirect = "redirect_url"
+      }
+      path_based_backend = {
+        name         = "path-based-backend-rule"
+        priority     = 6
+        listener     = "path_based_backend"
+        url_path_map = "path_based_backend"
+      }
+      path_based_redirect_listener = {
+        name         = "path-redirect-listener-rule"
+        priority     = 7
+        listener     = "path_based_redirect_listener"
+        url_path_map = "path_based_redirect_listener"
+      }
+      path_based_redirect_url = {
+        name         = "path-redirect-rul-rule"
+        priority     = 8
+        listener     = "path_based_redirect_url"
+        url_path_map = "path_based_redirect_url"
+      }
+    }
+    redirects = {
+      redirect_listener = {
+        name                 = "listener-redirect"
+        type                 = "Permanent"
+        target_listener      = "http"
+        include_path         = true
+        include_query_string = true
+      }
+      redirect_url = {
+        name                 = "url-redirect"
+        type                 = "Temporary"
+        target_url           = "http://example.com"
+        include_path         = true
+        include_query_string = true
+      }
+    }
+    url_path_maps = {
+      path_based_backend = {
+        name    = "backend-map"
+        backend = "http"
+        path_rules = {
+          http = {
+            paths   = ["/plaintext"]
+            backend = "http"
+          }
+          https = {
+            paths   = ["/secure"]
+            backend = "https1"
+          }
         }
       }
-      custom = {
-        name     = "custom-rule"
-        priority = 5
-        listener = "custom"
-        redirect = {
-          type                 = "Temporary"
-          target_url           = "http://example.com"
-          include_path         = true
-          include_query_string = true
+      path_based_redirect_listener = {
+        name    = "redirect-listener-map"
+        backend = "http"
+        path_rules = {
+          http = {
+            paths    = ["/redirect"]
+            redirect = "redirect_listener"
+          }
+        }
+      }
+      path_based_redirect_url = {
+        name    = "redirect-url-map"
+        backend = "http"
+        path_rules = {
+          http = {
+            paths    = ["/redirect"]
+            redirect = "redirect_url"
+          }
         }
       }
     }

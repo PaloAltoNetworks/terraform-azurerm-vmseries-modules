@@ -405,27 +405,61 @@ variable "rules" {
   - `backend`                                    - (`string`, optional) Backend settings` key
   - `listener`                                   - (`string`, required) Listener's key
   - `rewrite`                                    - (`string`, optional) Rewrite's key
-  - `url_path_maps`                              - (`map`, optional) URL Path Map.
-  - `redirect`                                   - (`object`, optional) Redirect object defined with attributes:
-      - `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
-      - `target_listener`                        - (`string`, optional) The name of the listener to redirect to.
-      - `target_url`                             - (`string`, optional) The URL to redirect the request to.
-      - `include_path`                           - (`bool`, optional) Whether or not to include the path in the redirected URL.
-      - `include_query_string`                   - (`bool`, optional) Whether or not to include the query string in the redirected URL.
+  - `url_path_map`                               - (`string`, optional) URL Path Map's key
+  - `redirect`                                   - (`string`, optional) Redirect's ky
   EOF
   type = map(object({
-    name          = string
-    priority      = number
-    backend       = optional(string)
-    listener      = string
-    rewrite       = optional(string)
-    url_path_maps = optional(map(string), {})
-    redirect = optional(object({
-      type                 = string
-      target_listener      = optional(string)
-      target_url           = optional(string)
-      include_path         = optional(bool, false)
-      include_query_string = optional(bool, false)
-    }))
+    name         = string
+    priority     = number
+    backend      = optional(string)
+    listener     = string
+    rewrite      = optional(string)
+    url_path_map = optional(string)
+    redirect     = optional(string)
+  }))
+}
+
+variable "redirects" {
+  description = <<-EOF
+  A map of redirects for the Application Gateway.
+
+  Every redirect contains attributes:
+  - `name`                                   - (`string`, required) The name of redirect.
+  - `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
+  - `target_listener`                        - (`string`, optional) The name of the listener to redirect to.
+  - `target_url`                             - (`string`, optional) The URL to redirect the request to.
+  - `include_path`                           - (`bool`, optional) Whether or not to include the path in the redirected URL.
+  - `include_query_string`                   - (`bool`, optional) Whether or not to include the query string in the redirected URL.
+  EOF
+  type = map(object({
+    name                 = string
+    type                 = string
+    target_listener      = optional(string)
+    target_url           = optional(string)
+    include_path         = optional(bool, false)
+    include_query_string = optional(bool, false)
+  }))
+}
+
+variable "url_path_maps" {
+  description = <<-EOF
+  A map of URL path maps for the Application Gateway.
+
+  Every URL path map contains attributes:
+  - `name`
+  - `backend`
+  - `path_rules`
+      - `paths`
+      - `backend`
+      - `redirect`
+  EOF
+  type = map(object({
+    name    = string
+    backend = string
+    path_rules = optional(map(object({
+      paths    = list(string)
+      backend  = optional(string)
+      redirect = optional(string)
+    })))
   }))
 }

@@ -11,23 +11,7 @@ locals {
       for key, root_cert in v.root_certs : root_cert
     ]
   ])
-
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
-
-  # Create a flat map of all path_rules for a path based rule.
-  # This will be used to create `url_path_map` object.
-  url_path_maps_flattened = flatten(
-    [for k, v in var.rules : [
-      for map_k, map_v in v.url_path_maps : merge(
-        { "rule_name" = map_k },
-        { "app_name" = k },
-        map_v
-      )
-    ] if can(v.url_path_maps)]
-  )
-  url_path_maps_settings = { for v in local.url_path_maps_flattened :
-    "${v.app_name}-${v.rule_name}" => v
-  }
 }
 
 resource "azurerm_public_ip" "this" {
@@ -121,7 +105,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "probe" {
-    for_each = { for k, v in merge(var.probes, local.url_path_maps_settings) : k => v }
+    for_each = coalesce(var.probes, {})
 
     content {
       name                                      = probe.value.name
@@ -156,7 +140,7 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "backend_http_settings" {
-    for_each = { for k, v in merge(var.backends, local.url_path_maps_settings) : k => v if !can(v.redirect.type) }
+    for_each = coalesce(var.backends, {})
 
     content {
       name                                = backend_http_settings.value.name
@@ -208,15 +192,15 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "redirect_configuration" {
-    for_each = { for k, v in merge(var.rules, local.url_path_maps_settings) : k => v if can(v.redirect.type) }
+    for_each = coalesce(var.redirects, {})
 
     content {
-      name                 = redirect_configuration.key
-      redirect_type        = redirect_configuration.value.redirect.type
-      target_listener_name = redirect_configuration.value.redirect != null && redirect_configuration.value.redirect.target_listener != null ? var.listeners[redirect_configuration.value.redirect.target_listener].name : null
-      target_url           = redirect_configuration.value.redirect.target_url
-      include_path         = redirect_configuration.value.redirect.include_path
-      include_query_string = redirect_configuration.value.redirect.include_query_string
+      name                 = redirect_configuration.value.name
+      redirect_type        = redirect_configuration.value.type
+      target_listener_name = redirect_configuration.value.target_listener != null ? var.listeners[redirect_configuration.value.target_listener].name : null
+      target_url           = redirect_configuration.value.target_url
+      include_path         = redirect_configuration.value.include_path
+      include_query_string = redirect_configuration.value.include_query_string
     }
   }
 
@@ -264,22 +248,22 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "url_path_map" {
-    for_each = { for k, v in var.rules : k => v if length(v.url_path_maps) > 0 }
+    for_each = coalesce(var.url_path_maps, {})
 
     content {
-      name                               = url_path_map.key
+      name                               = url_path_map.value.name
       default_backend_address_pool_name  = var.backend_pool.name
-      default_backend_http_settings_name = url_path_map.key
+      default_backend_http_settings_name = var.backends[url_path_map.value.backend].name
 
       dynamic "path_rule" {
-        for_each = url_path_map.value.url_path_maps
+        for_each = url_path_map.value.path_rules
 
         content {
           name                        = path_rule.key
-          paths                       = [path_rule.value.path]
-          backend_address_pool_name   = can(path_rule.value.redirect.type) ? null : var.backend_pool.name
-          backend_http_settings_name  = can(path_rule.value.redirect.type) ? null : "${url_path_map.key}-${path_rule.key}"
-          redirect_configuration_name = can(path_rule.value.redirect.type) ? "${url_path_map.key}-${path_rule.key}" : null
+          paths                       = path_rule.value.paths
+          backend_address_pool_name   = path_rule.value.backend != null ? var.backend_pool.name : null
+          backend_http_settings_name  = path_rule.value.backend != null ? var.backends[path_rule.value.backend].name : null
+          redirect_configuration_name = path_rule.value.redirect != null ? var.redirects[path_rule.value.redirect].name : null
         }
       }
     }
@@ -290,19 +274,15 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       name      = request_routing_rule.value.name
-      rule_type = length(request_routing_rule.value.url_path_maps) > 0 ? "PathBasedRouting" : "Basic"
+      rule_type = request_routing_rule.value.url_path_map != null ? "PathBasedRouting" : "Basic"
       priority  = request_routing_rule.value.priority
 
-      http_listener_name = var.listeners[request_routing_rule.value.listener].name
-
-      backend_address_pool_name  = can(request_routing_rule.value.redirect.type) || length(request_routing_rule.value.url_path_maps) > 0 ? null : var.backend_pool.name
-      backend_http_settings_name = can(request_routing_rule.value.redirect.type) || length(request_routing_rule.value.url_path_maps) > 0 ? null : var.backends[request_routing_rule.value.backend].name
-
-      redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? request_routing_rule.key : null
-
-      rewrite_rule_set_name = var.rewrites != null && request_routing_rule.value.rewrite != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
-
-      url_path_map_name = length(request_routing_rule.value.url_path_maps) > 0 ? request_routing_rule.key : null
+      http_listener_name          = var.listeners[request_routing_rule.value.listener].name
+      backend_address_pool_name   = request_routing_rule.value.backend != null ? var.backend_pool.name : null
+      backend_http_settings_name  = request_routing_rule.value.backend != null ? var.backends[request_routing_rule.value.backend].name : null
+      redirect_configuration_name = request_routing_rule.value.redirect != null ? var.redirects[request_routing_rule.value.redirect].name : null
+      rewrite_rule_set_name       = request_routing_rule.value.rewrite != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
+      url_path_map_name           = request_routing_rule.value.url_path_map != null ? var.url_path_maps[request_routing_rule.value.url_path_map].name : null
     }
   }
 
