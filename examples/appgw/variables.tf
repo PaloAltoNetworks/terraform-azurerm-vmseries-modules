@@ -129,6 +129,7 @@ variable "appgws" {
   - `backend_pool`                      - (`object`, optional) backend pool (refer to [module documentation](../../modules/appgw/README.md) for details)
   - `backends`                          - (`map`, optional) map of backends (refer to [module documentation](../../modules/appgw/README.md) for details)
   - `probes`                            - (`map`, optional) map of probes (refer to [module documentation](../../modules/appgw/README.md) for details)
+  - `rewrites`                          - (`map`, optional) map of rewrites (refer to [module documentation](../../modules/appgw/README.md) for details)
   - `rules`                             - (`map`, required) map of rules (refer to [module documentation](../../modules/appgw/README.md) for details)
   - `ssl_policy_type`                   - (`string`, optional) type of an SSL policy, defaults to `Predefined`
   - `ssl_policy_name`                   - (`string`, optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
@@ -220,16 +221,16 @@ variable "appgws" {
     rules = map(object({
       name          = string
       priority      = number
-      backend       = string
+      backend       = optional(string)
       listener      = string
       rewrite       = optional(string)
       url_path_maps = optional(map(string), {})
       redirect = optional(object({
         type                 = string
-        target_listener_name = string
-        target_url           = string
-        include_path         = string
-        include_query_string = string
+        target_listener      = optional(string)
+        target_url           = optional(string)
+        include_path         = optional(bool, false)
+        include_query_string = optional(bool, false)
       }))
     }))
     ssl_policy_type                 = optional(string)

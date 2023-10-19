@@ -135,6 +135,14 @@ appgws = {
         ssl_certificate_pass = ""
         host_names           = ["test2.appgw.local"]
       }
+      tomcat = {
+        name = "tomcat-listener"
+        port = 8080
+      }
+      custom = {
+        name = "custom-listener"
+        port = 9090
+      }
     }
     backend_pool = {
       name = "vmseries-pool"
@@ -249,26 +257,48 @@ appgws = {
       }
     }
     rules = {
-      "http" = {
+      http = {
         name     = "http-rule"
         priority = 1
         backend  = "http"
         listener = "http"
         rewrite  = "http"
       }
-      "https1" = {
+      https1 = {
         name     = "https1-rule"
         priority = 2
         backend  = "https1"
         listener = "https1"
         rewrite  = "https1"
       }
-      "https2" = {
+      https2 = {
         name     = "https2-rule"
         priority = 3
         backend  = "https2"
         listener = "https2"
         rewrite  = "https2"
+      }
+      tomcat = {
+        name     = "tomcat-rule"
+        priority = 4
+        listener = "tomcat"
+        redirect = {
+          type                 = "Permanent"
+          target_listener      = "http"
+          include_path         = true
+          include_query_string = true
+        }
+      }
+      custom = {
+        name     = "custom-rule"
+        priority = 5
+        listener = "custom"
+        redirect = {
+          type                 = "Temporary"
+          target_url           = "http://example.com"
+          include_path         = true
+          include_query_string = true
+        }
       }
     }
   }

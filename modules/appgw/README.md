@@ -243,16 +243,16 @@ A key is an application name that is used to prefix all components inside Applic
 Every rule contains attributes:
 - `name`                                       - (`string`, required) Rule name.
 - `priority`                                   - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
-- `backend`                                    - (`string`, required) Backend settings` key
+- `backend`                                    - (`string`, optional) Backend settings` key
 - `listener`                                   - (`string`, required) Listener's key
 - `rewrite`                                    - (`string`, optional) Rewrite's key
 - `url_path_maps`                              - (`map`, optional) URL Path Map.
 - `redirect`                                   - (`object`, optional) Redirect object defined with attributes:
     - `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
-    - `target_listener_name`                   - (`string`, required) The name of the listener to redirect to.
-    - `target_url`                             - (`string`, required) The URL to redirect the request to.
-    - `include_path`                           - (`string`, required) Whether or not to include the path in the redirected URL.
-    - `include_query_string`                   - (`string`, required) Whether or not to include the query string in the redirected URL.
+    - `target_listener`                        - (`string`, optional) The name of the listener to redirect to.
+    - `target_url`                             - (`string`, optional) The URL to redirect the request to.
+    - `include_path`                           - (`bool`, optional) Whether or not to include the path in the redirected URL.
+    - `include_query_string`                   - (`bool`, optional) Whether or not to include the query string in the redirected URL.
 
 
 Type: 
@@ -261,16 +261,16 @@ Type:
 map(object({
     name          = string
     priority      = number
-    backend       = string
+    backend       = optional(string)
     listener      = string
     rewrite       = optional(string)
     url_path_maps = optional(map(string), {})
     redirect = optional(object({
       type                 = string
-      target_listener_name = string
-      target_url           = string
-      include_path         = string
-      include_query_string = string
+      target_listener      = optional(string)
+      target_url           = optional(string)
+      include_path         = optional(bool, false)
+      include_query_string = optional(bool, false)
     }))
   }))
 ```

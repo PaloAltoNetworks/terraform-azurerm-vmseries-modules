@@ -213,7 +213,7 @@ resource "azurerm_application_gateway" "this" {
     content {
       name                 = redirect_configuration.key
       redirect_type        = redirect_configuration.value.redirect.type
-      target_listener_name = redirect_configuration.value.redirect.target_listener_name
+      target_listener_name = redirect_configuration.value.redirect != null && redirect_configuration.value.redirect.target_listener != null ? var.listeners[redirect_configuration.value.redirect.target_listener].name : null
       target_url           = redirect_configuration.value.redirect.target_url
       include_path         = redirect_configuration.value.redirect.include_path
       include_query_string = redirect_configuration.value.redirect.include_query_string
@@ -300,7 +300,7 @@ resource "azurerm_application_gateway" "this" {
 
       redirect_configuration_name = can(request_routing_rule.value.redirect.type) ? request_routing_rule.key : null
 
-      rewrite_rule_set_name = var.rewrites != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
+      rewrite_rule_set_name = var.rewrites != null && request_routing_rule.value.rewrite != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
 
       url_path_map_name = length(request_routing_rule.value.url_path_maps) > 0 ? request_routing_rule.key : null
     }
