@@ -50,3 +50,4 @@ jobs:
       comment-id: ${{ inputs.comment-id }}
       branch: ${{ inputs.branch }}
       terratest_action: Idempotence
+      apply_timeout: 60
