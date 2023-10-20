@@ -42,48 +42,78 @@ load_balancers = {
     #   base_priority = 200
     # }
     zones = ["1", "2", "3"]
+    health_probes = {
+      "http_default" = {
+        name     = "http_default_probe"
+        protocol = "Http"
+      }
+      "https_default" = {
+        name            = "https_default_probe"
+        protocol        = "Https"
+        port            = 8443
+        request_path    = "/hch"
+        probe_threshold = 10
+      }
+      "ssh" = {
+        name                = "ssh-probe"
+        protocol            = "Tcp"
+        port                = 22
+        interval_in_seconds = 5
+      }
+    }
     frontend_ips = {
       "default_front" = {
-        name = "default-public-frontend"
-        # public_ip_name   = "frontend-pip"
-        # create_public_ip = true
-        public_ip_name           = "fosix-sourced_frontend_zonal"
-        public_ip_resource_group = "fosix-lb-ips"
+        name             = "default-public-frontend"
+        public_ip_name   = "frontend-pip"
+        create_public_ip = true
+        # public_ip_name           = "fosix-sourced_frontend_zonal"
+        # public_ip_resource_group = "fosix-lb-ips"
         in_rules = {
           "balanceHttp" = {
-            name     = "HTTP"
-            protocol = "Tcp"
-            port     = 80
+            name             = "HTTP"
+            protocol         = "Tcp"
+            port             = 80
+            health_probe_key = "https_default"
+          }
+          "balanceHttps" = {
+            name             = "HTTPS"
+            protocol         = "Tcp"
+            port             = 443
+            backend_port     = 8443
+            health_probe_key = "https_default"
           }
         }
         out_rules = {
           default = {
-            name     = "default-out"
-            protocol = "All"
+            name                     = "default-out"
+            protocol                 = "Tcp"
+            allocated_outbound_ports = 20000
+            enable_tcp_reset         = true
+            idle_timeout_in_minutes  = 120
           }
         }
       }
     }
   }
-  "private" = {
-    name    = "private-lb"
-    avzones = null
-    frontend_ips = {
-      "ha-ports" = {
-        name               = "HA"
-        vnet_key           = "transit"
-        subnet_key         = "private"
-        private_ip_address = "10.0.0.21"
-        in_rules = {
-          HA_PORTS = {
-            name                = "HA"
-            port                = 0
-            protocol            = "All"
-            session_persistence = "SourceIP"
-            nsg_priority        = 2000
-          }
-        }
-      }
-    }
-  }
+  # "private" = {
+  #   name    = "private-lb"
+  #   avzones = null
+  #   frontend_ips = {
+  #     "ha-ports" = {
+  #       name               = "HA"
+  #       vnet_key           = "transit"
+  #       subnet_key         = "private"
+  #       private_ip_address = "10.0.0.21"
+  #       in_rules = {
+  #         HA_PORTS = {
+  #           name                = "HA"
+  #           port                = 0
+  #           protocol            = "All"
+  #           session_persistence = "SourceIP"
+  #           nsg_priority        = 2000
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 }

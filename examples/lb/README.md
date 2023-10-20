@@ -31,7 +31,7 @@ Name | Type | Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.3, < 2.0
 
 
 Providers used in this module:
@@ -271,6 +271,14 @@ map(object({
     vnet_key   = optional(string)
     subnet_key = optional(string)
     zones      = optional(list(string), ["1", "2", "3"])
+    health_probes = optional(map(object({
+      name                = string
+      protocol            = string
+      port                = optional(number)
+      probe_threshold     = optional(number)
+      interval_in_seconds = optional(number)
+      request_path        = optional(string)
+    })))
     nsg_auto_rules_settings = optional(object({
       nsg_name                = optional(string)
       nsg_vnet_key            = optional(string)
@@ -293,6 +301,7 @@ map(object({
         protocol            = string
         port                = number
         backend_port        = optional(number)
+        health_probe_key    = optional(string)
         floating_ip         = optional(bool, true)
         session_persistence = optional(string, "Default")
         nsg_priority        = optional(number)
@@ -300,9 +309,9 @@ map(object({
       out_rules = optional(map(object({
         name                     = string
         protocol                 = string
-        allocated_outbound_ports = optional(number, 1024)
-        enable_tcp_reset         = optional(bool, false)
-        idle_timeout_in_minutes  = optional(number, 4)
+        allocated_outbound_ports = optional(number)
+        enable_tcp_reset         = optional(bool)
+        idle_timeout_in_minutes  = optional(number)
       })), {})
     })), {})
   }))

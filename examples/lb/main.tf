@@ -52,6 +52,8 @@ module "load_balancer" {
   resource_group_name = local.resource_group.name
   zones               = each.value.zones
 
+  health_probes = each.value.health_probes
+
   nsg_auto_rules_settings = try(
     {
       nsg_name = try(

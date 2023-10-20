@@ -28,7 +28,7 @@ Name | Type | Description
 [`zones`](#zones) | `list` | Controls zones for load balancer's Fronted IP configurations.
 [`tags`](#tags) | `map` | Azure tags to apply to the created resources.
 [`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
-[`health_probe`](#health_probe) | `object` | Backend's health probe definition.
+[`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
 
 
@@ -130,6 +130,7 @@ Below are the properties for the **inbound rules** map:
 - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
 - `port`                - (`number`, required) communication port, this is both the front- and the backend port if `backend_port` is not set; value of `0` means all ports
 - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic to in the backend pool
+- `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining a health probe to use with this rule
 - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
 - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution, three values are possible:
   - `Default` : this is the 5 tuple hash
@@ -144,9 +145,9 @@ Below are the properties for **outbound rules** map.
 
 - `name`                      - (`string`, required) a name of an outbound rule
 - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
-- `allocated_outbound_ports`  - (`number`, optional, defaults to `1024`) number of ports allocated per instance
-- `enable_tcp_reset`          - (`bool`, optional, defaults to `false`) ignored when `protocol` is set to `Udp`
-- `idle_timeout_in_minutes`   - (`number`, optional, defaults to `4`) TCP connection timeout in minutes in case the connection is idle, ignored when `protocol` is set to `Udp`
+- `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance, when skipped provider defaults will be used (`1024`), when set to `0` port allocation will be set to default number (Azure defaults); maximum value is `64000`
+- `enable_tcp_reset`          - (`bool`, optional, defaults to `null`) ignored when `protocol` is set to `Udp`
+- `idle_timeout_in_minutes`   - (`number`, optional, defaults to `null`) TCP connection timeout in minutes (between 4 and 120) in case the connection is idle, ignored when `protocol` is set to `Udp`
 
 Examples
 
@@ -221,6 +222,7 @@ map(object({
       protocol            = string
       port                = number
       backend_port        = optional(number)
+      health_probe_key    = optional(string, "default")
       floating_ip         = optional(bool, true)
       session_persistence = optional(string, "Default")
       nsg_priority        = optional(number)
@@ -228,9 +230,9 @@ map(object({
     out_rules = optional(map(object({
       name                     = string
       protocol                 = string
-      allocated_outbound_ports = optional(number, 1024)
-      enable_tcp_reset         = optional(bool, false)
-      idle_timeout_in_minutes  = optional(number, 4)
+      allocated_outbound_ports = optional(number)
+      enable_tcp_reset         = optional(bool)
+      idle_timeout_in_minutes  = optional(number)
     })), {})
   }))
 ```
@@ -291,27 +293,37 @@ Default value: `vmseries_backend`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### health_probe
+#### health_probes
 
 Backend's health probe definition.
 
+When this property is not defined, or set to `null`, a default, TCP based probe will be created for port 80.
+
 Following properties are available:
 
-- `name`  - (`string`, optional, defaults to `"vmseries_probe"`) name of the health check probe
-- `port`  - (`number`, optional, defaults to `80`) port to run the probe against
+- `name`                  - (`string`, optional, defaults to `"vmseries_probe"`) name of the health check probe
+- `protocol`              - (`string`, optional, defaults to `"TCP"`) protocol used by the health probe, can be one of "Tcp", "Http" or "Https"
+- `port`                  - (`number`, optional, defaults to `80`) port to run the probe against
+- `probe_threshold`       - (`number`, optional, defaults to Azure defaults) number of consecutive probes that decide on forwarding traffic to an endpoint
+- `interval_in_seconds`   - (`number, optional, defaults to Azure defaults) interval in seconds between probes, with a minimal value of 5
+- `request_path`          - (`string`, optional, defaults to Azure defaults) the URI used to check the endpoint status when `protocol` is set to `Http(s)`
 
 
 Type: 
 
 ```hcl
-object({
-    name = optional(string, "vmseries_probe")
-    port = optional(number, 80)
-  })
+map(object({
+    name                = string
+    protocol            = string
+    port                = optional(number)
+    probe_threshold     = optional(number)
+    interval_in_seconds = optional(number)
+    request_path        = optional(string, "/")
+  }))
 ```
 
 
-Default value: `map[name:vmseries_probe port:80]`
+Default value: `map[default:map[name:vmseries_probe port:80 protocol:Tcp]]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

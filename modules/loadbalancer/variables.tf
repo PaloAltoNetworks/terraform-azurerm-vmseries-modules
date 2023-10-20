@@ -73,6 +73,7 @@ variable "frontend_ips" {
   - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
   - `port`                - (`number`, required) communication port, this is both the front- and the backend port if `backend_port` is not set; value of `0` means all ports
   - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic to in the backend pool
+  - `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining a health probe to use with this rule
   - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
   - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution, three values are possible:
     - `Default` : this is the 5 tuple hash
@@ -87,9 +88,9 @@ variable "frontend_ips" {
 
   - `name`                      - (`string`, required) a name of an outbound rule
   - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
-  - `allocated_outbound_ports`  - (`number`, optional, defaults to `1024`) number of ports allocated per instance
-  - `enable_tcp_reset`          - (`bool`, optional, defaults to `false`) ignored when `protocol` is set to `Udp`
-  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to `4`) TCP connection timeout in minutes in case the connection is idle, ignored when `protocol` is set to `Udp`
+  - `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance, when skipped provider defaults will be used (`1024`), when set to `0` port allocation will be set to default number (Azure defaults); maximum value is `64000`
+  - `enable_tcp_reset`          - (`bool`, optional, defaults to `null`) ignored when `protocol` is set to `Udp`
+  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to `null`) TCP connection timeout in minutes (between 4 and 120) in case the connection is idle, ignored when `protocol` is set to `Udp`
 
   Examples
 
@@ -160,6 +161,7 @@ variable "frontend_ips" {
       protocol            = string
       port                = number
       backend_port        = optional(number)
+      health_probe_key    = optional(string, "default")
       floating_ip         = optional(bool, true)
       session_persistence = optional(string, "Default")
       nsg_priority        = optional(number)
@@ -167,12 +169,16 @@ variable "frontend_ips" {
     out_rules = optional(map(object({
       name                     = string
       protocol                 = string
-      allocated_outbound_ports = optional(number, 1024)
-      enable_tcp_reset         = optional(bool, false)
-      idle_timeout_in_minutes  = optional(number, 4)
+      allocated_outbound_ports = optional(number)
+      enable_tcp_reset         = optional(bool)
+      idle_timeout_in_minutes  = optional(number)
     })), {})
   }))
-  validation {
+  validation { # name
+    condition     = length(flatten([for _, v in var.frontend_ips : v.name])) == length(distinct(flatten([for _, v in var.frontend_ips : v.name])))
+    error_message = "The `name` property has to be unique among all frontend definitions."
+  }
+  validation { # private_ip_address
     condition = alltrue([
       for _, fip in var.frontend_ips :
       can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
@@ -180,7 +186,17 @@ variable "frontend_ips" {
     ])
     error_message = "The `private_ip_address` property should be in IPv4 format."
   }
-  validation {
+  validation { # in_rule.name
+    condition = length(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, in_rule in fip.in_rules : in_rule.name
+        ]])) == length(distinct(flatten([
+        for _, fip in var.frontend_ips : [
+          for _, in_rule in fip.in_rules : in_rule.name
+    ]])))
+    error_message = "The `in_rule.name` property has to be unique among all in rules definitions."
+  }
+  validation { # in_rule.protocol
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : contains(["Tcp", "Udp", "All"], in_rule.protocol)
@@ -188,7 +204,7 @@ variable "frontend_ips" {
     ]))
     error_message = "The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
   }
-  validation {
+  validation { # in_rule.port
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : (in_rule.port >= 0 && in_rule.port <= 65535)
@@ -196,7 +212,7 @@ variable "frontend_ips" {
     ]))
     error_message = "The `in_rule.port` should be a valid TCP port number or `0` for all ports."
   }
-  validation {
+  validation { # in_rule.backend_port
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules :
@@ -206,7 +222,7 @@ variable "frontend_ips" {
     ]))
     error_message = "The `in_rule.backend_port` should be a valid TCP port number."
   }
-  validation {
+  validation { # in_rule.sessions_persistence
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], in_rule.session_persistence)
@@ -214,7 +230,7 @@ variable "frontend_ips" {
     ]))
     error_message = "The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\"."
   }
-  validation {
+  validation { # in_rule.nsg_priority
     condition = alltrue(flatten([
       for _, fip in var.frontend_ips : [
         for _, in_rule in fip.in_rules :
@@ -223,6 +239,44 @@ variable "frontend_ips" {
       ]
     ]))
     error_message = "The `in_rule.nsg_priority` property be a number between 100 and 4096."
+  }
+  validation { # out_rule.name
+    condition = length(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, out_rule in fip.out_rules : out_rule.name
+        ]])) == length(distinct(flatten([
+        for _, fip in var.frontend_ips : [
+          for _, out_rule in fip.out_rules : out_rule.name
+    ]])))
+    error_message = "The `out_rule.name` property has to be unique among all in rules definitions."
+  }
+  validation { # out_rule.protocol
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, out_rule in fip.out_rules : contains(["Tcp", "Udp", "All"], out_rule.protocol)
+      ]
+    ]))
+    error_message = "The `out_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
+  }
+  validation { # out_rule.allocated_outbound_ports
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, out_rule in fip.out_rules :
+        out_rule.allocated_outbound_ports >= 0 && out_rule.allocated_outbound_ports <= 64000
+        if out_rule.allocated_outbound_ports != null
+      ]
+    ]))
+    error_message = "The `out_rule.allocated_outbound_ports` property should can be either `0` or a valid TCP port number with the maximum value of 64000."
+  }
+  validation { # out_rule.idle_timeout_in_minutes
+    condition = alltrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, out_rule in fip.out_rules :
+        out_rule.idle_timeout_in_minutes >= 4 && out_rule.idle_timeout_in_minutes <= 120
+        if out_rule.idle_timeout_in_minutes != null
+      ]
+    ]))
+    error_message = "The `out_rule.idle_timeout_in_minutes` property should can take values between 4 and 120 (minutes)."
   }
 }
 
@@ -233,24 +287,74 @@ variable "backend_name" {
   type        = string
 }
 
-variable "health_probe" {
+variable "health_probes" {
   description = <<-EOF
   Backend's health probe definition.
 
+  When this property is not defined, or set to `null`, a default, TCP based probe will be created for port 80.
+
   Following properties are available:
 
-  - `name`  - (`string`, optional, defaults to `"vmseries_probe"`) name of the health check probe
-  - `port`  - (`number`, optional, defaults to `80`) port to run the probe against
+  - `name`                  - (`string`, optional, defaults to `"vmseries_probe"`) name of the health check probe
+  - `protocol`              - (`string`, optional, defaults to `"TCP"`) protocol used by the health probe, can be one of "Tcp", "Http" or "Https"
+  - `port`                  - (`number`, optional, defaults to `80`) port to run the probe against
+  - `probe_threshold`       - (`number`, optional, defaults to Azure defaults) number of consecutive probes that decide on forwarding traffic to an endpoint
+  - `interval_in_seconds`   - (`number, optional, defaults to Azure defaults) interval in seconds between probes, with a minimal value of 5
+  - `request_path`          - (`string`, optional, defaults to Azure defaults) the URI used to check the endpoint status when `protocol` is set to `Http(s)`
   EOF
   default = {
-    name = "vmseries_probe"
-    port = 80
+    default = {
+      name     = "vmseries_probe"
+      protocol = "Tcp"
+      port     = 80
+    }
   }
   nullable = false
-  type = object({
-    name = optional(string, "vmseries_probe")
-    port = optional(number, 80)
-  })
+  type = map(object({
+    name                = string
+    protocol            = string
+    port                = optional(number)
+    probe_threshold     = optional(number)
+    interval_in_seconds = optional(number)
+    request_path        = optional(string, "/")
+  }))
+  validation { # name
+    condition     = length(flatten([for _, v in var.health_probes : v.name])) == length(distinct(flatten([for _, v in var.health_probes : v.name])))
+    error_message = "The `name` property has to be unique among all health probe definitions."
+  }
+  validation { # protocol
+    condition     = alltrue([for k, v in var.health_probes : contains(["Tcp", "Http", "Https"], v.protocol)])
+    error_message = "The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\"."
+  }
+  validation { # port
+    condition     = alltrue([for k, v in var.health_probes : v.port != null if v.protocol == "Tcp"])
+    error_message = "The `port` property is required when protocol is set to \"Tcp\"."
+  }
+  validation { # port
+    condition = alltrue([for k, v in var.health_probes :
+      v.port >= 1 && v.port <= 65535
+      if v.port != null
+    ])
+    error_message = "The `port` property has to be a valid TCP port."
+  }
+  validation { # interval_in_seconds
+    condition = alltrue([for k, v in var.health_probes :
+      v.interval_in_seconds >= 5 && v.interval_in_seconds <= 3600
+      if v.interval_in_seconds != null
+    ])
+    error_message = "The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour)."
+  }
+  validation { # probe_threshold
+    condition = alltrue([for k, v in var.health_probes :
+      v.probe_threshold >= 1 && v.probe_threshold <= 100
+      if v.probe_threshold != null
+    ])
+    error_message = "The `probe_threshold` property has to be between 1 and 100."
+  }
+  validation { # request
+    condition     = alltrue([for k, v in var.health_probes : v.request_path != null if v.protocol != "Tcp"])
+    error_message = "value"
+  }
 }
 
 variable "nsg_auto_rules_settings" {

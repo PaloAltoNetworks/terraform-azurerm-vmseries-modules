@@ -77,10 +77,28 @@ resource "azurerm_lb_backend_address_pool" "this" {
   loadbalancer_id = azurerm_lb.this.id
 }
 
+locals {
+  default_http_probe_port = {
+    "Http"  = 80
+    "Https" = "443"
+  }
+}
+
 resource "azurerm_lb_probe" "this" {
-  name            = var.health_probe.name
+  for_each = var.health_probes
+
   loadbalancer_id = azurerm_lb.this.id
-  port            = var.health_probe.port
+
+  name                = each.value.name
+  protocol            = each.value.protocol
+  port                = contains(["Http", "Https"], each.value.protocol) && each.value.port == null ? local.default_http_probe_port[each.value.protocol] : each.value.port
+  probe_threshold     = each.value.probe_threshold
+  interval_in_seconds = each.value.interval_in_seconds
+  request_path        = each.value.protocol != "Tcp" ? each.value.request_path : null
+
+  # this is to overcome the discrepancy between the provider and Azure defaults
+  # for more details see here -> https://learn.microsoft.com/en-gb/azure/load-balancer/whats-new#known-issues:~:text=SNAT%20port%20exhaustion-,numberOfProbes,-%2C%20%22Unhealthy%20threshold%22
+  number_of_probes = 1
 }
 
 resource "azurerm_lb_rule" "this" {
@@ -88,7 +106,7 @@ resource "azurerm_lb_rule" "this" {
 
   name                     = each.value.rule.name
   loadbalancer_id          = azurerm_lb.this.id
-  probe_id                 = azurerm_lb_probe.this.id
+  probe_id                 = azurerm_lb_probe.this[each.value.rule.health_probe_key].id
   backend_address_pool_ids = [azurerm_lb_backend_address_pool.this.id]
 
   protocol                       = each.value.rule.protocol
