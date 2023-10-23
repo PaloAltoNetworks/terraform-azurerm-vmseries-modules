@@ -39,6 +39,10 @@ variable "zones" {
   EOF
   default     = null
   type        = list(string)
+  validation {
+    condition     = length(var.zones) > 0 || var.zones == null
+    error_message = "The `var.zones` can either bea non empty list of Availability Zones or explicit `null`."
+  }
 }
 
 variable "public_ip_name" {
@@ -74,7 +78,7 @@ variable "capacity" {
   type        = number
   validation {
     condition     = var.capacity >= 1 && var.capacity <= 125
-    error_message = "When using a V2 SKU this value must be between 1 to 125"
+    error_message = "When using a V2 SKU this value must be between 1 to 125."
   }
 }
 
@@ -116,7 +120,7 @@ variable "ssl_policy_type" {
   type        = string
   validation {
     condition     = contains(["Predefined", "Custom", "CustomV2"], var.ssl_policy_type)
-    error_message = "Possible values are Predefined, Custom and CustomV2"
+    error_message = "Possible values are Predefined, Custom and CustomV2."
   }
   nullable = false
 }
@@ -144,7 +148,7 @@ variable "ssl_policy_min_protocol_version" {
   type        = string
   validation {
     condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(var.ssl_policy_min_protocol_version, "TLSv1_2"))
-    error_message = "Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3"
+    error_message = "Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
   }
 }
 
@@ -159,7 +163,7 @@ variable "ssl_policy_cipher_suites" {
   type        = list(string)
   validation {
     condition     = length(coalesce(var.ssl_policy_cipher_suites, [])) == 0 || length(setsubtract(coalesce(var.ssl_policy_cipher_suites, []), ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"])) == 0
-    error_message = "Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384"
+    error_message = "Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
   }
 }
 
@@ -188,14 +192,14 @@ variable "ssl_profiles" {
       for _, ssl_profile in var.ssl_profiles : [
         contains(["Predefined", "Custom", "CustomV2"], coalesce(ssl_profile.ssl_policy_type, "Predefined"))
     ]]))
-    error_message = "Possible values for `ssl_policy_type` are Predefined, Custom and CustomV2"
+    error_message = "Possible values for `ssl_policy_type` are Predefined, Custom and CustomV2."
   }
   validation {
     condition = alltrue(flatten([
       for _, ssl_profile in var.ssl_profiles : [
         contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(ssl_profile.ssl_policy_min_protocol_version, "TLSv1_3"))
     ]]))
-    error_message = "Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3"
+    error_message = "Possible values for `ssl_policy_min_protocol_version` are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
   }
   validation {
     condition = alltrue(flatten([
@@ -204,7 +208,11 @@ variable "ssl_profiles" {
           ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
         )) == 0
     ]]))
-    error_message = "Possible values for `ssl_policy_cipher_suites` are TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384"
+    error_message = "Possible values for `ssl_policy_cipher_suites` are TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
+  }
+  validation {
+    condition     = length(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])) == length(distinct(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])))
+    error_message = "The `name` property has to be unique among all SSL profiles."
   }
 }
 
@@ -245,7 +253,29 @@ variable "listeners" {
       for _, listener in var.listeners : [
         contains(["Http", "Https"], coalesce(listener.protocol, "Http"))
     ]]))
-    error_message = "Possible values for `protocol` are Http and Https"
+    error_message = "Possible values for `protocol` are Http and Https."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, listener in var.listeners : (listener.port >= 1 && listener.port <= 65535)
+    ]))
+    error_message = "The listener `port` should be a valid TCP port number from 1 to 65535."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, listener in var.listeners : (listener.protocol == "Https" ? try(length(coalesce(listener.ssl_certificate_vault_id, listener.ssl_certificate_path)), -1) > 0 : true)
+    ]))
+    error_message = "If HTTPS protocol is used, then SSL certificate (from file or Azure Key Vault) is required"
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, listener in var.listeners : (listener.protocol == "Https" ? try(length(listener.ssl_certificate_pass), -1) >= 0 : true)
+    ]))
+    error_message = "If HTTPS protocol is used, then SSL certificate password is required"
+  }
+  validation {
+    condition     = length(flatten([for _, listener in var.listeners : listener.name])) == length(distinct(flatten([for _, listener in var.listeners : listener.name])))
+    error_message = "The `name` property has to be unique among all listeners."
   }
 }
 
@@ -309,14 +339,30 @@ variable "backends" {
       for _, backend in var.backends : [
         contains(["Http", "Https"], coalesce(backend.protocol, "Http"))
     ]]))
-    error_message = "Possible values for `protocol` are Http and Https"
+    error_message = "Possible values for `protocol` are Http and Https."
   }
   validation {
     condition = alltrue(flatten([
       for _, backend in var.backends : [
         contains(["Enabled", "Disabled"], coalesce(backend.cookie_based_affinity, "Enabled"))
     ]]))
-    error_message = "Possible values for `cookie_based_affinity` are Enabled and Disabled"
+    error_message = "Possible values for `cookie_based_affinity` are Enabled and Disabled."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, backend in var.backends : (backend.port >= 1 && backend.port <= 65535)
+    ]))
+    error_message = "The backend `port` should be a valid TCP port number from 1 to 65535."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, backend in var.backends : (backend.timeout != null ? backend.timeout >= 1 && backend.timeout <= 86400 : true)
+    ]))
+    error_message = "The backend `timeout` property should can take values between 1 and 86400 (seconds)."
+  }
+  validation {
+    condition     = length(flatten([for _, backend in var.backends : backend.name])) == length(distinct(flatten([for _, backend in var.backends : backend.name])))
+    error_message = "The `name` property has to be unique among all backends."
   }
 }
 
@@ -353,7 +399,35 @@ variable "probes" {
       for _, backend in var.probes : [
         contains(["Http", "Https"], coalesce(backend.protocol, "Http"))
     ]])) : true
-    error_message = "Possible values for `protocol` are Http and Https"
+    error_message = "Possible values for `protocol` are Http and Https."
+  }
+  validation {
+    condition     = length(flatten([for _, probe in var.probes : probe.name])) == length(distinct(flatten([for _, probe in var.probes : probe.name])))
+    error_message = "The `name` property has to be unique among all probes."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, probe in var.probes : ((coalesce(probe.port, 80)) >= 1 && (coalesce(probe.port, 80)) <= 65535)
+    ]))
+    error_message = "The probe `port` should be a valid TCP port number from 1 to 65535."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, probe in var.probes : (probe.timeout != null ? probe.timeout >= 1 && probe.timeout <= 86400 : true)
+    ]))
+    error_message = "The probe `timeout` property should can take values between 1 and 86400 (seconds)."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, probe in var.probes : (probe.interval != null ? probe.interval >= 1 && probe.interval <= 86400 : true)
+    ]))
+    error_message = "The probe `interval` property should can take values between 1 and 86400 (seconds)."
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, probe in var.probes : (probe.threshold != null ? probe.threshold >= 1 && probe.threshold <= 20 : true)
+    ]))
+    error_message = "The probe `threshold` property should can take values between 1 and 20."
   }
 }
 
@@ -388,6 +462,10 @@ variable "rewrites" {
       response_headers = optional(map(string), {})
     })))
   }))
+  validation {
+    condition     = length(flatten([for _, rewrite in var.rewrites : rewrite.name])) == length(distinct(flatten([for _, rewrite in var.rewrites : rewrite.name])))
+    error_message = "The `name` property has to be unique among all rewrites."
+  }
 }
 
 variable "rules" {
@@ -420,7 +498,11 @@ variable "rules" {
       for _, rule in var.rules : [
         rule.priority >= 1, rule.priority <= 20000
     ]]))
-    error_message = "Rule priority is integer value from 1 to 20000"
+    error_message = "Rule priority is integer value from 1 to 20000."
+  }
+  validation {
+    condition     = length(flatten([for _, rule in var.rules : rule.name])) == length(distinct(flatten([for _, rule in var.rules : rule.name])))
+    error_message = "The `name` property has to be unique among all rules."
   }
 }
 
@@ -449,7 +531,11 @@ variable "redirects" {
       for _, redirect in var.redirects : [
         contains(["Permanent", "Temporary", "Found", "SeeOther"], coalesce(redirect.type, "Permanent"))
     ]])) : true
-    error_message = "Possible values for `type` are Permanent, Temporary, Found and SeeOther"
+    error_message = "Possible values for `type` are Permanent, Temporary, Found and SeeOther."
+  }
+  validation {
+    condition     = length(flatten([for _, redirect in var.redirects : redirect.name])) == length(distinct(flatten([for _, redirect in var.redirects : redirect.name])))
+    error_message = "The `name` property has to be unique among all redirects."
   }
 }
 
@@ -474,4 +560,8 @@ variable "url_path_maps" {
       redirect = optional(string)
     })))
   }))
+  validation {
+    condition     = length(flatten([for _, url_path_map in var.url_path_maps : url_path_map.name])) == length(distinct(flatten([for _, url_path_map in var.url_path_maps : url_path_map.name])))
+    error_message = "The `name` property has to be unique among all URL path maps."
+  }
 }
