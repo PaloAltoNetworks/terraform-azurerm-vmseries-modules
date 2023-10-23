@@ -20,12 +20,14 @@ variable "zones" {
   For:
 
   - public IPs    - these are zones in which the public IP resource is available
-  - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs (all frontends are affected)
+  - private IPs   - this represents Zones to which Azure will deploy paths leading to Load Balancer frontend IPs
+                    (all frontends are affected)
 
   Setting this variable to explicit `null` disables a zonal deployment.
   This can be helpful in regions where Availability Zones are not available.
   
-  For public Load Balancers, since this setting controls also Availability Zones for public IPs, you need to specify all zones available in a region (typically 3): `["1","2","3"]`
+  For public Load Balancers, since this setting controls also Availability Zones for public IPs,
+  you need to specify all zones available in a region (typically 3): `["1","2","3"]`.
   EOF
   default     = ["1", "2", "3"]
   type        = list(string)
@@ -46,9 +48,11 @@ variable "frontend_ips" {
   description = <<-EOF
   A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
   
-  Each Frontend IP configuration can have multiple rules assigned. They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively. 
+  Each Frontend IP configuration can have multiple rules assigned.
+  They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively.
 
-  Since this module can be used to create either a private or a public Load Balancer some properties can be mutually exclusive. To ease configuration they were grouped per Load Balancer type.
+  Since this module can be used to create either a private or a public Load Balancer some properties can be mutually exclusive.
+  To ease configuration they were grouped per Load Balancer type.
 
   Private Load Balancer:
 
@@ -56,8 +60,8 @@ variable "frontend_ips" {
   - `subnet_id`               - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
   - `private_ip_address`      - (`string`, required) the IP address of the Load Balancer
   - `in_rules`                - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `gateway_load_balancer_frontend_ip_configuration_id` - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration
-                                                           of a Gateway Load Balancer
+  - `gateway_load_balancer_frontend_ip_configuration_id` - (`string`, optional, defaults to `null`) an ID of
+                                                           a frontend IP configuration of a Gateway Load Balancer
 
   Public Load Balancer:
 
@@ -70,21 +74,23 @@ variable "frontend_ips" {
                                   hosting an existing public IP resource
   - `in_rules`                  - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
   - `out_rules`                 - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
- 
+
   Below are the properties for the `in_rules` map:
 
   - `name`                - (`string`, required) a name of an inbound rule
   - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
-  - `port`                - (`number`, required) communication port, this is both the front- and the backend port if `backend_port` is not set; value of `0` means all ports
-  - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic to in the backend pool
+  - `port`                - (`number`, required) communication port, this is both the front- and the backend port
+                            if `backend_port` is not set; value of `0` means all ports
+  - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic
+                            to in the backend pool
   - `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining
                             a health probe to use with this rule
   - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
   - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
                             three values are possible:
-    - `Default` : this is the 5 tuple hash
-    - `SourceIP` : a 2 tuple hash is used
-    - `SourceIPProtocol` : a 3 tuple hash is used
+    - `Default`             -  this is the 5 tuple hash
+    - `SourceIP`            - a 2 tuple hash is used
+    - `SourceIPProtocol`    - a 3 tuple hash is used
   - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
                             when skipped the rule priority will be auto-calculated,
                             for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
@@ -93,16 +99,19 @@ variable "frontend_ips" {
   
   > [!Warning]
   > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
-  > Keep in mind that since we use a single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
-  > setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
+  > Keep in mind that since we use a single backend,
+  > and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
+  > setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
 
   - `name`                      - (`string`, required) a name of an outbound rule
   - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
   - `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance,
                                   when skipped provider defaults will be used (`1024`),
-                                  when set to `0` port allocation will be set to default number (Azure defaults); maximum value is `64000`
+                                  when set to `0` port allocation will be set to default number (Azure defaults);
+                                  maximum value is `64000`
   - `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`
-  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes (between 4 and 120) 
+  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes
+                                  (between 4 and 120) 
                                   in case the connection is idle, ignored when `protocol` is set to `Udp`
 
   Examples
@@ -320,16 +329,25 @@ variable "health_probes" {
   description = <<-EOF
   Backend's health probe definition.
 
-  When this property is not defined, a default, TCP based probe will be created for port 80.
+  When this property is either:
+
+  - not defined at all, or
+  - at least one `in_rule` has no health probe specified
+
+  a default, TCP based probe will be created for port 80.
 
   Following properties are available:
 
   - `name`                  - (`string`, required) name of the health check probe
   - `protocol`              - (`string`, required) protocol used by the health probe, can be one of "Tcp", "Http" or "Https"
-  - `port`                  - (`number`, required for `Tcp`, defaults to protocol port for `Http(s)` probes) port to run the probe against
-  - `probe_threshold`       - (`number`, optional, defaults to Azure defaults) number of consecutive probes that decide on forwarding traffic to an endpoint
-  - `interval_in_seconds`   - (`number, optional, defaults to Azure defaults) interval in seconds between probes, with a minimal value of 5
-  - `request_path`          - (`string`, optional, defaults to `/`) used only for non `Tcp` probes, the URI used to check the endpoint status when `protocol` is set to `Http(s)`
+  - `port`                  - (`number`, required for `Tcp`, defaults to protocol port for `Http(s)` probes) port to run
+                              the probe against
+  - `probe_threshold`       - (`number`, optional, defaults to Azure defaults) number of consecutive probes that decide
+                              on forwarding traffic to an endpoint
+  - `interval_in_seconds`   - (`number, optional, defaults to Azure defaults) interval in seconds between probes,
+                              with a minimal value of 5
+  - `request_path`          - (`string`, optional, defaults to `/`) used only for non `Tcp` probes,
+                              the URI used to check the endpoint status when `protocol` is set to `Http(s)`
   EOF
   default     = null
   type = map(object({
@@ -395,11 +413,11 @@ variable "nsg_auto_rules_settings" {
 
   Following properties are supported:
 
-  - `nsg_name`            - (`string`, required) name of an existing Network Security Group
-  - `resource_group_name  - (`string`, optional, defaults to Load Balancer's RG) name of a Resource Group hosting the NSG
-  - `source_ips`          - (`list`, required) list of CIDRs/IP addresses from which access to the frontends will be allowed
-  - `base_priority`       - (`nubmer`, optional, defaults to `1000`) minimum rule priority from which all auto-generated rules grow,
-                            can take values between `100` and `4000`
+  - `nsg_name`                - (`string`, required) name of an existing Network Security Group
+  - `nsg_resource_group_name  - (`string`, optional, defaults to Load Balancer's RG) name of a Resource Group hosting the NSG
+  - `source_ips`              - (`list`, required) list of CIDRs/IP addresses from which access to the frontends will be allowed
+  - `base_priority`           - (`nubmer`, optional, defaults to `1000`) minimum rule priority from which all
+                                auto-generated rules grow, can take values between `100` and `4000`
   EOF
   default     = null
   type = object({

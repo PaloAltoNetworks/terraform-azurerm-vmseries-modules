@@ -13,7 +13,8 @@ variable "location" {
 variable "name_prefix" {
   description = <<-EOF
   A prefix that will be added to all created resources.
-  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+  There is no default delimiter applied between the prefix and the resource name.
+  Please include the delimiter in the actual prefix.
 
   Example:
   ```hcl
@@ -106,79 +107,44 @@ variable "vnets" {
 
 variable "load_balancers" {
   description = <<-EOF
-  A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.
+  A map containing configuration for all (private and public) Load Balancers.
+
+  This is a brief description of available properties. For a detailed one please refer to
+  [module documentation](../../modules/loadbalancer/README.md).
 
   Following properties are available:
 
-  - `name`: name of the Load Balancer resource.
-  - `nsg_vnet_key`: (public LB) defaults to `null`, a key describing a vnet (as defined in `vnet` variable) that hold an NSG we will update with an ingress rule for each listener.
-  - `nsg_key`: (public LB) defaults to `null`, a key describing an NSG (as defined in `vnet` variable, under `nsg_vnet_key`) we will update with an ingress rule for each listener.
-  - `network_security_group_name`: (public LB) defaults to `null`, in case of a brownfield deployment (no possibility to depend on `vnet` variable), a name of a security group, an ingress rule will be created in that NSG for each listener. **NOTE** this is the FULL NAME of the NSG (including prefixes).
-  - `network_security_group_rg_name`: (public LB) defaults to `null`, in case of a brownfield deployment (no possibility to depend on `vnet` variable), a name of a resource group for the security group, to be used when the NSG is hosted in a different RG than the one described in `var.resource_group_name`.
-  - `network_security_allow_source_ips`: (public LB) a list of IP addresses that will used in the ingress rules.
-  - `avzones`: (both) for regional Load Balancers, a list of supported zones (this has different meaning for public and private LBs - please refer to module's documentation for details).
-  - `frontend_ips`: (both) a map configuring both a listener and a load balancing rule, key is the name that will be used as an application name inside LB config as well as to create a rule in NSG (for public LBs), value is an object with the following properties:
-    - `create_public_ip`: (public LB) defaults to `false`, when set to `true` a Public IP will be created and associated with a listener
-    - `public_ip_name`: (public LB) defaults to `null`, when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure
-    - `public_ip_resource_group`: (public LB) defaults to `null`, when using an existing Public IP created in a different Resource Group than the currently used use this property is to provide the name of that RG
-    - `private_ip_address`: (private LB) defaults to `null`, specify a static IP address that will be used by a listener
-    - `vnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a vnet's key (as defined in `vnet` variable). This will be the VNET hosting this Load Balancer
-    - `subnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet's key (as defined in `vnet` variable) to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet
-    - `rules` - a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:
-      - `protocol`: protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule
-      - `port`: port used by the rule, for HA PORTS rule set this to `0`
-
-  Example of a public Load Balancer:
-
-  ```
-  "public_lb" = {
-    name                              = "https_app_lb"
-    network_security_group_name       = "untrust_nsg"
-    network_security_allow_source_ips = ["1.2.3.4"]
-    avzones                           = ["1", "2", "3"]
-    frontend_ips = {
-      "https_app_1" = {
-        create_public_ip = true
-        rules = {
-          "balanceHttps" = {
-            protocol = "Tcp"
-            port     = 443
-          }
-        }
-      }
-    }
-  }
-  ```
-
-  Example of a private Load Balancer with HA PORTS rule:
-
-  ```
-  "private_lb" = {
-    name = "ha_ports_internal_lb
-    frontend_ips = {
-      "ha-ports" = {
-        vnet_key           = "trust_vnet"
-        subnet_key         = "trust_snet"
-        private_ip_address = "10.0.0.1"
-        rules = {
-          HA_PORTS = {
-            port     = 0
-            protocol = "All"
-          }
-        }
-      }
-    }
-  }
-  ```
-
+  - `name`                    - (`string`, required) a name of the Load Balancer
+  - `zones`                   - (`list`, optional, defaults to `["1", "2", "3"]`) list of zones the resource will be
+                                available in, please check the
+                                [module documentation](../../modules/loadbalancer/README.md#zones) for more details
+  - `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
+                                load balancing rules;
+                                please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
+                                for more specific use cases and available properties
+  - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
+                                that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
+                                [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
+                                for available properties; please note that in this example two additional properties are
+                                available:
+    - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
+                          in the `var.vnets` map
+    - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
+                          in the `var.vnets` map that stores the NSG described by `nsg_key`
+  - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
+                                `in_rules` and `out_rules`; please refer to
+                                [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available
+                                properties; please note that in this example the `subnet_id` is not available directly, two other
+                                properties were introduced instead:
+    - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
+    - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
+                      that stores the Subnet described by `subnet_key`
   EOF
   default     = {}
   nullable    = false
   type = map(object({
-    name       = string
-    vnet_key   = optional(string)
-    subnet_key = optional(string)
-    zones      = optional(list(string), ["1", "2", "3"])
+    name  = string
+    zones = optional(list(string), ["1", "2", "3"])
     health_probes = optional(map(object({
       name                = string
       protocol            = string
@@ -198,7 +164,7 @@ variable "load_balancers" {
     frontend_ips = optional(map(object({
       name                                               = string
       public_ip_name                                     = optional(string)
-      create_public_ip                                   = optional(bool, false)
+      create_public_ip                                   = optional(bool)
       public_ip_resource_group                           = optional(string)
       vnet_key                                           = optional(string)
       subnet_key                                         = optional(string)
@@ -210,8 +176,8 @@ variable "load_balancers" {
         port                = number
         backend_port        = optional(number)
         health_probe_key    = optional(string)
-        floating_ip         = optional(bool, true)
-        session_persistence = optional(string, "Default")
+        floating_ip         = optional(bool)
+        session_persistence = optional(string)
         nsg_priority        = optional(number)
       })), {})
       out_rules = optional(map(object({

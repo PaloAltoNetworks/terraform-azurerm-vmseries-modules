@@ -102,8 +102,8 @@ load_balancers = {
     }
   }
   "private" = {
-    name    = "private-lb"
-    avzones = ["1"]
+    name  = "private-lb"
+    zones = ["1"]
     frontend_ips = {
       "ha-ports" = {
         name               = "HA"
