@@ -1,5 +1,5 @@
 variable "name" {
-  description = "The name of the load balancer."
+  description = "The name of the Load Balancer."
   type        = string
 }
 
@@ -9,13 +9,13 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  description = "Region to deploy the resources."
+  description = "Region to deploy the resources in."
   type        = string
 }
 
 variable "zones" {
   description = <<-EOF
-  Controls zones for load balancer's Fronted IP configurations.
+  Controls zones for Load Balancer's Fronted IP configurations.
 
   For:
 
@@ -31,7 +31,7 @@ variable "zones" {
   type        = list(string)
   validation {
     condition     = length(var.zones) > 0 || var.zones == null
-    error_message = "The `var.zones` can either bea non empty list of Availability Zones or `null`."
+    error_message = "The `var.zones` can either bea non empty list of Availability Zones or explicit `null`."
   }
 }
 
@@ -44,7 +44,7 @@ variable "tags" {
 
 variable "frontend_ips" {
   description = <<-EOF
-  A map of objects describing LB Frontend IP configurations, inbound and outbound rules.
+  A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
   
   Each Frontend IP configuration can have multiple rules assigned. They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively. 
 
@@ -54,48 +54,61 @@ variable "frontend_ips" {
 
   - `name`                    - (`string`, required) name of a frontend IP configuration
   - `subnet_id`               - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
-  - `private_ip_address`      - (`string`, optional, defaults to `null`) when assigned it will become the IP address of the Load Balancer, when skipped the IP will be assigned from DHCP.
-  - `gateway_load_balancer_frontend_ip_configuration_id` - ????
+  - `private_ip_address`      - (`string`, required) the IP address of the Load Balancer
   - `in_rules`                - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
+  - `gateway_load_balancer_frontend_ip_configuration_id` - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration
+                                                           of a Gateway Load Balancer
 
   Public Load Balancer:
 
-  - `name`                    - (`string`, required) name of a frontend IP configuration
-  - `public_ip_name`          - (`string`, required) name of a public IP resource
-  - `create_public_ip`        - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be created, otherwise an existing resource will be used; in both cases the name of the resource is controled by `public_ip_name`
-  - `public_ip_resource_group`  - (`string`, optional, defaults to `null`) name of a Resource Group hosting an existing public IP resource
-  - `in_rules`                - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `out_rules`               - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
+  - `name`                      - (`string`, required) name of a frontend IP configuration
+  - `public_ip_name`            - (`string`, required) name of a public IP resource
+  - `create_public_ip`          - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
+                                  created, otherwise an existing resource will be used;
+                                  in both cases the name of the resource is controled by `public_ip_name` property
+  - `public_ip_resource_group`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                  hosting an existing public IP resource
+  - `in_rules`                  - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
+  - `out_rules`                 - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
  
-  Below are the properties for the **inbound rules** map:
+  Below are the properties for the `in_rules` map:
 
   - `name`                - (`string`, required) a name of an inbound rule
   - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
   - `port`                - (`number`, required) communication port, this is both the front- and the backend port if `backend_port` is not set; value of `0` means all ports
   - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic to in the backend pool
-  - `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining a health probe to use with this rule
+  - `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining
+                            a health probe to use with this rule
   - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
-  - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution, three values are possible:
+  - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
+                            three values are possible:
     - `Default` : this is the 5 tuple hash
     - `SourceIP` : a 2 tuple hash is used
     - `SourceIPProtocol` : a 3 tuple hash is used
-  - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule, when skipped the rule priority will be auto-calculated, for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
+  - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
+                            when skipped the rule priority will be auto-calculated,
+                            for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
 
-  Below are the properties for **outbound rules** map. 
+  Below are the properties for `out_rules` map. 
   
   > [!Warning]
-  > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules. Keep in mind that since we use a single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend, setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
+  > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
+  > Keep in mind that since we use a single backend, and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
+  > setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`:
 
   - `name`                      - (`string`, required) a name of an outbound rule
   - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
-  - `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance, when skipped provider defaults will be used (`1024`), when set to `0` port allocation will be set to default number (Azure defaults); maximum value is `64000`
-  - `enable_tcp_reset`          - (`bool`, optional, defaults to `null`) ignored when `protocol` is set to `Udp`
-  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to `null`) TCP connection timeout in minutes (between 4 and 120) in case the connection is idle, ignored when `protocol` is set to `Udp`
+  - `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance,
+                                  when skipped provider defaults will be used (`1024`),
+                                  when set to `0` port allocation will be set to default number (Azure defaults); maximum value is `64000`
+  - `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`
+  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes (between 4 and 120) 
+                                  in case the connection is idle, ignored when `protocol` is set to `Udp`
 
   Examples
 
   ```hcl
-  # rules for a public LB, reusing an existing public IP and doing port translation
+  # rules for a public Load Balancer, reusing an existing public IP and doing port translation
   frontend_ips = {
     pip_existing = {
       create_public_ip         = false
@@ -111,7 +124,7 @@ variable "frontend_ips" {
     }
   }
 
-  # rules for a private LB, with a static private IP address and one HA PORTs rule
+  # rules for a private Load Balancer, one HA PORTs rule
   frontend_ips = {
     internal = {
       subnet_id                     = azurerm_subnet.this.id
@@ -125,7 +138,7 @@ variable "frontend_ips" {
     }
   }
 
-  # rules for a public LB, session persistance with 2 tuple hash outbound rule defined
+  # rules for a public Load Balancer, session persistance with 2 tuple hash, outbound rule defined
   frontend_ips = {
     rule_1 = {
       create_public_ip = true
@@ -174,9 +187,25 @@ variable "frontend_ips" {
       idle_timeout_in_minutes  = optional(number)
     })), {})
   }))
+  validation {
+    condition = !( # unified LB type
+      anytrue(
+        [for _, fip in var.frontend_ips : fip.public_ip_name != null]
+        ) && anytrue(
+        [for _, fip in var.frontend_ips : fip.subnet_id != null]
+      )
+    )
+    error_message = "All frontends have to be of the same type, either public or private. Please check module's documentation (Usage section) for details."
+  }
   validation { # name
     condition     = length(flatten([for _, v in var.frontend_ips : v.name])) == length(distinct(flatten([for _, v in var.frontend_ips : v.name])))
     error_message = "The `name` property has to be unique among all frontend definitions."
+  }
+  validation { # private_ip_address
+    condition = alltrue([
+      for _, fip in var.frontend_ips : fip.private_ip_address != null if fip.subnet_id != null
+    ])
+    error_message = "The `private_ip_address` id required for private Load Balancers."
   }
   validation { # private_ip_address
     condition = alltrue([
@@ -281,7 +310,7 @@ variable "frontend_ips" {
 }
 
 variable "backend_name" {
-  description = "The name of the backend pool to create. All frontends of the load balancer always use the same backend."
+  description = "The name of the backend pool to create. All frontends of the Load Balancer always use the same backend."
   default     = "vmseries_backend"
   nullable    = false
   type        = string
@@ -291,25 +320,18 @@ variable "health_probes" {
   description = <<-EOF
   Backend's health probe definition.
 
-  When this property is not defined, or set to `null`, a default, TCP based probe will be created for port 80.
+  When this property is not defined, a default, TCP based probe will be created for port 80.
 
   Following properties are available:
 
-  - `name`                  - (`string`, optional, defaults to `"vmseries_probe"`) name of the health check probe
-  - `protocol`              - (`string`, optional, defaults to `"TCP"`) protocol used by the health probe, can be one of "Tcp", "Http" or "Https"
-  - `port`                  - (`number`, optional, defaults to `80`) port to run the probe against
+  - `name`                  - (`string`, required) name of the health check probe
+  - `protocol`              - (`string`, required) protocol used by the health probe, can be one of "Tcp", "Http" or "Https"
+  - `port`                  - (`number`, required for `Tcp`, defaults to protocol port for `Http(s)` probes) port to run the probe against
   - `probe_threshold`       - (`number`, optional, defaults to Azure defaults) number of consecutive probes that decide on forwarding traffic to an endpoint
   - `interval_in_seconds`   - (`number, optional, defaults to Azure defaults) interval in seconds between probes, with a minimal value of 5
-  - `request_path`          - (`string`, optional, defaults to Azure defaults) the URI used to check the endpoint status when `protocol` is set to `Http(s)`
+  - `request_path`          - (`string`, optional, defaults to `/`) used only for non `Tcp` probes, the URI used to check the endpoint status when `protocol` is set to `Http(s)`
   EOF
-  default = {
-    default = {
-      name     = "vmseries_probe"
-      protocol = "Tcp"
-      port     = 80
-    }
-  }
-  nullable = false
+  default     = null
   type = map(object({
     name                = string
     protocol            = string
@@ -318,41 +340,49 @@ variable "health_probes" {
     interval_in_seconds = optional(number)
     request_path        = optional(string, "/")
   }))
+  validation { # keys
+    condition     = var.health_probes == null ? true : !anytrue([for k, _ in var.health_probes : k == "default"])
+    error_message = "The key describing a health probe cannot be \"default\"."
+  }
   validation { # name
-    condition     = length(flatten([for _, v in var.health_probes : v.name])) == length(distinct(flatten([for _, v in var.health_probes : v.name])))
+    condition     = var.health_probes == null ? true : length([for _, v in var.health_probes : v.name]) == length(distinct([for _, v in var.health_probes : v.name]))
     error_message = "The `name` property has to be unique among all health probe definitions."
   }
+  validation { # name
+    condition     = var.health_probes == null ? true : !anytrue([for _, v in var.health_probes : v.name == "default_vmseries_probe"])
+    error_message = "The `name` property cannot be \"default_vmseries_probe\"."
+  }
   validation { # protocol
-    condition     = alltrue([for k, v in var.health_probes : contains(["Tcp", "Http", "Https"], v.protocol)])
+    condition     = var.health_probes == null ? true : alltrue([for k, v in var.health_probes : contains(["Tcp", "Http", "Https"], v.protocol)])
     error_message = "The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\"."
   }
   validation { # port
-    condition     = alltrue([for k, v in var.health_probes : v.port != null if v.protocol == "Tcp"])
+    condition     = var.health_probes == null ? true : alltrue([for k, v in var.health_probes : v.port != null if v.protocol == "Tcp"])
     error_message = "The `port` property is required when protocol is set to \"Tcp\"."
   }
   validation { # port
-    condition = alltrue([for k, v in var.health_probes :
+    condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
       v.port >= 1 && v.port <= 65535
       if v.port != null
     ])
     error_message = "The `port` property has to be a valid TCP port."
   }
   validation { # interval_in_seconds
-    condition = alltrue([for k, v in var.health_probes :
+    condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
       v.interval_in_seconds >= 5 && v.interval_in_seconds <= 3600
       if v.interval_in_seconds != null
     ])
     error_message = "The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour)."
   }
   validation { # probe_threshold
-    condition = alltrue([for k, v in var.health_probes :
+    condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
       v.probe_threshold >= 1 && v.probe_threshold <= 100
       if v.probe_threshold != null
     ])
     error_message = "The `probe_threshold` property has to be between 1 and 100."
   }
   validation { # request
-    condition     = alltrue([for k, v in var.health_probes : v.request_path != null if v.protocol != "Tcp"])
+    condition     = var.health_probes == null ? true : alltrue([for k, v in var.health_probes : v.request_path != null if v.protocol != "Tcp"])
     error_message = "value"
   }
 }
@@ -361,12 +391,15 @@ variable "nsg_auto_rules_settings" {
   description = <<-EOF
   Controls automatic creation of NSG rules for all defined inbound rules.
 
+  When skipped or assigned an explicit `null`, disables rules creation.
+
   Following properties are supported:
 
   - `nsg_name`            - (`string`, required) name of an existing Network Security Group
-  - `resource_group_name  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group hosting the NSG
-  - `source_ips`          - (`list`, required) either `*` or a list of CIDRs/IP addresses from which access to the frontends will be allowed
-  - `base_priority`       - (`nubmer`, optional, defaults to `1000`) minimum rule priority from which all auto-generated rules grow
+  - `resource_group_name  - (`string`, optional, defaults to Load Balancer's RG) name of a Resource Group hosting the NSG
+  - `source_ips`          - (`list`, required) list of CIDRs/IP addresses from which access to the frontends will be allowed
+  - `base_priority`       - (`nubmer`, optional, defaults to `1000`) minimum rule priority from which all auto-generated rules grow,
+                            can take values between `100` and `4000`
   EOF
   default     = null
   type = object({
@@ -375,4 +408,18 @@ variable "nsg_auto_rules_settings" {
     source_ips              = list(string)
     base_priority           = optional(number, 1000)
   })
+  validation { # source_ips
+    condition = var.nsg_auto_rules_settings != null ? alltrue([
+      for ip in var.nsg_auto_rules_settings.source_ips :
+      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/0|\\/[12]?[0-9]|\\/3[0-2])?$", ip))
+    ]) : true
+    error_message = "The `source_ips` property can an IPv4 address or address space in CIDR notation."
+  }
+  validation { # base_priority
+    condition = try(
+      var.nsg_auto_rules_settings.base_priority >= 100 && var.nsg_auto_rules_settings.base_priority <= 4000,
+      true
+    )
+    error_message = "The `base_priority` property can take only values between `100` and `4000`."
+  }
 }

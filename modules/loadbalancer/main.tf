@@ -70,6 +70,19 @@ resource "azurerm_lb" "this" {
       gateway_load_balancer_frontend_ip_configuration_id = frontend_ip.value.gateway_load_balancer_frontend_ip_configuration_id
     }
   }
+
+  lifecycle {
+    precondition {
+      condition = !(
+        anytrue(
+          [for _, fip in var.frontend_ips : fip.public_ip_name != null]
+          ) && anytrue(
+          [for _, fip in var.frontend_ips : fip.subnet_id != null]
+        )
+      )
+      error_message = "All frontends have to be of the same type, either public or private. Please check module's documentation (Usage section) for details."
+    }
+  }
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
@@ -82,10 +95,26 @@ locals {
     "Http"  = 80
     "Https" = "443"
   }
+  default_probe = (
+    var.health_probes == null || anytrue(flatten([
+      for _, fip in var.frontend_ips : [
+        for _, rule in fip.in_rules : rule.health_probe_key == "default"
+      ]
+    ]))
+    ) ? {
+    default = {
+      name                = "default_vmseries_probe"
+      protocol            = "Tcp"
+      port                = 80
+      probe_threshold     = null
+      interval_in_seconds = null
+      request_path        = null
+    }
+  } : {}
 }
 
 resource "azurerm_lb_probe" "this" {
-  for_each = var.health_probes
+  for_each = merge(coalesce(var.health_probes, {}), local.default_probe)
 
   loadbalancer_id = azurerm_lb.this.id
 
@@ -157,7 +186,7 @@ resource "azurerm_network_security_rule" "this" {
   name                        = "allow-inbound-ips-${each.key}"
   network_security_group_name = var.nsg_auto_rules_settings.nsg_name
   resource_group_name         = coalesce(var.nsg_auto_rules_settings.nsg_resource_group_name, var.resource_group_name)
-  description                 = "Auto-generated for load balancer ${var.name} port ${each.value.rule.protocol}/${coalesce(each.value.rule.backend_port, each.value.rule.port)}: allowed inbound IP ranges"
+  description                 = "Auto-generated for load balancer ${var.name} port ${each.value.rule.protocol}/${coalesce(each.value.rule.backend_port, each.value.rule.port)}: allowed IPs: ${join(",", var.nsg_auto_rules_settings.source_ips)}"
 
   direction                  = "Inbound"
   access                     = "Allow"

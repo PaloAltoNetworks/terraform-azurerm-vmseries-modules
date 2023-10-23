@@ -33,32 +33,19 @@ vnets = {
 load_balancers = {
   "public" = {
     name = "public-lb"
-    # nsg_auto_rules_settings = {
-    #   nsg_name                = "fosix-existing-nsg"
-    #   nsg_resource_group_name = "fosix-lb-ips"
-    #   # nsg_vnet_key  = "transit"
-    #   # nsg_key       = "public"
-    #   source_ips    = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
-    #   base_priority = 200
-    # }
+    nsg_auto_rules_settings = {
+      # nsg_name                = "fosix-existing-nsg"
+      # nsg_resource_group_name = "fosix-lb-ips"
+      nsg_vnet_key  = "transit"
+      nsg_key       = "public"
+      source_ips    = ["10.0.0.0/8"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+      base_priority = 4000
+    }
     zones = ["1", "2", "3"]
     health_probes = {
       "http_default" = {
         name     = "http_default_probe"
         protocol = "Http"
-      }
-      "https_default" = {
-        name            = "https_default_probe"
-        protocol        = "Https"
-        port            = 8443
-        request_path    = "/hch"
-        probe_threshold = 10
-      }
-      "ssh" = {
-        name                = "ssh-probe"
-        protocol            = "Tcp"
-        port                = 22
-        interval_in_seconds = 5
       }
     }
     frontend_ips = {
@@ -66,21 +53,12 @@ load_balancers = {
         name             = "default-public-frontend"
         public_ip_name   = "frontend-pip"
         create_public_ip = true
-        # public_ip_name           = "fosix-sourced_frontend_zonal"
-        # public_ip_resource_group = "fosix-lb-ips"
         in_rules = {
           "balanceHttp" = {
             name             = "HTTP"
             protocol         = "Tcp"
             port             = 80
-            health_probe_key = "https_default"
-          }
-          "balanceHttps" = {
-            name             = "HTTPS"
-            protocol         = "Tcp"
-            port             = 443
-            backend_port     = 8443
-            health_probe_key = "https_default"
+            health_probe_key = "http_default"
           }
         }
         out_rules = {
@@ -93,27 +71,53 @@ load_balancers = {
           }
         }
       }
+      "sourced_pip" = {
+        name                     = "with-sourced-pip"
+        public_ip_name           = "fosix-sourced_frontend"
+        public_ip_resource_group = "fosix-lb-ips"
+        zones                    = null
+        in_rules = {
+          "balanceHttp" = {
+            name     = "HTTP-elevated"
+            protocol = "Tcp"
+            port     = 80
+            # health_probe_key = "http_default"
+          }
+        }
+      }
+      # "private" = {
+      #   name               = "private"
+      #   vnet_key           = "transit"
+      #   subnet_key         = "private"
+      #   private_ip_address = "10.0.0.22"
+      #   in_rules = {
+      #     "balanceHttp" = {
+      #       name             = "HA"
+      #       protocol         = "Tcp"
+      #       port             = 80
+      #       health_probe_key = "http_default"
+      #     }
+      #   }
+      # }
     }
   }
-  # "private" = {
-  #   name    = "private-lb"
-  #   avzones = null
-  #   frontend_ips = {
-  #     "ha-ports" = {
-  #       name               = "HA"
-  #       vnet_key           = "transit"
-  #       subnet_key         = "private"
-  #       private_ip_address = "10.0.0.21"
-  #       in_rules = {
-  #         HA_PORTS = {
-  #           name                = "HA"
-  #           port                = 0
-  #           protocol            = "All"
-  #           session_persistence = "SourceIP"
-  #           nsg_priority        = 2000
-  #         }
-  #       }
-  #     }
-  #   }
-  # }
+  "private" = {
+    name    = "private-lb"
+    avzones = ["1"]
+    frontend_ips = {
+      "ha-ports" = {
+        name               = "HA"
+        vnet_key           = "transit"
+        subnet_key         = "private"
+        private_ip_address = "10.0.0.21"
+        in_rules = {
+          HA_PORTS = {
+            name     = "HA"
+            port     = 0
+            protocol = "All"
+          }
+        }
+      }
+    }
+  }
 }
