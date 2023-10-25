@@ -1,4 +1,47 @@
 <!-- BEGIN_TF_DOCS -->
+# Admonition options
+
+## full badge
+
+> should work with tf registry
+
+![Static Badge](https://img.shields.io/badge/NOTE-The%20module%20can%20create%20a%20public%20or%20a%20private%20Load%20Balancer%3B%20due%20to%20that%20some%20properties%20are%20mutually%20exclusive.-blue?style=flat&labelColor=gray)
+
+## half badge
+
+> the text is not centered, so it looks like an error in rendering. Should work with TFR
+
+![Static Badge](https://img.shields.io/badge/NOTE-blue?style=flat) The module can create a public or a private Load Balancer.\
+Due to that some properties are mutually exclusive.
+
+## horizontal table
+
+> should also work with TFR, but we cannot drop the header, so it renders empty
+
+| | |
+--- | ---
+![Static Badge](https://img.shields.io/badge/NOTE-blue?style=flat) | The module can create a public or a private Load Balancer.<br>Due to that some properties are mutually exclusive.
+
+## vertical table
+
+> this should also work with TFR, but also looks kinda strange
+
+|![Static Badge](https://img.shields.io/badge/NOTE-blue?style=flat)|  
+|:--- |
+The module can create a public or a private Load Balancer.<br>Due to that some properties are mutually exclusive.
+
+## GH admonition
+
+> most probably will not render on TFR
+
+> [!NOTE]
+> The module can create a public or a private Load Balancer
+> Due to that some properties are mutually exclusive.
+
+---
+---
+---
+
 # Load Balancer Module for Azure
 
 A Terraform module for deploying a Load Balancer for VM-Series firewalls.
