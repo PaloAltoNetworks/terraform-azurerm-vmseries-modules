@@ -183,12 +183,12 @@ To ease configuration they were grouped per Load Balancer type.
 
 Private Load Balancer:
 
-- `name`                    - (`string`, required) name of a frontend IP configuration
-- `subnet_id`               - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
-- `private_ip_address`      - (`string`, required) the IP address of the Load Balancer
-- `in_rules`                - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-- `gateway_load_balancer_frontend_ip_configuration_id` - (`string`, optional, defaults to `null`) an ID of
-                                                         a frontend IP configuration of a Gateway Load Balancer
+- `name`                - (`string`, required) name of a frontend IP configuration
+- `subnet_id`           - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
+- `private_ip_address`  - (`string`, required) the IP address of the Load Balancer
+- `in_rules`            - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
+- `gwlb_fip_id`         - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration
+                          of a Gateway Load Balancer
 
 Public Load Balancer:
 
@@ -302,13 +302,13 @@ Type:
 
 ```hcl
 map(object({
-    name                                               = string
-    public_ip_name                                     = optional(string)
-    create_public_ip                                   = optional(bool, false)
-    public_ip_resource_group                           = optional(string)
-    subnet_id                                          = optional(string)
-    private_ip_address                                 = optional(string)
-    gateway_load_balancer_frontend_ip_configuration_id = optional(string)
+    name                     = string
+    public_ip_name           = optional(string)
+    create_public_ip         = optional(bool, false)
+    public_ip_resource_group = optional(string)
+    subnet_id                = optional(string)
+    private_ip_address       = optional(string)
+    gwlb_fip_id              = optional(string)
     in_rules = optional(map(object({
       name                = string
       protocol            = string

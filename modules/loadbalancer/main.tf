@@ -67,7 +67,7 @@ resource "azurerm_lb" "this" {
       private_ip_address            = frontend_ip.value.private_ip_address
       zones                         = frontend_ip.value.subnet_id != null ? var.zones : null
 
-      gateway_load_balancer_frontend_ip_configuration_id = frontend_ip.value.gateway_load_balancer_frontend_ip_configuration_id
+      gateway_load_balancer_frontend_ip_configuration_id = frontend_ip.value.gwlb_fip_id
     }
   }
 
