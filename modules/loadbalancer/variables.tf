@@ -429,7 +429,7 @@ variable "nsg_auto_rules_settings" {
   validation { # source_ips
     condition = var.nsg_auto_rules_settings != null ? alltrue([
       for ip in var.nsg_auto_rules_settings.source_ips :
-      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/0|\\/[12]?[0-9]|\\/3[0-2])?$", ip))
+      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}(\\/[12]?[0-9]|\\/3[0-2])?$", ip))
     ]) : true
     error_message = "The `source_ips` property can an IPv4 address or address space in CIDR notation."
   }
