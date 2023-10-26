@@ -56,7 +56,7 @@ variable "network_security_groups" {
   - `name`   - (`string`, required) name of the Network Security Group.
   - `rules`  - (`map`, optional, defaults to `{}`) A list of objects representing Network Security Rules.
 
-    > [!Notice]
+    > [!NOTE]
     > All port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value,
     > example: `21-23`.
     
