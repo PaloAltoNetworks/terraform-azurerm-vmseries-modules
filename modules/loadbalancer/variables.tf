@@ -46,129 +46,7 @@ variable "tags" {
 
 variable "frontend_ips" {
   description = <<-EOF
-  A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
-  
-  Each Frontend IP configuration can have multiple rules assigned.
-  They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively.
-
-  Since this module can be used to create either a private or a public Load Balancer some properties can be mutually exclusive.
-  To ease configuration they were grouped per Load Balancer type.
-
-  Private Load Balancer:
-
-  - `name`                - (`string`, required) name of a frontend IP configuration
-  - `subnet_id`           - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
-  - `private_ip_address`  - (`string`, required) the IP address of the Load Balancer
-  - `in_rules`            - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `gwlb_fip_id`         - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration
-                            of a Gateway Load Balancer
-
-  Public Load Balancer:
-
-  - `name`                      - (`string`, required) name of a frontend IP configuration
-  - `public_ip_name`            - (`string`, required) name of a public IP resource
-  - `create_public_ip`          - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
-                                  created, otherwise an existing resource will be used;
-                                  in both cases the name of the resource is controled by `public_ip_name` property
-  - `public_ip_resource_group`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                  hosting an existing public IP resource
-  - `in_rules`                  - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `out_rules`                 - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
-
-  Below are the properties for the `in_rules` map:
-
-  - `name`                - (`string`, required) a name of an inbound rule
-  - `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
-  - `port`                - (`number`, required) communication port, this is both the front- and the backend port
-                            if `backend_port` is not set; value of `0` means all ports
-  - `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic
-                            to in the backend pool
-  - `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining
-                            a health probe to use with this rule
-  - `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
-  - `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
-                            three values are possible:
-    - `Default`             -  this is the 5 tuple hash
-    - `SourceIP`            - a 2 tuple hash is used
-    - `SourceIPProtocol`    - a 3 tuple hash is used
-  - `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
-                            when skipped the rule priority will be auto-calculated,
-                            for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
-
-  Below are the properties for `out_rules` map. 
-  
-  > [!Warning]
-  > Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
-  > Keep in mind that since we use a single backend,
-  > and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
-  > setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
-
-  - `name`                      - (`string`, required) a name of an outbound rule
-  - `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
-  - `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance,
-                                  when skipped provider defaults will be used (`1024`),
-                                  when set to `0` port allocation will be set to default number (Azure defaults);
-                                  maximum value is `64000`
-  - `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`
-  - `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes
-                                  (between 4 and 120) 
-                                  in case the connection is idle, ignored when `protocol` is set to `Udp`
-
-  Examples
-
-  ```hcl
-  # rules for a public Load Balancer, reusing an existing public IP and doing port translation
-  frontend_ips = {
-    pip_existing = {
-      create_public_ip         = false
-      public_ip_name           = "my_ip"
-      public_ip_resource_group = "my_rg_name"
-      in_rules = {
-        HTTP = {
-          port         = 80
-          protocol     = "Tcp"
-          backend_port = 8080
-        }
-      }
-    }
-  }
-
-  # rules for a private Load Balancer, one HA PORTs rule
-  frontend_ips = {
-    internal = {
-      subnet_id                     = azurerm_subnet.this.id
-      private_ip_address            = "192.168.0.10"
-      in_rules = {
-        HA_PORTS = {
-          port         = 0
-          protocol     = "All"
-        }
-      }
-    }
-  }
-
-  # rules for a public Load Balancer, session persistance with 2 tuple hash, outbound rule defined
-  frontend_ips = {
-    rule_1 = {
-      create_public_ip = true
-      in_rules = {
-        HTTP = {
-          port     = 80
-          protocol = "Tcp"
-          session_persistence = "SourceIP"
-        }
-      }
-    }
-    out_rules = {
-      "outbound_tcp" = {
-        protocol                 = "Tcp"
-        allocated_outbound_ports = 2048
-        enable_tcp_reset         = true
-        idle_timeout_in_minutes  = 10
-      }
-    }
-  }
-  ```
+  Frontend IP configuration.
   EOF
   type = map(object({
     name                     = string
@@ -178,144 +56,42 @@ variable "frontend_ips" {
     subnet_id                = optional(string)
     private_ip_address       = optional(string)
     gwlb_fip_id              = optional(string)
-    in_rules = optional(map(object({
-      name                = string
-      protocol            = string
-      port                = number
-      backend_port        = optional(number)
-      health_probe_key    = optional(string, "default")
-      floating_ip         = optional(bool, true)
-      session_persistence = optional(string, "Default")
-      nsg_priority        = optional(number)
-    })), {})
-    out_rules = optional(map(object({
-      name                     = string
-      protocol                 = string
-      allocated_outbound_ports = optional(number)
-      enable_tcp_reset         = optional(bool)
-      idle_timeout_in_minutes  = optional(number)
-    })), {})
   }))
-  validation {
-    condition = !( # unified LB type
-      anytrue(
-        [for _, fip in var.frontend_ips : fip.public_ip_name != null]
-        ) && anytrue(
-        [for _, fip in var.frontend_ips : fip.subnet_id != null]
-      )
-    )
-    error_message = "All frontends have to be of the same type, either public or private. Please check module's documentation (Usage section) for details."
-  }
-  validation { # name
-    condition     = length(flatten([for _, v in var.frontend_ips : v.name])) == length(distinct(flatten([for _, v in var.frontend_ips : v.name])))
-    error_message = "The `name` property has to be unique among all frontend definitions."
-  }
-  validation { # private_ip_address
-    condition = alltrue([
-      for _, fip in var.frontend_ips : fip.private_ip_address != null if fip.subnet_id != null
-    ])
-    error_message = "The `private_ip_address` id required for private Load Balancers."
-  }
-  validation { # private_ip_address
-    condition = alltrue([
-      for _, fip in var.frontend_ips :
-      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
-      if fip.private_ip_address != null
-    ])
-    error_message = "The `private_ip_address` property should be in IPv4 format."
-  }
-  validation { # in_rule.name
-    condition = length(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, in_rule in fip.in_rules : in_rule.name
-        ]])) == length(distinct(flatten([
-        for _, fip in var.frontend_ips : [
-          for _, in_rule in fip.in_rules : in_rule.name
-    ]])))
-    error_message = "The `in_rule.name` property has to be unique among all in rules definitions."
-  }
-  validation { # in_rule.protocol
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, in_rule in fip.in_rules : contains(["Tcp", "Udp", "All"], in_rule.protocol)
-      ]
-    ]))
-    error_message = "The `in_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
-  }
-  validation { # in_rule.port
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, in_rule in fip.in_rules : (in_rule.port >= 0 && in_rule.port <= 65535)
-      ]
-    ]))
-    error_message = "The `in_rule.port` should be a valid TCP port number or `0` for all ports."
-  }
-  validation { # in_rule.backend_port
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, in_rule in fip.in_rules :
-        (in_rule.backend_port > 0 && in_rule.backend_port <= 65535)
-        if in_rule.backend_port != null
-      ]
-    ]))
-    error_message = "The `in_rule.backend_port` should be a valid TCP port number."
-  }
-  validation { # in_rule.sessions_persistence
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, in_rule in fip.in_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], in_rule.session_persistence)
-      ]
-    ]))
-    error_message = "The `in_rule.session_persistence` property should be one of: \"Default\", \"SourceIP\", \"SourceIPProtocol\"."
-  }
-  validation { # in_rule.nsg_priority
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, in_rule in fip.in_rules :
-        in_rule.nsg_priority >= 100 && in_rule.nsg_priority <= 4000
-        if in_rule.nsg_priority != null
-      ]
-    ]))
-    error_message = "The `in_rule.nsg_priority` property be a number between 100 and 4096."
-  }
-  validation { # out_rule.name
-    condition = length(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, out_rule in fip.out_rules : out_rule.name
-        ]])) == length(distinct(flatten([
-        for _, fip in var.frontend_ips : [
-          for _, out_rule in fip.out_rules : out_rule.name
-    ]])))
-    error_message = "The `out_rule.name` property has to be unique among all in rules definitions."
-  }
-  validation { # out_rule.protocol
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, out_rule in fip.out_rules : contains(["Tcp", "Udp", "All"], out_rule.protocol)
-      ]
-    ]))
-    error_message = "The `out_rule.protocol` property should be one of: \"Tcp\", \"Udp\", \"All\"."
-  }
-  validation { # out_rule.allocated_outbound_ports
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, out_rule in fip.out_rules :
-        out_rule.allocated_outbound_ports >= 0 && out_rule.allocated_outbound_ports <= 64000
-        if out_rule.allocated_outbound_ports != null
-      ]
-    ]))
-    error_message = "The `out_rule.allocated_outbound_ports` property should can be either `0` or a valid TCP port number with the maximum value of 64000."
-  }
-  validation { # out_rule.idle_timeout_in_minutes
-    condition = alltrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, out_rule in fip.out_rules :
-        out_rule.idle_timeout_in_minutes >= 4 && out_rule.idle_timeout_in_minutes <= 120
-        if out_rule.idle_timeout_in_minutes != null
-      ]
-    ]))
-    error_message = "The `out_rule.idle_timeout_in_minutes` property should can take values between 4 and 120 (minutes)."
-  }
+}
+
+variable "inbound_rules" {
+  description = <<-EOF
+  Inbound rules.
+  EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    name                = string
+    frontend_ip_key     = string
+    protocol            = string
+    port                = number
+    backend_port        = optional(number)
+    health_probe_key    = optional(string, "default")
+    floating_ip         = optional(bool, true)
+    session_persistence = optional(string, "Default")
+    nsg_priority        = optional(number)
+  }))
+}
+
+variable "outbound_rules" {
+  description = <<-EOF
+  Outbound rules.
+  EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    name                     = string
+    frontend_ip_key          = string
+    protocol                 = string
+    allocated_outbound_ports = optional(number)
+    enable_tcp_reset         = optional(bool)
+    idle_timeout_in_minutes  = optional(number)
+  }))
 }
 
 variable "backend_name" {

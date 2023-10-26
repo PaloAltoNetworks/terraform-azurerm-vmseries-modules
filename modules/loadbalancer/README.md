@@ -133,7 +133,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Load Balancer.
 [`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
 [`location`](#location) | `string` | Region to deploy the resources in.
-[`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
+[`frontend_ips`](#frontend_ips) | `map` | Frontend IP configuration.
 
 
 ## Module's Optional Inputs
@@ -142,6 +142,8 @@ Name | Type | Description
 --- | --- | ---
 [`zones`](#zones) | `list` | Controls zones for Load Balancer's Fronted IP configurations.
 [`tags`](#tags) | `map` | Azure tags to apply to the created resources.
+[`inbound_rules`](#inbound_rules) | `map` | Inbound rules.
+[`outbound_rules`](#outbound_rules) | `map` | Outbound rules.
 [`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
@@ -216,129 +218,7 @@ Type: string
 
 #### frontend_ips
 
-A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
-  
-Each Frontend IP configuration can have multiple rules assigned.
-They are defined in a maps called `in_rules` and `out_rules` for inbound and outbound rules respectively.
-
-Since this module can be used to create either a private or a public Load Balancer some properties can be mutually exclusive.
-To ease configuration they were grouped per Load Balancer type.
-
-Private Load Balancer:
-
-- `name`                - (`string`, required) name of a frontend IP configuration
-- `subnet_id`           - (`string`, required) an ID of an existing subnet that will host the private Load Balancer
-- `private_ip_address`  - (`string`, required) the IP address of the Load Balancer
-- `in_rules`            - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-- `gwlb_fip_id`         - (`string`, optional, defaults to `null`) an ID of a frontend IP configuration
-                          of a Gateway Load Balancer
-
-Public Load Balancer:
-
-- `name`                      - (`string`, required) name of a frontend IP configuration
-- `public_ip_name`            - (`string`, required) name of a public IP resource
-- `create_public_ip`          - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
-                                created, otherwise an existing resource will be used;
-                                in both cases the name of the resource is controled by `public_ip_name` property
-- `public_ip_resource_group`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                hosting an existing public IP resource
-- `in_rules`                  - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-- `out_rules`                 - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
-
-Below are the properties for the `in_rules` map:
-
-- `name`                - (`string`, required) a name of an inbound rule
-- `protocol`            - (`string`, required) communication protocol, either 'Tcp', 'Udp' or 'All'.
-- `port`                - (`number`, required) communication port, this is both the front- and the backend port
-                          if `backend_port` is not set; value of `0` means all ports
-- `backend_port`        - (`number`, optional, defaults to `null`) this is the backend port to forward traffic
-                          to in the backend pool
-- `health_probe_key`    - (`string`, optional, defaults to `default`) a key from the `var.health_probes` map defining
-                          a health probe to use with this rule
-- `floating_ip`         - (`bool`, optional, defaults to `true`) enables floating IP for this rule.
-- `session_persistence` - (`string`, optional, defaults to `Default`) controls session persistance/load distribution,
-                          three values are possible:
-  - `Default`             -  this is the 5 tuple hash
-  - `SourceIP`            - a 2 tuple hash is used
-  - `SourceIPProtocol`    - a 3 tuple hash is used
-- `nsg_priority`        - (number, optional, defaults to `null`) this becomes a priority of an auto-generated NSG rule,
-                          when skipped the rule priority will be auto-calculated,
-                          for more details on auto-generated NSG rules see [`nsg_auto_rules_settings`](#nsg_auto_rules_settings)
-
-Below are the properties for `out_rules` map. 
-  
-> [!Warning]
-> Setting at least one `out_rule` switches the outgoing traffic from SNAT to outbound rules.
-> Keep in mind that since we use a single backend,
-> and you cannot mix SNAT and outbound rules traffic in rules using the same backend,
-> setting one `out_rule` switches the outgoing traffic route for **ALL** `in_rules`.
-
-- `name`                      - (`string`, required) a name of an outbound rule
-- `protocol`                  - (`string`, required) protocol used by the rule. One of `All`, `Tcp` or `Udp` is accepted
-- `allocated_outbound_ports`  - (`number`, optional, defaults to `null`) number of ports allocated per instance,
-                                when skipped provider defaults will be used (`1024`),
-                                when set to `0` port allocation will be set to default number (Azure defaults);
-                                maximum value is `64000`
-- `enable_tcp_reset`          - (`bool`, optional, defaults to Azure defaults) ignored when `protocol` is set to `Udp`
-- `idle_timeout_in_minutes`   - (`number`, optional, defaults to Azure defaults) TCP connection timeout in minutes
-                                (between 4 and 120) 
-                                in case the connection is idle, ignored when `protocol` is set to `Udp`
-
-Examples
-
-```hcl
-# rules for a public Load Balancer, reusing an existing public IP and doing port translation
-frontend_ips = {
-  pip_existing = {
-    create_public_ip         = false
-    public_ip_name           = "my_ip"
-    public_ip_resource_group = "my_rg_name"
-    in_rules = {
-      HTTP = {
-        port         = 80
-        protocol     = "Tcp"
-        backend_port = 8080
-      }
-    }
-  }
-}
-
-# rules for a private Load Balancer, one HA PORTs rule
-frontend_ips = {
-  internal = {
-    subnet_id                     = azurerm_subnet.this.id
-    private_ip_address            = "192.168.0.10"
-    in_rules = {
-      HA_PORTS = {
-        port         = 0
-        protocol     = "All"
-      }
-    }
-  }
-}
-
-# rules for a public Load Balancer, session persistance with 2 tuple hash, outbound rule defined
-frontend_ips = {
-  rule_1 = {
-    create_public_ip = true
-    in_rules = {
-      HTTP = {
-        port     = 80
-        protocol = "Tcp"
-        session_persistence = "SourceIP"
-      }
-    }
-  }
-  out_rules = {
-    "outbound_tcp" = {
-      protocol                 = "Tcp"
-      allocated_outbound_ports = 2048
-      enable_tcp_reset         = true
-      idle_timeout_in_minutes  = 10
-    }
-  }
-}
-```
+Frontend IP configuration.
 
 
 Type: 
@@ -352,28 +232,13 @@ map(object({
     subnet_id                = optional(string)
     private_ip_address       = optional(string)
     gwlb_fip_id              = optional(string)
-    in_rules = optional(map(object({
-      name                = string
-      protocol            = string
-      port                = number
-      backend_port        = optional(number)
-      health_probe_key    = optional(string, "default")
-      floating_ip         = optional(bool, true)
-      session_persistence = optional(string, "Default")
-      nsg_priority        = optional(number)
-    })), {})
-    out_rules = optional(map(object({
-      name                     = string
-      protocol                 = string
-      allocated_outbound_ports = optional(number)
-      enable_tcp_reset         = optional(bool)
-      idle_timeout_in_minutes  = optional(number)
-    })), {})
   }))
 ```
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
+
+
 
 
 
@@ -419,6 +284,55 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
+
+#### inbound_rules
+
+Inbound rules.
+
+
+Type: 
+
+```hcl
+map(object({
+    name                = string
+    frontend_ip_key     = string
+    protocol            = string
+    port                = number
+    backend_port        = optional(number)
+    health_probe_key    = optional(string, "default")
+    floating_ip         = optional(bool, true)
+    session_persistence = optional(string, "Default")
+    nsg_priority        = optional(number)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### outbound_rules
+
+Outbound rules.
+
+
+Type: 
+
+```hcl
+map(object({
+    name                     = string
+    frontend_ip_key          = string
+    protocol                 = string
+    allocated_outbound_ports = optional(number)
+    enable_tcp_reset         = optional(bool)
+    idle_timeout_in_minutes  = optional(number)
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### backend_name
 

@@ -34,11 +34,9 @@ load_balancers = {
   "public" = {
     name = "public-lb"
     nsg_auto_rules_settings = {
-      # nsg_name                = "fosix-existing-nsg"
-      # nsg_resource_group_name = "fosix-lb-ips"
       nsg_vnet_key  = "transit"
       nsg_key       = "public"
-      source_ips    = ["10.0.0.0/8"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+      source_ips    = ["0.0.0.0/0"]
       base_priority = 4000
     }
     zones = ["1", "2", "3"]
@@ -49,57 +47,59 @@ load_balancers = {
       }
     }
     frontend_ips = {
-      "default_front" = {
+      default_front = {
         name             = "default-public-frontend"
         public_ip_name   = "frontend-pip"
         create_public_ip = true
-        in_rules = {
-          "balanceHttp" = {
-            name             = "HTTP"
-            protocol         = "Tcp"
-            port             = 80
-            health_probe_key = "http_default"
-          }
-        }
-        out_rules = {
-          default = {
-            name                     = "default-out"
-            protocol                 = "Tcp"
-            allocated_outbound_ports = 20000
-            enable_tcp_reset         = true
-            idle_timeout_in_minutes  = 120
-          }
-        }
       }
-      "sourced_pip" = {
+      sourced_pip = {
         name                     = "with-sourced-pip"
         public_ip_name           = "fosix-sourced_frontend"
         public_ip_resource_group = "fosix-lb-ips"
-        zones                    = null
-        in_rules = {
-          "balanceHttp" = {
-            name     = "HTTP-elevated"
-            protocol = "Tcp"
-            port     = 80
-            # health_probe_key = "http_default"
-          }
-        }
       }
-      # "private" = {
-      #   name               = "private"
-      #   vnet_key           = "transit"
-      #   subnet_key         = "private"
-      #   private_ip_address = "10.0.0.22"
-      #   in_rules = {
-      #     "balanceHttp" = {
-      #       name             = "HA"
-      #       protocol         = "Tcp"
-      #       port             = 80
-      #       health_probe_key = "http_default"
-      #     }
-      #   }
-      # }
     }
+    inbound_rules = {
+      default_balanceHttp = {
+        name             = "HTTP"
+        frontend_ip_key  = "default_front"
+        protocol         = "Tcp"
+        port             = 80
+        health_probe_key = "http_default"
+      }
+      sourced_balanceHttp = {
+        name            = "HTTP_sourced"
+        frontend_ip_key = "sourced_pip"
+        protocol        = "Tcp"
+        port            = 80
+
+      }
+    }
+    outbound_rules = {
+      default = {
+        name                     = "default-out"
+        frontend_ip_key          = "default_front"
+        protocol                 = "Tcp"
+        allocated_outbound_ports = 20000
+        enable_tcp_reset         = true
+        idle_timeout_in_minutes  = 120
+      }
+    }
+
+    # "private" = {
+    #   name               = "private"
+    #   vnet_key           = "transit"
+    #   subnet_key         = "private"
+    #   private_ip_address = "10.0.0.22"
+    #   in_rules = {
+    #     "balanceHttp" = {
+    #       name             = "HA"
+    #       protocol         = "Tcp"
+    #       port             = 80
+    #       health_probe_key = "http_default"
+    #     }
+    #   }
+    # }
+
   }
   "private" = {
     name  = "private-lb"
@@ -110,13 +110,14 @@ load_balancers = {
         vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.21"
-        in_rules = {
-          HA_PORTS = {
-            name     = "HA"
-            port     = 0
-            protocol = "All"
-          }
-        }
+      }
+    }
+    inbound_rules = {
+      HA_PORTS = {
+        name            = "HA"
+        frontend_ip_key = "ha-ports"
+        port            = 0
+        protocol        = "All"
       }
     }
   }
