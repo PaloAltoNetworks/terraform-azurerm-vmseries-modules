@@ -31,3 +31,4 @@ jobs:
       validate_max_parallel: 20
       test_max_parallel: 10
       terratest_action: Plan # keep in mind that this has to start with capital letter
+      apply_timeout: 60
