@@ -1,33 +1,33 @@
 locals {
   # Decide how the backend machines access internet. If outbound rules are defined use them instead of the default route.
   # This is an inbound rule setting, applicable to all inbound rules as you cannot mix SNAT with Outbound rules for a single backend.
-  disable_outbound_snat = anytrue([for _, v in var.frontend_ips : length(v.out_rules) != 0])
+  disable_outbound_snat = length(var.outbound_rules) > 0
 
-  # Calculate inbound rules
-  in_flat_rules = flatten([
-    for fipkey, fip in var.frontend_ips : [
-      for rulekey, rule in fip.in_rules : {
-        fipkey  = fipkey
-        fip     = fip
-        rulekey = rulekey
-        rule    = rule
-      }
-    ]
-  ])
-  in_rules = { for v in local.in_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
+  # # Calculate inbound rules
+  # in_flat_rules = flatten([
+  #   for fipkey, fip in var.frontend_ips : [
+  #     for rulekey, rule in fip.in_rules : {
+  #       fipkey  = fipkey
+  #       fip     = fip
+  #       rulekey = rulekey
+  #       rule    = rule
+  #     }
+  #   ]
+  # ])
+  # in_rules = { for v in local.in_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 
-  # Calculate outbound rules
-  out_flat_rules = flatten([
-    for fipkey, fip in var.frontend_ips : [
-      for rulekey, rule in fip.out_rules : {
-        fipkey  = fipkey
-        fip     = fip
-        rulekey = rulekey
-        rule    = rule
-      }
-    ]
-  ])
-  out_rules = { for v in local.out_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
+  # # Calculate outbound rules
+  # out_flat_rules = flatten([
+  #   for fipkey, fip in var.frontend_ips : [
+  #     for rulekey, rule in fip.out_rules : {
+  #       fipkey  = fipkey
+  #       fip     = fip
+  #       rulekey = rulekey
+  #       rule    = rule
+  #     }
+  #   ]
+  # ])
+  # out_rules = { for v in local.out_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 }
 
 resource "azurerm_public_ip" "this" {
@@ -97,9 +97,7 @@ locals {
   }
   default_probe = (
     var.health_probes == null || anytrue(flatten([
-      for _, fip in var.frontend_ips : [
-        for _, rule in fip.in_rules : rule.health_probe_key == "default"
-      ]
+      for _, rule in var.inbound_rules : rule.health_probe_key == "default"
     ]))
     ) ? {
     default = {
@@ -131,36 +129,36 @@ resource "azurerm_lb_probe" "this" {
 }
 
 resource "azurerm_lb_rule" "this" {
-  for_each = local.in_rules
+  for_each = var.inbound_rules
 
-  name                     = each.value.rule.name
+  name                     = each.value.name
   loadbalancer_id          = azurerm_lb.this.id
-  probe_id                 = azurerm_lb_probe.this[each.value.rule.health_probe_key].id
+  probe_id                 = azurerm_lb_probe.this[each.value.health_probe_key].id
   backend_address_pool_ids = [azurerm_lb_backend_address_pool.this.id]
 
-  protocol                       = each.value.rule.protocol
-  backend_port                   = coalesce(each.value.rule.backend_port, each.value.rule.port)
-  frontend_ip_configuration_name = each.value.fip.name
-  frontend_port                  = each.value.rule.port
-  enable_floating_ip             = each.value.rule.floating_ip
+  protocol                       = each.value.protocol
+  backend_port                   = coalesce(each.value.backend_port, each.value.port)
+  frontend_ip_configuration_name = var.frontend_ips[each.value.frontend_ip_key].name
+  frontend_port                  = each.value.port
+  enable_floating_ip             = each.value.floating_ip
   disable_outbound_snat          = local.disable_outbound_snat
-  load_distribution              = each.value.rule.session_persistence
+  load_distribution              = each.value.session_persistence
 }
 
 resource "azurerm_lb_outbound_rule" "this" {
-  for_each = local.out_rules
+  for_each = var.outbound_rules
 
-  name                    = each.value.rule.name
+  name                    = each.value.name
   loadbalancer_id         = azurerm_lb.this.id
   backend_address_pool_id = azurerm_lb_backend_address_pool.this.id
 
-  protocol                 = each.value.rule.protocol
-  enable_tcp_reset         = each.value.rule.protocol != "Udp" ? each.value.rule.enable_tcp_reset : null
-  allocated_outbound_ports = each.value.rule.allocated_outbound_ports
-  idle_timeout_in_minutes  = each.value.rule.protocol != "Udp" ? each.value.rule.idle_timeout_in_minutes : null
+  protocol                 = each.value.protocol
+  enable_tcp_reset         = each.value.protocol != "Udp" ? each.value.enable_tcp_reset : null
+  allocated_outbound_ports = each.value.allocated_outbound_ports
+  idle_timeout_in_minutes  = each.value.protocol != "Udp" ? each.value.idle_timeout_in_minutes : null
 
   frontend_ip_configuration {
-    name = each.value.fip.name
+    name = var.frontend_ips[each.value.frontend_ip_key].name
   }
   depends_on = [azurerm_lb_rule.this]
 }
@@ -173,33 +171,33 @@ locals {
 
   # A map of hashes calculated for each inbound rule. Used to calculate NSG inbound rules priority index if modules is also used to automatically manage NSG rules. 
   rules_hash = {
-    for k, v in local.in_rules :
-    k => substr(sha256("${local.frontend_addresses[v.fipkey]}:${v.rule.port}"), 0, 4)
+    for k, v in var.inbound_rules :
+    k => substr(sha256("${local.frontend_addresses[v.frontend_ip_key]}:${v.port}"), 0, 4)
     if var.nsg_auto_rules_settings != null
   }
 }
 
 # Optional NSG rules. Each corresponds to one azurerm_lb_rule.
 resource "azurerm_network_security_rule" "this" {
-  for_each = { for k, v in local.in_rules : k => v if var.nsg_auto_rules_settings != null }
+  for_each = var.nsg_auto_rules_settings != null ? var.inbound_rules : {}
 
   name                        = "allow-inbound-ips-${each.key}"
   network_security_group_name = var.nsg_auto_rules_settings.nsg_name
   resource_group_name         = coalesce(var.nsg_auto_rules_settings.nsg_resource_group_name, var.resource_group_name)
-  description                 = "Auto-generated for load balancer ${var.name} port ${each.value.rule.protocol}/${coalesce(each.value.rule.backend_port, each.value.rule.port)}: allowed IPs: ${join(",", var.nsg_auto_rules_settings.source_ips)}"
+  description                 = "Auto-generated for load balancer ${var.name} port ${each.value.protocol}/${coalesce(each.value.backend_port, each.value.port)}: allowed IPs: ${join(",", var.nsg_auto_rules_settings.source_ips)}"
 
   direction                  = "Inbound"
   access                     = "Allow"
-  protocol                   = title(replace(lower(each.value.rule.protocol), "all", "*"))
+  protocol                   = title(replace(lower(each.value.protocol), "all", "*"))
   source_port_range          = "*"
-  destination_port_ranges    = [each.value.rule.port == "0" ? "*" : coalesce(each.value.rule.backend_port, each.value.rule.port)]
+  destination_port_ranges    = [each.value.port == "0" ? "*" : coalesce(each.value.backend_port, each.value.port)]
   source_address_prefixes    = var.nsg_auto_rules_settings.source_ips
-  destination_address_prefix = local.frontend_addresses[each.value.fipkey]
+  destination_address_prefix = local.frontend_addresses[each.value.frontend_ip_key]
 
   # For the priority, we add this %10 so that the numbering would be a bit more sparse instead of sequential.
   # This helps tremendously when a mass of indexes shifts by +1 or -1 and prevents problems when we need to shift rules reusing already used priority index.
   priority = coalesce(
-    each.value.rule.nsg_priority,
-    index(keys(local.in_rules), each.key) * 10 + parseint(local.rules_hash[each.key], 16) % 10 + var.nsg_auto_rules_settings.base_priority
+    each.value.nsg_priority,
+    index(keys(var.inbound_rules), each.key) * 10 + parseint(local.rules_hash[each.key], 16) % 10 + var.nsg_auto_rules_settings.base_priority
   )
 }

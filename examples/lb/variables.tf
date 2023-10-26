@@ -170,23 +170,25 @@ variable "load_balancers" {
       subnet_key               = optional(string)
       private_ip_address       = optional(string)
       gwlb_key                 = optional(string)
-      in_rules = optional(map(object({
-        name                = string
-        protocol            = string
-        port                = number
-        backend_port        = optional(number)
-        health_probe_key    = optional(string)
-        floating_ip         = optional(bool)
-        session_persistence = optional(string)
-        nsg_priority        = optional(number)
-      })), {})
-      out_rules = optional(map(object({
-        name                     = string
-        protocol                 = string
-        allocated_outbound_ports = optional(number)
-        enable_tcp_reset         = optional(bool)
-        idle_timeout_in_minutes  = optional(number)
-      })), {})
+    })), {})
+    inbound_rules = optional(map(object({
+      name                = string
+      frontend_ip_key     = string
+      protocol            = string
+      port                = number
+      backend_port        = optional(number)
+      health_probe_key    = optional(string)
+      floating_ip         = optional(bool)
+      session_persistence = optional(string)
+      nsg_priority        = optional(number)
+    })), {})
+    outbound_rules = optional(map(object({
+      name                     = string
+      frontend_ip_key          = string
+      protocol                 = string
+      allocated_outbound_ports = optional(number)
+      enable_tcp_reset         = optional(bool)
+      idle_timeout_in_minutes  = optional(number)
     })), {})
   }))
 }

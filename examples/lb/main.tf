@@ -80,6 +80,8 @@ module "load_balancer" {
       }
     )
   }
+  inbound_rules  = each.value.inbound_rules
+  outbound_rules = each.value.outbound_rules
 
   tags       = var.tags
   depends_on = [module.vnet]
