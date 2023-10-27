@@ -13,7 +13,7 @@ Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
-[`location`](#location) | `string` | Region to deploy load balancer and dependencies.
+[`location`](#location) | `string` | Region to deploy Virtual Network Gatewa and dependencies.
 [`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
 [`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
@@ -31,7 +31,7 @@ Name | Type | Description
 [`type`](#type) | `string` | The type of the Virtual Network Gateway.
 [`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
 [`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
-[`active_active`](#active_active) | `bool` | If true, an active-active Virtual Network Gateway will be created.
+[`active_active`](#active_active) | `bool` | Active-active Virtual Network Gateway.
 [`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
 [`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Should private IP be enabled on this gateway for connections?.
@@ -98,7 +98,7 @@ Type: string
 
 #### location
 
-Region to deploy load balancer and dependencies.
+Region to deploy Virtual Network Gatewa and dependencies.
 
 Type: string
 
@@ -341,7 +341,7 @@ Type: string
 #### ipsec_policy
 
 IPsec policies used for Virtual Network Connection.
-  
+
 Single policy contains attributes:
 - `dh_group`          - (`string`, required) The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None.
 - `ike_encryption`    - (`string`, required) The IKE encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256.
@@ -408,7 +408,10 @@ Default value: `map[]`
 
 #### type
 
-The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created
+The type of the Virtual Network Gateway.
+
+Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created.
+
 
 Type: string
 
@@ -418,7 +421,10 @@ Default value: `Vpn`
 
 #### vpn_type
 
-The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
+The routing type of the Virtual Network Gateway.
+
+Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
+
 
 Type: string
 
@@ -428,7 +434,10 @@ Default value: `RouteBased`
 
 #### sku
 
-Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+Configuration of the size and capacity of the virtual network gateway.
+
+Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+
 
 Type: string
 
@@ -438,7 +447,10 @@ Default value: `Basic`
 
 #### active_active
 
+Active-active Virtual Network Gateway.
+
 If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
+
 
 Type: bool
 
@@ -450,7 +462,7 @@ Default value: `false`
 
 #### enable_bgp
 
-If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway. Defaults to false
+If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 
 Type: bool
 
@@ -460,7 +472,10 @@ Default value: `false`
 
 #### generation
 
-The Generation of the Virtual Network gateway. Possible values include Generation1, Generation2 or None
+The Generation of the Virtual Network gateway.
+
+Possible values include Generation1, Generation2 or None
+
 
 Type: string
 

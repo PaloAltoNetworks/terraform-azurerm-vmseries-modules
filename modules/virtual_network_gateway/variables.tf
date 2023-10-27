@@ -11,7 +11,7 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  description = "Region to deploy load balancer and dependencies."
+  description = "Region to deploy Virtual Network Gatewa and dependencies."
   type        = string
 }
 
@@ -23,7 +23,11 @@ variable "tags" {
 
 # Virtual Network Gateway
 variable "type" {
-  description = "The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created"
+  description = <<-EOF
+  The type of the Virtual Network Gateway.
+
+  Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created.
+  EOF
   default     = "Vpn"
   type        = string
   validation {
@@ -33,7 +37,11 @@ variable "type" {
 }
 
 variable "vpn_type" {
-  description = "The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created."
+  description = <<-EOF
+  The routing type of the Virtual Network Gateway.
+
+  Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
+  EOF
   default     = "RouteBased"
   type        = string
   validation {
@@ -43,7 +51,11 @@ variable "vpn_type" {
 }
 
 variable "sku" {
-  description = "Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway."
+  description = <<-EOF
+  Configuration of the size and capacity of the virtual network gateway.
+
+  Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+  EOF
   default     = "Basic"
   type        = string
   validation {
@@ -53,7 +65,11 @@ variable "sku" {
 }
 
 variable "active_active" {
-  description = "If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false."
+  description = <<-EOF
+  Active-active Virtual Network Gateway.
+
+  If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
+  EOF
   default     = false
   type        = bool
 }
@@ -69,13 +85,17 @@ variable "edge_zone" {
 }
 
 variable "enable_bgp" {
-  description = "If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway. Defaults to false"
+  description = "If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway."
   default     = false
   type        = bool
 }
 
 variable "generation" {
-  description = "The Generation of the Virtual Network gateway. Possible values include Generation1, Generation2 or None"
+  description = <<-EOF
+  The Generation of the Virtual Network gateway.
+
+  Possible values include Generation1, Generation2 or None
+  EOF
   type        = string
   default     = "Generation1"
   validation {
@@ -387,7 +407,7 @@ variable "ipsec_shared_key" {
 variable "ipsec_policy" {
   description = <<-EOF
   IPsec policies used for Virtual Network Connection.
-  
+
   Single policy contains attributes:
   - `dh_group`          - (`string`, required) The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None.
   - `ike_encryption`    - (`string`, required) The IKE encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256.
