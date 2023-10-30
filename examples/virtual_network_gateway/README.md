@@ -201,11 +201,11 @@ map(object({
     })), [])
     azure_bgp_peers_addresses = map(string)
     local_bgp_settings = object({
-      asn = optional(string)
-      peering_addresses = optional(map(object({
+      asn = string
+      peering_addresses = map(object({
         apipa_addresses   = list(string)
         default_addresses = optional(list(string))
-      })))
+      }))
       peer_weight = optional(number)
     })
     custom_route = optional(list(object({

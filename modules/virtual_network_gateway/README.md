@@ -322,8 +322,8 @@ list(object({
 BGP settings.
 
 Attributes:
-- `asn`                 - (`string`, optional, defaults to `null`) the Autonomous System Number (ASN) to use as part of the BGP.
-- `peering_addresses`   - (`map`, optional, defaults to `null`) a map of peering addresses, which contains 1 (for active-standby)
+- `asn`                 - (`string`, required) the Autonomous System Number (ASN) to use as part of the BGP.
+- `peering_addresses`   - (`map`, required) a map of peering addresses, which contains 1 (for active-standby)
                           or 2 objects (for active-active), where key is the ip configuration name and with attributes:
   - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
   - `default_addresses` - (`list`, optional, defaults to `null`) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
@@ -350,11 +350,11 @@ Type:
 
 ```hcl
 object({
-    asn = optional(string)
-    peering_addresses = optional(map(object({
+    asn = string
+    peering_addresses = map(object({
       apipa_addresses   = list(string)
       default_addresses = optional(list(string))
-    })))
+    }))
     peer_weight = optional(number)
   })
 ```
