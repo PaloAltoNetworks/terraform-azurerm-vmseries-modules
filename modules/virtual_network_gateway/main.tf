@@ -1,3 +1,31 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
+resource "azurerm_public_ip" "this" {
+  for_each = { for ip_configuration in var.ip_configuration :
+    ip_configuration.name => {
+      name                   = ip_configuration.public_ip_name
+      public_ip_standard_sku = ip_configuration.public_ip_standard_sku
+    }
+  if ip_configuration.create_public_ip }
+
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  name                = each.value.name
+
+  allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
+  zones             = try(length(var.zones) > 0, false) ? var.zones : null
+  sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
+
+  tags = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
+data "azurerm_public_ip" "exists" {
+  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if !ip_configuration.create_public_ip }
+
+  name                = each.value
+  resource_group_name = var.resource_group_name
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network_gateway
 resource "azurerm_virtual_network_gateway" "this" {
   location            = var.location
@@ -93,34 +121,6 @@ resource "azurerm_virtual_network_gateway" "this" {
       error_message = "For active-standby you need to configure at least 1 custom Azure APIPA BGP IP address, for active-active at least 2."
     }
   }
-}
-
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
-resource "azurerm_public_ip" "this" {
-  for_each = { for ip_configuration in var.ip_configuration :
-    ip_configuration.name => {
-      name                   = ip_configuration.public_ip_name
-      public_ip_standard_sku = ip_configuration.public_ip_standard_sku
-    }
-  if ip_configuration.create_public_ip }
-
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  name                = each.value.name
-
-  allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
-  zones             = try(length(var.zones) > 0, false) ? var.zones : null
-  sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
-
-  tags = var.tags
-}
-
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
-data "azurerm_public_ip" "exists" {
-  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if !ip_configuration.create_public_ip }
-
-  name                = each.value
-  resource_group_name = var.resource_group_name
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/local_network_gateway 
