@@ -3,7 +3,6 @@ resource "azurerm_virtual_network_gateway" "this" {
   location            = var.location
   resource_group_name = var.resource_group_name
   name                = var.name
-  tags                = var.tags
 
   type     = var.type
   vpn_type = var.vpn_type
@@ -77,6 +76,8 @@ resource "azurerm_virtual_network_gateway" "this" {
     }
   }
 
+  tags = var.tags
+
   lifecycle {
     precondition {
       condition = (contains(["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation2"
@@ -109,8 +110,9 @@ resource "azurerm_public_ip" "this" {
 
   allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
   zones             = try(length(var.zones) > 0, false) ? var.zones : null
-  tags              = var.tags
   sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
+
+  tags = var.tags
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
