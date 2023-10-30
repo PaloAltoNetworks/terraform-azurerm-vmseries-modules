@@ -14,7 +14,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
+[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway.
 [`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
 [`local_bgp_settings`](#local_bgp_settings) | `object` | BGP settings.
@@ -32,7 +32,7 @@ Name | Type | Description
 [`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
 [`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
 [`active_active`](#active_active) | `bool` | Active-active Virtual Network Gateway.
-[`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
+[`enable_bgp`](#enable_bgp) | `bool` | Controls whether BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
 [`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Controls whether the private IP is enabled on the gateway.
 [`zones`](#zones) | `list` | After provider version 3.
@@ -40,7 +40,7 @@ Name | Type | Description
 [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
 [`custom_route`](#custom_route) | `list` | List of custom routes.
 [`connection_type`](#connection_type) | `string` | The type of VNG connection.
-[`connection_mode`](#connection_mode) | `string` | Connection mode to use.
+[`connection_mode`](#connection_mode) | `string` | The connection mode to use.
 
 
 
@@ -111,7 +111,11 @@ Type: string
 
 #### default_local_network_gateway_id
 
-The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)
+The ID of the local network gateway.
+
+Outbound Internet traffic from the virtual network, in which the gateway is created,
+will be routed through local network gateway(forced tunnelling)"
+
 
 Type: string
 
@@ -410,9 +414,6 @@ Default value: `map[]`
 
 The type of the Virtual Network Gateway.
 
-Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created.
-
-
 Type: string
 
 Default value: `Vpn`
@@ -422,9 +423,6 @@ Default value: `Vpn`
 #### vpn_type
 
 The routing type of the Virtual Network Gateway.
-
-Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
-
 
 Type: string
 
@@ -436,7 +434,8 @@ Default value: `RouteBased`
 
 Configuration of the size and capacity of the virtual network gateway.
 
-Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
+Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
 
 
 Type: string
@@ -449,7 +448,9 @@ Default value: `Basic`
 
 Active-active Virtual Network Gateway.
 
-If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
+If true, an active-active Virtual Network Gateway will be created.
+An active-active gateway requires a HighPerformance or an UltraPerformance SKU.
+If false, an active-standby gateway will be created. Defaults to false.
 
 
 Type: bool
@@ -462,7 +463,7 @@ Default value: `false`
 
 #### enable_bgp
 
-If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
+Controls whether BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 
 Type: bool
 
@@ -473,9 +474,6 @@ Default value: `false`
 #### generation
 
 The Generation of the Virtual Network gateway.
-
-Possible values include Generation1, Generation2 or None
-
 
 Type: string
 
@@ -497,7 +495,7 @@ Default value: `false`
 
 After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 
-For zone-redundant with 3 availability zone in current region value will be:
+For zone-redundant with 3 availability zones in current region value will be:
 ```["1","2","3"]```
 
 
@@ -619,7 +617,7 @@ Default value: `IPsec`
 
 #### connection_mode
 
-Connection mode to use.
+The connection mode to use.
 
 Type: string
 

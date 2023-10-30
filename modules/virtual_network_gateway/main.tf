@@ -108,8 +108,8 @@ resource "azurerm_virtual_network_gateway" "this" {
 
   lifecycle {
     precondition {
-      condition = (contains(["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation2"
-      ) || (contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw1AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation1")
+      condition = (contains(["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku) && var.generation == "Generation2"
+      ) || (contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw1AZ"], var.sku) && var.generation == "Generation1")
       error_message = "Generation2 is only value for a sku larger than VpnGw2 or VpnGw2AZ"
     }
     precondition {

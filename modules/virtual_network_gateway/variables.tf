@@ -23,11 +23,7 @@ variable "tags" {
 
 # Virtual Network Gateway
 variable "type" {
-  description = <<-EOF
-  The type of the Virtual Network Gateway.
-
-  Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created.
-  EOF
+  description = "The type of the Virtual Network Gateway."
   default     = "Vpn"
   nullable    = false
   type        = string
@@ -38,16 +34,12 @@ variable "type" {
 }
 
 variable "vpn_type" {
-  description = <<-EOF
-  The routing type of the Virtual Network Gateway.
-
-  Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
-  EOF
+  description = "The routing type of the Virtual Network Gateway."
   default     = "RouteBased"
   nullable    = false
   type        = string
   validation {
-    condition     = contains(["RouteBased", "PolicyBased"], coalesce(var.vpn_type, "PolicyBased"))
+    condition     = contains(["RouteBased", "PolicyBased"], var.vpn_type)
     error_message = "Valid options are RouteBased or PolicyBased"
   }
 }
@@ -56,7 +48,8 @@ variable "sku" {
   description = <<-EOF
   Configuration of the size and capacity of the virtual network gateway.
 
-  Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+  Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
+  Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
   EOF
   default     = "Basic"
   nullable    = false
@@ -71,7 +64,9 @@ variable "active_active" {
   description = <<-EOF
   Active-active Virtual Network Gateway.
 
-  If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
+  If true, an active-active Virtual Network Gateway will be created.
+  An active-active gateway requires a HighPerformance or an UltraPerformance SKU.
+  If false, an active-standby gateway will be created. Defaults to false.
   EOF
   default     = false
   nullable    = false
@@ -79,7 +74,12 @@ variable "active_active" {
 }
 
 variable "default_local_network_gateway_id" {
-  description = "The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)"
+  description = <<-EOF
+  The ID of the local network gateway.
+
+  Outbound Internet traffic from the virtual network, in which the gateway is created,
+  will be routed through local network gateway(forced tunnelling)"
+  EOF
   type        = string
 }
 
@@ -89,18 +89,14 @@ variable "edge_zone" {
 }
 
 variable "enable_bgp" {
-  description = "If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway."
+  description = "Controls whether BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway."
   default     = false
   nullable    = false
   type        = bool
 }
 
 variable "generation" {
-  description = <<-EOF
-  The Generation of the Virtual Network gateway.
-
-  Possible values include Generation1, Generation2 or None
-  EOF
+  description = "The Generation of the Virtual Network gateway."
   type        = string
   default     = "Generation1"
   nullable    = false
@@ -121,7 +117,7 @@ variable "zones" {
   description = <<-EOF
   After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 
-  For zone-redundant with 3 availability zone in current region value will be:
+  For zone-redundant with 3 availability zones in current region value will be:
   ```["1","2","3"]```
   EOF
   default     = []
@@ -399,7 +395,7 @@ variable "connection_type" {
 }
 
 variable "connection_mode" {
-  description = "Connection mode to use."
+  description = "The connection mode to use."
   default     = "Default"
   nullable    = false
   type        = string
