@@ -228,7 +228,7 @@ map(object({
       })))
     }))
     connection_mode = optional(string)
-    ipsec_policy = list(object({
+    ipsec_policies = list(object({
       dh_group         = string
       ike_encryption   = string
       ike_integrity    = string

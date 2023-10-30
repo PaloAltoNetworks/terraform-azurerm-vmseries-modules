@@ -110,7 +110,7 @@ virtual_network_gateways = {
       }
     }
     connection_mode = "InitiatorOnly"
-    ipsec_policy = [
+    ipsec_policies = [
       {
         dh_group         = "ECP384"
         ike_encryption   = "AES256"

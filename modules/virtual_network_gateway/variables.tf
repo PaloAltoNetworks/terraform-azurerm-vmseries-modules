@@ -134,7 +134,7 @@ variable "ip_configuration" {
   - `name`                          - (`string`, required) name of the IP configuration
   - `create_public_ip`              - (`bool`, required) - true if public IP needs to be created
   - `public_ip_name`                - (`string`, required) name of the public IP resource used, when there is no need to create new one
-  - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) defines how the private IP address of the gateways virtual interface is assigned. Valid options are Static or Dynamic. Defaults to Dynamic.
+  - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) defines how the private IP address of the gateways virtual interface is assigned.
   - `public_ip_standard_sku`        - (`bool`, optional, defaults to `false`) when set to `true` creates a Standard SKU, statically allocated public IP, otherwise it will be a Basic/Dynamic one.
   - `subnet_id`                     - (`string`, required) the ID of the gateway subnet of a virtual network in which the virtual network gateway will be created.
 
@@ -169,6 +169,13 @@ variable "ip_configuration" {
     condition     = length(flatten([for _, config in var.ip_configuration : config.name])) == length(distinct(flatten([for _, config in var.ip_configuration : config.name])))
     error_message = "The `name` property has to be unique among all IP configuration."
   }
+  validation {
+    condition = alltrue(flatten([
+      for _, config in var.ip_configuration : [
+        contains(["Static", "Dynamic"], config.private_ip_address_allocation)
+    ]]))
+    error_message = "Possible values for `private_ip_address_allocation` are Static or Dynamic"
+  }
 }
 
 variable "vpn_client_configuration" {
@@ -177,15 +184,15 @@ variable "vpn_client_configuration" {
 
   List of available attributes of each VPN client configurations:
   - `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken. You can provide more than one address space, e.g. in CIDR notation.
-  - `aad_tenant`              - (`string`, optional) AzureAD Tenant URL
-  - `aad_audience`            - (`string`, optional) the client id of the Azure VPN application. See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
-  - `aad_issuer`              - (`string`, optional) the STS url for your tenant
-  - `root_certificate`        - (`object`, optional) one or more root_certificate blocks which are defined below. These root certificates are used to sign the client certificate used by the VPN clients to connect to the gateway.
-  - `revoked_certificate`     - (`object`, optional) one or more revoked_certificate blocks which are defined below.
-  - `radius_server_address`   - (`string`, optional) the address of the Radius server.
-  - `radius_server_secret`    - (`string`, optional) the secret used by the Radius server.
-  - `vpn_client_protocols`    - (`list(string)`, optional) list of the protocols supported by the vpn client. The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with the use of aad_tenant, aad_audience and aad_issuer.
-  - `vpn_auth_types`          - (`list(string)`, optional) list of the vpn authentication types for the virtual network gateway. The supported values are AAD, Radius and Certificate.
+  - `aad_tenant`              - (`string`, optional, defaults to `null`) AzureAD Tenant URL
+  - `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application. See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
+  - `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
+  - `root_certificate`        - (`object`, optional, defaults to `null`) one or more root_certificate blocks which are defined below. These root certificates are used to sign the client certificate used by the VPN clients to connect to the gateway.
+  - `revoked_certificate`     - (`object`, optional, defaults to `null`) one or more revoked_certificate blocks which are defined below.
+  - `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
+  - `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
+  - `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client. The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with the use of aad_tenant, aad_audience and aad_issuer.
+  - `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for the virtual network gateway. The supported values are AAD, Radius and Certificate.
 
   EOF
   type = list(object({
@@ -237,11 +244,11 @@ variable "local_bgp_settings" {
   BGP settings.
 
   Attributes:
-  - `asn`                 - (`string`, optional) the Autonomous System Number (ASN) to use as part of the BGP.
-  - `peering_addresses`   - (`map`, optional) a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active), where key is the ip configuration name and with attributes:
+  - `asn`                 - (`string`, optional, defaults to `null`) the Autonomous System Number (ASN) to use as part of the BGP.
+  - `peering_addresses`   - (`map`, optional, defaults to `null`) a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active), where key is the ip configuration name and with attributes:
     - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
-    - `default_addresses` - (`list`, optional) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
-  - `peer_weight`         - (`number`, optional) the weight added to routes which have been learned through BGP peering. Valid values can be between 0 and 100.
+    - `default_addresses` - (`list`, optional, defaults to `null`) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
+  - `peer_weight`         - (`number`, optional, defaults to `null`) the weight added to routes which have been learned through BGP peering.
 
   Example:
 
@@ -267,6 +274,10 @@ variable "local_bgp_settings" {
     })))
     peer_weight = optional(number)
   })
+  validation {
+    condition     = var.local_bgp_settings.peer_weight != null ? var.local_bgp_settings.peer_weight >= 0 && var.local_bgp_settings.peer_weight <= 100 : true
+    error_message = "Possible values for `peer_weight` are between 0 and 100."
+  }
 }
 
 variable "custom_route" {
@@ -274,7 +285,7 @@ variable "custom_route" {
   List of custom routes.
 
   Every object in the list contains attributes:
-  - `address_prefixes` - (`list`, optional) a list of address blocks reserved for this virtual network in CIDR notation as defined below.
+  - `address_prefixes` - (`list`, optional, defaults to `null`) a list of address blocks reserved for this virtual network in CIDR notation as defined below.
 
   EOF
   default     = []
@@ -292,15 +303,15 @@ variable "local_network_gateways" {
   Every object in the map contains attributes:
   - local_ng_name           - (`string`, required) the name of the local network gateway.
   - connection_name         - (`string`, required) the name of the virtual network gateway connection.
-  - remote_bgp_settings     - (`list`, optional) block containing Local Network Gateway's BGP speaker settings:
+  - remote_bgp_settings     - (`list`, optional, defaults to `[]`) block containing Local Network Gateway's BGP speaker settings:
     - asn                   - (`string`, required) the BGP speaker's ASN.
     - bgp_peering_address   - (`string`, required) the BGP peering address and BGP identifier of this BGP speaker.
-    - peer_weight           - (`number`, optional) the weight added to routes learned from this BGP speaker.
-  - gateway_address         - (`string`, optional) the gateway IP address to connect with.
-  - address_space           - (`list`, optional) the list of string CIDRs representing the address spaces the gateway exposes.
-  - custom_bgp_addresses    - (`list`, optional) Border Gateway Protocol custom IP Addresses, which can only be used on IPSec / active-active connections. Object contains 2 attributes:
+    - peer_weight           - (`number`, optional, defaults to `null`) the weight added to routes learned from this BGP speaker.
+  - gateway_address         - (`string`, optional, defaults to `null`) the gateway IP address to connect with.
+  - address_space           - (`list`, optional, defaults to `[]`) the list of string CIDRs representing the address spaces the gateway exposes.
+  - custom_bgp_addresses    - (`list`, optional, defaults to `[]`) Border Gateway Protocol custom IP Addresses, which can only be used on IPSec / active-active connections. Object contains 2 attributes:
     - primary               - (`string`, required) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
-    - secondary             - (`string`, optional) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
+    - secondary             - (`string`, optional, defaults to `null`) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
 
   Example:
 
@@ -415,19 +426,19 @@ variable "ipsec_shared_key" {
   sensitive   = true
 }
 
-variable "ipsec_policy" {
+variable "ipsec_policies" {
   description = <<-EOF
   IPsec policies used for Virtual Network Connection.
 
   Single policy contains attributes:
-  - `dh_group`          - (`string`, required) The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None.
-  - `ike_encryption`    - (`string`, required) The IKE encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256.
-  - `ike_integrity`     - (`string`, required) The IKE integrity algorithm. Valid options are GCMAES128, GCMAES256, MD5, SHA1, SHA256, or SHA384.
-  - `ipsec_encryption`  - (`string`, required) The IPSec encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, GCMAES192, GCMAES256, or None.
-  - `ipsec_integrity`   - (`string`, required) The IPSec integrity algorithm. Valid options are GCMAES128, GCMAES192, GCMAES256, MD5, SHA1, or SHA256.
-  - `pfs_group`         - (`string`, required) The DH group used in IKE phase 2 for new child SA. Valid options are ECP256, ECP384, PFS1, PFS14, PFS2, PFS2048, PFS24, PFSMM, or None.
-  - `sa_datasize`       - (`string`, optional) The IPSec SA payload size in KB. Must be at least 1024 KB. Defaults to 102400000 KB.
-  - `sa_lifetime`       - (`string`, optional) The IPSec SA lifetime in seconds. Must be at least 300 seconds. Defaults to 27000 seconds.
+  - `dh_group`          - (`string`, required) The DH group used in IKE phase 1 for initial SA.
+  - `ike_encryption`    - (`string`, required) The IKE encryption algorithm.
+  - `ike_integrity`     - (`string`, required) The IKE integrity algorithm.
+  - `ipsec_encryption`  - (`string`, required) The IPSec encryption algorithm.
+  - `ipsec_integrity`   - (`string`, required) The IPSec integrity algorithm.
+  - `pfs_group`         - (`string`, required) The DH group used in IKE phase 2 for new child SA.
+  - `sa_datasize`       - (`string`, optional, defaults to `102400000`) The IPSec SA payload size in KB. Must be at least 1024 KB.
+  - `sa_lifetime`       - (`string`, optional, defaults to `27000`) The IPSec SA lifetime in seconds. Must be at least 300 seconds.
 
   Example:
 
@@ -453,7 +464,49 @@ variable "ipsec_policy" {
     ipsec_encryption = string
     ipsec_integrity  = string
     pfs_group        = string
-    sa_datasize      = optional(string)
-    sa_lifetime      = optional(string)
+    sa_datasize      = optional(string, "102400000")
+    sa_lifetime      = optional(string, "27000")
   }))
+  validation {
+    condition = alltrue(flatten([
+      for _, ipsec_policy in var.ipsec_policies : [
+        contains(["DHGroup1", "DHGroup14", "DHGroup2", "DHGroup2048", "DHGroup24", "ECP256", "ECP384", "None"], ipsec_policy.dh_group)
+    ]]))
+    error_message = "Possible values for `dh_group` are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384 or None"
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, ipsec_policy in var.ipsec_policies : [
+        contains(["AES128", "AES192", "AES256", "DES", "DES3", "GCMAES128", "GCMAES256"], ipsec_policy.ike_encryption)
+    ]]))
+    error_message = "Possible values for `ike_encryption` are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256"
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, ipsec_policy in var.ipsec_policies : [
+        contains(["GCMAES128", "GCMAES256", "MD5", "SHA1", "SHA256", "SHA384"], ipsec_policy.ike_integrity)
+    ]]))
+    error_message = "Possible values for `ike_integrity` are GCMAES128, GCMAES256, MD5, SHA1, SHA256, or SHA384"
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, ipsec_policy in var.ipsec_policies : [
+        contains(["AES128", "AES192", "AES256", "DES", "DES3", "GCMAES128", "GCMAES192", "GCMAES256", "None"], ipsec_policy.ipsec_encryption)
+    ]]))
+    error_message = "Possible values for `ipsec_encryption` are AES128, AES192, AES256, DES, DES3, GCMAES128, GCMAES192, GCMAES256, or None"
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, ipsec_policy in var.ipsec_policies : [
+        contains(["GCMAES128", "GCMAES192", "GCMAES256", "MD5", "SHA1", "SHA256"], ipsec_policy.ipsec_integrity)
+    ]]))
+    error_message = "Possible values for `ipsec_integrity` are GCMAES128, GCMAES192, GCMAES256, MD5, SHA1, or SHA256"
+  }
+  validation {
+    condition = alltrue(flatten([
+      for _, ipsec_policy in var.ipsec_policies : [
+        contains(["ECP256", "ECP384", "PFS1", "PFS14", "PFS2", "PFS2048", "PFS24", "PFSMM", "None"], ipsec_policy.pfs_group)
+    ]]))
+    error_message = "Possible values for `pfs_group` are ECP256, ECP384, PFS1, PFS14, PFS2, PFS2048, PFS24, PFSMM, or None"
+  }
 }

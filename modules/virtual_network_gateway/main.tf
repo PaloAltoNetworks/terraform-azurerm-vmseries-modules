@@ -171,7 +171,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
 
   connection_mode = var.connection_mode
   dynamic "ipsec_policy" {
-    for_each = var.ipsec_policy
+    for_each = var.ipsec_policies
     content {
       dh_group         = ipsec_policy.value.dh_group
       ike_encryption   = ipsec_policy.value.ike_encryption
