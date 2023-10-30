@@ -133,7 +133,7 @@ variable "ip_configuration" {
 
   - `name`                          - (`string`, required) name of the IP configuration
   - `create_public_ip`              - (`bool`, required) - true if public IP needs to be created
-  - `public_ip_name`                - (`string`, required when `create_public_ip = false`) name of the public IP resource used, when there is no need to create new one
+  - `public_ip_name`                - (`string`, required) name of the public IP resource used, when there is no need to create new one
   - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) defines how the private IP address of the gateways virtual interface is assigned. Valid options are Static or Dynamic. Defaults to Dynamic.
   - `public_ip_standard_sku`        - (`bool`, optional, defaults to `false`) when set to `true` creates a Standard SKU, statically allocated public IP, otherwise it will be a Basic/Dynamic one.
   - `subnet_id`                     - (`string`, required) the ID of the gateway subnet of a virtual network in which the virtual network gateway will be created.
@@ -160,7 +160,7 @@ variable "ip_configuration" {
   type = list(object({
     name                          = string
     create_public_ip              = bool
-    public_ip_name                = optional(string)
+    public_ip_name                = string
     private_ip_address_allocation = optional(string, "Dynamic")
     public_ip_standard_sku        = optional(bool, false)
     subnet_id                     = string
