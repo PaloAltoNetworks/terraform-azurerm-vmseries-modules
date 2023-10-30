@@ -1,9 +1,36 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
+resource "azurerm_public_ip" "this" {
+  for_each = { for ip_configuration in var.ip_configuration :
+    ip_configuration.name => {
+      name                   = ip_configuration.public_ip_name
+      public_ip_standard_sku = ip_configuration.public_ip_standard_sku
+    }
+  if ip_configuration.create_public_ip }
+
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  name                = each.value.name
+
+  allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
+  zones             = try(length(var.zones) > 0, false) ? var.zones : null
+  sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
+
+  tags = var.tags
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
+data "azurerm_public_ip" "exists" {
+  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if !ip_configuration.create_public_ip }
+
+  name                = each.value
+  resource_group_name = var.resource_group_name
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network_gateway
 resource "azurerm_virtual_network_gateway" "this" {
   location            = var.location
   resource_group_name = var.resource_group_name
   name                = var.name
-  tags                = var.tags
 
   type     = var.type
   vpn_type = var.vpn_type
@@ -34,14 +61,14 @@ resource "azurerm_virtual_network_gateway" "this" {
       aad_audience  = vpn_client_configuration.value.aad_audience
       aad_issuer    = vpn_client_configuration.value.aad_issuer
       dynamic "root_certificate" {
-        for_each = vpn_client_configuration.value.root_certificate != null ? { for t in vpn_client_configuration.value.root_certificate : t.name => t } : {}
+        for_each = coalesce({ for t in vpn_client_configuration.value.root_certificate : t.name => t }, {})
         content {
           name             = root_certificate.value.name
           public_cert_data = root_certificate.value.public_cert_data
         }
       }
       dynamic "revoked_certificate" {
-        for_each = vpn_client_configuration.value.revoked_certificate != null ? { for t in vpn_client_configuration.value.revoked_certificate : t.name => t } : {}
+        for_each = coalesce({ for t in vpn_client_configuration.value.revoked_certificate : t.name => t }, {})
         content {
           name       = revoked_certificate.value.name
           thumbprint = revoked_certificate.value.thumbprint
@@ -77,10 +104,12 @@ resource "azurerm_virtual_network_gateway" "this" {
     }
   }
 
+  tags = var.tags
+
   lifecycle {
     precondition {
-      condition = (contains(["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation2"
-      ) || (contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw1AZ"], var.sku) && coalesce(var.generation, "Generation1") == "Generation1")
+      condition = (contains(["VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku) && var.generation == "Generation2"
+      ) || (contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw1AZ"], var.sku) && var.generation == "Generation1")
       error_message = "Generation2 is only value for a sku larger than VpnGw2 or VpnGw2AZ"
     }
     precondition {
@@ -92,33 +121,6 @@ resource "azurerm_virtual_network_gateway" "this" {
       error_message = "For active-standby you need to configure at least 1 custom Azure APIPA BGP IP address, for active-active at least 2."
     }
   }
-}
-
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
-resource "azurerm_public_ip" "this" {
-  for_each = { for ip_configuration in var.ip_configuration :
-    ip_configuration.name => {
-      name                   = ip_configuration.public_ip_name
-      public_ip_standard_sku = ip_configuration.public_ip_standard_sku
-    }
-  if ip_configuration.create_public_ip }
-
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  name                = each.value.name
-
-  allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
-  zones             = try(length(var.avzones) > 0, false) ? var.avzones : null
-  tags              = var.tags
-  sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
-}
-
-# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
-data "azurerm_public_ip" "exists" {
-  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if !ip_configuration.create_public_ip }
-
-  name                = each.value
-  resource_group_name = var.resource_group_name
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/local_network_gateway 

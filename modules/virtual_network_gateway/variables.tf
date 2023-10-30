@@ -1,30 +1,31 @@
 # Main resource
 variable "name" {
-  description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
+  description = "The name of the Virtual Network Gateway."
   type        = string
 }
 
 # Common settings
 variable "resource_group_name" {
-  description = "Name of a pre-existing Resource Group to place the resources in."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
 variable "location" {
-  description = "Region to deploy load balancer and dependencies."
+  description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
 
 variable "tags" {
-  description = "Azure tags to apply to the created resources."
+  description = "The map of tags to assign to all created resources."
   default     = {}
   type        = map(string)
 }
 
 # Virtual Network Gateway
 variable "type" {
-  description = "The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created"
+  description = "The type of the Virtual Network Gateway."
   default     = "Vpn"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Vpn", "ExpressRoute"], var.type)
@@ -33,18 +34,25 @@ variable "type" {
 }
 
 variable "vpn_type" {
-  description = "The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created."
+  description = "The routing type of the Virtual Network Gateway."
   default     = "RouteBased"
+  nullable    = false
   type        = string
   validation {
-    condition     = contains(["RouteBased", "PolicyBased"], coalesce(var.vpn_type, "PolicyBased"))
+    condition     = contains(["RouteBased", "PolicyBased"], var.vpn_type)
     error_message = "Valid options are RouteBased or PolicyBased"
   }
 }
 
 variable "sku" {
-  description = "Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway."
+  description = <<-EOF
+  Configuration of the size and capacity of the virtual network gateway.
+
+  Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
+  Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+  EOF
   default     = "Basic"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku)
@@ -53,13 +61,25 @@ variable "sku" {
 }
 
 variable "active_active" {
-  description = "If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false."
+  description = <<-EOF
+  Active-active Virtual Network Gateway.
+
+  If true, an active-active Virtual Network Gateway will be created.
+  An active-active gateway requires a HighPerformance or an UltraPerformance SKU.
+  If false, an active-standby gateway will be created. Defaults to false.
+  EOF
   default     = false
+  nullable    = false
   type        = bool
 }
 
 variable "default_local_network_gateway_id" {
-  description = "The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)"
+  description = <<-EOF
+  The ID of the local network gateway.
+
+  Outbound Internet traffic from the virtual network, in which the gateway is created,
+  will be routed through local network gateway(forced tunnelling)"
+  EOF
   type        = string
 }
 
@@ -69,15 +89,17 @@ variable "edge_zone" {
 }
 
 variable "enable_bgp" {
-  description = "If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway. Defaults to false"
+  description = "Controls whether BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway."
   default     = false
+  nullable    = false
   type        = bool
 }
 
 variable "generation" {
-  description = "The Generation of the Virtual Network gateway. Possible values include Generation1, Generation2 or None"
+  description = "The Generation of the Virtual Network gateway."
   type        = string
   default     = "Generation1"
+  nullable    = false
   validation {
     condition     = contains(["Generation1", "Generation2", "None"], coalesce(var.generation, "Generation1"))
     error_message = "Valid options are Generation1, Generation2 or None"
@@ -85,19 +107,21 @@ variable "generation" {
 }
 
 variable "private_ip_address_enabled" {
-  description = "Should private IP be enabled on this gateway for connections?"
+  description = "Controls whether the private IP is enabled on the gateway."
   default     = false
+  nullable    = false
   type        = bool
 }
 
-variable "avzones" {
+variable "zones" {
   description = <<-EOF
   After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 
-  For zone-redundant with 3 availability zone in current region value will be:
+  For zone-redundant with 3 availability zones in current region value will be:
   ```["1","2","3"]```
   EOF
   default     = []
+  nullable    = false
   type        = list(string)
 }
 
@@ -250,6 +274,7 @@ variable "custom_route" {
 
   EOF
   default     = []
+  nullable    = false
   type = list(object({
     address_prefixes = optional(list(string))
   }))
@@ -361,6 +386,7 @@ variable "local_network_gateways" {
 variable "connection_type" {
   description = "The type of VNG connection."
   default     = "IPsec"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["IPsec", "ExpressRoute", "Vnet2Vnet"], var.connection_type)
@@ -369,8 +395,9 @@ variable "connection_type" {
 }
 
 variable "connection_mode" {
-  description = "Connection mode to use."
+  description = "The connection mode to use."
   default     = "Default"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Default", "InitiatorOnly", "ResponderOnly"], var.connection_mode)
@@ -387,7 +414,7 @@ variable "ipsec_shared_key" {
 variable "ipsec_policy" {
   description = <<-EOF
   IPsec policies used for Virtual Network Connection.
-  
+
   Single policy contains attributes:
   - `dh_group`          - (`string`, required) The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None.
   - `ike_encryption`    - (`string`, required) The IKE encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256.

@@ -1,20 +1,153 @@
 <!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Virtual Network Gateway Module for Azure
 
-A terraform module for deploying a Virtual Network Gateway and its components required for the VM-Series firewalls in Azure.
+A terraform module for deploying a VNG (Virtual Network Gateway) and its components required for the VM-Series firewalls in Azure.
 
 ## Usage
 
-For usage refer to variables description, which include example for complex map of objects.
+In order to use module `virtual_network_gateway`, you need to deploy `azurerm_resource_group` and use module `vnet` as prerequisites.
+Then you can use below code as an example of calling module to create VNG:
+
+```hcl
+module "vng" {
+  source = "../../modules/virtual_network_gateway"
+
+  for_each = var.virtual_network_gateways
+
+  location            = var.location
+  resource_group_name = local.resource_group.name
+  name                = each.value.name
+  zones               = each.value.avzones
+
+  type     = each.value.type
+  vpn_type = each.value.vpn_type
+  sku      = each.value.sku
+
+  active_active                    = each.value.active_active
+  default_local_network_gateway_id = each.value.default_local_network_gateway_id
+  edge_zone                        = each.value.edge_zone
+  enable_bgp                       = each.value.enable_bgp
+  generation                       = each.value.generation
+  private_ip_address_enabled       = each.value.private_ip_address_enabled
+
+  ip_configuration = [
+    for ip_configuration in each.value.ip_configuration :
+    merge(ip_configuration, { subnet_id = module.vnet[ip_configuration.vnet_key].subnet_ids[ip_configuration.subnet_name] })
+  ]
+
+  vpn_client_configuration  = each.value.vpn_client_configuration
+  azure_bgp_peers_addresses = each.value.azure_bgp_peers_addresses
+  local_bgp_settings        = each.value.local_bgp_settings
+  custom_route              = each.value.custom_route
+  ipsec_shared_key          = each.value.ipsec_shared_key
+  local_network_gateways    = each.value.local_network_gateways
+  connection_mode           = each.value.connection_mode
+  ipsec_policy              = each.value.ipsec_policy
+
+  tags = var.tags
+}
+```
+
+Below there are provided sample values for `virtual_network_gateways` map:
+
+```hcl
+virtual_network_gateways = {
+  "vng" = {
+    name          = "vng"
+    type          = "Vpn"
+    sku           = "VpnGw2"
+    generation    = "Generation2"
+    active_active = true
+    enable_bgp    = true
+    ip_configuration = [
+      {
+        name             = "001"
+        create_public_ip = true
+        public_ip_name   = "pip1"
+        vnet_key         = "transit"
+        subnet_name      = "GatewaySubnet"
+      },
+      {
+        name             = "002"
+        create_public_ip = true
+        public_ip_name   = "pip2"
+        vnet_key         = "transit"
+        subnet_name      = "GatewaySubnet"
+      }
+    ]
+    ipsec_shared_key = "test123"
+    azure_bgp_peers_addresses = {
+      primary_1   = "169.254.21.2"
+      secondary_1 = "169.254.22.2"
+    }
+    local_bgp_settings = {
+      asn = "65002"
+      peering_addresses = {
+        "001" = {
+          apipa_addresses = ["primary_1"]
+        },
+        "002" = {
+          apipa_addresses = ["secondary_1"]
+        }
+      }
+    }
+    local_network_gateways = {
+      "lg1" = {
+        local_ng_name   = "lg1"
+        connection_name = "cn1"
+        gateway_address = "8.8.8.8"
+        remote_bgp_settings = [{
+          asn                 = "65000"
+          bgp_peering_address = "169.254.21.1"
+        }]
+        custom_bgp_addresses = [
+          {
+            primary   = "primary_1"
+            secondary = "secondary_1"
+          }
+        ]
+      },
+      "lg2" = {
+        local_ng_name   = "lg2"
+        connection_name = "cn2"
+        gateway_address = "4.4.4.4"
+        remote_bgp_settings = [{
+          asn                 = "65000"
+          bgp_peering_address = "169.254.22.1"
+        }]
+        custom_bgp_addresses = [
+          {
+            primary   = "primary_1"
+            secondary = "secondary_1"
+          }
+        ]
+      }
+    }
+    connection_mode = "InitiatorOnly"
+    ipsec_policy = [
+      {
+        dh_group         = "ECP384"
+        ike_encryption   = "AES256"
+        ike_integrity    = "SHA256"
+        ipsec_encryption = "AES256"
+        ipsec_integrity  = "SHA256"
+        pfs_group        = "ECP384"
+        sa_datasize      = "102400000"
+        sa_lifetime      = "14400"
+      }
+    ]
+  }
+}
+```
 
 ## Module's Required Inputs
 
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
-[`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
-[`location`](#location) | `string` | Region to deploy load balancer and dependencies.
-[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway.
 [`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
 [`local_bgp_settings`](#local_bgp_settings) | `object` | BGP settings.
@@ -27,20 +160,20 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Azure tags to apply to the created resources.
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`type`](#type) | `string` | The type of the Virtual Network Gateway.
 [`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
 [`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
-[`active_active`](#active_active) | `bool` | If true, an active-active Virtual Network Gateway will be created.
-[`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
+[`active_active`](#active_active) | `bool` | Active-active Virtual Network Gateway.
+[`enable_bgp`](#enable_bgp) | `bool` | Controls whether BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
-[`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Should private IP be enabled on this gateway for connections?.
-[`avzones`](#avzones) | `list` | After provider version 3.
+[`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Controls whether the private IP is enabled on the gateway.
+[`zones`](#zones) | `list` | After provider version 3.
 [`ip_configuration`](#ip_configuration) | `list` | IP configurations.
 [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
 [`custom_route`](#custom_route) | `list` | List of custom routes.
 [`connection_type`](#connection_type) | `string` | The type of VNG connection.
-[`connection_mode`](#connection_mode) | `string` | Connection mode to use.
+[`connection_mode`](#connection_mode) | `string` | The connection mode to use.
 
 
 
@@ -82,7 +215,7 @@ Resources used in this module:
 
 #### name
 
-The name of the Virtual Network Gateway. Changing this forces a new resource to be created
+The name of the Virtual Network Gateway.
 
 Type: string
 
@@ -90,7 +223,7 @@ Type: string
 
 #### resource_group_name
 
-Name of a pre-existing Resource Group to place the resources in.
+The name of the Resource Group to use.
 
 Type: string
 
@@ -98,7 +231,7 @@ Type: string
 
 #### location
 
-Region to deploy load balancer and dependencies.
+The name of the Azure region to deploy the resources in.
 
 Type: string
 
@@ -111,7 +244,11 @@ Type: string
 
 #### default_local_network_gateway_id
 
-The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling)
+The ID of the local network gateway.
+
+Outbound Internet traffic from the virtual network, in which the gateway is created,
+will be routed through local network gateway(forced tunnelling)"
+
 
 Type: string
 
@@ -341,7 +478,7 @@ Type: string
 #### ipsec_policy
 
 IPsec policies used for Virtual Network Connection.
-  
+
 Single policy contains attributes:
 - `dh_group`          - (`string`, required) The DH group used in IKE phase 1 for initial SA. Valid options are DHGroup1, DHGroup14, DHGroup2, DHGroup2048, DHGroup24, ECP256, ECP384, or None.
 - `ike_encryption`    - (`string`, required) The IKE encryption algorithm. Valid options are AES128, AES192, AES256, DES, DES3, GCMAES128, or GCMAES256.
@@ -398,7 +535,7 @@ list(object({
 
 #### tags
 
-Azure tags to apply to the created resources.
+The map of tags to assign to all created resources.
 
 Type: map(string)
 
@@ -408,7 +545,7 @@ Default value: `map[]`
 
 #### type
 
-The type of the Virtual Network Gateway. Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created
+The type of the Virtual Network Gateway.
 
 Type: string
 
@@ -418,7 +555,7 @@ Default value: `Vpn`
 
 #### vpn_type
 
-The routing type of the Virtual Network Gateway. Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
+The routing type of the Virtual Network Gateway.
 
 Type: string
 
@@ -428,7 +565,11 @@ Default value: `RouteBased`
 
 #### sku
 
-Configuration of the size and capacity of the virtual network gateway. Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+Configuration of the size and capacity of the virtual network gateway.
+
+Valid option depends on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU.
+Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
+
 
 Type: string
 
@@ -438,7 +579,12 @@ Default value: `Basic`
 
 #### active_active
 
-If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
+Active-active Virtual Network Gateway.
+
+If true, an active-active Virtual Network Gateway will be created.
+An active-active gateway requires a HighPerformance or an UltraPerformance SKU.
+If false, an active-standby gateway will be created. Defaults to false.
+
 
 Type: bool
 
@@ -450,7 +596,7 @@ Default value: `false`
 
 #### enable_bgp
 
-If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway. Defaults to false
+Controls whether BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 
 Type: bool
 
@@ -460,7 +606,7 @@ Default value: `false`
 
 #### generation
 
-The Generation of the Virtual Network gateway. Possible values include Generation1, Generation2 or None
+The Generation of the Virtual Network gateway.
 
 Type: string
 
@@ -470,7 +616,7 @@ Default value: `Generation1`
 
 #### private_ip_address_enabled
 
-Should private IP be enabled on this gateway for connections?
+Controls whether the private IP is enabled on the gateway.
 
 Type: bool
 
@@ -478,11 +624,11 @@ Default value: `false`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### avzones
+#### zones
 
 After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 
-For zone-redundant with 3 availability zone in current region value will be:
+For zone-redundant with 3 availability zones in current region value will be:
 ```["1","2","3"]```
 
 
@@ -604,7 +750,7 @@ Default value: `IPsec`
 
 #### connection_mode
 
-Connection mode to use.
+The connection mode to use.
 
 Type: string
 
