@@ -35,7 +35,7 @@ Name | Type | Description
 [`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
 [`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Controls whether the private IP is enabled on the gateway.
-[`avzones`](#avzones) | `list` | After provider version 3.
+[`zones`](#zones) | `list` | After provider version 3.
 [`ip_configuration`](#ip_configuration) | `list` | IP configurations.
 [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
 [`custom_route`](#custom_route) | `list` | List of custom routes.
@@ -493,7 +493,7 @@ Default value: `false`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### avzones
+#### zones
 
 After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 

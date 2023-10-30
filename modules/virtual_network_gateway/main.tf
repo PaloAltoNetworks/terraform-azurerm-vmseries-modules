@@ -108,7 +108,7 @@ resource "azurerm_public_ip" "this" {
   name                = each.value.name
 
   allocation_method = each.value.public_ip_standard_sku ? "Static" : "Dynamic"
-  zones             = try(length(var.avzones) > 0, false) ? var.avzones : null
+  zones             = try(length(var.zones) > 0, false) ? var.zones : null
   tags              = var.tags
   sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
 }

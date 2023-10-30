@@ -117,7 +117,7 @@ variable "private_ip_address_enabled" {
   type        = bool
 }
 
-variable "avzones" {
+variable "zones" {
   description = <<-EOF
   After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
 
