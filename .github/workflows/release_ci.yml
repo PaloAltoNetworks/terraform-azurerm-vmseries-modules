@@ -17,10 +17,11 @@ concurrency: release
 jobs:
   release_wrkflw:
     name: Do release
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@v2.2
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@v2.3
     secrets: inherit
     with:
       cloud: azure
       validate_max_parallel: 20
       test_max_parallel: 5
       terratest_action: Idempotence # keep in mind that this has to start with capital letter
+      apply_timeout: 60
