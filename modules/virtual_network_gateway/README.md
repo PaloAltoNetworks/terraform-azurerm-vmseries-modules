@@ -641,7 +641,7 @@ For zone-redundant with 3 availability zones in current region value will be:
 
 Type: list(string)
 
-Default value: `[]`
+Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

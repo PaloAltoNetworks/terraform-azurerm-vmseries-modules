@@ -120,11 +120,12 @@ variable "zones" {
   For zone-redundant with 3 availability zones in current region value will be:
   ```["1","2","3"]```
   EOF
-  default     = []
-  nullable    = false
+  default     = null
   type        = list(string)
   validation {
-    condition     = length(var.zones) == 0 || length(var.zones) == 3 && length(setsubtract(var.zones, ["1", "2", "3"])) == 0
+    condition = var.zones == null || (var.zones != null ? (
+      length(var.zones) == 3 && length(setsubtract(var.zones, ["1", "2", "3"])) == 0
+    ) : true)
     error_message = "No zones or all 3 zones are expected"
   }
 }

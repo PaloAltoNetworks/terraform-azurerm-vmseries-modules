@@ -16,6 +16,15 @@ resource "azurerm_public_ip" "this" {
   sku               = each.value.public_ip_standard_sku ? "Standard" : "Basic"
 
   tags = var.tags
+
+  lifecycle {
+    precondition {
+      condition = var.active_active ? (
+        var.zones != null ? length(var.zones) == 3 : false
+      ) : true
+      error_message = "For active-active you need to configure zones"
+    }
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
@@ -165,7 +174,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
     for_each = each.value.custom_bgp_addresses
     content {
       primary   = var.azure_bgp_peers_addresses[custom_bgp_addresses.value.primary]
-      secondary = var.azure_bgp_peers_addresses[custom_bgp_addresses.value.secondary]
+      secondary = custom_bgp_addresses.value.secondary != null ? var.azure_bgp_peers_addresses[custom_bgp_addresses.value.secondary] : null
     }
   }
 
