@@ -46,7 +46,7 @@ module "vng" {
   location            = var.location
   resource_group_name = local.resource_group.name
   name                = each.value.name
-  zones               = each.value.avzones
+  zones               = each.value.zones
 
   type     = each.value.type
   vpn_type = each.value.vpn_type
@@ -71,7 +71,7 @@ module "vng" {
   ipsec_shared_key          = each.value.ipsec_shared_key
   local_network_gateways    = each.value.local_network_gateways
   connection_mode           = each.value.connection_mode
-  ipsec_policy              = each.value.ipsec_policy
+  ipsec_policies            = each.value.ipsec_policies
 
   tags = var.tags
 }

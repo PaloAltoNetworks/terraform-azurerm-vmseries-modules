@@ -45,6 +45,7 @@ virtual_network_gateways = {
     generation    = "Generation2"
     active_active = true
     enable_bgp    = true
+    zones         = ["1", "2", "3"]
     ip_configuration = [
       {
         name             = "001"
@@ -110,7 +111,7 @@ virtual_network_gateways = {
       }
     }
     connection_mode = "InitiatorOnly"
-    ipsec_policy = [
+    ipsec_policies = [
       {
         dh_group         = "ECP384"
         ike_encryption   = "AES256"
