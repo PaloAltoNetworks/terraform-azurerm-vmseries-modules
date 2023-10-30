@@ -23,7 +23,7 @@ vnets = {
           "2NVA" = {
             address_prefix         = "0.0.0.0/0"
             next_hop_type          = "VirtualAppliance"
-            next_hop_in_ip_address = "10.0.0.30"
+            next_hop_in_ip_address = "10.0.0.30" # TODO: this by default matches the private IP of the private Load Balancer deployed in any of the examples; adjust if needed
           }
         }
       }
