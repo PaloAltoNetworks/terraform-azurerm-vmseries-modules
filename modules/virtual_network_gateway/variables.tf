@@ -131,7 +131,7 @@ variable "ip_configuration" {
 
   List of available attributes of each IP configuration.
 
-  - `name`                          - (`string`, optional, defaults to `vnetGatewayConfig`) name of the IP configuration
+  - `name`                          - (`string`, required) name of the IP configuration
   - `create_public_ip`              - (`bool`, required) - true if public IP needs to be created
   - `public_ip_name`                - (`string`, required when `create_public_ip = false`) name of the public IP resource used, when there is no need to create new one
   - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) defines how the private IP address of the gateways virtual interface is assigned. Valid options are Static or Dynamic. Defaults to Dynamic.
@@ -158,13 +158,17 @@ variable "ip_configuration" {
   default     = []
   nullable    = false
   type = list(object({
-    name                          = optional(string, "vnetGatewayConfig")
+    name                          = string
     create_public_ip              = bool
     public_ip_name                = optional(string)
     private_ip_address_allocation = optional(string, "Dynamic")
     public_ip_standard_sku        = optional(bool, false)
     subnet_id                     = string
   }))
+  validation {
+    condition     = length(flatten([for _, config in var.ip_configuration : config.name])) == length(distinct(flatten([for _, config in var.ip_configuration : config.name])))
+    error_message = "The `name` property has to be unique among all IP configuration."
+  }
 }
 
 variable "vpn_client_configuration" {
