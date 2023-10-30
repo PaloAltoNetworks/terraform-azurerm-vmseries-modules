@@ -183,16 +183,21 @@ variable "vpn_client_configuration" {
   VPN client configurations (IPSec point-to-site connections).
 
   List of available attributes of each VPN client configurations:
-  - `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken. You can provide more than one address space, e.g. in CIDR notation.
+  - `address_space`           - (`string`, required) the address space out of which IP addresses for vpn clients will be taken.
+                                You can provide more than one address space, e.g. in CIDR notation.
   - `aad_tenant`              - (`string`, optional, defaults to `null`) AzureAD Tenant URL
-  - `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application. See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
+  - `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
+                                See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
   - `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
-  - `root_certificate`        - (`object`, optional, defaults to `null`) one or more root_certificate blocks which are defined below. These root certificates are used to sign the client certificate used by the VPN clients to connect to the gateway.
+  - `root_certificate`        - (`object`, optional, defaults to `null`) one or more root_certificate blocks which are defined below.
+                                These root certificates are used to sign the client certificate used by the VPN clients to connect to the gateway.
   - `revoked_certificate`     - (`object`, optional, defaults to `null`) one or more revoked_certificate blocks which are defined below.
   - `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
   - `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
-  - `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client. The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with the use of aad_tenant, aad_audience and aad_issuer.
-  - `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for the virtual network gateway. The supported values are AAD, Radius and Certificate.
+  - `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
+                                The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with the use of aad_tenant, aad_audience and aad_issuer.
+  - `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for the virtual network gateway.
+                                The supported values are AAD, Radius and Certificate.
 
   EOF
   type = list(object({
@@ -245,7 +250,8 @@ variable "local_bgp_settings" {
 
   Attributes:
   - `asn`                 - (`string`, optional, defaults to `null`) the Autonomous System Number (ASN) to use as part of the BGP.
-  - `peering_addresses`   - (`map`, optional, defaults to `null`) a map of peering addresses, which contains 1 (for active-standby) or 2 objects (for active-active), where key is the ip configuration name and with attributes:
+  - `peering_addresses`   - (`map`, optional, defaults to `null`) a map of peering addresses, which contains 1 (for active-standby)
+                            or 2 objects (for active-active), where key is the ip configuration name and with attributes:
     - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
     - `default_addresses` - (`list`, optional, defaults to `null`) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
   - `peer_weight`         - (`number`, optional, defaults to `null`) the weight added to routes which have been learned through BGP peering.
@@ -309,7 +315,8 @@ variable "local_network_gateways" {
     - peer_weight           - (`number`, optional, defaults to `null`) the weight added to routes learned from this BGP speaker.
   - gateway_address         - (`string`, optional, defaults to `null`) the gateway IP address to connect with.
   - address_space           - (`list`, optional, defaults to `[]`) the list of string CIDRs representing the address spaces the gateway exposes.
-  - custom_bgp_addresses    - (`list`, optional, defaults to `[]`) Border Gateway Protocol custom IP Addresses, which can only be used on IPSec / active-active connections. Object contains 2 attributes:
+  - custom_bgp_addresses    - (`list`, optional, defaults to `[]`) Border Gateway Protocol custom IP Addresses,
+                              which can only be used on IPSec / active-active connections. Object contains 2 attributes:
     - primary               - (`string`, required) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
     - secondary             - (`string`, optional, defaults to `null`) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
 
