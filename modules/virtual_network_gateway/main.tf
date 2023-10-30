@@ -34,14 +34,14 @@ resource "azurerm_virtual_network_gateway" "this" {
       aad_audience  = vpn_client_configuration.value.aad_audience
       aad_issuer    = vpn_client_configuration.value.aad_issuer
       dynamic "root_certificate" {
-        for_each = vpn_client_configuration.value.root_certificate != null ? { for t in vpn_client_configuration.value.root_certificate : t.name => t } : {}
+        for_each = coalesce({ for t in vpn_client_configuration.value.root_certificate : t.name => t }, {})
         content {
           name             = root_certificate.value.name
           public_cert_data = root_certificate.value.public_cert_data
         }
       }
       dynamic "revoked_certificate" {
-        for_each = vpn_client_configuration.value.revoked_certificate != null ? { for t in vpn_client_configuration.value.revoked_certificate : t.name => t } : {}
+        for_each = coalesce({ for t in vpn_client_configuration.value.revoked_certificate : t.name => t }, {})
         content {
           name       = revoked_certificate.value.name
           thumbprint = revoked_certificate.value.thumbprint
