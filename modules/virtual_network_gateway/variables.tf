@@ -1,22 +1,22 @@
 # Main resource
 variable "name" {
-  description = "The name of the Virtual Network Gateway. Changing this forces a new resource to be created"
+  description = "The name of the Virtual Network Gateway."
   type        = string
 }
 
 # Common settings
 variable "resource_group_name" {
-  description = "Name of a pre-existing Resource Group to place the resources in."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
 variable "location" {
-  description = "Region to deploy Virtual Network Gatewa and dependencies."
+  description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
 
 variable "tags" {
-  description = "Azure tags to apply to the created resources."
+  description = "The map of tags to assign to all created resources."
   default     = {}
   type        = map(string)
 }
@@ -29,6 +29,7 @@ variable "type" {
   Valid options are Vpn or ExpressRoute. Changing the type forces a new resource to be created.
   EOF
   default     = "Vpn"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Vpn", "ExpressRoute"], var.type)
@@ -43,6 +44,7 @@ variable "vpn_type" {
   Valid options are RouteBased or PolicyBased. Defaults to RouteBased. Changing this forces a new resource to be created.
   EOF
   default     = "RouteBased"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["RouteBased", "PolicyBased"], coalesce(var.vpn_type, "PolicyBased"))
@@ -57,6 +59,7 @@ variable "sku" {
   Valid options are Basic, Standard, HighPerformance, UltraPerformance, ErGw1AZ, ErGw2AZ, ErGw3AZ, VpnGw1, VpnGw2, VpnGw3, VpnGw4,VpnGw5, VpnGw1AZ, VpnGw2AZ, VpnGw3AZ,VpnGw4AZ and VpnGw5AZ and depend on the type, vpn_type and generation arguments. A PolicyBased gateway only supports the Basic SKU. Further, the UltraPerformance SKU is only supported by an ExpressRoute gateway.
   EOF
   default     = "Basic"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Basic", "Standard", "HighPerformance", "UltraPerformance", "ErGw1AZ", "ErGw2AZ", "ErGw3AZ", "VpnGw1", "VpnGw2", "VpnGw3", "VpnGw4", "VpnGw5", "VpnGw1AZ", "VpnGw2AZ", "VpnGw3AZ", "VpnGw4AZ", "VpnGw5AZ"], var.sku)
@@ -71,6 +74,7 @@ variable "active_active" {
   If true, an active-active Virtual Network Gateway will be created. An active-active gateway requires a HighPerformance or an UltraPerformance SKU. If false, an active-standby gateway will be created. Defaults to false.
   EOF
   default     = false
+  nullable    = false
   type        = bool
 }
 
@@ -87,6 +91,7 @@ variable "edge_zone" {
 variable "enable_bgp" {
   description = "If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway."
   default     = false
+  nullable    = false
   type        = bool
 }
 
@@ -98,6 +103,7 @@ variable "generation" {
   EOF
   type        = string
   default     = "Generation1"
+  nullable    = false
   validation {
     condition     = contains(["Generation1", "Generation2", "None"], coalesce(var.generation, "Generation1"))
     error_message = "Valid options are Generation1, Generation2 or None"
@@ -105,8 +111,9 @@ variable "generation" {
 }
 
 variable "private_ip_address_enabled" {
-  description = "Should private IP be enabled on this gateway for connections?"
+  description = "Controls whether the private IP is enabled on the gateway."
   default     = false
+  nullable    = false
   type        = bool
 }
 
@@ -118,6 +125,7 @@ variable "avzones" {
   ```["1","2","3"]```
   EOF
   default     = []
+  nullable    = false
   type        = list(string)
 }
 
@@ -270,6 +278,7 @@ variable "custom_route" {
 
   EOF
   default     = []
+  nullable    = false
   type = list(object({
     address_prefixes = optional(list(string))
   }))
@@ -381,6 +390,7 @@ variable "local_network_gateways" {
 variable "connection_type" {
   description = "The type of VNG connection."
   default     = "IPsec"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["IPsec", "ExpressRoute", "Vnet2Vnet"], var.connection_type)
@@ -391,6 +401,7 @@ variable "connection_type" {
 variable "connection_mode" {
   description = "Connection mode to use."
   default     = "Default"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Default", "InitiatorOnly", "ResponderOnly"], var.connection_mode)

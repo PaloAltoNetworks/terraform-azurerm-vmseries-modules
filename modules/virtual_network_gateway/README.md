@@ -12,8 +12,8 @@ For usage refer to variables description, which include example for complex map 
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Virtual Network Gateway.
-[`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
-[`location`](#location) | `string` | Region to deploy Virtual Network Gatewa and dependencies.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`default_local_network_gateway_id`](#default_local_network_gateway_id) | `string` | The ID of the local network gateway through which outbound Internet traffic from the virtual network in which the gateway is created will be routed (forced tunnelling).
 [`edge_zone`](#edge_zone) | `string` | Specifies the Edge Zone within the Azure Region where this Virtual Network Gateway should exist.
 [`vpn_client_configuration`](#vpn_client_configuration) | `list` | VPN client configurations (IPSec point-to-site connections).
@@ -27,14 +27,14 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Azure tags to apply to the created resources.
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`type`](#type) | `string` | The type of the Virtual Network Gateway.
 [`vpn_type`](#vpn_type) | `string` | The routing type of the Virtual Network Gateway.
 [`sku`](#sku) | `string` | Configuration of the size and capacity of the virtual network gateway.
 [`active_active`](#active_active) | `bool` | Active-active Virtual Network Gateway.
 [`enable_bgp`](#enable_bgp) | `bool` | If true, BGP (Border Gateway Protocol) will be enabled for this Virtual Network Gateway.
 [`generation`](#generation) | `string` | The Generation of the Virtual Network gateway.
-[`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Should private IP be enabled on this gateway for connections?.
+[`private_ip_address_enabled`](#private_ip_address_enabled) | `bool` | Controls whether the private IP is enabled on the gateway.
 [`avzones`](#avzones) | `list` | After provider version 3.
 [`ip_configuration`](#ip_configuration) | `list` | IP configurations.
 [`azure_bgp_peers_addresses`](#azure_bgp_peers_addresses) | `map` | Map of IP addresses used on Azure side for BGP.
@@ -82,7 +82,7 @@ Resources used in this module:
 
 #### name
 
-The name of the Virtual Network Gateway. Changing this forces a new resource to be created
+The name of the Virtual Network Gateway.
 
 Type: string
 
@@ -90,7 +90,7 @@ Type: string
 
 #### resource_group_name
 
-Name of a pre-existing Resource Group to place the resources in.
+The name of the Resource Group to use.
 
 Type: string
 
@@ -98,7 +98,7 @@ Type: string
 
 #### location
 
-Region to deploy Virtual Network Gatewa and dependencies.
+The name of the Azure region to deploy the resources in.
 
 Type: string
 
@@ -398,7 +398,7 @@ list(object({
 
 #### tags
 
-Azure tags to apply to the created resources.
+The map of tags to assign to all created resources.
 
 Type: map(string)
 
@@ -485,7 +485,7 @@ Default value: `Generation1`
 
 #### private_ip_address_enabled
 
-Should private IP be enabled on this gateway for connections?
+Controls whether the private IP is enabled on the gateway.
 
 Type: bool
 
