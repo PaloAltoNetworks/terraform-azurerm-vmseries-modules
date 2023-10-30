@@ -110,7 +110,7 @@ variable "virtual_network_gateways" {
   description = "Map of virtual_network_gateways to create"
   type = map(object({
     name     = string
-    avzones  = optional(list(string))
+    zones    = optional(list(string))
     type     = optional(string)
     vpn_type = optional(string)
     sku      = optional(string)

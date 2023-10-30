@@ -123,6 +123,10 @@ variable "zones" {
   default     = []
   nullable    = false
   type        = list(string)
+  validation {
+    condition     = length(var.zones) == 0 || length(var.zones) == 3 && length(setsubtract(var.zones, ["1", "2", "3"])) == 0
+    error_message = "No zones or all 3 zones are expected"
+  }
 }
 
 variable "ip_configuration" {

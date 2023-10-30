@@ -46,7 +46,7 @@ module "vng" {
   location            = var.location
   resource_group_name = local.resource_group.name
   name                = each.value.name
-  zones               = each.value.avzones
+  zones               = each.value.zones
 
   type     = each.value.type
   vpn_type = each.value.vpn_type

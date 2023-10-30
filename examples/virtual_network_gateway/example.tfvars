@@ -45,6 +45,7 @@ virtual_network_gateways = {
     generation    = "Generation2"
     active_active = true
     enable_bgp    = true
+    zones         = ["1", "2", "3"]
     ip_configuration = [
       {
         name             = "001"
