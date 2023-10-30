@@ -41,25 +41,27 @@ virtual_network_gateways = {
   "vng" = {
     name          = "vng"
     type          = "Vpn"
-    sku           = "VpnGw2"
+    sku           = "VpnGw2AZ"
     generation    = "Generation2"
     active_active = true
     enable_bgp    = true
     zones         = ["1", "2", "3"]
     ip_configuration = [
       {
-        name             = "001"
-        create_public_ip = true
-        public_ip_name   = "pip1"
-        vnet_key         = "transit"
-        subnet_name      = "GatewaySubnet"
+        name                   = "001"
+        create_public_ip       = true
+        public_ip_name         = "pip1"
+        public_ip_standard_sku = true
+        vnet_key               = "transit"
+        subnet_name            = "GatewaySubnet"
       },
       {
-        name             = "002"
-        create_public_ip = true
-        public_ip_name   = "pip2"
-        vnet_key         = "transit"
-        subnet_name      = "GatewaySubnet"
+        name                   = "002"
+        create_public_ip       = true
+        public_ip_name         = "pip2"
+        public_ip_standard_sku = true
+        vnet_key               = "transit"
+        subnet_name            = "GatewaySubnet"
       }
     ]
     ipsec_shared_key = "test123"
