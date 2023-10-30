@@ -378,7 +378,7 @@ variable "local_network_gateways" {
       peer_weight         = optional(number)
     })))
     gateway_address = optional(string)
-    address_space   = optional(list(string))
+    address_space   = optional(list(string), [])
     custom_bgp_addresses = optional(list(object({
       primary   = string
       secondary = optional(string)
