@@ -1,23 +1,22 @@
 # Main resource
-
 variable "name" {
-  description = "Name of the Application Gateway."
+  description = "The name of the Application Gateway."
   type        = string
 }
 
 # Common settings
 variable "resource_group_name" {
-  description = "Name of an existing resource group."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
 variable "location" {
-  description = "Location to place the Application Gateway in."
+  description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
 
 variable "tags" {
-  description = "Azure tags to apply to the created resources."
+  description = "The map of tags to assign to all created resources."
   default     = {}
   type        = map(string)
 }
@@ -27,10 +26,14 @@ variable "zones" {
   description = <<-EOF
   A list of zones the Application Gateway should be available in.
 
-  NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to a single zone or zone-redundant (so available in all zones in a region).
-  Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during next `terraform apply` as there will be difference between the state and the actual configuration.
+  NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
+  pinned to a single zone or zone-redundant (so available in all zones in a region).
+  Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset,
+  but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during
+  next `terraform apply` as there will be difference between the state and the actual configuration.
 
-  For details on zones currently available in a region of your choice refer to [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
+  For details on zones currently available in a region of your choice refer to
+  [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
 
   Example:
   ```
@@ -46,12 +49,17 @@ variable "zones" {
 }
 
 variable "public_ip_name" {
-  description = "Name for the public IP address"
+  description = "Name for the public IP address."
   type        = string
 }
 
 variable "domain_name_label" {
-  description = "Label for the Domain Name. Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system."
+  description = <<-EOF
+  Label for the Domain Name.
+
+  Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created
+  for the public IP in the Microsoft Azure DNS system."
+  EOF
   default     = null
   type        = string
 }
@@ -59,12 +67,14 @@ variable "domain_name_label" {
 variable "enable_http2" {
   description = "Enable HTTP2 on the Application Gateway."
   default     = false
+  nullable    = false
   type        = bool
 }
 
 variable "waf_enabled" {
   description = "Enables WAF Application Gateway. This only sets the SKU. This module does not support WAF rules configuration."
   default     = "false"
+  nullable    = false
   type        = bool
 }
 
@@ -75,6 +85,7 @@ variable "capacity" {
   This property is not used when autoscaling is enabled.
   EOF
   default     = 2
+  nullable    = false
   type        = number
   validation {
     condition     = var.capacity >= 1 && var.capacity <= 125
@@ -96,16 +107,22 @@ variable "capacity_max" {
 
 variable "managed_identities" {
   description = <<-EOF
-  A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
+  A list of existing User-Assigned Managed Identities.
 
-  These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault.
+  Application Gateway uses Managed Identities to retrieve certificates from Key Vault.
+  These identities have to have at least `GET` access to Key Vault's secrets.
+  Otherwise Application Gateway will not be able to use certificates stored in the Vault.
   EOF
   default     = null
   type        = list(string)
 }
 
 variable "subnet_id" {
-  description = "An ID of a subnet that will host the Application Gateway. Keep in mind that this subnet can contain only AppGWs and only of the same type."
+  description = <<-EOF
+  An ID of a subnet that will host the Application Gateway.
+
+  Keep in mind that this subnet can contain only AppGWs and only of the same type.
+  EOF
   type        = string
 }
 
@@ -114,27 +131,33 @@ variable "ssl_policy_type" {
   Type of an SSL policy.
 
   Possible values are `Predefined` or `Custom` or `CustomV2`.
-  If the value is `Custom` the following values are mandatory: `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
+  If the value is `Custom` the following values are mandatory:
+  `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
   EOF
   default     = "Predefined"
+  nullable    = false
   type        = string
   validation {
     condition     = contains(["Predefined", "Custom", "CustomV2"], var.ssl_policy_type)
     error_message = "Possible values are Predefined, Custom and CustomV2."
   }
-  nullable = false
 }
 
 variable "ssl_policy_name" {
   description = <<-EOF
   Name of an SSL policy.
 
-  Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application Gateway each time terraform code is run. Therefore this property is omitted in the code for `Custom` policies.
-  For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default.
+  Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also
+  for `Custom` policies but the name is discarded on Azure side causing an update
+  to Application Gateway each time terraform code is run.
+  Therefore this property is omitted in the code for `Custom` policies.
+  For the `Predefined` polcies, check the
+  [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview)
+  for possible values as they tend to change over time. The default value is currently (Q1 2023) a Microsoft's default.
   EOF
   default     = "AppGwSslPolicy20220101S"
-  type        = string
   nullable    = false
+  type        = string
 }
 
 variable "ssl_policy_min_protocol_version" {
@@ -145,9 +168,10 @@ variable "ssl_policy_min_protocol_version" {
   Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2`, `TLSv1_3` or `null` (only to be used with a `Predefined` policy).
   EOF
   default     = "TLSv1_2"
+  nullable    = false
   type        = string
   validation {
-    condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(var.ssl_policy_min_protocol_version, "TLSv1_2"))
+    condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], var.ssl_policy_min_protocol_version)
     error_message = "Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
   }
 }
@@ -160,9 +184,10 @@ variable "ssl_policy_cipher_suites" {
   For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
   EOF
   default     = ["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
+  nullable    = false
   type        = list(string)
   validation {
-    condition     = length(coalesce(var.ssl_policy_cipher_suites, [])) == 0 || length(setsubtract(coalesce(var.ssl_policy_cipher_suites, []), ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"])) == 0
+    condition     = length(var.ssl_policy_cipher_suites) == 0 || length(setsubtract(var.ssl_policy_cipher_suites, ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"])) == 0
     error_message = "Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
   }
 }
@@ -172,14 +197,15 @@ variable "ssl_profiles" {
   A map of SSL profiles.
 
   SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property.
-  For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply.
+  For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites`
+  variables as SSL profile is a named SSL policy - same properties apply.
   The only difference is that you cannot name an SSL policy inside an SSL profile.
 
   Every SSL profile contains attributes:
   - `name`                            - (`string`, required) name of the SSL profile
-  - `ssl_policy_type`                 - (`string`, optional) the Type of the Policy. Possible values are Predefined, Custom and CustomV2
-  - `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version. Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3
-  - `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites. Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384
+  - `ssl_policy_type`                 - (`string`, optional) the Type of the Policy.
+  - `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version.
+  - `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites.
   EOF
   type = map(object({
     name                            = string
@@ -205,10 +231,28 @@ variable "ssl_profiles" {
     condition = alltrue(flatten([
       for _, ssl_profile in var.ssl_profiles : [
         length(setsubtract(coalesce(ssl_profile.ssl_policy_cipher_suites, []),
-          ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
+          ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256",
+            "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA",
+            "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+            "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+            "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+            "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
+          "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
         )) == 0
     ]]))
-    error_message = "Possible values for `ssl_policy_cipher_suites` are TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
+    error_message = <<-EOF
+    Possible values for `ssl_policy_cipher_suites` are TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA,
+    TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA,
+    TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+    TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+    TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+    TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+    TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA,
+    TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384.
+    EOF
   }
   validation {
     condition     = length(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])) == length(distinct(flatten([for _, ssl_profile in var.ssl_profiles : ssl_profile.name])))
@@ -219,6 +263,7 @@ variable "ssl_profiles" {
 variable "frontend_ip_configuration_name" {
   description = "Frontend IP configuration name"
   default     = "public_ipconfig"
+  nullable    = false
   type        = string
 }
 
@@ -229,13 +274,16 @@ variable "listeners" {
   Every listener contains attributes:
   - `name`                                       - (`string`, required) The name for this Frontend Port.
   - `port`                                       - (`string`, required) The port used for this Frontend Port.
-  - `protocol`                                   - (`string`, optional) The Protocol to use for this HTTP Listener. Possible values are Http and Https
-  - `host_names`                                 - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener. It allows special wildcard characters.
+  - `protocol`                                   - (`string`, optional) The Protocol to use for this HTTP Listener.
+  - `host_names`                                 - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
+                                                   It allows special wildcard characters.
   - `ssl_profile_name`                           - (`string`, optional) The name of the associated SSL Profile which should be used for this HTTP Listener.
   - `ssl_certificate_path`                       - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
   - `ssl_certificate_pass`                       - (`string`, optional) Password for the pfx file specified in data.
-  - `ssl_certificate_vault_id`                   - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret or Certificate object stored in Azure KeyVault.
-  - `custom_error_pages`                         - (`map`, optional) Map of string, where key is HTTP status code and value is error page URL of the application gateway customer error.
+  - `ssl_certificate_vault_id`                   - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
+                                                   or Certificate object stored in Azure KeyVault.
+  - `custom_error_pages`                         - (`map`, optional) Map of string, where key is HTTP status code and value is
+                                                   error page URL of the application gateway customer error.
   EOF
   type = map(object({
     name                     = string
@@ -251,7 +299,7 @@ variable "listeners" {
   validation {
     condition = alltrue(flatten([
       for _, listener in var.listeners : [
-        contains(["Http", "Https"], coalesce(listener.protocol, "Http"))
+        contains(["Http", "Https"], listener.protocol)
     ]]))
     error_message = "Possible values for `protocol` are Http and Https."
   }
@@ -318,6 +366,7 @@ variable "backends" {
       cookie_based_affinity = "Enabled"
     }
   }
+  nullable = false
   type = map(object({
     name                  = optional(string)
     path                  = optional(string)
@@ -337,14 +386,14 @@ variable "backends" {
   validation {
     condition = alltrue(flatten([
       for _, backend in var.backends : [
-        contains(["Http", "Https"], coalesce(backend.protocol, "Http"))
+        contains(["Http", "Https"], backend.protocol)
     ]]))
     error_message = "Possible values for `protocol` are Http and Https."
   }
   validation {
     condition = alltrue(flatten([
       for _, backend in var.backends : [
-        contains(["Enabled", "Disabled"], coalesce(backend.cookie_based_affinity, "Enabled"))
+        contains(["Enabled", "Disabled"], backend.cookie_based_affinity)
     ]]))
     error_message = "Possible values for `cookie_based_affinity` are Enabled and Disabled."
   }
@@ -375,10 +424,11 @@ variable "probes" {
   - `path`                                       - (`string`, required) The path used for this Probe
   - `host`                                       - (`string`, optional) The hostname used for this Probe
   - `port`                                       - (`number`, optional) Custom port which will be used for probing the backend servers.
-  - `protocol`                                   - (`string`, optional) The protocol which should be used. Possible values are Http and Https.
+  - `protocol`                                   - (`string`, optional) The protocol which should be used.
   - `interval`                                   - (`number`, optional) The interval between two consecutive probes in seconds.
   - `timeout`                                    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
-  - `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates the amount of retries which should be attempted before a node is deemed unhealthy.
+  - `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates
+                                                   the amount of retries which should be attempted before a node is deemed unhealthy.
   - `match_code`                                 - (`list`, optional) The list of allowed status codes for this Health Probe.
   - `match_body`                                 - (`string`, optional) A snippet from the Response Body which must be present in the Response.
   EOF
@@ -397,7 +447,7 @@ variable "probes" {
   validation {
     condition = var.probes != null ? alltrue(flatten([
       for _, backend in var.probes : [
-        contains(["Http", "Https"], coalesce(backend.protocol, "Http"))
+        contains(["Http", "Https"], backend.protocol)
     ]])) : true
     error_message = "Possible values for `protocol` are Http and Https."
   }
@@ -441,12 +491,14 @@ variable "rewrites" {
       - `name`                                   - (`string`, required) Rewrite Rule name.
       - `sequence`                               - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
       - `conditions`                             - (`map`, optional) One or more condition blocks as defined below:
-        - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression, that evaluates the truthfulness of the condition.
+        - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression,
+                                                   that evaluates the truthfulness of the condition.
         - `ignore_case`                          - (`string`, required) Perform a case in-sensitive comparison.
         - `negate`                               - (`bool`, required) Negate the result of the condition evaluation.
-      - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key, header value is the value of the object in the map.
-      - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key, header value is the value of the object in the map.
-
+      - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key,
+                                                   header value is the value of the object in the map.
+      - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key,
+                                                   header value is the value of the object in the map.
   EOF
   type = map(object({
     name = optional(string)

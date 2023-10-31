@@ -11,9 +11,9 @@ For usage refer to variables description, which include example for complex map 
 
 Name | Type | Description
 --- | --- | ---
-[`name`](#name) | `string` | Name of the Application Gateway.
-[`resource_group_name`](#resource_group_name) | `string` | Name of an existing resource group.
-[`location`](#location) | `string` | Location to place the Application Gateway in.
+[`name`](#name) | `string` | The name of the Application Gateway.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`public_ip_name`](#public_ip_name) | `string` | Name for the public IP address.
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
 [`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
@@ -30,7 +30,7 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Azure tags to apply to the created resources.
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | A list of zones the Application Gateway should be available in.
 [`domain_name_label`](#domain_name_label) | `string` | Label for the Domain Name.
 [`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
@@ -38,7 +38,7 @@ Name | Type | Description
 [`capacity`](#capacity) | `number` | A number of Application Gateway instances.
 [`capacity_min`](#capacity_min) | `number` | When set enables autoscaling and becomes the minimum capacity.
 [`capacity_max`](#capacity_max) | `number` | Optional, maximum capacity for autoscaling.
-[`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
+[`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
 [`ssl_policy_type`](#ssl_policy_type) | `string` | Type of an SSL policy.
 [`ssl_policy_name`](#ssl_policy_name) | `string` | Name of an SSL policy.
 [`ssl_policy_min_protocol_version`](#ssl_policy_min_protocol_version) | `string` | Minimum version of the TLS protocol for SSL Policy.
@@ -84,7 +84,7 @@ Resources used in this module:
 
 #### name
 
-Name of the Application Gateway.
+The name of the Application Gateway.
 
 Type: string
 
@@ -92,7 +92,7 @@ Type: string
 
 #### resource_group_name
 
-Name of an existing resource group.
+The name of the Resource Group to use.
 
 Type: string
 
@@ -100,7 +100,7 @@ Type: string
 
 #### location
 
-Location to place the Application Gateway in.
+The name of the Azure region to deploy the resources in.
 
 Type: string
 
@@ -110,7 +110,7 @@ Type: string
 
 #### public_ip_name
 
-Name for the public IP address
+Name for the public IP address.
 
 Type: string
 
@@ -125,7 +125,10 @@ Type: string
 
 #### subnet_id
 
-An ID of a subnet that will host the Application Gateway. Keep in mind that this subnet can contain only AppGWs and only of the same type.
+An ID of a subnet that will host the Application Gateway.
+
+Keep in mind that this subnet can contain only AppGWs and only of the same type.
+
 
 Type: string
 
@@ -140,14 +143,15 @@ Type: string
 A map of SSL profiles.
 
 SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property.
-For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites` variables as SSL profile is a named SSL policy - same properties apply.
+For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites`
+variables as SSL profile is a named SSL policy - same properties apply.
 The only difference is that you cannot name an SSL policy inside an SSL profile.
 
 Every SSL profile contains attributes:
 - `name`                            - (`string`, required) name of the SSL profile
-- `ssl_policy_type`                 - (`string`, optional) the Type of the Policy. Possible values are Predefined, Custom and CustomV2
-- `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version. Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3
-- `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites. Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384
+- `ssl_policy_type`                 - (`string`, optional) the Type of the Policy.
+- `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version.
+- `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites.
 
 
 Type: 
@@ -172,13 +176,16 @@ A map of listeners for the Application Gateway.
 Every listener contains attributes:
 - `name`                                       - (`string`, required) The name for this Frontend Port.
 - `port`                                       - (`string`, required) The port used for this Frontend Port.
-- `protocol`                                   - (`string`, optional) The Protocol to use for this HTTP Listener. Possible values are Http and Https
-- `host_names`                                 - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener. It allows special wildcard characters.
+- `protocol`                                   - (`string`, optional) The Protocol to use for this HTTP Listener.
+- `host_names`                                 - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
+                                                 It allows special wildcard characters.
 - `ssl_profile_name`                           - (`string`, optional) The name of the associated SSL Profile which should be used for this HTTP Listener.
 - `ssl_certificate_path`                       - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
 - `ssl_certificate_pass`                       - (`string`, optional) Password for the pfx file specified in data.
-- `ssl_certificate_vault_id`                   - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret or Certificate object stored in Azure KeyVault.
-- `custom_error_pages`                         - (`map`, optional) Map of string, where key is HTTP status code and value is error page URL of the application gateway customer error.
+- `ssl_certificate_vault_id`                   - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
+                                                 or Certificate object stored in Azure KeyVault.
+- `custom_error_pages`                         - (`map`, optional) Map of string, where key is HTTP status code and value is
+                                                 error page URL of the application gateway customer error.
 
 
 Type: 
@@ -231,10 +238,11 @@ Every probe contains attributes:
 - `path`                                       - (`string`, required) The path used for this Probe
 - `host`                                       - (`string`, optional) The hostname used for this Probe
 - `port`                                       - (`number`, optional) Custom port which will be used for probing the backend servers.
-- `protocol`                                   - (`string`, optional) The protocol which should be used. Possible values are Http and Https.
+- `protocol`                                   - (`string`, optional) The protocol which should be used.
 - `interval`                                   - (`number`, optional) The interval between two consecutive probes in seconds.
 - `timeout`                                    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
-- `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates the amount of retries which should be attempted before a node is deemed unhealthy.
+- `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates
+                                                 the amount of retries which should be attempted before a node is deemed unhealthy.
 - `match_code`                                 - (`list`, optional) The list of allowed status codes for this Health Probe.
 - `match_body`                                 - (`string`, optional) A snippet from the Response Body which must be present in the Response.
 
@@ -269,12 +277,14 @@ Every rewrite contains attributes:
     - `name`                                   - (`string`, required) Rewrite Rule name.
     - `sequence`                               - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
     - `conditions`                             - (`map`, optional) One or more condition blocks as defined below:
-      - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression, that evaluates the truthfulness of the condition.
+      - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression,
+                                                 that evaluates the truthfulness of the condition.
       - `ignore_case`                          - (`string`, required) Perform a case in-sensitive comparison.
       - `negate`                               - (`bool`, required) Negate the result of the condition evaluation.
-    - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key, header value is the value of the object in the map.
-    - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key, header value is the value of the object in the map.
-
+    - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key,
+                                                 header value is the value of the object in the map.
+    - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key,
+                                                 header value is the value of the object in the map.
 
 
 Type: 
@@ -402,7 +412,7 @@ map(object({
 
 #### tags
 
-Azure tags to apply to the created resources.
+The map of tags to assign to all created resources.
 
 Type: map(string)
 
@@ -414,10 +424,14 @@ Default value: `map[]`
 
 A list of zones the Application Gateway should be available in.
 
-NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal, pinned to a single zone or zone-redundant (so available in all zones in a region).
-Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset, but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during next `terraform apply` as there will be difference between the state and the actual configuration.
+NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
+pinned to a single zone or zone-redundant (so available in all zones in a region).
+Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset,
+but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during
+next `terraform apply` as there will be difference between the state and the actual configuration.
 
-For details on zones currently available in a region of your choice refer to [Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
+For details on zones currently available in a region of your choice refer to
+[Microsoft's documentation](https://docs.microsoft.com/en-us/azure/availability-zones/az-region).
 
 Example:
 ```
@@ -434,7 +448,11 @@ Default value: `&{}`
 
 #### domain_name_label
 
-Label for the Domain Name. Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system.
+Label for the Domain Name.
+
+Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created
+for the public IP in the Microsoft Azure DNS system."
+
 
 Type: string
 
@@ -497,9 +515,11 @@ Default value: `&{}`
 
 #### managed_identities
 
-A list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
+A list of existing User-Assigned Managed Identities.
 
-These identities have to have at least `GET` access to Key Vault's secrets. Otherwise Application Gateway will not be able to use certificates stored in the Vault.
+Application Gateway uses Managed Identities to retrieve certificates from Key Vault.
+These identities have to have at least `GET` access to Key Vault's secrets.
+Otherwise Application Gateway will not be able to use certificates stored in the Vault.
 
 
 Type: list(string)
@@ -514,7 +534,8 @@ Default value: `&{}`
 Type of an SSL policy.
 
 Possible values are `Predefined` or `Custom` or `CustomV2`.
-If the value is `Custom` the following values are mandatory: `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
+If the value is `Custom` the following values are mandatory:
+`ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
 
 
 Type: string
@@ -527,8 +548,13 @@ Default value: `Predefined`
 
 Name of an SSL policy.
 
-Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also for `Custom` policies but the name is discarded on Azure side causing an update to Application Gateway each time terraform code is run. Therefore this property is omitted in the code for `Custom` policies.
-For the `Predefined` polcies, check the [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview) for possible values as they tend to change over time. The default value is currently (Q1 2022) a Microsoft's default.
+Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also
+for `Custom` policies but the name is discarded on Azure side causing an update
+to Application Gateway each time terraform code is run.
+Therefore this property is omitted in the code for `Custom` policies.
+For the `Predefined` polcies, check the
+[Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview)
+for possible values as they tend to change over time. The default value is currently (Q1 2023) a Microsoft's default.
 
 
 Type: string
