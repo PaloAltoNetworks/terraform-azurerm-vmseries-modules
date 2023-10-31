@@ -175,8 +175,7 @@ map(object({
       name                          = optional(string)
       create_public_ip              = bool
       public_ip_name                = optional(string)
-      private_ip_address_allocation = optional(string)
-      public_ip_standard_sku        = optional(bool)
+      private_ip_address_allocation = optional(string, "Dynamic")
       vnet_key                      = string
       subnet_name                   = string
     }))
