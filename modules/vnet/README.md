@@ -127,15 +127,15 @@ This module is designed to work in several *modes* depending on which variables 
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Virtual Network.
-[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group to use.
-[`location`](#location) | `string` | Location of the deployed resources.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 
 
 ## Module's Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Map of tags to assign to all created resources.
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`create_virtual_network`](#create_virtual_network) | `bool` | Controls Virtual Network creation.
 [`address_space`](#address_space) | `list` | The address space used by the virtual network.
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
@@ -200,7 +200,7 @@ Type: string
 
 #### resource_group_name
 
-Name of the Resource Group to use.
+The name of the Resource Group to use.
 
 Type: string
 
@@ -208,7 +208,7 @@ Type: string
 
 #### location
 
-Location of the deployed resources.
+The name of the Azure region to deploy the resources in.
 
 Type: string
 
@@ -231,7 +231,7 @@ Type: string
 
 #### tags
 
-Map of tags to assign to all created resources.
+The map of tags to assign to all created resources.
 
 Type: map(string)
 
