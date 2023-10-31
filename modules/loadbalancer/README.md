@@ -130,9 +130,9 @@ module "lbe" {
 
 Name | Type | Description
 --- | --- | ---
-[`name`](#name) | `string` | The name of the Load Balancer.
-[`resource_group_name`](#resource_group_name) | `string` | Name of a pre-existing Resource Group to place the resources in.
-[`location`](#location) | `string` | Region to deploy the resources in.
+[`name`](#name) | `string` | The name of the Azure Load Balancer.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`frontend_ips`](#frontend_ips) | `map` | A map of objects describing Load Balancer Frontend IP configurations with respective inbound and outbound rules.
 
 
@@ -140,8 +140,8 @@ Name | Type | Description
 
 Name | Type | Description
 --- | --- | ---
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | Controls zones for Load Balancer's Fronted IP configurations.
-[`tags`](#tags) | `map` | Azure tags to apply to the created resources.
 [`backend_name`](#backend_name) | `string` | The name of the backend pool to create.
 [`health_probes`](#health_probes) | `map` | Backend's health probe definition.
 [`nsg_auto_rules_settings`](#nsg_auto_rules_settings) | `object` | Controls automatic creation of NSG rules for all defined inbound rules.
@@ -190,7 +190,7 @@ Resources used in this module:
 
 #### name
 
-The name of the Load Balancer.
+The name of the Azure Load Balancer.
 
 Type: string
 
@@ -198,7 +198,7 @@ Type: string
 
 #### resource_group_name
 
-Name of a pre-existing Resource Group to place the resources in.
+The name of the Resource Group to use.
 
 Type: string
 
@@ -206,7 +206,7 @@ Type: string
 
 #### location
 
-Region to deploy the resources in.
+The name of the Azure region to deploy the resources in.
 
 Type: string
 
@@ -386,6 +386,16 @@ map(object({
 
 
 
+#### tags
+
+The map of tags to assign to all created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
 #### zones
 
 Controls zones for Load Balancer's Fronted IP configurations.
@@ -406,16 +416,6 @@ you need to specify all zones available in a region (typically 3): `["1","2","3"
 Type: list(string)
 
 Default value: `[1 2 3]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### tags
-
-Azure tags to apply to the created resources.
-
-Type: map(string)
-
-Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

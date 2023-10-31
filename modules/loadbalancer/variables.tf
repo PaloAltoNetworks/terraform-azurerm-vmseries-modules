@@ -1,16 +1,22 @@
 variable "name" {
-  description = "The name of the Load Balancer."
+  description = "The name of the Azure Load Balancer."
   type        = string
 }
 
 variable "resource_group_name" {
-  description = "Name of a pre-existing Resource Group to place the resources in."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
 variable "location" {
-  description = "Region to deploy the resources in."
+  description = "The name of the Azure region to deploy the resources in."
   type        = string
+}
+
+variable "tags" {
+  description = "The map of tags to assign to all created resources."
+  default     = {}
+  type        = map(string)
 }
 
 variable "zones" {
@@ -35,13 +41,6 @@ variable "zones" {
     condition     = length(var.zones) > 0 || var.zones == null
     error_message = "The `var.zones` can either bea non empty list of Availability Zones or explicit `null`."
   }
-}
-
-variable "tags" {
-  description = "Azure tags to apply to the created resources."
-  default     = {}
-  nullable    = false
-  type        = map(string)
 }
 
 variable "frontend_ips" {
