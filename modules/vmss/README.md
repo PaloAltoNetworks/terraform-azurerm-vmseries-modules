@@ -1,3 +1,4 @@
+<!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VMSS Module for Azure
 
 A terraform module for VMSS VM-Series firewalls in Azure.
@@ -37,7 +38,6 @@ module "vmss" {
 ```
 
 ## Reference
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ### Requirements
 
 | Name | Version |
@@ -99,17 +99,5 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_scale_set_name"></a> [scale\_set\_name](#output\_scale\_set\_name) | Name of the created scale set. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-## Custom Metrics
-
-Firewalls can publish custom metrics (for example `panSessionUtilization`) to Azure Application Insights to improve the autoscaling.
-This however requires a manual initialization: copy the outputs `metrics_instrumentation_key` and paste it into your
-PAN-OS webUI -> Device -> VM-Series -> Azure. This module automatically
-completes solely the Step 1 of the [official procedure](https://docs.paloaltonetworks.com/vm-series/10-0/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall.html).
-
-If you manage the configuration from Panorama, this can be done in the same place, however the PAN-OS `VM-Series plugin` needs to be installed **on both** Panorama and VM-Series.
-
-The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split to obtain
-back a result for solely a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report
-their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
+<!-- END_TF_DOCS -->

@@ -51,41 +51,8 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
 
   instances = var.autoscale_count_default
-  # Allowing upgrade_mode = "Rolling" would be actually a big architectural change. First of all:
-  #
-  # Error: `health_probe_id` must be set or a health extension must be specified when `upgrade_mode` is set to "Rolling"
-  #
-  # VM-Series do not have a health extension.
-  # Having health_probe_id, as visible in the next error message below, Azure requires the first NIC to be
-  # the load-balanced one. Azure complains about "inbound-nic-fw-mgmt", which in that case was the primary IP config
-  # of the first NIC:
-  #
-  # Error: Error creating Linux Virtual Machine Scale Set "inbound-VMSS" (Resource Group "example-vmss-inbound"):
-  # compute.VirtualMachineScaleSetsClient#CreateOrUpdate: Failure sending request: StatusCode=0 -- Original Error:
-  # Code="CannotUseHealthProbeWithoutLoadBalancing"
-  # Message="VM scale set /subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/EXAMPLE-VMSS-INBOUND/providers/Microsoft.Compute/virtualMachineScaleSets/inbound-VMSS cannot use probe /subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/example-vmss-inbound/providers/Microsoft.Network/loadBalancers/inbound-public-elb/probes/inbound-public-elb as a HealthProbe because primary IP configuration inbound-nic-fw-mgmt of the scale set does not use load balancing. LoadBalancerBackendAddressPools property of the IP configuration must reference backend address pool of the load balancer that contains the probe."
-  # Details=[]
-  # │
-  # │   with module.inbound_scale_set.azurerm_linux_virtual_machine_scale_set.this,
-  # │   on ../../modules/vmss/main.tf line 1, in resource "azurerm_linux_virtual_machine_scale_set" "this":
-  # │    1: resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  #
-  # Hence mgmt-interface-swap seems to be required on VM-Series, which would need a major overhaul of the
-  # subnet-related inputs. Without the mgmt-interface-swap, it seems impossible to have upgrade_mode = "Rolling".
-  #
-  # The phony LB on a management network does not seem a viable solution. For now Azure does not support two internal
-  # load balancers per VM. Also, health checking HTTP/SSH on management port would wrongly consider that unconfigured
-  # VM-Series is good to use. Unconfigured VM-Series still shows HTTP/SSH on the management interface. This does not
-  # happen when checking a dataplane interface, because the data only shows HTTP/SSH after the initial commit applies
-  # a specific management profile.
-  #
-  # Also the inbound vmss would have the ethernet1/1 public and ethernet1/2 private, but outbound vmss would have
-  # the ethernet1/1 private and ethernet1/2 public. That ensures the respective LB health probe works on ethernet1/1,
-  # which is the first NIC.
-  #
-  # The automatic_instance_repair also suffers from exactly the same problem:
-  # "Automatic repairs not supported for this Virtual Machine Scale Set because a health probe or health extension was not provided."
-  upgrade_mode = "Manual"
+
+  upgrade_mode = "Manual" # See README for more details no this setting.
 
   custom_data = base64encode(var.bootstrap_options)
 
