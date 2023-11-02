@@ -1,37 +1,56 @@
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
-  name                            = var.name
-  location                        = var.location
-  resource_group_name             = var.resource_group_name
-  admin_username                  = var.username
-  admin_password                  = var.disable_password_authentication ? null : var.password
-  disable_password_authentication = var.disable_password_authentication
-  encryption_at_host_enabled      = var.encryption_at_host_enabled
-  overprovision                   = var.overprovision
-  platform_fault_domain_count     = var.platform_fault_domain_count
-  proximity_placement_group_id    = var.proximity_placement_group_id
-  single_placement_group          = var.single_placement_group
-  instances                       = var.autoscale_count_default
-  computer_name_prefix            = null
-  sku                             = var.vm_size
-  tags                            = var.tags
-  zones                           = var.zones
-  zone_balance                    = var.zone_balance
-  provision_vm_agent              = false
+  name                 = var.name
+  computer_name_prefix = null
+  location             = var.location
+  resource_group_name  = var.resource_group_name
+
+  admin_username                  = var.authentication.username
+  admin_password                  = var.authentication.disable_password_authentication ? null : var.authentication.password
+  disable_password_authentication = var.authentication.disable_password_authentication
+
   dynamic "admin_ssh_key" {
-    for_each = var.ssh_keys
+    for_each = var.authentication.ssh_keys
     content {
-      username   = var.username
-      public_key = ssh_keys.value
+      username   = var.authentication.username
+      public_key = admin_ssh_key.value
     }
   }
 
-  lifecycle {
-    precondition {
-      condition     = var.password != null || var.ssh_keys != []
-      error_message = "Either password or ssh_key must be set in order to have access to the device"
+  encryption_at_host_enabled   = var.scale_set_configuration.encryption_at_host_enabled
+  overprovision                = var.scale_set_configuration.overprovision
+  platform_fault_domain_count  = var.scale_set_configuration.platform_fault_domain_count
+  proximity_placement_group_id = var.scale_set_configuration.proximity_placement_group_id
+  single_placement_group       = var.scale_set_configuration.single_placement_group
+  sku                          = var.scale_set_configuration.vm_size
+  zones                        = var.scale_set_configuration.zones
+  zone_balance                 = var.scale_set_configuration.zone_balance
+  provision_vm_agent           = false
+
+  dynamic "plan" {
+    for_each = var.vm_image_configuration.enable_marketplace_plan ? ["one"] : []
+    content {
+      name      = var.vm_image_configuration.img_sku
+      publisher = var.vm_image_configuration.img_publisher
+      product   = var.vm_image_configuration.img_offer
     }
   }
 
+  source_image_reference {
+    publisher = var.vm_image_configuration.custom_image_id == null ? var.vm_image_configuration.img_publisher : null
+    offer     = var.vm_image_configuration.custom_image_id == null ? var.vm_image_configuration.img_offer : null
+    sku       = var.vm_image_configuration.custom_image_id == null ? var.vm_image_configuration.img_sku : null
+    version   = var.vm_image_configuration.img_version
+  }
+
+  source_image_id = var.vm_image_configuration.custom_image_id
+  os_disk {
+    caching                = "ReadWrite"
+    disk_encryption_set_id = var.scale_set_configuration.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
+    storage_account_type   = var.scale_set_configuration.storage_account_type
+  }
+
+
+  instances = var.autoscale_count_default
   # Allowing upgrade_mode = "Rolling" would be actually a big architectural change. First of all:
   #
   # Error: `health_probe_id` must be set or a health extension must be specified when `upgrade_mode` is set to "Rolling"
@@ -83,7 +102,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       name                          = "${var.name}-${nic.value.name}"
       primary                       = nic.key == 0 ? true : false
       enable_ip_forwarding          = nic.key == 0 ? false : true
-      enable_accelerated_networking = nic.key == 0 ? false : var.accelerated_networking
+      enable_accelerated_networking = nic.key == 0 ? false : var.scale_set_configuration.accelerated_networking
 
       ip_configuration {
         name                                         = "primary"
@@ -114,30 +133,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     type = "SystemAssigned" # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
   }
 
-  source_image_id = var.custom_image_id
 
-  source_image_reference {
-    publisher = var.use_custom_image ? null : var.img_publisher
-    offer     = var.use_custom_image ? null : var.img_offer
-    sku       = var.use_custom_image ? null : var.img_sku
-    version   = var.use_custom_image ? null : var.img_version
-  }
 
-  os_disk {
-    caching                = "ReadWrite"
-    disk_encryption_set_id = var.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
-    storage_account_type   = var.storage_account_type
-  }
 
-  dynamic "plan" {
-    for_each = var.enable_plan ? ["one"] : []
 
-    content {
-      name      = var.img_sku
-      publisher = var.img_publisher
-      product   = var.img_offer
-    }
-  }
+  tags = var.tags
+
 }
 
 resource "azurerm_monitor_autoscale_setting" "this" {
@@ -256,4 +257,6 @@ locals {
   scalein_window_days    = "${floor(var.scalein_window_minutes / (60 * 24))}D"
   scalein_window_t       = "T${local.scalein_window_hours != "0H" ? local.scalein_window_hours : ""}${local.scalein_window_minutes != "0M" ? local.scalein_window_minutes : ""}"
   scalein_window         = "P${local.scalein_window_days != "0D" ? local.scalein_window_days : ""}${local.scalein_window_t != "T" ? local.scalein_window_t : ""}"
+
+
 }

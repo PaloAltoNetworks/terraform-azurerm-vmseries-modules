@@ -1,27 +1,156 @@
 variable "name" {
-  description = "Name of the created scale set."
-  type        = string
-}
-
-variable "location" {
-  description = "Region to install VM-Series and dependencies."
+  description = "The name of the Azure Virtual Machine Scale Set."
   type        = string
 }
 
 variable "resource_group_name" {
-  description = "Name of the existing resource group where to place the resources created."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
-variable "vm_size" {
-  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported."
-  default     = "Standard_D3_v2"
+variable "location" {
+  description = "The name of the Azure region to deploy the resources in."
   type        = string
+}
+
+variable "tags" {
+  description = "The map of tags to assign to all created resources."
+  default     = {}
+  type        = map(string)
+}
+
+variable "authentication" {
+  description = <<-EOF
+  A map defining authentication settings (including username and password).
+
+  Following properties are available:
+
+  - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VMseries username
+  - `password`                        - (`string`, optional, defaults to `null`) the initial administrative VMSeries password
+  - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
+  - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys
+
+  > [!Important]
+  > The `password` property is required when `ssh_keys` is not specified.
+
+  > [!Important]
+  > `ssh_keys` property is a list of strings, so each item should be the actual public key value.
+  > If you would like to load them from files use the `file` function.
+  > For example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+
+  EOF
+  type = object({
+    username                        = optional(string, "panadmin")
+    password                        = optional(string)
+    disable_password_authentication = optional(bool, true)
+    ssh_keys                        = optional(list(string), [])
+  })
+  sensitive = true
+  validation {
+    condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
+    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
+  }
+}
+
+variable "vm_image_configuration" {
+  description = <<-EOF
+  Basic Azure VM configuration.
+
+  Following properties are available:
+
+  - `img_version`             - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
+                                `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
+  - `img_publisher`           - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
+                                which should be deployed
+  - `img_offer`               - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
+                                published image
+  - `img_sku`                 - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
+                                `az vm image list -o table --all --publisher paloaltonetworks`
+  - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for a offer/plan
+                                on Azure Market Place
+  - `custom_image_id`         - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
+                                creating new Virtual Machines
+
+  > [!Important]
+  > `custom_image_id` and `img_version` properties are mutually exclusive.
+  EOF
+  type = object({
+    img_version             = optional(string)
+    img_publisher           = optional(string, "paloaltonetworks")
+    img_offer               = optional(string, "vmseries-flex")
+    img_sku                 = optional(string, "byol")
+    enable_marketplace_plan = optional(bool, true)
+    custom_image_id         = optional(string)
+  })
+  validation {
+    condition = (var.vm_configuration.custom_image_id != null && vm_configuration.img_version != null
+      ) || (
+      var.vm_configuration.custom_image_id == null && vm_configuration.img_version == null
+    )
+    error_message = "Either `custom_image_id` or `img_version` has to be defined."
+  }
+}
+
+
+variable "scale_set_configuration" {
+  description = <<-EOF
+  Scale set parameters configuration.
+
+  This map contains basic, as well as some optional Virtual Machine Scale Set parameters. Both types contain sane defaults.
+  Nevertheless they should be at least reviewed to meet deployment requirements.
+
+  List of either required or important properties: 
+
+  - `vm_size`               - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
+                              Deployment Guide* as only a few selected sizes are supported
+  - `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
+                              this Scale Set will be created
+  - `storage_account_type`  - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
+                              possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                              `vm_size` values)
+
+  List of other, optional properties: 
+
+  - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
+                                      networking (SR-IOV) for all dataplane network interfaces, this does not affect the
+                                      management interface (always disabled)
+  - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
+                                      used to encrypt this VM's disk
+  - `zone_balance`                  - (`bool`, optional, defaults to `true`) when set to `true` VMs in this Scale Set will be
+                                      evenly distributed across configured Availability Zones
+  - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
+                                      by enabling Encryption at Host
+  - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
+  - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
+                                      are used by this Virtual Machine Scale Set
+  - `proximity_placement_group_id`  - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
+                                      in which the Virtual Machine Scale Set should be assigned to
+  - `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
+                                      limited to a Single Placement Group, which means the number of instances will be capped
+                                      at 100 Virtual Machines
+
+  EOF
+  type = object({
+    vm_size                      = optional(string, "Standard_D3_v2")
+    zones                        = optional(list(string), ["1", "2", "3"])
+    zone_balance                 = optional(bool, true)
+    storage_account_type         = optional(string, "StandardSSD_LRS")
+    accelerated_networking       = optional(bool, true)
+    encryption_at_host_enabled   = optional(bool)
+    overprovision                = optional(bool, true)
+    platform_fault_domain_count  = optional(number)
+    proximity_placement_group_id = optional(string)
+    disk_encryption_set_id       = optional(string)
+  })
+  validation {
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.storage_account_type)
+    error_message = "The `storage_account_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+  }
 }
 
 variable "interfaces" {
   description = <<-EOF
-  List of the network interface specifications.
+  List of the network interfaces specifications.
 
   NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
   Interfaces will be attached to VM in the order you define here, therefore:
@@ -60,65 +189,12 @@ variable "interfaces" {
   type        = any
 }
 
-variable "username" {
-  description = "Initial administrative username to use for VM-Series."
-  default     = "panadmin"
-  type        = string
-}
 
-variable "password" {
-  description = "Initial administrative password to use for VM-Series."
-  type        = string
-  sensitive   = true
-}
 
-variable "ssh_keys" {
-  description = <<-EOF
-  A list of initial administrative SSH public keys that allow key-pair authentication. If not defined the `password` variable must be specified.
-  
-  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
 
-  ```
-  [
-    file("/path/to/public/keys/key_1.pub"),
-    file("/path/to/public/keys/key_2.pub")
-  ]
-  ```
-  EOF
-  default     = []
-  type        = list(string)
-}
 
-variable "disable_password_authentication" {
-  description = "If true, disables password-based authentication on VM-Series instances."
-  default     = true
-  type        = bool
-}
 
-variable "encryption_at_host_enabled" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set#encryption_at_host_enabled)."
-  default     = null
-  type        = bool
-}
 
-variable "overprovision" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
-  default     = false
-  type        = bool
-  nullable    = false
-}
-
-variable "platform_fault_domain_count" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
-  default     = null
-  type        = number
-}
-
-variable "proximity_placement_group_id" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
-  default     = null
-  type        = string
-}
 
 variable "scale_in_policy" {
   description = <<-EOF
@@ -139,85 +215,7 @@ variable "scale_in_force_deletion" {
   nullable    = false
 }
 
-variable "single_placement_group" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
-  default     = null
-  type        = bool
-}
 
-variable "zone_balance" {
-  description = "See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)."
-  default     = true
-  type        = bool
-}
-
-variable "zones" {
-  description = "The availability zones to use, for example `[\"1\", \"2\", \"3\"]`. If an empty list, no Availability Zones are used: `[]`."
-  default     = ["1", "2", "3"]
-  type        = list(string)
-  nullable    = false
-}
-
-variable "storage_account_type" {
-  description = "Type of Managed Disk which should be created. Possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`. The `Premium_LRS` works only for selected `vm_size` values, details in Azure docs."
-  default     = "StandardSSD_LRS"
-  type        = string
-  nullable    = false
-}
-
-variable "disk_encryption_set_id" {
-  description = "The ID of the Disk Encryption Set which should be used to encrypt this Data Disk."
-  default     = null
-  type        = string
-}
-
-variable "use_custom_image" {
-  description = "If true, use `custom_image_id` and ignore the inputs `username`, `password`, `img_version`, `img_publisher`, `img_offer`, `img_sku` (all these are used only for published images, not custom ones)."
-  default     = false
-  type        = bool
-}
-
-variable "custom_image_id" {
-  description = "Absolute ID of your own Custom Image to be used for creating new VM-Series. The Custom Image is expected to contain PAN-OS software."
-  default     = null
-  type        = string
-}
-
-variable "enable_plan" {
-  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
-  default     = true
-  type        = bool
-}
-
-variable "img_publisher" {
-  description = "The Azure Publisher identifier for a image which should be deployed."
-  default     = "paloaltonetworks"
-  type        = string
-}
-
-variable "img_offer" {
-  description = "The Azure Offer identifier corresponding to a published image. For `img_version` 9.1.1 or above, use \"vmseries-flex\"; for 9.1.0 or below use \"vmseries1\"."
-  default     = "vmseries-flex"
-  type        = string
-}
-
-variable "img_sku" {
-  description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "byol"
-  type        = string
-}
-
-variable "img_version" {
-  description = "VM-Series PAN-OS version - list available for a default `img_offer` with `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`"
-  type        = string
-}
-
-variable "accelerated_networking" {
-  description = "If true, enable Azure accelerated networking (SR-IOV) for all dataplane network interfaces. [Requires](https://docs.paloaltonetworks.com/pan-os/9-0/pan-os-new-features/virtualization-features/support-for-azure-accelerated-networking-sriov) PAN-OS 9.0 or higher. The PAN-OS management interface (nic0) is never accelerated, whether this variable is true or false."
-  default     = true
-  type        = bool
-  nullable    = false
-}
 
 variable "application_insights_id" {
   description = <<-EOF
@@ -353,11 +351,6 @@ variable "scalein_cooldown_minutes" {
   nullable    = false
 }
 
-variable "tags" {
-  description = "Map of tags to use for all the created resources."
-  default     = {}
-  type        = map(string)
-}
 
 variable "bootstrap_options" {
   description = <<-EOF
