@@ -1,7 +1,7 @@
 locals {
-  resource_group_name = var.create_resource_group ? azurerm_resource_group.this[0].name : data.azurerm_resource_group.this[0].name
-  vmseries_password   = try(var.vmseries_common.password, random_password.vmseries[0].result)
-  appvms_password     = try(var.appvms_common.password, random_password.appvms[0].result)
+  resource_group    = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
+  vmseries_password = try(var.vmseries_common.password, random_password.vmseries[0].result)
+  appvms_password   = try(var.appvms_common.password, random_password.appvms[0].result)
 }
 
 # Obtain Public IP address of deployment machine
@@ -27,21 +27,26 @@ data "azurerm_resource_group" "this" {
 
 # VNets
 module "vnet" {
+  source = "../../modules/vnet"
+
   for_each = var.vnets
-  source   = "../../modules/vnet"
 
-  name                   = each.value.name
-  name_prefix            = var.name_prefix
+  name                   = "${var.name_prefix}${each.value.name}"
+  create_virtual_network = each.value.create_virtual_network
+  resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
-  create_virtual_network = try(each.value.create_virtual_network, true)
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group_name)
-  address_space          = try(each.value.create_virtual_network, true) ? each.value.address_space : []
 
-  create_subnets = try(each.value.create_subnets, true)
-  subnets        = each.value.subnets
+  address_space = each.value.address_space
 
-  network_security_groups = try(each.value.network_security_groups, {})
-  route_tables            = try(each.value.route_tables, {})
+  create_subnets = each.value.create_subnets
+  subnets = each.value.create_subnets ? {
+    for k, v in each.value.subnets : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  } : each.value.subnets
+
+  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
+  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  }
 
   tags = var.tags
 }
@@ -52,7 +57,7 @@ module "gwlb" {
   source   = "../../modules/gwlb"
 
   name                = "${var.name_prefix}${each.value.name}"
-  resource_group_name = try(each.value.resource_group_name, local.resource_group_name)
+  resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
 
   backends     = each.value.backends
@@ -81,7 +86,7 @@ module "ai" {
   )
 
   name                = "${var.name_prefix}${each.key}"
-  resource_group_name = local.resource_group_name
+  resource_group_name = local.resource_group.name
   location            = var.location
 
   workspace_mode            = try(var.application_insights.workspace_mode, null)
@@ -126,7 +131,7 @@ module "bootstrap" {
 
   name                   = each.value.name
   create_storage_account = try(each.value.create_storage, true)
-  resource_group_name    = try(each.value.resource_group_name, local.resource_group_name)
+  resource_group_name    = try(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
 
   storage_acl                      = try(each.value.storage_acl, false)
@@ -143,7 +148,7 @@ module "bootstrap_share" {
 
   create_storage_account = false
   name                   = module.bootstrap[each.value.bootstrap_storage.key].storage_account.name
-  resource_group_name    = try(var.bootstrap_storages[each.value.bootstrap_storage.key].resource_group_name, local.resource_group_name)
+  resource_group_name    = try(var.bootstrap_storages[each.value.bootstrap_storage.key].resource_group_name, local.resource_group.name)
   location               = var.location
   storage_share_name     = "${var.name_prefix}${each.value.name}"
 
@@ -180,7 +185,7 @@ resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
 
   name                         = "${var.name_prefix}${each.value.name}"
-  resource_group_name          = local.resource_group_name
+  resource_group_name          = local.resource_group.name
   location                     = var.location
   platform_update_domain_count = try(each.value.update_domain_count, null)
   platform_fault_domain_count  = try(each.value.fault_domain_count, null)
@@ -194,7 +199,7 @@ module "vmseries" {
 
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
-  resource_group_name = local.resource_group_name
+  resource_group_name = local.resource_group.name
   enable_zones        = var.enable_zones
   avzone              = try(each.value.avzone, 1)
   avset_id            = try(azurerm_availability_set.this[each.value.availability_set_key].id, null)
@@ -249,7 +254,7 @@ module "load_balancer" {
 
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
-  resource_group_name = local.resource_group_name
+  resource_group_name = local.resource_group.name
   enable_zones        = var.enable_zones
   avzones             = try(each.value.avzones, null)
 
@@ -293,7 +298,7 @@ module "appvm" {
 
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
-  resource_group_name = local.resource_group_name
+  resource_group_name = local.resource_group.name
   avzone              = each.value.avzone
 
   interfaces = [

@@ -2,9 +2,7 @@ repos:
 - hooks:
   - id: terraform_fmt
   - args:
-    - --args=--sort=false
-    - --args=--lockfile=false
-    - --args=--indent=3
+    - --args=--config=.terraform-docs.yml
     id: terraform_docs
   - args:
     - --args=--only=terraform_deprecated_interpolation
