@@ -6,7 +6,9 @@ A module to generate resource name template.
 ## Purpose
 
 There are situations where simple name prefixing is not enough. More complex structures are required.
-This module generates a string template that can be used with Terraform's `format()` function to generate the actual resource name.
+
+> [!Note]
+> This module generates a string template that can be used with Terraform's `format()` function to generate the actual resource name.
 
 ## Usage
 
