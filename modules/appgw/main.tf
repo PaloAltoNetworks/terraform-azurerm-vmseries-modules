@@ -14,6 +14,7 @@ locals {
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   name                = var.public_ip_name
   resource_group_name = var.resource_group_name
@@ -26,6 +27,7 @@ resource "azurerm_public_ip" "this" {
   tags              = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway
 resource "azurerm_application_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
