@@ -1,6 +1,6 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.name if ip_configuration.create_public_ip }
+  for_each = toset([for ip_configuration in var.ip_configuration : ip_configuration.name if ip_configuration.create_public_ip])
 
   resource_group_name = var.resource_group_name
   location            = var.location
@@ -8,7 +8,7 @@ resource "azurerm_public_ip" "this" {
 
   allocation_method = "Static"
   sku               = "Standard"
-  zones             = try(length(var.zones) > 0, false) ? var.zones : null
+  zones             = var.zones
 
   tags = var.tags
 
@@ -24,7 +24,7 @@ resource "azurerm_public_ip" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "exists" {
-  for_each = { for ip_configuration in var.ip_configuration : ip_configuration.name => ip_configuration.public_ip_name if !ip_configuration.create_public_ip }
+  for_each = toset([for ip_configuration in var.ip_configuration : ip_configuration.name if !ip_configuration.create_public_ip])
 
   name                = each.value
   resource_group_name = var.resource_group_name
@@ -169,7 +169,7 @@ resource "azurerm_virtual_network_gateway_connection" "this" {
     for_each = each.value.custom_bgp_addresses
     content {
       primary   = var.azure_bgp_peers_addresses[custom_bgp_addresses.value.primary]
-      secondary = custom_bgp_addresses.value.secondary != null ? var.azure_bgp_peers_addresses[custom_bgp_addresses.value.secondary] : null
+      secondary = try(var.azure_bgp_peers_addresses[custom_bgp_addresses.value.secondary], null)
     }
   }
 
