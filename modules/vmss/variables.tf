@@ -148,26 +148,54 @@ variable "scale_set_configuration" {
   }
 }
 
+variable "bootstrap_options" {
+  description = <<-EOF
+  Bootstrap options to pass to VM-Series instance.
+
+  Proper syntax is a string of semicolon separated properties, for example:
+  `bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"`
+
+  For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
+  EOF
+  default     = ""
+  type        = string
+  nullable    = false
+  sensitive   = true
+}
+
+variable "diagnostics_storage_uri" {
+  description = "The storage account's blob endpoint to hold diagnostic files."
+  default     = null
+  type        = string
+}
+
 variable "interfaces" {
   description = <<-EOF
   List of the network interfaces specifications.
 
-  NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
+  > [!Notice]
+  > The ORDER in which you specify the interfaces DOES MATTER.
+
   Interfaces will be attached to VM in the order you define here, therefore:
-  * The first should be the management interface, which does not participate in data filtering.
-  * The remaining ones are the dataplane interfaces.
+
+  - the first should be the management interface, which does not participate in data filtering
+  - the remaining ones are the dataplane interfaces.
   
-  Options for an interface object:
-  - `name`                     - (required|string) Interface name.
-  - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
-  - `create_pip`               - (optional|bool) If true, create a public IP for the interface
-  - `lb_backend_pool_ids`      - (optional|list(string)) A list of identifiers of an existing Load Balancer backend pools to associate interface with.
-  - `appgw_backend_pool_ids`   - (optional|list(String)) A list of identifier of the Application Gateway backend pools to associate interface with.
-  - `pip_domain_name_label`    - (optional|string) The Prefix which should be used for the Domain Name Label for each Virtual Machine Instance.
+  Following configuration options are available:
+
+  - `name`                      - (`string`, required) the interface name
+  - `subnet_id`                 - (`string`, required) ID of an existing subnet to create the interface in
+  - `create_public_ip`          - (`bool`, optional, defaults to `false`) if `true`, create a public IP for the interface
+  - `lb_backend_pool_ids`       - (`list`, optional, defaults to `[]`) a list of identifiers of existing Load Balancer backend
+                                  pools to associate the interface with
+  - `appgw_backend_pool_ids`    - (`list`, optional, defaults to `[]`) a list of identifier of Application Gateway's backend
+                                  pools to associate the interface with
+  - `pip_domain_name_label`     - (`string`, optional, defaults to `null`) the Prefix which should be used for the Domain Name
+                                  Label for each Virtual Machine Instance.
 
   Example:
 
-  ```
+  ```hcl
   [
     {
       name       = "management"
@@ -186,14 +214,30 @@ variable "interfaces" {
   ]
   ```
   EOF
-  type        = any
+  type = list(object({
+    name                   = string
+    subnet_id              = string
+    create_public_ip       = optional(bool, false)
+    lb_backend_pool_ids    = optional(list(string), [])
+    appgw_backend_pool_ids = optional(list(string), [])
+    pip_domain_name_label  = optional(string)
+  }))
+  validation {
+    condition     = length(var.interfaces[0].lb_backend_pool_ids) == 0 && length(var.interfaces[0].appgw_backend_pool_ids) == 0
+    error_message = "The `lb_backend_pool_ids` and `appgw_backend_pool_ids` properties are not acceptable for the 1st (management) interface."
+  }
 }
 
+variable "autoscaling_configuration" {
+  description = <<-EOF
+  Autoscaling configuration common to all policies
 
+  Following properties are available:
+  - `application_insights_id`
 
-
-
-
+  - 
+  EOF
+}
 
 
 variable "scale_in_policy" {
@@ -207,16 +251,12 @@ variable "scale_in_policy" {
   default     = null
   type        = string
 }
-
 variable "scale_in_force_deletion" {
   description = "When set to `true` will force delete machines selected for removal by the `scale_in_policy`."
   default     = false
   type        = bool
   nullable    = false
 }
-
-
-
 variable "application_insights_id" {
   description = <<-EOF
   An ID of Application Insights instance that should be used to provide metrics for autoscaling.
@@ -227,13 +267,28 @@ variable "application_insights_id" {
   default     = null
   type        = string
 }
-
 variable "autoscale_count_default" {
   description = "The minimum number of instances that should be present in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the metrics to the thresholds."
   default     = 2
   type        = number
   nullable    = false
 }
+variable "autoscale_notification_emails" {
+  description = "List of email addresses to notify about autoscaling events."
+  default     = []
+  type        = list(string)
+  nullable    = false
+}
+variable "autoscale_webhooks_uris" {
+  description = "Map where each key is an arbitrary identifier and each value is a webhook URI. The URIs receive autoscaling events."
+  default     = {}
+  type        = map(string)
+}
+
+
+
+
+
 
 variable "autoscale_count_minimum" {
   description = "The minimum number of instances that should be present in the scale set."
@@ -249,18 +304,7 @@ variable "autoscale_count_maximum" {
   nullable    = false
 }
 
-variable "autoscale_notification_emails" {
-  description = "List of email addresses to notify about autoscaling events."
-  default     = []
-  type        = list(string)
-  nullable    = false
-}
 
-variable "autoscale_webhooks_uris" {
-  description = "Map where each key is an arbitrary identifier and each value is a webhook URI. The URIs receive autoscaling events."
-  default     = {}
-  type        = map(string)
-}
 
 variable "autoscale_metrics" {
   description = <<-EOF
@@ -352,23 +396,3 @@ variable "scalein_cooldown_minutes" {
 }
 
 
-variable "bootstrap_options" {
-  description = <<-EOF
-  Bootstrap options to pass to VM-Series instance.
-
-  Proper syntax is a string of semicolon separated properties.
-  Example:
-    bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
-
-  For more details on bootstrapping see documentation: https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components
-  EOF
-  default     = ""
-  type        = string
-  sensitive   = true
-}
-
-variable "diagnostics_storage_uri" {
-  description = "The storage account's blob endpoint to hold diagnostic files."
-  default     = null
-  type        = string
-}

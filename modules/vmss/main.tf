@@ -66,7 +66,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     iterator = nic
 
     content {
-      name                          = "${var.name}-${nic.value.name}"
+      name                          = nic.value.name
       primary                       = nic.key == 0 ? true : false
       enable_ip_forwarding          = nic.key == 0 ? false : true
       enable_accelerated_networking = nic.key == 0 ? false : var.scale_set_configuration.accelerated_networking
@@ -75,16 +75,16 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
         name                                         = "primary"
         primary                                      = true
         subnet_id                                    = nic.value.subnet_id
-        load_balancer_backend_address_pool_ids       = nic.key == 0 ? [] : try(nic.value.lb_backend_pool_ids, [])
-        application_gateway_backend_address_pool_ids = nic.key == 0 ? [] : try(nic.value.appgw_backend_pool_ids, [])
+        load_balancer_backend_address_pool_ids       = nic.value.lb_backend_pool_ids
+        application_gateway_backend_address_pool_ids = nic.value.appgw_backend_pool_ids
 
         dynamic "public_ip_address" {
-          for_each = try(nic.value.create_pip, false) ? ["one"] : []
+          for_each = nic.value.create_public_ip ? ["one"] : []
           iterator = pip
 
           content {
-            name              = "${var.name}-${nic.value.name}-pip"
-            domain_name_label = try(nic.value.pip_domain_name_label, null)
+            name              = "${nic.value.name}-public-ip"
+            domain_name_label = nic.value.pip_domain_name_label
           }
         }
       }
