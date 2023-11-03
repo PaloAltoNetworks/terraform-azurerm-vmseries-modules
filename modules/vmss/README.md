@@ -98,13 +98,6 @@ Name | Type | Description
 [`vm_image_configuration`](#vm_image_configuration) | `object` | Basic Azure VM configuration.
 [`scale_set_configuration`](#scale_set_configuration) | `object` | Scale set parameters configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interfaces specifications.
-[`autoscaling_configuration`](#autoscaling_configuration) | `any` | Autoscaling configuration common to all policies
-
-Following properties are available:
-- `application_insights_id`
-
-- 
-.
 
 
 ## Module's Optional Inputs
@@ -114,12 +107,17 @@ Name | Type | Description
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`bootstrap_options`](#bootstrap_options) | `string` | Bootstrap options to pass to VM-Series instance.
 [`diagnostics_storage_uri`](#diagnostics_storage_uri) | `string` | The storage account's blob endpoint to hold diagnostic files.
-[`scale_in_policy`](#scale_in_policy) | `string` | Which virtual machines are chosen for removal when a Virtual Machine Scale Set is scaled in.
-[`scale_in_force_deletion`](#scale_in_force_deletion) | `bool` | When set to `true` will force delete machines selected for removal by the `scale_in_policy`.
-[`application_insights_id`](#application_insights_id) | `string` | An ID of Application Insights instance that should be used to provide metrics for autoscaling.
-[`autoscale_count_default`](#autoscale_count_default) | `number` | The minimum number of instances that should be present in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the metrics to the thresholds.
-[`autoscale_notification_emails`](#autoscale_notification_emails) | `list` | List of email addresses to notify about autoscaling events.
-[`autoscale_webhooks_uris`](#autoscale_webhooks_uris) | `map` | Map where each key is an arbitrary identifier and each value is a webhook URI.
+[`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies
+
+Following properties are available:
+- `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
+                                    be used to provide metrics for autoscaling; to **avoid false positives** this should be an
+                                    instance **dedicated to this Scale Set**
+- `autoscale_count_default`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
+                                    in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
+                                    to compare the metrics to the thresholds
+- `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
+                                    during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
 [`autoscale_count_minimum`](#autoscale_count_minimum) | `number` | The minimum number of instances that should be present in the scale set.
 [`autoscale_count_maximum`](#autoscale_count_maximum) | `number` | The maximum number of instances that should be present in the scale set.
 [`autoscale_metrics`](#autoscale_metrics) | `map` | Map of objects, where each key is the metric name to be used for autoscaling.
@@ -388,25 +386,6 @@ list(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### autoscaling_configuration
-
-Autoscaling configuration common to all policies
-
-Following properties are available:
-- `application_insights_id`
-
-- 
-
-
-Type: any
-
-<sup>[back to list](#modules-required-inputs)</sup>
-
-
-
-
-
-
 
 
 
@@ -467,71 +446,40 @@ Default value: `&{}`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
+#### autoscaling_configuration
 
-#### scale_in_policy
+Autoscaling configuration common to all policies
 
-Which virtual machines are chosen for removal when a Virtual Machine Scale Set is scaled in. Either:
+Following properties are available:
+- `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
+                                    be used to provide metrics for autoscaling; to **avoid false positives** this should be an
+                                    instance **dedicated to this Scale Set**
+- `autoscale_count_default`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
+                                    in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
+                                    to compare the metrics to the thresholds
+- `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
+                                    during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
+- `scale_in_force_deletion`       - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a
+                                    scale-in
+- `autoscale_notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
+                                    events
+- `autoscale_webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
+                                    are just arbitrary identifiers and the values are the webhook URIs
 
-- `Default`, which, baring the availability zone usage and fault domain usage, deletes VM with the highest-numbered instance id,
-- `NewestVM`, which, baring the availability zone usage, deletes VM with the newest creation time,
-- `OldestVM`, which, baring the availability zone usage, deletes VM with the oldest creation time.
 
+Type: 
 
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scale_in_force_deletion
-
-When set to `true` will force delete machines selected for removal by the `scale_in_policy`.
-
-Type: bool
-
-Default value: `false`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### application_insights_id
-
-An ID of Application Insights instance that should be used to provide metrics for autoscaling.
-
-**Note**, to avoid false positives this should be an instance dedicated to this VMSS.
+```hcl
+object({
+    application_insights_id       = optional(string)
+    autoscale_count_default       = optional(number, 2)
+    scale_in_policy               = optional(string)
+    scale_in_force_deletion       = optional(bool, false)
+    autoscale_notification_emails = optional(list(string), [])
+    autoscale_webhooks_uris       = optional(map(string), {})
+  })
 ```
 
-
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### autoscale_count_default
-
-The minimum number of instances that should be present in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the metrics to the thresholds.
-
-Type: number
-
-Default value: `2`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### autoscale_notification_emails
-
-List of email addresses to notify about autoscaling events.
-
-Type: list(string)
-
-Default value: `[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### autoscale_webhooks_uris
-
-Map where each key is an arbitrary identifier and each value is a webhook URI. The URIs receive autoscaling events.
-
-Type: map(string)
 
 Default value: `map[]`
 

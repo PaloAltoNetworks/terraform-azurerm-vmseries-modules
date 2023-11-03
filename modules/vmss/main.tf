@@ -50,15 +50,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   }
 
 
-  instances = var.autoscale_count_default
+  instances = var.autoscaling_configuration.autoscale_count_default
 
   upgrade_mode = "Manual" # See README for more details no this setting.
 
   custom_data = base64encode(var.bootstrap_options)
 
   scale_in {
-    rule                   = var.scale_in_policy
-    force_deletion_enabled = var.scale_in_force_deletion
+    rule                   = var.autoscaling_configuration.scale_in_policy
+    force_deletion_enabled = var.autoscaling_configuration.scale_in_force_deletion
   }
 
   dynamic "network_interface" {
@@ -120,7 +120,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
     name = "autoscale profile"
 
     capacity {
-      default = var.autoscale_count_default
+      default = var.autoscaling_configuration.autoscale_count_default
       minimum = var.autoscale_count_minimum
       maximum = var.autoscale_count_maximum
     }
@@ -131,7 +131,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
       content {
         metric_trigger {
           metric_name        = rule.key
-          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.application_insights_id
+          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.autoscaling_configuration.application_insights_id
           metric_namespace   = "Azure.ApplicationInsights"
           operator           = "GreaterThanOrEqual"
           threshold          = rule.value.scaleout_threshold
@@ -157,7 +157,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
       content {
         metric_trigger {
           metric_name        = rule.key
-          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.application_insights_id
+          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.autoscaling_configuration.application_insights_id
           metric_namespace   = "Azure.ApplicationInsights"
           operator           = "LessThanOrEqual"
           threshold          = rule.value.scalein_threshold
@@ -180,10 +180,10 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
   notification {
     email {
-      custom_emails = var.autoscale_notification_emails
+      custom_emails = var.autoscaling_configuration.autoscale_notification_emails
     }
     dynamic "webhook" {
-      for_each = var.autoscale_webhooks_uris
+      for_each = var.autoscaling_configuration.autoscale_webhooks_uris
 
       content {
         service_uri = webhook.value

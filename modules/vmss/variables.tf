@@ -233,58 +233,35 @@ variable "autoscaling_configuration" {
   Autoscaling configuration common to all policies
 
   Following properties are available:
-  - `application_insights_id`
-
-  - 
+  - `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
+                                      be used to provide metrics for autoscaling; to **avoid false positives** this should be an
+                                      instance **dedicated to this Scale Set**
+  - `autoscale_count_default`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
+                                      in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
+                                      to compare the metrics to the thresholds
+  - `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
+                                      during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
+  - `scale_in_force_deletion`       - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a
+                                      scale-in
+  - `autoscale_notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
+                                      events
+  - `autoscale_webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
+                                      are just arbitrary identifiers and the values are the webhook URIs
   EOF
-}
-
-
-variable "scale_in_policy" {
-  description = <<-EOF
-  Which virtual machines are chosen for removal when a Virtual Machine Scale Set is scaled in. Either:
-
-  - `Default`, which, baring the availability zone usage and fault domain usage, deletes VM with the highest-numbered instance id,
-  - `NewestVM`, which, baring the availability zone usage, deletes VM with the newest creation time,
-  - `OldestVM`, which, baring the availability zone usage, deletes VM with the oldest creation time.
-  EOF
-  default     = null
-  type        = string
-}
-variable "scale_in_force_deletion" {
-  description = "When set to `true` will force delete machines selected for removal by the `scale_in_policy`."
-  default     = false
-  type        = bool
-  nullable    = false
-}
-variable "application_insights_id" {
-  description = <<-EOF
-  An ID of Application Insights instance that should be used to provide metrics for autoscaling.
-
-  **Note**, to avoid false positives this should be an instance dedicated to this VMSS.
-  ```
-  EOF
-  default     = null
-  type        = string
-}
-variable "autoscale_count_default" {
-  description = "The minimum number of instances that should be present in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the metrics to the thresholds."
-  default     = 2
-  type        = number
-  nullable    = false
-}
-variable "autoscale_notification_emails" {
-  description = "List of email addresses to notify about autoscaling events."
-  default     = []
-  type        = list(string)
-  nullable    = false
-}
-variable "autoscale_webhooks_uris" {
-  description = "Map where each key is an arbitrary identifier and each value is a webhook URI. The URIs receive autoscaling events."
   default     = {}
-  type        = map(string)
+  type = object({
+    application_insights_id       = optional(string)
+    autoscale_count_default       = optional(number, 2)
+    scale_in_policy               = optional(string)
+    scale_in_force_deletion       = optional(bool, false)
+    autoscale_notification_emails = optional(list(string), [])
+    autoscale_webhooks_uris       = optional(map(string), {})
+  })
+  validation {
+    condition     = contains(["Default", "NewestVM", "OldestVM"], var.autoscaling_configuration.scale_in_policy)
+    error_message = "The `scale_in_policy` property can be one of: `Default`, `NewestVM`, `OldestVM`."
+  }
 }
-
 
 
 
