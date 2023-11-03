@@ -6,6 +6,13 @@ resource "azurerm_virtual_network" "this" {
   resource_group_name = var.resource_group_name
   address_space       = var.address_space
   tags                = var.tags
+
+  lifecycle {
+    precondition {
+      condition     = length(coalesce(var.address_space, [])) > 0
+      error_message = "The `var.address_space` property is required when creating a VNET."
+    }
+  }
 }
 
 data "azurerm_virtual_network" "this" {

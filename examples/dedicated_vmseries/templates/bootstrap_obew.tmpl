@@ -518,6 +518,34 @@
                 </entry>
               </rules>
             </security>
+            <nat>
+              <rules>
+                <entry name="internet" uuid="d62025ef-b176-428c-a807-2ef427b175cd">
+                  <source-translation>
+                    <dynamic-ip-and-port>
+                      <interface-address>
+                        <interface>ethernet1/2</interface>
+                      </interface-address>
+                    </dynamic-ip-and-port>
+                  </source-translation>
+                  <to>
+                    <member>public</member>
+                  </to>
+                  <from>
+                    <member>private</member>
+                  </from>
+                  <source>
+                    <member>${private_network_cidr}</member>
+                  </source>
+                  <destination>
+                    <member>any</member>
+                  </destination>
+                  <service>any</service>
+                  <to-interface>any</to-interface>
+                  <disabled>no</disabled>
+                </entry>
+              </rules>
+            </nat>
           </rulebase>
           <import>
             <network>
