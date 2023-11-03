@@ -55,16 +55,22 @@ variable "vnets" {
   
   For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, `false` will source an existing VNET.
-  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a full resource name, including prefixes.
-  - `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET
-  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the VNET will reside or is sourced from
-
-  - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network, otherwise use source existing subnets
-  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see [VNET module documentation](../../modules/vnet/README.md#subnets)
-
-  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
-  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see [VNET module documentation](../../modules/vnet/README.md#route_tables)
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+                                `false` will source an existing VNET.
+  - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
+                                a full resource name, including prefixes.
+  - `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly
+                                created VNET
+  - `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                                the VNET will reside or is sourced from
+  - `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
+                                otherwise use source existing subnets
+  - `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#subnets)
+  - `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+  - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                                [VNET module documentation](../../modules/vnet/README.md#route_tables)
   EOF
 
   type = map(object({
