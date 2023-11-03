@@ -138,9 +138,12 @@ variable "ip_configuration" {
 
   - `name`                          - (`string`, required) name of the IP configuration
   - `create_public_ip`              - (`bool`, required) - true if public IP needs to be created
-  - `public_ip_name`                - (`string`, required) name of the public IP resource used, when there is no need to create new one
-  - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) defines how the private IP address of the gateways virtual interface is assigned.
-  - `subnet_id`                     - (`string`, required) the ID of the gateway subnet of a virtual network in which the virtual network gateway will be created.
+  - `public_ip_name`                - (`string`, required) name of the public IP resource used, when there is no need
+                                      to create new one
+  - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) defines how the private IP address of
+                                      the gateways virtual interface is assigned.
+  - `subnet_id`                     - (`string`, required) the ID of the gateway subnet of a virtual network in which
+                                      the virtual network gateway will be created.
 
   Example:
 
@@ -192,15 +195,18 @@ variable "vpn_client_configuration" {
   - `aad_audience`            - (`string`, optional, defaults to `null`) the client id of the Azure VPN application.
                                 See Create an Active Directory (AD) tenant for P2S OpenVPN protocol connections for values
   - `aad_issuer`              - (`string`, optional, defaults to `null`) the STS url for your tenant
-  - `root_certificate`        - (`object`, optional, defaults to `null`) one or more root_certificate blocks which are defined below.
-                                These root certificates are used to sign the client certificate used by the VPN clients to connect to the gateway.
-  - `revoked_certificate`     - (`object`, optional, defaults to `null`) one or more revoked_certificate blocks which are defined below.
+  - `root_certificate`        - (`object`, optional, defaults to `null`) one or more root_certificate blocks
+                                which are defined below. These root certificates are used to sign the client
+                                certificate used by the VPN clients to connect to the gateway.
+  - `revoked_certificate`     - (`object`, optional, defaults to `null`) one or more revoked_certificate blocks
+                                which are defined below.
   - `radius_server_address`   - (`string`, optional, defaults to `null`) the address of the Radius server.
   - `radius_server_secret`    - (`string`, optional, defaults to `null`) the secret used by the Radius server.
   - `vpn_client_protocols`    - (`list(string)`, optional, defaults to `null`) list of the protocols supported by the vpn client.
-                                The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with the use of aad_tenant, aad_audience and aad_issuer.
-  - `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for the virtual network gateway.
-                                The supported values are AAD, Radius and Certificate.
+                                The supported values are SSTP, IkeV2 and OpenVPN. Values SSTP and IkeV2 are incompatible with
+                                the use of aad_tenant, aad_audience and aad_issuer.
+  - `vpn_auth_types`          - (`list(string)`, optional, defaults to `null`) list of the vpn authentication types for
+                                the virtual network gateway. The supported values are AAD, Radius and Certificate.
 
   EOF
   type = list(object({
@@ -256,8 +262,10 @@ variable "local_bgp_settings" {
   - `peering_addresses`   - (`map`, required) a map of peering addresses, which contains 1 (for active-standby)
                             or 2 objects (for active-active), where key is the ip configuration name and with attributes:
     - `apipa_addresses`   - (`list`, required) is the list of keys for IP addresses defined in variable azure_bgp_peers_addresses
-    - `default_addresses` - (`list`, optional, defaults to `null`) is the list of peering address assigned to the BGP peer of the Virtual Network Gateway.
-  - `peer_weight`         - (`number`, optional, defaults to `null`) the weight added to routes which have been learned through BGP peering.
+    - `default_addresses` - (`list`, optional, defaults to `null`) is the list of peering address assigned to
+                            the BGP peer of the Virtual Network Gateway.
+  - `peer_weight`         - (`number`, optional, defaults to `null`) the weight added to routes
+                            which have been learned through BGP peering.
 
   Example:
 
@@ -317,11 +325,14 @@ variable "local_network_gateways" {
     - bgp_peering_address   - (`string`, required) the BGP peering address and BGP identifier of this BGP speaker.
     - peer_weight           - (`number`, optional, defaults to `null`) the weight added to routes learned from this BGP speaker.
   - gateway_address         - (`string`, optional, defaults to `null`) the gateway IP address to connect with.
-  - address_space           - (`list`, optional, defaults to `[]`) the list of string CIDRs representing the address spaces the gateway exposes.
+  - address_space           - (`list`, optional, defaults to `[]`) the list of string CIDRs representing the address spaces
+                              the gateway exposes.
   - custom_bgp_addresses    - (`list`, optional, defaults to `[]`) Border Gateway Protocol custom IP Addresses,
                               which can only be used on IPSec / active-active connections. Object contains 2 attributes:
-    - primary               - (`string`, required) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (first one)
-    - secondary             - (`string`, optional, defaults to `null`) single IP address that is part of the azurerm_virtual_network_gateway ip_configuration (second one)
+    - primary               - (`string`, required) single IP address that is part of the azurerm_virtual_network_gateway
+                              ip_configuration (first one)
+    - secondary             - (`string`, optional, defaults to `null`) single IP address that is part of
+                              the azurerm_virtual_network_gateway ip_configuration (second one)
 
   Example:
 
@@ -447,8 +458,10 @@ variable "ipsec_policies" {
   - `ipsec_encryption`  - (`string`, required) The IPSec encryption algorithm.
   - `ipsec_integrity`   - (`string`, required) The IPSec integrity algorithm.
   - `pfs_group`         - (`string`, required) The DH group used in IKE phase 2 for new child SA.
-  - `sa_datasize`       - (`string`, optional, defaults to `102400000`) The IPSec SA payload size in KB. Must be at least 1024 KB.
-  - `sa_lifetime`       - (`string`, optional, defaults to `27000`) The IPSec SA lifetime in seconds. Must be at least 300 seconds.
+  - `sa_datasize`       - (`string`, optional, defaults to `102400000`) The IPSec SA payload size in KB.
+                          Must be at least 1024 KB.
+  - `sa_lifetime`       - (`string`, optional, defaults to `27000`) The IPSec SA lifetime in seconds.
+                          Must be at least 300 seconds.
 
   Example:
 
