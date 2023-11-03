@@ -31,7 +31,7 @@ module "vnet" {
 
   for_each = var.vnets
 
-  name                   = "${var.name_prefix}${each.value.name}"
+  name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
