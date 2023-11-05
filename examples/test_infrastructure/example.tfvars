@@ -14,7 +14,7 @@ vnets = {
     name          = "spoke-east"
     address_space = ["10.100.0.0/25"]
     # # Uncomment the lines below to enable peering between spokes created in this module and an existing transit VNET
-    # hub_resource_group_name = "example-transit-vnet-dedicated" # TODO: replace with the name of transit VNET's Resource Group Name
+    # hub_resource_group_name = "example-transit-vnet-common" # TODO: replace with the name of transit VNET's Resource Group Name
     # hub_vnet_name = "example-transit" # TODO: replace with the name of the transit VNET
     route_tables = {
       nva = {
@@ -44,7 +44,7 @@ vnets = {
     name          = "spoke-west"
     address_space = ["10.100.1.0/25"]
     # # Uncomment the lines below to enable peering between spokes created in this module and an existing transit VNET
-    # hub_resource_group_name = "example-transit-vnet-dedicated" # TODO: replace with the name of transit VNET's Resource Group Name
+    # hub_resource_group_name = "example-transit-vnet-common" # TODO: replace with the name of transit VNET's Resource Group Name
     # hub_vnet_name = "example-transit" # TODO: replace with the name of the transit VNET
     route_tables = {
       nva = {
