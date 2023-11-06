@@ -111,7 +111,7 @@ Mandatory Values:
 - `vnet_name`                    - (`string`, required) the remote peer VNET name.
 - `allow_virtual_network_access` - (`bool`, optional, defaults to `true`) allows communication between the two peering VNETs.
 - `allow_forwarded_traffic`      - (`bool`, optional, defaults to `true`) allows traffic forwarded from the local VNET but not
-                                  originated from within it.
+                                   originated from within it.
 - `allow_gateway_transit`        - (`bool`, optional, defaults to `false`) controls the learning of routes from remote VNET
                                    (gateway or route server) into the local VNET. Must be true if `use_remote_gateways` is
                                   `true` for remote peer.
