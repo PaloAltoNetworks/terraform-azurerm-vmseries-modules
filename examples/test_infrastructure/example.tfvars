@@ -14,16 +14,17 @@ vnets = {
     name          = "spoke-east"
     address_space = ["10.100.0.0/25"]
     # # Uncomment the lines below to enable peering between spokes created in this module and an existing transit VNET
-    # hub_resource_group_name = "example-transit-vnet-dedicated" # TODO: replace with the name of transit VNET's Resource Group Name
-    # hub_vnet_name = "example-transit" # TODO: replace with the name of the transit VNET
+    # hub_resource_group_name = "example-transit-vnet-common" # TODO: replace with the name of transit VNET's Resource Group Name
+    # hub_vnet_name           = "example-transit"             # TODO: replace with the name of the transit VNET
     route_tables = {
       nva = {
         name = "east2NVA"
         routes = {
           "2NVA" = {
-            address_prefix         = "0.0.0.0/0"
-            next_hop_type          = "VirtualAppliance"
-            next_hop_in_ip_address = "10.0.0.30" # TODO: this by default matches the private IP of the private Load Balancer deployed in any of the examples; adjust if needed
+            name                = "2NVA-udr"
+            address_prefix      = "0.0.0.0/0"
+            next_hop_type       = "VirtualAppliance"
+            next_hop_ip_address = "10.0.0.30" # TODO: this by default matches the private IP of the private Load Balancer deployed in any of the examples; adjust if needed
           }
         }
       }
@@ -44,16 +45,17 @@ vnets = {
     name          = "spoke-west"
     address_space = ["10.100.1.0/25"]
     # # Uncomment the lines below to enable peering between spokes created in this module and an existing transit VNET
-    # hub_resource_group_name = "example-transit-vnet-dedicated" # TODO: replace with the name of transit VNET's Resource Group Name
-    # hub_vnet_name = "example-transit" # TODO: replace with the name of the transit VNET
+    # hub_resource_group_name = "example-transit-vnet-common" # TODO: replace with the name of transit VNET's Resource Group Name
+    # hub_vnet_name           = "example-transit"             # TODO: replace with the name of the transit VNET
     route_tables = {
       nva = {
         name = "west2NVA"
         routes = {
           "2NVA" = {
-            address_prefix         = "0.0.0.0/0"
-            next_hop_type          = "VirtualAppliance"
-            next_hop_in_ip_address = "10.0.0.30" # TODO: replace with IP address of the private Load Balancer in the transit VNET
+            name                = "2NVA-udr"
+            address_prefix      = "0.0.0.0/0"
+            next_hop_type       = "VirtualAppliance"
+            next_hop_ip_address = "10.0.0.30" # TODO: replace with IP address of the private Load Balancer in the transit VNET
           }
         }
       }
