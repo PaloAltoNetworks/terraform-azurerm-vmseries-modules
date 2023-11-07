@@ -234,17 +234,17 @@ object({
 A map of probes for the Application Gateway.
 
 Every probe contains attributes:
-- `name`                                       - (`string`, required) The name used for this Probe
-- `path`                                       - (`string`, required) The path used for this Probe
-- `host`                                       - (`string`, optional) The hostname used for this Probe
-- `port`                                       - (`number`, optional) Custom port which will be used for probing the backend servers.
-- `protocol`                                   - (`string`, optional) The protocol which should be used.
-- `interval`                                   - (`number`, optional) The interval between two consecutive probes in seconds.
-- `timeout`                                    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
-- `threshold`                                  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates
-                                                 the amount of retries which should be attempted before a node is deemed unhealthy.
-- `match_code`                                 - (`list`, optional) The list of allowed status codes for this Health Probe.
-- `match_body`                                 - (`string`, optional) A snippet from the Response Body which must be present in the Response.
+- `name`       - (`string`, required) The name used for this Probe
+- `path`       - (`string`, required) The path used for this Probe
+- `host`       - (`string`, optional) The hostname used for this Probe
+- `port`       - (`number`, optional) Custom port which will be used for probing the backend servers.
+- `protocol`   - (`string`, optional) The protocol which should be used.
+- `interval`   - (`number`, optional) The interval between two consecutive probes in seconds.
+- `timeout`    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
+- `threshold`  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates
+                 the amount of retries which should be attempted before a node is deemed unhealthy.
+- `match_code` - (`list`, optional) The list of allowed status codes for this Health Probe.
+- `match_body` - (`string`, optional) A snippet from the Response Body which must be present in the Response.
 
 
 Type: 
@@ -272,19 +272,19 @@ map(object({
 A map of rewrites for the Application Gateway.
 
 Every rewrite contains attributes:
-- `name`                                       - (`string`, optional) Rewrite Rule Set name
-- `rules`                                      - (`object`, optional) Rewrite Rule Set defined with attributes:
-    - `name`                                   - (`string`, required) Rewrite Rule name.
-    - `sequence`                               - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
-    - `conditions`                             - (`map`, optional) One or more condition blocks as defined below:
-      - `pattern`                              - (`string`, required) The pattern, either fixed string or regular expression,
-                                                 that evaluates the truthfulness of the condition.
-      - `ignore_case`                          - (`string`, required) Perform a case in-sensitive comparison.
-      - `negate`                               - (`bool`, required) Negate the result of the condition evaluation.
-    - `request_headers`                        - (`map`, optional) Map of request header, where header name is the key,
-                                                 header value is the value of the object in the map.
-    - `response_headers`                       - (`map`, optional) Map of response header, where header name is the key,
-                                                 header value is the value of the object in the map.
+- `name`                - (`string`, optional) Rewrite Rule Set name
+- `rules`               - (`object`, optional) Rewrite Rule Set defined with attributes:
+    - `name`            - (`string`, required) Rewrite Rule name.
+    - `sequence`        - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
+    - `conditions`      - (`map`, optional) One or more condition blocks as defined below:
+      - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
+                          that evaluates the truthfulness of the condition.
+      - `ignore_case`   - (`string`, required) Perform a case in-sensitive comparison.
+      - `negate`        - (`bool`, required) Negate the result of the condition evaluation.
+    - `request_headers` - (`map`, optional) Map of request header, where header name is the key,
+                          header value is the value of the object in the map.
+    - `response_headers`- (`map`, optional) Map of response header, where header name is the key,
+                          header value is the value of the object in the map.
 
 
 Type: 
@@ -317,13 +317,13 @@ A rule combines, http settings and health check configuration.
 A key is an application name that is used to prefix all components inside Application Gateway that are created for this application.
 
 Every rule contains attributes:
-- `name`                                       - (`string`, required) Rule name.
-- `priority`                                   - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
-- `backend`                                    - (`string`, optional) Backend settings` key
-- `listener`                                   - (`string`, required) Listener's key
-- `rewrite`                                    - (`string`, optional) Rewrite's key
-- `url_path_map`                               - (`string`, optional) URL Path Map's key
-- `redirect`                                   - (`string`, optional) Redirect's ky
+- `name`         - (`string`, required) Rule name.
+- `priority`     - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
+- `backend`      - (`string`, optional) Backend settings` key
+- `listener`     - (`string`, required) Listener's key
+- `rewrite`      - (`string`, optional) Rewrite's key
+- `url_path_map` - (`string`, optional) URL Path Map's key
+- `redirect`     - (`string`, optional) Redirect's ky
 
 
 Type: 
@@ -348,12 +348,12 @@ map(object({
 A map of redirects for the Application Gateway.
 
 Every redirect contains attributes:
-- `name`                                   - (`string`, required) The name of redirect.
-- `type`                                   - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
-- `target_listener`                        - (`string`, optional) The name of the listener to redirect to.
-- `target_url`                             - (`string`, optional) The URL to redirect the request to.
-- `include_path`                           - (`bool`, optional) Whether or not to include the path in the redirected URL.
-- `include_query_string`                   - (`bool`, optional) Whether or not to include the query string in the redirected URL.
+- `name`                 - (`string`, required) The name of redirect.
+- `type`                 - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
+- `target_listener`      - (`string`, optional) The name of the listener to redirect to.
+- `target_url`           - (`string`, optional) The URL to redirect the request to.
+- `include_path`         - (`bool`, optional) Whether or not to include the path in the redirected URL.
+- `include_query_string` - (`bool`, optional) Whether or not to include the query string in the redirected URL.
 
 
 Type: 
@@ -377,12 +377,12 @@ map(object({
 A map of URL path maps for the Application Gateway.
 
 Every URL path map contains attributes:
-- `name`                                 - (`string`, required) The name of redirect.
-- `backend`                              - (`string`, required) The default backend for redirect.
-- `path_rules`                           - (`map`, optional) The map of rules, where every object has attributes:
-    - `paths`                            - (`list`, required) List of paths
-    - `backend`                          - (`string`, optional) Backend's key
-    - `redirect`                         - (`string`, optional) Redirect's key
+- `name`         - (`string`, required) The name of redirect.
+- `backend`      - (`string`, required) The default backend for redirect.
+- `path_rules`   - (`map`, optional) The map of rules, where every object has attributes:
+    - `paths`    - (`list`, required) List of paths
+    - `backend`  - (`string`, optional) Backend's key
+    - `redirect` - (`string`, optional) Redirect's key
 
 
 Type: 
