@@ -39,9 +39,9 @@ vnets = {
 # --- APPGW PART --- #
 
 appgws = {
-  "public" = {
-    name           = "appgw"
-    public_ip_name = "pip"
+  "public-http-minimum" = {
+    name           = "appgw-http-minimum"
+    public_ip_name = "pip-http-minimum"
     vnet_key       = "transit"
     subnet_key     = "appgw"
     zones          = ["1", "2", "3"]
@@ -78,9 +78,9 @@ appgws = {
       }
     }
   }
-  "public-http" = {
-    name           = "appgw-http"
-    public_ip_name = "pip-http"
+  "public-http-autoscale" = {
+    name           = "appgw-http-autoscale"
+    public_ip_name = "pip-http-autoscale"
     vnet_key       = "transit"
     subnet_key     = "appgw"
     zones          = ["1", "2", "3"]
@@ -126,9 +126,9 @@ appgws = {
   # 3. Create PFX file with key and certificate:
   #    openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
   #    openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
-  "public-ssl" = {
-    name           = "appgw-ssl"
-    public_ip_name = "pip-ssl"
+  "public-ssl-custom" = {
+    name           = "appgw-ssl-custom"
+    public_ip_name = "pip-ssl-custom"
     vnet_key       = "transit"
     subnet_key     = "appgw"
     zones          = ["1", "2", "3"]
