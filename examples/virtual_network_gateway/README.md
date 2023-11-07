@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# VNET module sample
+# VNG module sample
 
-A sample of using a VNET module with the new variables layout and usage of `optional` keyword.
+A sample of using a VNG module with the new variables layout and usage of `optional` keyword.
 
 The `README` is also in new, document-style format.
 
