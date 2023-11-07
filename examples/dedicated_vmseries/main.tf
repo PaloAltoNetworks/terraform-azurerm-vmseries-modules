@@ -53,9 +53,7 @@ module "vnet" {
   address_space = each.value.address_space
 
   create_subnets = each.value.create_subnets
-  subnets = each.value.create_subnets ? {
-    for k, v in each.value.subnets : k => merge(v, { name = "${var.name_prefix}${v.name}" })
-  } : each.value.subnets
+  subnets        = each.value.subnets
 
   network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
