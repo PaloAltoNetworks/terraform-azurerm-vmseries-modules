@@ -83,7 +83,7 @@ variable "capacity" {
   Capacity configuration for Application Gateway.
 
   Object defines static or autoscale configuration using attributes:
-  - `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125 
+  - `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125
                   or null, if autoscale configuration is provided
   - `autoscale` - (`object`, optional) Autoscaling configuration (used only, if static is null) with attributes:
     - `min`     - (`number`, optional) Minimum capacity for autoscaling.
@@ -131,68 +131,51 @@ variable "subnet_id" {
   type        = string
 }
 
-variable "ssl_policy_type" {
+variable "ssl_global" {
   description = <<-EOF
-  Type of an SSL policy.
+  Global SSL settings.
 
-  Possible values are `Predefined` or `Custom` or `CustomV2`.
-  If the value is `Custom` the following values are mandatory:
-  `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
+  SSL settings are defined by attributes:
+  - `ssl_policy_type`                 - (`string`, required) type of an SSL policy. Possible values are `Predefined` or `Custom` or `CustomV2`.
+                                        If the value is `Custom` the following values are mandatory:
+                                        `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
+  - `ssl_policy_name`                 - (`string`, optional) name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`.
+                                        Normally you can set it also for `Custom` policies but the name is discarded
+                                        on Azure side causing an update to Application Gateway each time terraform code is run.
+                                        Therefore this property is omitted in the code for `Custom` policies.
+                                        For the `Predefined` polcies, check the Microsoft documentation
+                                        https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
+                                        for possible values as they tend to change over time.
+                                        The default value is currently (Q1 2023) a Microsoft's default.
+  - `ssl_policy_min_protocol_version` - (`string`, optional) minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`.
+  - `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`.
+                                        For possible values see documentation:
+                                        https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites
   EOF
-  default     = "Predefined"
-  nullable    = false
-  type        = string
-  validation {
-    condition     = contains(["Predefined", "Custom", "CustomV2"], var.ssl_policy_type)
-    error_message = "Possible values are Predefined, Custom and CustomV2."
+  default = {
+    ssl_policy_type                 = "Predefined"
+    ssl_policy_name                 = "AppGwSslPolicy20220101S"
+    ssl_policy_min_protocol_version = null
+    ssl_policy_cipher_suites        = []
   }
-}
-
-variable "ssl_policy_name" {
-  description = <<-EOF
-  Name of an SSL policy.
-
-  Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also
-  for `Custom` policies but the name is discarded on Azure side causing an update
-  to Application Gateway each time terraform code is run.
-  Therefore this property is omitted in the code for `Custom` policies.
-  For the `Predefined` polcies, check the
-  [Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview)
-  for possible values as they tend to change over time. The default value is currently (Q1 2023) a Microsoft's default.
-  EOF
-  default     = "AppGwSslPolicy20220101S"
-  nullable    = false
-  type        = string
-}
-
-variable "ssl_policy_min_protocol_version" {
-  description = <<-EOF
-  Minimum version of the TLS protocol for SSL Policy.
-
-  Required only for `ssl_policy_type` set to `Custom`.
-  Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2`, `TLSv1_3` or `null` (only to be used with a `Predefined` policy).
-  EOF
-  default     = null
-  type        = string
+  nullable = false
+  type = object({
+    ssl_policy_type                 = string
+    ssl_policy_name                 = optional(string)
+    ssl_policy_min_protocol_version = optional(string)
+    ssl_policy_cipher_suites        = optional(list(string))
+  })
   validation {
-    condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(var.ssl_policy_min_protocol_version, "TLSv1_3"))
-    error_message = "Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
+    condition     = contains(["Predefined", "Custom", "CustomV2"], var.ssl_global.ssl_policy_type)
+    error_message = "For global SSL settings possible types are Predefined, Custom and CustomV2."
   }
-}
-
-variable "ssl_policy_cipher_suites" {
-  description = <<-EOF
-  A list of accepted cipher suites.
-
-  Required only for `ssl_policy_type` set to `Custom`.
-  For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
-  EOF
-  default     = ["TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
-  nullable    = false
-  type        = list(string)
   validation {
-    condition     = length(var.ssl_policy_cipher_suites) == 0 || length(setsubtract(var.ssl_policy_cipher_suites, ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"])) == 0
-    error_message = "Possible values are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
+    condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(var.ssl_global.ssl_policy_min_protocol_version, "TLSv1_3"))
+    error_message = "For global SSL settings possible min protocol versions are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
+  }
+  validation {
+    condition     = length(setsubtract(coalesce(var.ssl_global.ssl_policy_cipher_suites, []), ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"])) == 0
+    error_message = "For global SSL settings possible cipher suites are: TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA, TLS_DHE_DSS_WITH_AES_128_CBC_SHA256, TLS_DHE_DSS_WITH_AES_256_CBC_SHA, TLS_DHE_DSS_WITH_AES_256_CBC_SHA256, TLS_DHE_RSA_WITH_AES_128_CBC_SHA, TLS_DHE_RSA_WITH_AES_128_GCM_SHA256, TLS_DHE_RSA_WITH_AES_256_CBC_SHA, TLS_DHE_RSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256, TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384, TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, TLS_RSA_WITH_3DES_EDE_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, TLS_RSA_WITH_AES_128_CBC_SHA256, TLS_RSA_WITH_AES_128_GCM_SHA256, TLS_RSA_WITH_AES_256_CBC_SHA, TLS_RSA_WITH_AES_256_CBC_SHA256 and TLS_RSA_WITH_AES_256_GCM_SHA384."
   }
 }
 
@@ -200,30 +183,23 @@ variable "ssl_profiles" {
   description = <<-EOF
   A map of SSL profiles.
 
-  SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property.
+  SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `name` property.
   For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites`
   variables as SSL profile is a named SSL policy - same properties apply.
   The only difference is that you cannot name an SSL policy inside an SSL profile.
 
   Every SSL profile contains attributes:
   - `name`                            - (`string`, required) name of the SSL profile
-  - `ssl_policy_type`                 - (`string`, optional) the Type of the Policy.
+  - `ssl_policy_name`                 - (`string`, optional) name of predefined policy
   - `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version.
-  - `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites.
+  - `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
   EOF
   type = map(object({
     name                            = string
-    ssl_policy_type                 = optional(string)
+    ssl_policy_name                 = optional(string)
     ssl_policy_min_protocol_version = optional(string)
     ssl_policy_cipher_suites        = optional(list(string))
   }))
-  validation {
-    condition = alltrue(flatten([
-      for _, ssl_profile in var.ssl_profiles : [
-        contains(["Predefined", "Custom", "CustomV2"], coalesce(ssl_profile.ssl_policy_type, "Predefined"))
-    ]]))
-    error_message = "Possible values for `ssl_policy_type` are Predefined, Custom and CustomV2."
-  }
   validation {
     condition = alltrue(flatten([
       for _, ssl_profile in var.ssl_profiles : [

@@ -281,13 +281,15 @@ map(object({
         redirect = optional(string)
       })))
     })), {})
-    ssl_policy_type                 = optional(string)
-    ssl_policy_name                 = optional(string)
-    ssl_policy_min_protocol_version = optional(string)
-    ssl_policy_cipher_suites        = optional(list(string), [])
+    ssl_global = optional(object({
+      ssl_policy_type                 = string
+      ssl_policy_name                 = optional(string)
+      ssl_policy_min_protocol_version = optional(string)
+      ssl_policy_cipher_suites        = optional(list(string))
+    }))
     ssl_profiles = optional(map(object({
       name                            = string
-      ssl_policy_type                 = optional(string)
+      ssl_policy_name                 = optional(string)
       ssl_policy_min_protocol_version = optional(string)
       ssl_policy_cipher_suites        = optional(list(string))
     })), {})

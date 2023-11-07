@@ -77,10 +77,10 @@ resource "azurerm_application_gateway" "this" {
   }
 
   ssl_policy {
-    policy_name          = var.ssl_policy_type == "Predefined" ? var.ssl_policy_name : null
-    policy_type          = var.ssl_policy_type
-    min_protocol_version = var.ssl_policy_min_protocol_version
-    cipher_suites        = var.ssl_policy_cipher_suites
+    policy_name          = var.ssl_global.ssl_policy_type == "Predefined" ? var.ssl_global.ssl_policy_name : null
+    policy_type          = var.ssl_global.ssl_policy_type
+    min_protocol_version = var.ssl_global.ssl_policy_min_protocol_version
+    cipher_suites        = var.ssl_global.ssl_policy_cipher_suites
   }
 
   # The following block is supported only in v2 Application Gateways.
@@ -90,8 +90,8 @@ resource "azurerm_application_gateway" "this" {
     content {
       name = ssl_profile.value.name
       ssl_policy {
-        policy_name          = var.ssl_policy_type == "Predefined" ? var.ssl_policy_name : null
-        policy_type          = ssl_profile.value.ssl_policy_type
+        policy_name          = var.ssl_global.ssl_policy_type == "Predefined" ? ssl_profile.value.ssl_policy_name : null
+        policy_type          = var.ssl_global.ssl_policy_type
         min_protocol_version = ssl_profile.value.ssl_policy_min_protocol_version
         cipher_suites        = ssl_profile.value.ssl_policy_cipher_suites
       }

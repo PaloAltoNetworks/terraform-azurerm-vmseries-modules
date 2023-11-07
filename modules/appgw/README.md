@@ -452,10 +452,7 @@ Name | Type | Description
 [`waf_enabled`](#waf_enabled) | `bool` | Enables WAF Application Gateway.
 [`capacity`](#capacity) | `object` | Capacity configuration for Application Gateway.
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
-[`ssl_policy_type`](#ssl_policy_type) | `string` | Type of an SSL policy.
-[`ssl_policy_name`](#ssl_policy_name) | `string` | Name of an SSL policy.
-[`ssl_policy_min_protocol_version`](#ssl_policy_min_protocol_version) | `string` | Minimum version of the TLS protocol for SSL Policy.
-[`ssl_policy_cipher_suites`](#ssl_policy_cipher_suites) | `list` | A list of accepted cipher suites.
+[`ssl_global`](#ssl_global) | `object` | Global SSL settings.
 [`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | Frontend IP configuration name.
 [`backend_pool`](#backend_pool) | `object` | Backend pool.
 [`backends`](#backends) | `map` | A map of backend settings for the Application Gateway.
@@ -547,23 +544,20 @@ Type: string
 <sup>[back to list](#modules-required-inputs)</sup>
 
 
-
-
-
 #### ssl_profiles
 
 A map of SSL profiles.
 
-SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property.
+SSL profiles can be later on referenced in HTTPS listeners by providing a name of the profile in the `name` property.
 For possible values check the: `ssl_policy_type`, `ssl_policy_min_protocol_version` and `ssl_policy_cipher_suites`
 variables as SSL profile is a named SSL policy - same properties apply.
 The only difference is that you cannot name an SSL policy inside an SSL profile.
 
 Every SSL profile contains attributes:
 - `name`                            - (`string`, required) name of the SSL profile
-- `ssl_policy_type`                 - (`string`, optional) the Type of the Policy.
+- `ssl_policy_name`                 - (`string`, optional) name of predefined policy
 - `ssl_policy_min_protocol_version` - (`string`, optional) the minimal TLS version.
-- `ssl_policy_cipher_suites`        - (`list`, optional) a List of accepted cipher suites.
+- `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
 
 
 Type: 
@@ -571,7 +565,7 @@ Type:
 ```hcl
 map(object({
     name                            = string
-    ssl_policy_type                 = optional(string)
+    ssl_policy_name                 = optional(string)
     ssl_policy_min_protocol_version = optional(string)
     ssl_policy_cipher_suites        = optional(list(string))
   }))
@@ -877,7 +871,7 @@ Default value: `false`
 Capacity configuration for Application Gateway.
 
 Object defines static or autoscale configuration using attributes:
-- `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125 
+- `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125
                 or null, if autoscale configuration is provided
 - `autoscale` - (`object`, optional) Autoscaling configuration (used only, if static is null) with attributes:
   - `min`     - (`number`, optional) Minimum capacity for autoscaling.
@@ -917,65 +911,41 @@ Default value: `&{}`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
-#### ssl_policy_type
+#### ssl_global
 
-Type of an SSL policy.
+Global SSL settings.
 
-Possible values are `Predefined` or `Custom` or `CustomV2`.
-If the value is `Custom` the following values are mandatory:
-`ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
-
-
-Type: string
-
-Default value: `Predefined`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### ssl_policy_name
-
-Name of an SSL policy.
-
-Supported only for `ssl_policy_type` set to `Predefined`. Normally you can set it also
-for `Custom` policies but the name is discarded on Azure side causing an update
-to Application Gateway each time terraform code is run.
-Therefore this property is omitted in the code for `Custom` policies.
-For the `Predefined` polcies, check the
-[Microsoft documentation](https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview)
-for possible values as they tend to change over time. The default value is currently (Q1 2023) a Microsoft's default.
+SSL settings are defined by attributes:
+- `ssl_policy_type`                 - (`string`, required) type of an SSL policy. Possible values are `Predefined` or `Custom` or `CustomV2`.
+                                      If the value is `Custom` the following values are mandatory:
+                                      `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
+- `ssl_policy_name`                 - (`string`, optional) name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`.
+                                      Normally you can set it also for `Custom` policies but the name is discarded
+                                      on Azure side causing an update to Application Gateway each time terraform code is run.
+                                      Therefore this property is omitted in the code for `Custom` policies.
+                                      For the `Predefined` polcies, check the Microsoft documentation
+                                      https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
+                                      for possible values as they tend to change over time.
+                                      The default value is currently (Q1 2023) a Microsoft's default.
+- `ssl_policy_min_protocol_version` - (`string`, optional) minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`.
+- `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`.
+                                      For possible values see documentation:
+                                      https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites
 
 
-Type: string
+Type: 
 
-Default value: `AppGwSslPolicy20220101S`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### ssl_policy_min_protocol_version
-
-Minimum version of the TLS protocol for SSL Policy.
-
-Required only for `ssl_policy_type` set to `Custom`.
-Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2`, `TLSv1_3` or `null` (only to be used with a `Predefined` policy).
+```hcl
+object({
+    ssl_policy_type                 = string
+    ssl_policy_name                 = optional(string)
+    ssl_policy_min_protocol_version = optional(string)
+    ssl_policy_cipher_suites        = optional(list(string))
+  })
+```
 
 
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### ssl_policy_cipher_suites
-
-A list of accepted cipher suites.
-
-Required only for `ssl_policy_type` set to `Custom`.
-For possible values see [documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites).
-
-
-Type: list(string)
-
-Default value: `[TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256 TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384]`
+Default value: `map[ssl_policy_cipher_suites:[] ssl_policy_min_protocol_version:<nil> ssl_policy_name:AppGwSslPolicy20220101S ssl_policy_type:Predefined]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

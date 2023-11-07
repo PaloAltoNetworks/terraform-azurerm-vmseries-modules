@@ -135,19 +135,19 @@ appgws = {
     capacity = {
       static = 2
     }
-    ssl_policy_type                 = "Custom"
-    ssl_policy_min_protocol_version = "TLSv1_0"
-    ssl_policy_cipher_suites        = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
+    ssl_global = {
+      ssl_policy_type                 = "Custom"
+      ssl_policy_min_protocol_version = "TLSv1_0"
+      ssl_policy_cipher_suites        = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
+    }
     ssl_profiles = {
       profile1 = {
         name                            = "appgw-ssl-profile1"
-        ssl_policy_type                 = "Custom"
         ssl_policy_min_protocol_version = "TLSv1_1"
         ssl_policy_cipher_suites        = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
       }
       profile2 = {
         name                            = "appgw-ssl-profile2"
-        ssl_policy_type                 = "Custom"
         ssl_policy_min_protocol_version = "TLSv1_2"
         ssl_policy_cipher_suites        = ["TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
       }
@@ -412,6 +412,139 @@ appgws = {
             redirect = "redirect_url"
           }
         }
+      }
+    }
+  }
+  "public-ssl-predefined" = {
+    name           = "appgw-ssl-predefined"
+    public_ip_name = "pip-ssl-predefined"
+    vnet_key       = "transit"
+    subnet_key     = "appgw"
+    zones          = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    ssl_global = {
+      ssl_policy_type = "Predefined"
+      ssl_policy_name = "AppGwSslPolicy20170401"
+    }
+    ssl_profiles = {
+      profile1 = {
+        name            = "appgw-ssl-profile1"
+        ssl_policy_name = "AppGwSslPolicy20170401S"
+      }
+    }
+    frontend_ip_configuration_name = "public_ipconfig"
+    listeners = {
+      https1 = {
+        name                 = "https1-listener"
+        port                 = 443
+        protocol             = "Https"
+        ssl_profile_name     = "appgw-ssl-profile1"
+        ssl_certificate_path = "./files/test1.pfx"
+        ssl_certificate_pass = ""
+        host_names           = ["test1.appgw.local"]
+      }
+      https2 = {
+        name                 = "https2-listener"
+        port                 = 443
+        protocol             = "Https"
+        ssl_certificate_path = "./files/test2.pfx"
+        ssl_certificate_pass = ""
+        host_names           = ["test2.appgw.local"]
+      }
+    }
+    backend_pool = {
+      name = "vmseries-pool"
+    }
+    backends = {
+      https1 = {
+        name                  = "https1-settings"
+        port                  = 481
+        protocol              = "Https"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+        hostname_from_backend = false
+        hostname              = "test1.appgw.local"
+        root_certs = {
+          test = {
+            name = "https-application-test1"
+            path = "./files/ca-cert1.pem"
+          }
+        }
+      }
+      https2 = {
+        name                  = "https2-settings"
+        port                  = 482
+        protocol              = "Https"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+        hostname_from_backend = false
+        hostname              = "test2.appgw.local"
+        root_certs = {
+          test = {
+            name = "https-application-test2"
+            path = "./files/ca-cert2.pem"
+          }
+        }
+      }
+    }
+    rewrites = {
+      https1 = {
+        name = "https1-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "https1-xff-strip-port"
+            sequence = 100
+            conditions = {
+              "http_resp_X-Forwarded-Proto" = {
+                pattern     = "https"
+                ignore_case = true
+                negate      = true
+              }
+            }
+            request_headers = {
+              "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
+              "X-Forwarded-Proto" = "https"
+            }
+          }
+        }
+      }
+      https2 = {
+        name = "https2-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "https2-xff-strip-port"
+            sequence = 100
+            conditions = {
+              "http_resp_X-Forwarded-Proto" = {
+                pattern     = "https"
+                ignore_case = true
+                negate      = true
+              }
+            }
+            request_headers = {
+              "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
+              "X-Forwarded-Proto" = "https"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      https1 = {
+        name     = "https1-rule"
+        priority = 2
+        backend  = "https1"
+        listener = "https1"
+        rewrite  = "https1"
+      }
+      https2 = {
+        name     = "https2-rule"
+        priority = 3
+        backend  = "https2"
+        listener = "https2"
+        rewrite  = "https2"
       }
     }
   }
