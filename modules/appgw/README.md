@@ -174,18 +174,18 @@ map(object({
 A map of listeners for the Application Gateway.
 
 Every listener contains attributes:
-- `name`                                       - (`string`, required) The name for this Frontend Port.
-- `port`                                       - (`string`, required) The port used for this Frontend Port.
-- `protocol`                                   - (`string`, optional) The Protocol to use for this HTTP Listener.
-- `host_names`                                 - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
-                                                 It allows special wildcard characters.
-- `ssl_profile_name`                           - (`string`, optional) The name of the associated SSL Profile which should be used for this HTTP Listener.
-- `ssl_certificate_path`                       - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
-- `ssl_certificate_pass`                       - (`string`, optional) Password for the pfx file specified in data.
-- `ssl_certificate_vault_id`                   - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
-                                                 or Certificate object stored in Azure KeyVault.
-- `custom_error_pages`                         - (`map`, optional) Map of string, where key is HTTP status code and value is
-                                                 error page URL of the application gateway customer error.
+- `name`                     - (`string`, required) The name for this Frontend Port.
+- `port`                     - (`string`, required) The port used for this Frontend Port.
+- `protocol`                 - (`string`, optional) The Protocol to use for this HTTP Listener.
+- `host_names`               - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
+                               It allows special wildcard characters.
+- `ssl_profile_name`         - (`string`, optional) The name of the associated SSL Profile which should be used for this HTTP Listener.
+- `ssl_certificate_path`     - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
+- `ssl_certificate_pass`     - (`string`, optional) Password for the pfx file specified in data.
+- `ssl_certificate_vault_id` - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
+                               or Certificate object stored in Azure KeyVault.
+- `custom_error_pages`       - (`map`, optional) Map of string, where key is HTTP status code and value is
+                               error page URL of the application gateway customer error.
 
 
 Type: 
@@ -212,8 +212,8 @@ map(object({
 Backend pool.
 
 Object contains attributes:
-- `name`         - (`string`, optional) name of the backend pool.
-- `vmseries_ips` - (`list`, optional) IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway.
+- `name`         - (`string`, optional, defaults to `vmseries`) name of the backend pool.
+- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway.
 
 
 Type: 
@@ -441,7 +441,7 @@ zones = ["1","2","3"]
 
 Type: list(string)
 
-Default value: `&{}`
+Default value: `[1 2 3]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
@@ -609,17 +609,17 @@ Default value: `public_ipconfig`
 A map of backend settings for the Application Gateway.
 
 Every backend contains attributes:
-- `name`                                       - (`string`, optional) The name of the backend settings
-- `path`                                       - (`string`, optional) The Path which should be used as a prefix for all HTTP requests.
-- `hostname_from_backend`                      - (`bool`, optional) Whether host header should be picked from the host name of the backend server.
-- `hostname`                                   - (`string`, optional) Host header to be sent to the backend servers.
-- `port`                                       - (`number`, required) The port which should be used for this Backend HTTP Settings Collection.
-- `protocol`                                   - (`string`, required) The Protocol which should be used. Possible values are Http and Https.
-- `timeout`                                    - (`number`, required) The request timeout in seconds, which must be between 1 and 86400 seconds.
-- `cookie_based_affinity`                      - (`string`, required) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
-- `affinity_cookie_name`                       - (`string`, optional) The name of the affinity cookie.
-- `probe`                                      - (`string`, optional) Probe's key.
-- `root_certs`                                 - (`map`, optional) A list of trusted_root_certificate names.
+- `name`                  - (`string`, optional) The name of the backend settings
+- `path`                  - (`string`, optional) The Path which should be used as a prefix for all HTTP requests.
+- `hostname_from_backend` - (`bool`, optional) Whether host header should be picked from the host name of the backend server.
+- `hostname`              - (`string`, optional) Host header to be sent to the backend servers.
+- `port`                  - (`number`, required) The port which should be used for this Backend HTTP Settings Collection.
+- `protocol`              - (`string`, required) The Protocol which should be used. Possible values are Http and Https.
+- `timeout`               - (`number`, required) The request timeout in seconds, which must be between 1 and 86400 seconds.
+- `cookie_based_affinity` - (`string`, required) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
+- `affinity_cookie_name`  - (`string`, optional) The name of the affinity cookie.
+- `probe`                 - (`string`, optional) Probe's key.
+- `root_certs`            - (`map`, optional) A list of trusted_root_certificate names.
 
 
 Type: 
