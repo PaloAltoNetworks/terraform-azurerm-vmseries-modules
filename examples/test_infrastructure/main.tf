@@ -58,7 +58,7 @@ module "vnet" {
 
 module "vnet_peering" {
   source   = "../../modules/vnet_peering"
-  for_each = { for k, v in var.vnets : k => v if can(v.hub_vnet_name) }
+  for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }
 
 
   local_peer_config = {
