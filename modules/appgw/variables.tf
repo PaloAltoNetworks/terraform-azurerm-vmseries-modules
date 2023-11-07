@@ -497,7 +497,7 @@ variable "rewrites" {
       - `conditions`      - (`map`, optional) One or more condition blocks as defined below:
         - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
                             that evaluates the truthfulness of the condition.
-        - `ignore_case`   - (`string`, required) Perform a case in-sensitive comparison.
+        - `ignore_case`   - (`string`, optional, defaults to `false`) Perform a case in-sensitive comparison.
         - `negate`        - (`bool`, optional, defaults to `false`) Negate the result of the condition evaluation.
       - `request_headers` - (`map`, optional) Map of request header, where header name is the key,
                             header value is the value of the object in the map.
@@ -511,7 +511,7 @@ variable "rewrites" {
       sequence = number
       conditions = optional(map(object({
         pattern     = string
-        ignore_case = string
+        ignore_case = optional(bool, false)
         negate      = optional(bool, false)
       })), {})
       request_headers  = optional(map(string), {})
@@ -538,7 +538,7 @@ variable "rules" {
   - `listener`     - (`string`, required) Listener's key
   - `rewrite`      - (`string`, optional) Rewrite's key
   - `url_path_map` - (`string`, optional) URL Path Map's key
-  - `redirect`     - (`string`, optional) Redirect's ky
+  - `redirect`     - (`string`, optional) Redirect's key
   EOF
   type = map(object({
     name         = string

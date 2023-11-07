@@ -208,11 +208,11 @@ map(object({
       custom_error_pages       = optional(map(string), {})
     }))
     backend_pool = optional(object({
-      name         = optional(string, "vmseries")
+      name         = string
       vmseries_ips = optional(list(string), [])
     }))
     backends = optional(map(object({
-      name                  = optional(string)
+      name                  = string
       path                  = optional(string)
       hostname_from_backend = optional(string)
       hostname              = optional(string)
@@ -246,8 +246,8 @@ map(object({
         sequence = number
         conditions = optional(map(object({
           pattern     = string
-          ignore_case = string
-          negate      = bool
+          ignore_case = optional(bool, false)
+          negate      = optional(bool, false)
         })), {})
         request_headers  = optional(map(string), {})
         response_headers = optional(map(string), {})
