@@ -167,11 +167,10 @@ variable "ssl_policy_min_protocol_version" {
   Required only for `ssl_policy_type` set to `Custom`.
   Possible values are: `TLSv1_0`, `TLSv1_1`, `TLSv1_2`, `TLSv1_3` or `null` (only to be used with a `Predefined` policy).
   EOF
-  default     = "TLSv1_2"
-  nullable    = false
+  default     = null
   type        = string
   validation {
-    condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], var.ssl_policy_min_protocol_version)
+    condition     = contains(["TLSv1_0", "TLSv1_1", "TLSv1_2", "TLSv1_3"], coalesce(var.ssl_policy_min_protocol_version, "TLSv1_3"))
     error_message = "Possible values are TLSv1_0, TLSv1_1, TLSv1_2 and TLSv1_3."
   }
 }
@@ -428,10 +427,10 @@ variable "probes" {
   - `path`       - (`string`, required) The path used for this Probe
   - `host`       - (`string`, optional) The hostname used for this Probe
   - `port`       - (`number`, optional) Custom port which will be used for probing the backend servers.
-  - `protocol`   - (`string`, optional) The protocol which should be used.
-  - `interval`   - (`number`, optional) The interval between two consecutive probes in seconds.
-  - `timeout`    - (`number`, optional) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
-  - `threshold`  - (`number`, optional) The unhealthy Threshold for this Probe, which indicates
+  - `protocol`   - (`string`, optional, defaults `Http`) The protocol which should be used.
+  - `interval`   - (`number`, optional, defaults `5`) The interval between two consecutive probes in seconds.
+  - `timeout`    - (`number`, optional, defaults `30`) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
+  - `threshold`  - (`number`, optional, defaults `2`) The unhealthy Threshold for this Probe, which indicates
                    the amount of retries which should be attempted before a node is deemed unhealthy.
   - `match_code` - (`list`, optional) The list of allowed status codes for this Health Probe.
   - `match_body` - (`string`, optional) A snippet from the Response Body which must be present in the Response.
@@ -490,7 +489,7 @@ variable "rewrites" {
   A map of rewrites for the Application Gateway.
 
   Every rewrite contains attributes:
-  - `name`                - (`string`, optional) Rewrite Rule Set name
+  - `name`                - (`string`) Rewrite Rule Set name
   - `rules`               - (`object`, optional) Rewrite Rule Set defined with attributes:
       - `name`            - (`string`, required) Rewrite Rule name.
       - `sequence`        - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
@@ -505,7 +504,7 @@ variable "rewrites" {
                             header value is the value of the object in the map.
   EOF
   type = map(object({
-    name = optional(string)
+    name = string
     rules = optional(map(object({
       name     = string
       sequence = number
