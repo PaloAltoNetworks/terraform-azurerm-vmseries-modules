@@ -434,7 +434,6 @@ Name | Type | Description
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
 [`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
-[`backend_pool`](#backend_pool) | `object` | Backend pool.
 [`probes`](#probes) | `map` | A map of probes for the Application Gateway.
 [`rewrites`](#rewrites) | `map` | A map of rewrites for the Application Gateway.
 [`rules`](#rules) | `map` | A map of rules for the Application Gateway.
@@ -460,6 +459,7 @@ Name | Type | Description
 [`ssl_policy_min_protocol_version`](#ssl_policy_min_protocol_version) | `string` | Minimum version of the TLS protocol for SSL Policy.
 [`ssl_policy_cipher_suites`](#ssl_policy_cipher_suites) | `list` | A list of accepted cipher suites.
 [`frontend_ip_configuration_name`](#frontend_ip_configuration_name) | `string` | Frontend IP configuration name.
+[`backend_pool`](#backend_pool) | `object` | Backend pool.
 [`backends`](#backends) | `map` | A map of backend settings for the Application Gateway.
 
 
@@ -623,26 +623,6 @@ map(object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### backend_pool
-
-Backend pool.
-
-Object contains attributes:
-- `name`         - (`string`, optional, defaults to `vmseries`) name of the backend pool.
-- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway.
-
-
-Type: 
-
-```hcl
-object({
-    name         = optional(string, "vmseries")
-    vmseries_ips = optional(list(string), [])
-  })
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
 
 
 #### probes
@@ -696,7 +676,7 @@ Every rewrite contains attributes:
       - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
                           that evaluates the truthfulness of the condition.
       - `ignore_case`   - (`string`, required) Perform a case in-sensitive comparison.
-      - `negate`        - (`bool`, required) Negate the result of the condition evaluation.
+      - `negate`        - (`bool`, optional, defaults to `false`) Negate the result of the condition evaluation.
     - `request_headers` - (`map`, optional) Map of request header, where header name is the key,
                           header value is the value of the object in the map.
     - `response_headers`- (`map`, optional) Map of response header, where header name is the key,
@@ -714,7 +694,7 @@ map(object({
       conditions = optional(map(object({
         pattern     = string
         ignore_case = string
-        negate      = bool
+        negate      = optional(bool, false)
       })), {})
       request_headers  = optional(map(string), {})
       response_headers = optional(map(string), {})
@@ -1019,6 +999,28 @@ Default value: `public_ipconfig`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
+#### backend_pool
+
+Backend pool.
+
+Object contains attributes:
+- `name`         - (`string`, required) name of the backend pool.
+- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway.
+
+
+Type: 
+
+```hcl
+object({
+    name         = string
+    vmseries_ips = optional(list(string), [])
+  })
+```
+
+
+Default value: `map[name:vmseries]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### backends
 
@@ -1060,7 +1062,7 @@ map(object({
 ```
 
 
-Default value: `map[vmseries:map[cookie_based_affinity:Enabled port:80 protocol:Http timeout:60]]`
+Default value: `map[minimum:map[name:minimum]]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

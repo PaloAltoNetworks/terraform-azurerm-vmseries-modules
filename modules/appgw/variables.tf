@@ -335,11 +335,15 @@ variable "backend_pool" {
   Backend pool.
 
   Object contains attributes:
-  - `name`         - (`string`, optional, defaults to `vmseries`) name of the backend pool.
+  - `name`         - (`string`, required) name of the backend pool.
   - `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway.
   EOF
+  default = {
+    name = "vmseries"
+  }
+  nullable = false
   type = object({
-    name         = optional(string, "vmseries")
+    name         = string
     vmseries_ips = optional(list(string), [])
   })
 }
@@ -362,11 +366,8 @@ variable "backends" {
   - `root_certs`            - (`map`, optional) A list of trusted_root_certificate names.
   EOF
   default = {
-    "vmseries" = {
-      port                  = 80
-      protocol              = "Http"
-      timeout               = 60
-      cookie_based_affinity = "Enabled"
+    "minimum" = {
+      name = "minimum"
     }
   }
   nullable = false
@@ -497,7 +498,7 @@ variable "rewrites" {
         - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
                             that evaluates the truthfulness of the condition.
         - `ignore_case`   - (`string`, required) Perform a case in-sensitive comparison.
-        - `negate`        - (`bool`, required) Negate the result of the condition evaluation.
+        - `negate`        - (`bool`, optional, defaults to `false`) Negate the result of the condition evaluation.
       - `request_headers` - (`map`, optional) Map of request header, where header name is the key,
                             header value is the value of the object in the map.
       - `response_headers`- (`map`, optional) Map of response header, where header name is the key,
@@ -511,7 +512,7 @@ variable "rewrites" {
       conditions = optional(map(object({
         pattern     = string
         ignore_case = string
-        negate      = bool
+        negate      = optional(bool, false)
       })), {})
       request_headers  = optional(map(string), {})
       response_headers = optional(map(string), {})

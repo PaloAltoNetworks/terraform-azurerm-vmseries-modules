@@ -168,10 +168,7 @@ variable "appgws" {
     backend_pool = optional(object({
       name         = optional(string, "vmseries")
       vmseries_ips = optional(list(string), [])
-      }), {
-      name         = "vmseries"
-      vmseries_ips = []
-    })
+    }))
     backends = optional(map(object({
       name                  = optional(string)
       path                  = optional(string)
@@ -187,15 +184,7 @@ variable "appgws" {
         name = string
         path = string
       })), {})
-      })), {
-      "minimum" = {
-        name                  = "minimum"
-        port                  = 80
-        protocol              = "Http"
-        timeout               = 60
-        cookie_based_affinity = "Enabled"
-      }
-    })
+    })))
     probes = optional(map(object({
       name       = string
       path       = string
