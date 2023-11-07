@@ -715,7 +715,7 @@ A key is an application name that is used to prefix all components inside Applic
 Every rule contains attributes:
 - `name`         - (`string`, required) Rule name.
 - `priority`     - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
-- `backend`      - (`string`, optional, defaults to `minimum`) Backend settings` key
+- `backend`      - (`string`, optional) Backend settings` key
 - `listener`     - (`string`, required) Listener's key
 - `rewrite`      - (`string`, optional) Rewrite's key
 - `url_path_map` - (`string`, optional) URL Path Map's key
@@ -728,7 +728,7 @@ Type:
 map(object({
     name         = string
     priority     = number
-    backend      = optional(string, "minimum")
+    backend      = optional(string)
     listener     = string
     rewrite      = optional(string)
     url_path_map = optional(string)
