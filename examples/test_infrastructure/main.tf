@@ -46,9 +46,7 @@ module "vnet" {
   address_space = each.value.address_space
 
   create_subnets = each.value.create_subnets
-  subnets = each.value.create_subnets ? {
-    for k, v in each.value.subnets : k => merge(v, { name = v.name })
-  } : each.value.subnets
+  subnets        = each.value.subnets
 
   network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
@@ -60,7 +58,7 @@ module "vnet" {
 
 module "vnet_peering" {
   source   = "../../modules/vnet_peering"
-  for_each = { for k, v in var.vnets : k => v if can(v.hub_vnet_name) }
+  for_each = { for k, v in var.vnets : k => v if v.hub_vnet_name != null }
 
 
   local_peer_config = {
