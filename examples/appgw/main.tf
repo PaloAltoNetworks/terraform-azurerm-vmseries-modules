@@ -52,8 +52,6 @@ module "appgw" {
   managed_identities = each.value.managed_identities
   waf_enabled        = each.value.waf_enabled
   capacity           = each.value.capacity
-  capacity_min       = each.value.capacity_min
-  capacity_max       = each.value.capacity_max
   enable_http2       = each.value.enable_http2
   zones              = each.value.zones
 

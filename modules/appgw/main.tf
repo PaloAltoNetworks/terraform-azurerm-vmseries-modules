@@ -39,15 +39,15 @@ resource "azurerm_application_gateway" "this" {
   sku {
     name     = var.waf_enabled ? "WAF_v2" : "Standard_v2"
     tier     = var.waf_enabled ? "WAF_v2" : "Standard_v2"
-    capacity = var.capacity_min == null ? var.capacity : null
+    capacity = var.capacity.static != null ? var.capacity.static : null
   }
 
   dynamic "autoscale_configuration" {
-    for_each = var.capacity_min != null ? [1] : []
+    for_each = var.capacity.autoscale != null ? [1] : []
 
     content {
-      min_capacity = var.capacity_min
-      max_capacity = var.capacity_max
+      min_capacity = var.capacity.autoscale.min
+      max_capacity = var.capacity.autoscale.max
     }
   }
 

@@ -450,9 +450,7 @@ Name | Type | Description
 [`domain_name_label`](#domain_name_label) | `string` | Label for the Domain Name.
 [`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
 [`waf_enabled`](#waf_enabled) | `bool` | Enables WAF Application Gateway.
-[`capacity`](#capacity) | `number` | A number of Application Gateway instances.
-[`capacity_min`](#capacity_min) | `number` | When set enables autoscaling and becomes the minimum capacity.
-[`capacity_max`](#capacity_max) | `number` | Optional, maximum capacity for autoscaling.
+[`capacity`](#capacity) | `object` | Capacity configuration for Application Gateway.
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
 [`ssl_policy_type`](#ssl_policy_type) | `string` | Type of an SSL policy.
 [`ssl_policy_name`](#ssl_policy_name) | `string` | Name of an SSL policy.
@@ -531,8 +529,6 @@ Name for the public IP address.
 Type: string
 
 <sup>[back to list](#modules-required-inputs)</sup>
-
-
 
 
 
@@ -878,34 +874,30 @@ Default value: `false`
 
 #### capacity
 
-A number of Application Gateway instances. A value bewteen 1 and 125.
+Capacity configuration for Application Gateway.
 
-This property is not used when autoscaling is enabled.
+Object defines static or autoscale configuration using attributes:
+- `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125 
+                or null, if autoscale configuration is provided
+- `autoscale` - (`object`, optional) Autoscaling configuration (used only, if static is null) with attributes:
+  - `min`     - (`number`, optional) Minimum capacity for autoscaling.
+  - `max`     - (`number`, optional) Maximum capacity for autoscaling.
 
 
-Type: number
+Type: 
 
-Default value: `2`
+```hcl
+object({
+    static = optional(number)
+    autoscale = optional(object({
+      min = optional(number)
+      max = optional(number)
+    }))
+  })
+```
 
-<sup>[back to list](#modules-optional-inputs)</sup>
 
-#### capacity_min
-
-When set enables autoscaling and becomes the minimum capacity.
-
-Type: number
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### capacity_max
-
-Optional, maximum capacity for autoscaling.
-
-Type: number
-
-Default value: `&{}`
+Default value: `map[static:2]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

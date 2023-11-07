@@ -45,7 +45,9 @@ appgws = {
     vnet_key       = "transit"
     subnet_key     = "appgw"
     zones          = ["1", "2", "3"]
-    capacity       = 2
+    capacity = {
+      static = 2
+    }
     listeners = {
       minimum = {
         name = "minimum-listener"
@@ -82,7 +84,12 @@ appgws = {
     vnet_key       = "transit"
     subnet_key     = "appgw"
     zones          = ["1", "2", "3"]
-    capacity       = 2
+    capacity = {
+      autoscale = {
+        min = 2
+        max = 20
+      }
+    }
     backends = {
       http = {
         name                  = "http-backend"
@@ -120,12 +127,14 @@ appgws = {
   #    openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
   #    openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
   "public-ssl" = {
-    name                            = "appgw-ssl"
-    public_ip_name                  = "pip-ssl"
-    vnet_key                        = "transit"
-    subnet_key                      = "appgw"
-    zones                           = ["1", "2", "3"]
-    capacity                        = 2
+    name           = "appgw-ssl"
+    public_ip_name = "pip-ssl"
+    vnet_key       = "transit"
+    subnet_key     = "appgw"
+    zones          = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
     ssl_policy_type                 = "Custom"
     ssl_policy_min_protocol_version = "TLSv1_0"
     ssl_policy_cipher_suites        = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]

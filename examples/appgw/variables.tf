@@ -119,9 +119,7 @@ variable "appgws" {
   - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
   - `waf_enabled`                       - (`bool`, optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`
-  - `capacity`                          - (`number`, optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)
-  - `capacity_min`                      - (`number`, optional) when set enables autoscaling and becomes the minimum capacity
-  - `capacity_max`                      - (`number`, optional) maximum capacity for autoscaling
+  - `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
   - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
   - `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
   - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
@@ -141,15 +139,19 @@ variable "appgws" {
   - `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
   EOF
   type = map(object({
-    name                           = string
-    public_ip_name                 = string
-    vnet_key                       = string
-    subnet_key                     = string
-    managed_identities             = optional(list(string))
-    waf_enabled                    = optional(bool, false)
-    capacity                       = optional(number)
-    capacity_min                   = optional(number)
-    capacity_max                   = optional(number)
+    name               = string
+    public_ip_name     = string
+    vnet_key           = string
+    subnet_key         = string
+    managed_identities = optional(list(string))
+    waf_enabled        = optional(bool, false)
+    capacity = object({
+      static = optional(number)
+      autoscale = optional(object({
+        min = optional(number)
+        max = optional(number)
+      }))
+    })
     enable_http2                   = optional(bool)
     zones                          = list(string)
     frontend_ip_configuration_name = optional(string, "public_ipconfig")

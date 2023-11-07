@@ -80,29 +80,34 @@ variable "waf_enabled" {
 
 variable "capacity" {
   description = <<-EOF
-  A number of Application Gateway instances. A value bewteen 1 and 125.
+  Capacity configuration for Application Gateway.
 
-  This property is not used when autoscaling is enabled.
+  Object defines static or autoscale configuration using attributes:
+  - `static`    - (`number`, optional) A static number of Application Gateway instances. A value bewteen 1 and 125 
+                  or null, if autoscale configuration is provided
+  - `autoscale` - (`object`, optional) Autoscaling configuration (used only, if static is null) with attributes:
+    - `min`     - (`number`, optional) Minimum capacity for autoscaling.
+    - `max`     - (`number`, optional) Maximum capacity for autoscaling.
   EOF
-  default     = 2
-  nullable    = false
-  type        = number
-  validation {
-    condition     = var.capacity >= 1 && var.capacity <= 125
-    error_message = "When using a V2 SKU this value must be between 1 to 125."
+  default = {
+    static = 2
   }
-}
-
-variable "capacity_min" {
-  description = "When set enables autoscaling and becomes the minimum capacity."
-  default     = null
-  type        = number
-}
-
-variable "capacity_max" {
-  description = "Optional, maximum capacity for autoscaling."
-  default     = null
-  type        = number
+  nullable = false
+  type = object({
+    static = optional(number)
+    autoscale = optional(object({
+      min = optional(number)
+      max = optional(number)
+    }))
+  })
+  validation {
+    condition     = coalesce(var.capacity.static, 1) >= 1 && coalesce(var.capacity.static, 125) <= 125
+    error_message = "Static number of Application Gateway instances must be between 1 to 125."
+  }
+  validation {
+    condition     = var.capacity.static != null && var.capacity.autoscale == null || var.capacity.static == null && var.capacity.autoscale != null
+    error_message = "Only 1 capacity configuration can be used - static or autoscale."
+  }
 }
 
 variable "managed_identities" {
