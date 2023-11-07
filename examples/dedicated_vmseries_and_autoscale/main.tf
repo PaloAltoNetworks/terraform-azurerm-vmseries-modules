@@ -162,8 +162,6 @@ module "appgw" {
   managed_identities = each.value.managed_identities
   waf_enabled        = each.value.waf_enabled
   capacity           = each.value.capacity
-  capacity_min       = each.value.capacity_min
-  capacity_max       = each.value.capacity_max
   enable_http2       = each.value.enable_http2
   zones              = each.value.zones
 
@@ -177,11 +175,8 @@ module "appgw" {
   redirects                      = each.value.redirects
   url_path_maps                  = each.value.url_path_maps
 
-  ssl_policy_type                 = each.value.ssl_policy_type
-  ssl_policy_name                 = each.value.ssl_policy_name
-  ssl_policy_min_protocol_version = each.value.ssl_policy_min_protocol_version
-  ssl_policy_cipher_suites        = each.value.ssl_policy_cipher_suites
-  ssl_profiles                    = each.value.ssl_profiles
+  ssl_global   = each.value.ssl_global
+  ssl_profiles = each.value.ssl_profiles
 
   tags       = var.tags
   depends_on = [module.vnet]

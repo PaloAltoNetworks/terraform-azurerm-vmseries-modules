@@ -380,7 +380,7 @@ variable "vmss" {
 
 
 
-# Application Gateway
+### Application Gateway
 variable "appgws" {
   description = <<-EOF
   A map defining all Application Gateways in the current deployment.
@@ -394,9 +394,7 @@ variable "appgws" {
   - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
   - `waf_enabled`                       - (`bool`, optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`
-  - `capacity`                          - (`number`, optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)
-  - `capacity_min`                      - (`number`, optional) when set enables autoscaling and becomes the minimum capacity
-  - `capacity_max`                      - (`number`, optional) maximum capacity for autoscaling
+  - `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
   - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
   - `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
   - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
@@ -416,15 +414,19 @@ variable "appgws" {
   - `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
   EOF
   type = map(object({
-    name                           = string
-    public_ip_name                 = string
-    vnet_key                       = string
-    subnet_key                     = string
-    managed_identities             = optional(list(string))
-    waf_enabled                    = optional(bool, false)
-    capacity                       = optional(number)
-    capacity_min                   = optional(number)
-    capacity_max                   = optional(number)
+    name               = string
+    public_ip_name     = string
+    vnet_key           = string
+    subnet_key         = string
+    managed_identities = optional(list(string))
+    waf_enabled        = optional(bool, false)
+    capacity = object({
+      static = optional(number)
+      autoscale = optional(object({
+        min = optional(number)
+        max = optional(number)
+      }))
+    })
     enable_http2                   = optional(bool)
     zones                          = list(string)
     frontend_ip_configuration_name = optional(string, "public_ipconfig")
@@ -441,14 +443,11 @@ variable "appgws" {
       custom_error_pages       = optional(map(string), {})
     }))
     backend_pool = optional(object({
-      name         = optional(string, "vmseries")
+      name         = string
       vmseries_ips = optional(list(string), [])
-      }), {
-      name         = "vmseries"
-      vmseries_ips = []
-    })
+    }))
     backends = optional(map(object({
-      name                  = optional(string)
+      name                  = string
       path                  = optional(string)
       hostname_from_backend = optional(string)
       hostname              = optional(string)
@@ -462,15 +461,7 @@ variable "appgws" {
         name = string
         path = string
       })), {})
-      })), {
-      "minimum" = {
-        name                  = "minimum"
-        port                  = 80
-        protocol              = "Http"
-        timeout               = 60
-        cookie_based_affinity = "Enabled"
-      }
-    })
+    })))
     probes = optional(map(object({
       name       = string
       path       = string
@@ -490,8 +481,8 @@ variable "appgws" {
         sequence = number
         conditions = optional(map(object({
           pattern     = string
-          ignore_case = string
-          negate      = bool
+          ignore_case = optional(bool, false)
+          negate      = optional(bool, false)
         })), {})
         request_headers  = optional(map(string), {})
         response_headers = optional(map(string), {})
@@ -523,13 +514,15 @@ variable "appgws" {
         redirect = optional(string)
       })))
     })), {})
-    ssl_policy_type                 = optional(string)
-    ssl_policy_name                 = optional(string)
-    ssl_policy_min_protocol_version = optional(string)
-    ssl_policy_cipher_suites        = optional(list(string), [])
+    ssl_global = optional(object({
+      ssl_policy_type                 = string
+      ssl_policy_name                 = optional(string)
+      ssl_policy_min_protocol_version = optional(string)
+      ssl_policy_cipher_suites        = optional(list(string))
+    }))
     ssl_profiles = optional(map(object({
       name                            = string
-      ssl_policy_type                 = optional(string)
+      ssl_policy_name                 = optional(string)
       ssl_policy_min_protocol_version = optional(string)
       ssl_policy_cipher_suites        = optional(list(string))
     })), {})

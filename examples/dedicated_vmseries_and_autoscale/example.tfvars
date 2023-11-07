@@ -184,7 +184,9 @@ appgws = {
     vnet_key       = "transit"
     subnet_key     = "appgw"
     zones          = ["1", "2", "3"]
-    capacity       = 2
+    capacity = {
+      static = 2
+    }
     listeners = {
       minimum = {
         name = "minimum-listener"
