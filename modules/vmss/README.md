@@ -96,7 +96,6 @@ Name | Type | Description
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`authentication`](#authentication) | `object` | A map defining authentication settings (including username and password).
 [`vm_image_configuration`](#vm_image_configuration) | `object` | Basic Azure VM configuration.
-[`scale_set_configuration`](#scale_set_configuration) | `object` | Scale set parameters configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interfaces specifications.
 
 
@@ -105,6 +104,7 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
+[`scale_set_configuration`](#scale_set_configuration) | `object` | Scale set parameters configuration.
 [`bootstrap_options`](#bootstrap_options) | `string` | Bootstrap options to pass to VM-Series instance.
 [`diagnostics_storage_uri`](#diagnostics_storage_uri) | `string` | The storage account's blob endpoint to hold diagnostic files.
 [`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies
@@ -118,17 +118,7 @@ Following properties are available:
                                     to compare the metrics to the thresholds
 - `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
                                     during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
-[`autoscale_count_minimum`](#autoscale_count_minimum) | `number` | The minimum number of instances that should be present in the scale set.
-[`autoscale_count_maximum`](#autoscale_count_maximum) | `number` | The maximum number of instances that should be present in the scale set.
-[`autoscale_metrics`](#autoscale_metrics) | `map` | Map of objects, where each key is the metric name to be used for autoscaling.
-[`scaleout_statistic`](#scaleout_statistic) | `string` | Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines.
-[`scaleout_time_aggregation`](#scaleout_time_aggregation) | `string` | Specifies how the metric should be combined over the time `scaleout_window_minutes`.
-[`scaleout_window_minutes`](#scaleout_window_minutes) | `number` | This is amount of time in minutes that autoscale engine will look back for metrics.
-[`scaleout_cooldown_minutes`](#scaleout_cooldown_minutes) | `number` | Azure only considers adding a VM after this number of minutes has passed since the last VM scaling action.
-[`scalein_statistic`](#scalein_statistic) | `string` | Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines.
-[`scalein_time_aggregation`](#scalein_time_aggregation) | `string` | Specifies how the metric should be combined over the time `scalein_window_minutes`.
-[`scalein_window_minutes`](#scalein_window_minutes) | `number` | This is amount of time in minutes that autoscale engine will look back for metrics.
-[`scalein_cooldown_minutes`](#scalein_cooldown_minutes) | `number` | Azure only considers deleting a VM after this number of minutes has passed since the last VM scaling action.
+[`autoscaling_profiles`](#autoscaling_profiles) | `list` | A list defining autoscaling profiles.
 
 
 
@@ -137,6 +127,7 @@ Following properties are available:
 Name |  Description
 --- | ---
 `scale_set_name` | Name of the created scale set.
+`dt_string` | 
 
 ## Module's Nameplate
 
@@ -263,64 +254,6 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### scale_set_configuration
-
-Scale set parameters configuration.
-
-This map contains basic, as well as some optional Virtual Machine Scale Set parameters. Both types contain sane defaults.
-Nevertheless they should be at least reviewed to meet deployment requirements.
-
-List of either required or important properties: 
-
-- `vm_size`               - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
-                            Deployment Guide* as only a few selected sizes are supported
-- `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
-                            this Scale Set will be created
-- `storage_account_type`  - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
-                            possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
-                            `vm_size` values)
-
-List of other, optional properties: 
-
-- `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
-                                    networking (SR-IOV) for all dataplane network interfaces, this does not affect the
-                                    management interface (always disabled)
-- `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
-                                    used to encrypt this VM's disk
-- `zone_balance`                  - (`bool`, optional, defaults to `true`) when set to `true` VMs in this Scale Set will be
-                                    evenly distributed across configured Availability Zones
-- `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
-                                    by enabling Encryption at Host
-- `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
-- `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
-                                    are used by this Virtual Machine Scale Set
-- `proximity_placement_group_id`  - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
-                                    in which the Virtual Machine Scale Set should be assigned to
-- `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
-                                    limited to a Single Placement Group, which means the number of instances will be capped
-                                    at 100 Virtual Machines
-
-
-
-Type: 
-
-```hcl
-object({
-    vm_size                      = optional(string, "Standard_D3_v2")
-    zones                        = optional(list(string), ["1", "2", "3"])
-    zone_balance                 = optional(bool, true)
-    storage_account_type         = optional(string, "StandardSSD_LRS")
-    accelerated_networking       = optional(bool, true)
-    encryption_at_host_enabled   = optional(bool)
-    overprovision                = optional(bool, true)
-    platform_fault_domain_count  = optional(number)
-    proximity_placement_group_id = optional(string)
-    disk_encryption_set_id       = optional(string)
-  })
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
@@ -390,16 +323,6 @@ list(object({
 
 
 
-
-
-
-
-
-
-
-
-
-
 ### Optional Inputs
 
 
@@ -418,6 +341,67 @@ Default value: `map[]`
 
 
 
+#### scale_set_configuration
+
+Scale set parameters configuration.
+
+This map contains basic, as well as some optional Virtual Machine Scale Set parameters. Both types contain sane defaults.
+Nevertheless they should be at least reviewed to meet deployment requirements.
+
+List of either required or important properties: 
+
+- `vm_size`               - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
+                            Deployment Guide* as only a few selected sizes are supported
+- `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
+                            this Scale Set will be created
+- `storage_account_type`  - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
+                            possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                            `vm_size` values)
+
+List of other, optional properties: 
+
+- `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
+                                    networking (SR-IOV) for all dataplane network interfaces, this does not affect the
+                                    management interface (always disabled)
+- `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
+                                    used to encrypt this VM's disk
+- `zone_balance`                  - (`bool`, optional, defaults to `true`) when set to `true` VMs in this Scale Set will be
+                                    evenly distributed across configured Availability Zones
+- `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
+                                    by enabling Encryption at Host
+- `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
+- `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
+                                    are used by this Virtual Machine Scale Set
+- `proximity_placement_group_id`  - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
+                                    in which the Virtual Machine Scale Set should be assigned to
+- `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
+                                    limited to a Single Placement Group, which means the number of instances will be capped
+                                    at 100 Virtual Machines
+
+
+
+Type: 
+
+```hcl
+object({
+    vm_size                      = optional(string, "Standard_D3_v2")
+    zones                        = optional(list(string), ["1", "2", "3"])
+    zone_balance                 = optional(bool, true)
+    storage_account_type         = optional(string, "StandardSSD_LRS")
+    accelerated_networking       = optional(bool, true)
+    encryption_at_host_enabled   = optional(bool)
+    overprovision                = optional(bool, true)
+    platform_fault_domain_count  = optional(number)
+    proximity_placement_group_id = optional(string)
+    single_placement_group       = optional(bool)
+    disk_encryption_set_id       = optional(string)
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### bootstrap_options
 
@@ -431,7 +415,7 @@ For more details on bootstrapping [see documentation](https://docs.paloaltonetwo
 
 Type: string
 
-Default value: ``
+Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
@@ -485,137 +469,77 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### autoscale_count_minimum
+#### autoscaling_profiles
 
-The minimum number of instances that should be present in the scale set.
+A list defining autoscaling profiles.
 
-Type: number
+> [!Note]
+> The order does matter. The 1<sup>st</sup> profile becomes the default one.
 
-Default value: `2`
+Following properties are available:
 
-<sup>[back to list](#modules-optional-inputs)</sup>
+- `name` - (`string`, required) the name of the profile
+- `minimum_count` - (`number`, required) minimum number of VMs when scaling in
+- `maximum_count` - (`number, required) maximum number of VMs when you scale out
+- `metrics` - (`map`, required) a map defining different metrics used for autoscaling. 
 
-#### autoscale_count_maximum
+  Following metrics are available: `DataPlaneCPUUtilizationPct`, `panSessionUtilization`, `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`.
 
-The maximum number of instances that should be present in the scale set.
+  Each metric definition is a map with two attributes:
 
-Type: number
+  - `scaleout_threshold` - (`number`, required) threshold value which will cause the instance count to grow by 1 VM
+  - `scalein_threshold` - (`number`, required) threshold value which will cause the instance count to decrease by 1 VM
 
-Default value: `5`
+- `scale_out_config` - (`map`, required) a map defining how are metrics analyzed in scale out scenarios. Following properties are available:
 
-<sup>[back to list](#modules-optional-inputs)</sup>
+  - `grain_agregation_type`     - (`string`, required) data agregation 
+  - `window_agregation_type`    - (`string`, required)
+  - `agregation_window_minutes` - (`number`, required)
+  - `cooldown_window_minutes`   - (`number`, required)
 
-#### autoscale_metrics
 
-Map of objects, where each key is the metric name to be used for autoscaling.
-Each value of the map has the attributes `scaleout_threshold` and `scalein_threshold`, which cause the instance count to grow by 1 when metrics are greater or equal, or decrease by 1 when lower or equal, respectively.
-The thresholds are applied to results of metrics' aggregation over a time window.
-Example:
+Type: 
+
+```hcl
+list(object({
+    name          = string
+    minimum_count = number
+    default_count = optional(number)
+    maximum_count = number
+    recurrence = optional(object({
+      timezone   = optional(string)
+      days       = list(string)
+      start_time = string
+      end_time   = string
+    }))
+    scale_rules = optional(list(object({
+      name = string
+      scale_out_config = object({
+        threshold                  = number
+        operator                   = optional(string, ">=")
+        grain_window_minutes       = number
+        grain_aggregation_type     = optional(string, "Average")
+        aggregation_window_minutes = number
+        aggregation_window_type    = optional(string, "Average")
+        cooldown_window_minutes    = number
+        change_count_by            = optional(number, 1)
+      })
+      scale_in_config = object({
+        threshold                  = number
+        operator                   = optional(string, "<=")
+        grain_window_minutes       = number
+        grain_aggregation_type     = optional(string, "Average")
+        aggregation_window_minutes = number
+        aggregation_window_type    = optional(string, "Average")
+        cooldown_window_minutes    = number
+        change_count_by            = optional(number, 1)
+      })
+    })), [])
+  }))
 ```
-{
-  "DataPlaneCPUUtilizationPct" = {
-    scaleout_threshold = 80
-    scalein_threshold  = 20
-  }
-  "panSessionUtilization" = {
-    scaleout_threshold = 80
-    scalein_threshold  = 20
-  }
-}
-```
-
-Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
 
 
-Type: map(any)
-
-Default value: `map[]`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scaleout_statistic
-
-Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max.
-
-Type: string
-
-Default value: `Max`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scaleout_time_aggregation
-
-Specifies how the metric should be combined over the time `scaleout_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total.
-
-Type: string
-
-Default value: `Maximum`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scaleout_window_minutes
-
-This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,
-it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.
-Must be between 5 and 720 minutes.
-
-
-Type: number
-
-Default value: `10`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scaleout_cooldown_minutes
-
-Azure only considers adding a VM after this number of minutes has passed since the last VM scaling action. It should be much higher than `scaleout_window_minutes`, to account both for the VM-Series spin-up time and for the subsequent metrics stabilization time. Must be between 1 and 10080 minutes.
-
-Type: number
-
-Default value: `25`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scalein_statistic
-
-Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max.
-
-Type: string
-
-Default value: `Max`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scalein_time_aggregation
-
-Specifies how the metric should be combined over the time `scalein_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total.
-
-Type: string
-
-Default value: `Maximum`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scalein_window_minutes
-
-This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,
-it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.
-Must be between 5 and 720 minutes.
-
-
-Type: number
-
-Default value: `15`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
-#### scalein_cooldown_minutes
-
-Azure only considers deleting a VM after this number of minutes has passed since the last VM scaling action. Should be higher or equal to `scalein_window_minutes`. Must be between 1 and 10080 minutes.
-
-Type: number
-
-Default value: `2880`
+Default value: `[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

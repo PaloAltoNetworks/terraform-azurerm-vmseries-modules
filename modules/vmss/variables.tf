@@ -45,11 +45,11 @@ variable "authentication" {
     disable_password_authentication = optional(bool, true)
     ssh_keys                        = optional(list(string), [])
   })
-  sensitive = true
-  validation {
-    condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
-    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
-  }
+  # sensitive = true
+  # validation {
+  #   condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
+  #   error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
+  # }
 }
 
 variable "vm_image_configuration" {
@@ -82,13 +82,13 @@ variable "vm_image_configuration" {
     enable_marketplace_plan = optional(bool, true)
     custom_image_id         = optional(string)
   })
-  validation {
-    condition = (var.vm_configuration.custom_image_id != null && vm_configuration.img_version != null
-      ) || (
-      var.vm_configuration.custom_image_id == null && vm_configuration.img_version == null
-    )
-    error_message = "Either `custom_image_id` or `img_version` has to be defined."
-  }
+  # validation {
+  #   condition = (var.vm_configuration.custom_image_id != null && vm_configuration.img_version != null
+  #     ) || (
+  #     var.vm_configuration.custom_image_id == null && vm_configuration.img_version == null
+  #   )
+  #   error_message = "Either `custom_image_id` or `img_version` has to be defined."
+  # }
 }
 
 
@@ -130,6 +130,8 @@ variable "scale_set_configuration" {
                                       at 100 Virtual Machines
 
   EOF
+  default     = {}
+  nullable    = false
   type = object({
     vm_size                      = optional(string, "Standard_D3_v2")
     zones                        = optional(list(string), ["1", "2", "3"])
@@ -140,12 +142,13 @@ variable "scale_set_configuration" {
     overprovision                = optional(bool, true)
     platform_fault_domain_count  = optional(number)
     proximity_placement_group_id = optional(string)
+    single_placement_group       = optional(bool)
     disk_encryption_set_id       = optional(string)
   })
-  validation {
-    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.storage_account_type)
-    error_message = "The `storage_account_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
-  }
+  # validation {
+  #   condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.storage_account_type)
+  #   error_message = "The `storage_account_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+  # }
 }
 
 variable "bootstrap_options" {
@@ -157,10 +160,11 @@ variable "bootstrap_options" {
 
   For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
   EOF
-  default     = ""
-  type        = string
-  nullable    = false
-  sensitive   = true
+  default     = null
+  # default     = ""
+  type = string
+  # nullable    = false
+  sensitive = true
 }
 
 variable "diagnostics_storage_uri" {
@@ -222,10 +226,10 @@ variable "interfaces" {
     appgw_backend_pool_ids = optional(list(string), [])
     pip_domain_name_label  = optional(string)
   }))
-  validation {
-    condition     = length(var.interfaces[0].lb_backend_pool_ids) == 0 && length(var.interfaces[0].appgw_backend_pool_ids) == 0
-    error_message = "The `lb_backend_pool_ids` and `appgw_backend_pool_ids` properties are not acceptable for the 1st (management) interface."
-  }
+  # validation {
+  #   condition     = length(var.interfaces[0].lb_backend_pool_ids) == 0 && length(var.interfaces[0].appgw_backend_pool_ids) == 0
+  #   error_message = "The `lb_backend_pool_ids` and `appgw_backend_pool_ids` properties are not acceptable for the 1st (management) interface."
+  # }
 }
 
 variable "autoscaling_configuration" {
@@ -249,6 +253,7 @@ variable "autoscaling_configuration" {
                                       are just arbitrary identifiers and the values are the webhook URIs
   EOF
   default     = {}
+  nullable    = false
   type = object({
     application_insights_id       = optional(string)
     autoscale_count_default       = optional(number, 2)
@@ -257,119 +262,76 @@ variable "autoscaling_configuration" {
     autoscale_notification_emails = optional(list(string), [])
     autoscale_webhooks_uris       = optional(map(string), {})
   })
-  validation {
-    condition     = contains(["Default", "NewestVM", "OldestVM"], var.autoscaling_configuration.scale_in_policy)
-    error_message = "The `scale_in_policy` property can be one of: `Default`, `NewestVM`, `OldestVM`."
-  }
+  # validation {
+  #   condition     = contains(["Default", "NewestVM", "OldestVM"], var.autoscaling_configuration.scale_in_policy)
+  #   error_message = "The `scale_in_policy` property can be one of: `Default`, `NewestVM`, `OldestVM`."
+  # }
 }
 
-
-
-
-
-variable "autoscale_count_minimum" {
-  description = "The minimum number of instances that should be present in the scale set."
-  default     = 2
-  type        = number
-  nullable    = false
-}
-
-variable "autoscale_count_maximum" {
-  description = "The maximum number of instances that should be present in the scale set."
-  default     = 5
-  type        = number
-  nullable    = false
-}
-
-
-
-variable "autoscale_metrics" {
+variable "autoscaling_profiles" {
   description = <<-EOF
-  Map of objects, where each key is the metric name to be used for autoscaling.
-  Each value of the map has the attributes `scaleout_threshold` and `scalein_threshold`, which cause the instance count to grow by 1 when metrics are greater or equal, or decrease by 1 when lower or equal, respectively.
-  The thresholds are applied to results of metrics' aggregation over a time window.
-  Example:
-  ```
-  {
-    "DataPlaneCPUUtilizationPct" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-    "panSessionUtilization" = {
-      scaleout_threshold = 80
-      scalein_threshold  = 20
-    }
-  }
-  ```
+  A list defining autoscaling profiles.
 
-  Other possible metrics include panSessionActive, panSessionThroughputKbps, panSessionThroughputPps, DataPlanePacketBufferUtilization.
+  > [!Note]
+  > The order does matter. The 1<sup>st</sup> profile becomes the default one.
+
+  Following properties are available:
+
+  - `name` - (`string`, required) the name of the profile
+  - `minimum_count` - (`number`, required) minimum number of VMs when scaling in
+  - `maximum_count` - (`number, required) maximum number of VMs when you scale out
+  - `metrics` - (`map`, required) a map defining different metrics used for autoscaling. 
+
+    Following metrics are available: `DataPlaneCPUUtilizationPct`, `panSessionUtilization`, `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`.
+
+    Each metric definition is a map with two attributes:
+
+    - `scaleout_threshold` - (`number`, required) threshold value which will cause the instance count to grow by 1 VM
+    - `scalein_threshold` - (`number`, required) threshold value which will cause the instance count to decrease by 1 VM
+
+  - `scale_out_config` - (`map`, required) a map defining how are metrics analyzed in scale out scenarios. Following properties are available:
+
+    - `grain_agregation_type`     - (`string`, required) data agregation 
+    - `window_agregation_type`    - (`string`, required)
+    - `agregation_window_minutes` - (`number`, required)
+    - `cooldown_window_minutes`   - (`number`, required)
   EOF
-  default     = {}
-  type        = map(any)
-}
-
-variable "scaleout_statistic" {
-  description = "Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max."
-  default     = "Max"
-  type        = string
+  default     = []
   nullable    = false
+  type = list(object({
+    name          = string
+    minimum_count = number
+    default_count = optional(number)
+    maximum_count = number
+    recurrence = optional(object({
+      timezone   = optional(string)
+      days       = list(string)
+      start_time = string
+      end_time   = string
+    }))
+    scale_rules = optional(list(object({
+      name = string
+      scale_out_config = object({
+        threshold                  = number
+        operator                   = optional(string, ">=")
+        grain_window_minutes       = number
+        grain_aggregation_type     = optional(string, "Average")
+        aggregation_window_minutes = number
+        aggregation_window_type    = optional(string, "Average")
+        cooldown_window_minutes    = number
+        change_count_by            = optional(number, 1)
+      })
+      scale_in_config = object({
+        threshold                  = number
+        operator                   = optional(string, "<=")
+        grain_window_minutes       = number
+        grain_aggregation_type     = optional(string, "Average")
+        aggregation_window_minutes = number
+        aggregation_window_type    = optional(string, "Average")
+        cooldown_window_minutes    = number
+        change_count_by            = optional(number, 1)
+      })
+    })), [])
+  }))
+  # DataPlanePacketBufferUtilization, panSessionThroughputPps, panSessionThroughputKbps, panSessionActive, panSessionUtilization, DataPlaneCPUUtilizationPct
 }
-
-variable "scaleout_time_aggregation" {
-  description = "Specifies how the metric should be combined over the time `scaleout_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total."
-  default     = "Maximum"
-  type        = string
-  nullable    = false
-}
-
-variable "scaleout_window_minutes" {
-  description = <<-EOF
-  This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,
-  it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.
-  Must be between 5 and 720 minutes.
-  EOF
-  default     = 10
-  type        = number
-  nullable    = false
-}
-
-variable "scaleout_cooldown_minutes" {
-  description = "Azure only considers adding a VM after this number of minutes has passed since the last VM scaling action. It should be much higher than `scaleout_window_minutes`, to account both for the VM-Series spin-up time and for the subsequent metrics stabilization time. Must be between 1 and 10080 minutes."
-  default     = 25
-  type        = number
-  nullable    = false
-}
-
-variable "scalein_statistic" {
-  description = "Aggregation to use within each minute (the time grain) for metrics coming from different virtual machines. Possible values are Average, Min and Max."
-  default     = "Max"
-  type        = string
-  nullable    = false
-}
-
-variable "scalein_time_aggregation" {
-  description = "Specifies how the metric should be combined over the time `scalein_window_minutes`. Possible values are Average, Count, Maximum, Minimum, Last and Total."
-  default     = "Maximum"
-  type        = string
-  nullable    = false
-}
-
-variable "scalein_window_minutes" {
-  description = <<-EOF
-  This is amount of time in minutes that autoscale engine will look back for metrics. For example, 10 minutes means that every time autoscale runs,
-  it will query metrics for the past 10 minutes. This allows metrics to stabilize and avoids reacting to transient spikes.
-  Must be between 5 and 720 minutes.
-  EOF
-  default     = 15
-  type        = number
-  nullable    = false
-}
-
-variable "scalein_cooldown_minutes" {
-  description = "Azure only considers deleting a VM after this number of minutes has passed since the last VM scaling action. Should be higher or equal to `scalein_window_minutes`. Must be between 1 and 10080 minutes."
-  default     = 2880
-  type        = number
-  nullable    = false
-}
-
-

@@ -1,3 +1,15 @@
+locals {
+  operator = {
+    ">"  = "GreaterThan"
+    ">=" = "GreaterThanOrEqual"
+    "<"  = "LessThan"
+    "<=" = "LessThanOrEqual"
+    "==" = "Equals"
+    "!=" = "NotEquals"
+  }
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set
 resource "azurerm_linux_virtual_machine_scale_set" "this" {
   name                 = var.name
   computer_name_prefix = null
@@ -54,7 +66,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
   upgrade_mode = "Manual" # See README for more details no this setting.
 
-  custom_data = base64encode(var.bootstrap_options)
+  custom_data = var.bootstrap_options == null ? null : base64encode(var.bootstrap_options)
 
   scale_in {
     rule                   = var.autoscaling_configuration.scale_in_policy
@@ -91,139 +103,315 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
+  boot_diagnostics { storage_account_uri = var.diagnostics_storage_uri }
 
-  boot_diagnostics {
-    storage_account_uri = var.diagnostics_storage_uri
-  }
-
-  identity {
-    type = "SystemAssigned" # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
-  }
-
-
-
-
-
-  tags = var.tags
-
-}
-
-resource "azurerm_monitor_autoscale_setting" "this" {
-  count = length(var.autoscale_metrics) > 0 ? 1 : 0
-
-  name                = "${var.name}-autoscale"
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
-
-  profile {
-    name = "autoscale profile"
-
-    capacity {
-      default = var.autoscaling_configuration.autoscale_count_default
-      minimum = var.autoscale_count_minimum
-      maximum = var.autoscale_count_maximum
-    }
-
-    dynamic "rule" {
-      for_each = var.autoscale_metrics
-
-      content {
-        metric_trigger {
-          metric_name        = rule.key
-          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.autoscaling_configuration.application_insights_id
-          metric_namespace   = "Azure.ApplicationInsights"
-          operator           = "GreaterThanOrEqual"
-          threshold          = rule.value.scaleout_threshold
-
-          statistic        = var.scaleout_statistic
-          time_aggregation = var.scaleout_time_aggregation
-          time_grain       = "PT1M" # PT1M means: Period of Time 1 Minute
-          time_window      = local.scaleout_window
-        }
-
-        scale_action {
-          direction = "Increase"
-          value     = "1"
-          type      = "ChangeCount"
-          cooldown  = local.scaleout_cooldown
-        }
-      }
-    }
-
-    dynamic "rule" {
-      for_each = var.autoscale_metrics
-
-      content {
-        metric_trigger {
-          metric_name        = rule.key
-          metric_resource_id = rule.key == "Percentage CPU" ? azurerm_linux_virtual_machine_scale_set.this.id : var.autoscaling_configuration.application_insights_id
-          metric_namespace   = "Azure.ApplicationInsights"
-          operator           = "LessThanOrEqual"
-          threshold          = rule.value.scalein_threshold
-
-          statistic        = var.scalein_statistic
-          time_aggregation = var.scalein_time_aggregation
-          time_grain       = "PT1M"
-          time_window      = local.scalein_window
-        }
-
-        scale_action {
-          direction = "Decrease"
-          value     = "1"
-          type      = "ChangeCount"
-          cooldown  = local.scalein_cooldown
-        }
-      }
-    }
-  }
-
-  notification {
-    email {
-      custom_emails = var.autoscaling_configuration.autoscale_notification_emails
-    }
-    dynamic "webhook" {
-      for_each = var.autoscaling_configuration.autoscale_webhooks_uris
-
-      content {
-        service_uri = webhook.value
-      }
-    }
-  }
+  identity { type = "SystemAssigned" } # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
 
   tags = var.tags
 }
 
 locals {
-  # Azure demands Period of Time 1 day 12 hours and 30 minutes to be written as "P1DT12H30M".
-  # Note the "T", which we insert only if there are non-zero hours/minutes.
-  # What's worse, time periods "PT61M" and "PT1H1M" are equal for Azure, so Azure corrects them, but they are
-  # considered inequal inside the `terraform plan`.
-  # Using solely the number of minutes ("PT61M") causes a bad Terraform apply loop. The same happens for any string
-  # that Azure decides to correct for us.
-  scaleout_cooldown_minutes = "${var.scaleout_cooldown_minutes % 60}M"
-  scaleout_cooldown_hours   = "${floor(var.scaleout_cooldown_minutes / 60) % 24}H"
-  scaleout_cooldown_days    = "${floor(var.scaleout_cooldown_minutes / (60 * 24))}D"
-  scaleout_cooldown_t       = "T${local.scaleout_cooldown_hours != "0H" ? local.scaleout_cooldown_hours : ""}${local.scaleout_cooldown_minutes != "0M" ? local.scaleout_cooldown_minutes : ""}"
-  scaleout_cooldown         = "P${local.scaleout_cooldown_days != "0D" ? local.scaleout_cooldown_days : ""}${local.scaleout_cooldown_t != "T" ? local.scaleout_cooldown_t : ""}"
-
-  scaleout_window_minutes = "${var.scaleout_window_minutes % 60}M"
-  scaleout_window_hours   = "${floor(var.scaleout_window_minutes / 60) % 24}H"
-  scaleout_window_days    = "${floor(var.scaleout_window_minutes / (60 * 24))}D"
-  scaleout_window_t       = "T${local.scaleout_window_hours != "0H" ? local.scaleout_window_hours : ""}${local.scaleout_window_minutes != "0M" ? local.scaleout_window_minutes : ""}"
-  scaleout_window         = "P${local.scaleout_window_days != "0D" ? local.scaleout_window_days : ""}${local.scaleout_window_t != "T" ? local.scaleout_window_t : ""}"
-
-  scalein_cooldown_minutes = "${var.scalein_cooldown_minutes % 60}M"
-  scalein_cooldown_hours   = "${floor(var.scalein_cooldown_minutes / 60) % 24}H"
-  scalein_cooldown_days    = "${floor(var.scalein_cooldown_minutes / (60 * 24))}D"
-  scalein_cooldown_t       = "T${local.scalein_cooldown_hours != "0H" ? local.scalein_cooldown_hours : ""}${local.scalein_cooldown_minutes != "0M" ? local.scalein_cooldown_minutes : ""}"
-  scalein_cooldown         = "P${local.scalein_cooldown_days != "0D" ? local.scalein_cooldown_days : ""}${local.scalein_cooldown_t != "T" ? local.scalein_cooldown_t : ""}"
-
-  scalein_window_minutes = "${var.scalein_window_minutes % 60}M"
-  scalein_window_hours   = "${floor(var.scalein_window_minutes / 60) % 24}H"
-  scalein_window_days    = "${floor(var.scalein_window_minutes / (60 * 24))}D"
-  scalein_window_t       = "T${local.scalein_window_hours != "0H" ? local.scalein_window_hours : ""}${local.scalein_window_minutes != "0M" ? local.scalein_window_minutes : ""}"
-  scalein_window         = "P${local.scalein_window_days != "0D" ? local.scalein_window_days : ""}${local.scalein_window_t != "T" ? local.scalein_window_t : ""}"
-
-
+  # this loop will pull out all `window_minutes`-like properties from the scaling rules
+  # into one map that can be fed into the `pdt_time` module
+  profile_time_windows_flat = flatten([
+    for profile in var.autoscaling_profiles : [
+      for rule in profile.scale_rules : [
+        [
+          for k, v in rule.scale_out_config :
+          {
+            name  = "${profile.name}-${replace(lower(rule.name), " ", "_")}-scale_out-${k}"
+            value = v
+          }
+          if strcontains(k, "window_minutes")
+        ],
+        [
+          for k, v in rule.scale_in_config :
+          {
+            name  = "${profile.name}-${replace(lower(rule.name), " ", "_")}-scale_in-${k}"
+            value = v
+          }
+          if strcontains(k, "window_minutes")
+        ]
+      ]
+    ]
+  ])
+  profile_time_windows = { for v in local.profile_time_windows_flat : v.name => v.value }
 }
+
+module "ptd_time" {
+  source   = "./time_calculator"
+  for_each = local.profile_time_windows
+  time     = each.value
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_autoscale_setting
+resource "azurerm_monitor_autoscale_setting" "this" {
+  count = length(var.autoscaling_profiles) > 0 ? 1 : 0
+
+  name                = "${var.name}-autoscale-settings"
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
+
+  # the default profile or (when more then one) the profiles representing start times
+  dynamic "profile" {
+    # for_each = length(var.autoscaling_profiles) == 1 ? var.autoscaling_profiles : slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles))
+    for_each = slice(var.autoscaling_profiles, length(var.autoscaling_profiles) == 1 ? 0 : 1, length(var.autoscaling_profiles))
+    content {
+      name = profile.value.name
+
+      capacity {
+        default = profile.value.default_count
+        minimum = profile.value.minimum_count
+        maximum = profile.value.maximum_count
+      }
+
+      dynamic "recurrence" {
+        for_each = profile.value.recurrence != null ? [1] : []
+        content {
+          days     = profile.value.recurrence.days
+          hours    = [split(":", profile.value.recurrence.start_time)[0]]
+          minutes  = [split(":", profile.value.recurrence.start_time)[1]]
+          timezone = profile.value.recurrence.timezone
+        }
+      }
+
+      # scale out rule portion
+      dynamic "rule" {
+        for_each = profile.value.scale_rules
+        content {
+          metric_trigger {
+            metric_name = rule.value.name
+            metric_resource_id = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_out_config.operator]
+
+            threshold        = rule.value.scale_out_config.threshold
+            statistic        = rule.value.scale_out_config.grain_aggregation_type
+            time_aggregation = rule.value.scale_out_config.aggregation_window_type
+            # time_grain       = rule.value.scale_out_config.grain_window_minutes
+            time_grain = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+            # time_window = rule.value.scale_out_config.aggregation_window_minutes
+            time_window = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+          }
+
+          scale_action {
+            direction = "Increase"
+            value     = rule.value.scale_out_config.change_count_by
+            type      = "ChangeCount"
+            # cooldown  = rule.value.scale_out_config.cooldown_window_minutes
+            cooldown = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
+          }
+        }
+      }
+
+      # scale in rule portion
+      dynamic "rule" {
+        for_each = profile.value.scale_rules
+        content {
+          metric_trigger {
+            metric_name = rule.value.name
+            metric_resource_id = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_in_config.operator]
+
+            threshold        = rule.value.scale_in_config.threshold
+            statistic        = rule.value.scale_in_config.grain_aggregation_type
+            time_aggregation = rule.value.scale_in_config.aggregation_window_type
+            # time_grain       = rule.value.scale_in_config.grain_window_minutes
+            time_grain = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string
+            # time_window      = rule.value.scale_in_config.aggregation_window_minutes
+            time_window = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string
+          }
+
+          scale_action {
+            direction = "Decrease"
+            value     = rule.value.scale_in_config.change_count_by
+            type      = "ChangeCount"
+            # cooldown  = rule.value.scale_in_config.cooldown_window_minutes
+            cooldown = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
+          }
+        }
+      }
+    }
+  }
+
+  # for more than one profile, these are the profiles representing end times
+  dynamic "profile" {
+    # for_each = length(var.autoscaling_profiles) == 1 ? var.autoscaling_profiles : slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles))
+    for_each = [for index, profile in var.autoscaling_profiles : profile if index != 0]
+    content {
+      name = "{\"name\":\"${var.autoscaling_profiles[0].name}\",\"for\":\"${profile.value.name}\"}"
+
+      capacity {
+        default = var.autoscaling_profiles[0].default_count
+        minimum = var.autoscaling_profiles[0].minimum_count
+        maximum = var.autoscaling_profiles[0].maximum_count
+      }
+
+      dynamic "recurrence" {
+        for_each = profile.value.recurrence != null ? [1] : []
+        content {
+          days     = profile.value.recurrence.days
+          hours    = [split(":", profile.value.recurrence.end_time)[0]]
+          minutes  = [split(":", profile.value.recurrence.end_time)[1]]
+          timezone = profile.value.recurrence.timezone
+        }
+      }
+
+      # scale out rule portion
+      dynamic "rule" {
+        for_each = var.autoscaling_profiles[0].scale_rules
+        content {
+          metric_trigger {
+            metric_name = rule.value.name
+            metric_resource_id = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_out_config.operator]
+
+            threshold        = rule.value.scale_out_config.threshold
+            statistic        = rule.value.scale_out_config.grain_aggregation_type
+            time_aggregation = rule.value.scale_out_config.aggregation_window_type
+            # time_grain       = rule.value.scale_out_config.grain_window_minutes
+            time_grain = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+            # time_window = rule.value.scale_out_config.aggregation_window_minutes
+            time_window = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+          }
+
+          scale_action {
+            direction = "Increase"
+            value     = rule.value.scale_out_config.change_count_by
+            type      = "ChangeCount"
+            # cooldown  = rule.value.scale_out_config.cooldown_window_minutes
+            cooldown = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
+          }
+        }
+      }
+
+      # scale in rule portion
+      dynamic "rule" {
+        for_each = var.autoscaling_profiles[0].scale_rules
+        content {
+          metric_trigger {
+            metric_name = rule.value.name
+            metric_resource_id = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace = contains(
+              [
+                "DataPlanePacketBufferUtilization",
+                "panSessionThroughputPps",
+                "panSessionThroughputKbps",
+                "panSessionActive",
+                "panSessionUtilization",
+                "DataPlaneCPUUtilizationPct"
+              ],
+              rule.value.name
+            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator = local.operator[rule.value.scale_in_config.operator]
+
+            threshold        = rule.value.scale_in_config.threshold
+            statistic        = rule.value.scale_in_config.grain_aggregation_type
+            time_aggregation = rule.value.scale_in_config.aggregation_window_type
+            # time_grain       = rule.value.scale_in_config.grain_window_minutes
+            time_grain = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string
+            # time_window      = rule.value.scale_in_config.aggregation_window_minutes
+            time_window = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string
+          }
+
+          scale_action {
+            direction = "Decrease"
+            value     = rule.value.scale_in_config.change_count_by
+            type      = "ChangeCount"
+            # cooldown  = rule.value.scale_in_config.cooldown_window_minutes
+            cooldown = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
+          }
+        }
+      }
+
+    }
+
+  }
+  notification {
+    email { custom_emails = var.autoscaling_configuration.autoscale_notification_emails }
+    dynamic "webhook" {
+      for_each = var.autoscaling_configuration.autoscale_webhooks_uris
+      content { service_uri = webhook.value }
+    }
+  }
+
+  tags = var.tags
+}
+
+# TODO: take over the AI module and adjust it
+# TODO: test grain window - if adjustable or not
+# TODO: test what is the base profile if two are overlapping
+# TODO: add possbility to scale to a specific amount of nodes based on a schedule
