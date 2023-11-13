@@ -39,7 +39,7 @@ variable "zones" {
   type        = list(string)
   validation {
     condition     = length(var.zones) > 0 || var.zones == null
-    error_message = "The `var.zones` can either bea non empty list of Availability Zones or explicit `null`."
+    error_message = "The `var.zones` can either be a non empty list of Availability Zones or explicit `null`."
   }
 }
 
