@@ -128,7 +128,27 @@ variable "vm_image_configuration" {
 }
 
 variable "ngfw_metrics" {
-  default = null
+  description = <<-EOF
+  A map defining metrics related resources for Next Generation Firewall.
+
+  All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
+
+  > [!Note]
+  > We do not explicitly define Application Insights instances. Each Virtual Machine Scale Set will receive one automatically.
+  > The name of the Application Insights instance will be derived from the Scale Set name, suffixed with `-ai`.
+
+  Following properties are available:
+
+  - `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+  - `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
+                                  Analytics Workspace
+  - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
+                                  the Log Analytics Workspace
+  - `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
+  - `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
+                                  days, possible values are between 30 and 730.
+  EOF
+  default     = null
   type = object({
     name                      = string
     create_workspace          = optional(bool, true)

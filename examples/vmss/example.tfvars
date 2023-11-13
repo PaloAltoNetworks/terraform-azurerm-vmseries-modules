@@ -42,7 +42,8 @@ vnets = {
 }
 
 ngfw_metrics = {
-  name = "ngwf-log-analytics-wrksp"
+  name                      = "ngwf-log-analytics-wrksp"
+  metrics_retention_in_days = 120
 }
 
 vm_image_configuration = {

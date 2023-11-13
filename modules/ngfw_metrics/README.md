@@ -1,85 +1,228 @@
-# Palo Alto Networks Application Insights Module for Azure
+<!-- BEGIN_TF_DOCS -->
+# Palo Alto Networks Metrics Infrastructure Module for Azure
 
-A Terraform module for deploying a Application Insights in Azure cloud.
+A Terraform module deploying Azure Application Insights (Log Analytics Workspace mode).
 
-Azure AI can be used to gather metric from Palo Alto's VMSeries firewall. This can be done for both a standalone firewall as for a Scale Set deployment.
+The main purpose of this module is to deploy Application Insights that can be used to monitor internal PanOS metrics.
+It will work with both a standalone Next Generation Firewall and ones deployed inside a Virtual Machine Scale Set.
+In both situations the instrumentation key for the Application Insights has to be provided in the firewall's configuration.
+For more information please refer to [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall).
 
-In both situations the instrumentation key for the Application Insights has to be provided in the firewall's configuration. For more information please refer to [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall).
+> [!Note]
+> This module supports only the workspace mode - Azure support for classic Application Insights mode will end on Feb 29th 2024.
 
-**NOTICE**
+This module is designed to deploy (or source) a single Log Analytics Workspace and one or more Application Insights instances
+connected to that workspace.
 
-* Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions. This module by default deploys Application Insights in Workspace mode.
+> [!Important]
+> The metrics gathered within a single Azure Application Insights instance cannot be split back to obtain a result for a single
+> firewall. Thus for example, if three firewalls use the same Instrumentation Key and report their respective session
+> utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is
+> **not possible** to know which of the firewalls reported the 90% utilization.
+> Therefore each firewall (or a Scale Set) should send the metrics to a dedicated Application Insights instance.
 
-* The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split back to obtain a result for a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
+Since upgrade to provider 3.x, when destroying infrastructure a resource is being left behind:
+`microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state nor code, it's being created by
+Azure automatically and therefore it prevents Resource Group deletion.
+A workaround is to set the following provider configuration:
 
-* Since upgrade to provider 3.x, when destroying infrastructure a resource is being left behind: `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state nor code, it's being created by Azure automatically and therefore it prevents resource group deletion. A workaround is to set the following provider configuration:
-
-      provider "azurerm" {
-        features {
-          resource_group {
-            prevent_deletion_if_contains_resources = false
-          }
-        }
-      }
+```hcl
+provider "azurerm" {
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
+}
+```
 
 ## Usage
 
-The following snippet deploys Application Insights in Workspace mode, setting the retention to 1 year.
+The following snippet deploys Log Analytics Workspace and two Application Insights instances (using defaults where possible):
 
 ```hcl
-module "ai" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/application_insights"
+module "ngfw_metrics" {
+  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/ngfw_metrics"
 
-  name                      = "vmseries-ai
-  metrics_retention_in_days = 365
-  location                  = "West US"
-  resource_group_name       = "vmseries-rg"
+  name                = "ngfw-law"
+  resource_group_name = "ngfw-rg"
+  location            = "West US"
+
+  application_insights = {
+    ai1 = { name = "fw1-ai" }
+    ai2 = { name = "fw2-ai" }
+  }
 }
-```  
+```
 
-## Reference
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-### Requirements
+## Module's Required Inputs
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
-| <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) | ~> 3.25 |
+Name | Type | Description
+--- | --- | ---
+[`name`](#name) | `string` | The name of the Azure Log Analytics Workspace.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
+[`application_insights`](#application_insights) | `map` | A map defining Application Insights instances.
 
-### Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | ~> 3.25 |
+## Module's Optional Inputs
 
-### Modules
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
+[`create_workspace`](#create_workspace) | `bool` | Controls creation or sourcing of a Log Analytics Workspace.
+[`log_analytics_config`](#log_analytics_config) | `object` | Configuration of the log analytics workspace.
 
-No modules.
 
-### Resources
 
-| Name | Type |
-|------|------|
-| [azurerm_application_insights.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_insights) | resource |
-| [azurerm_log_analytics_workspace.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) | resource |
+## Module's Outputs
 
-### Inputs
+Name |  Description
+--- | ---
+`metrics_instrumentation_keys` | The Instrumentation Key of the created Application Insights instances.
+`application_insights_ids` | An Azure ID of the created Application Insights instances.
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_name"></a> [name](#input\_name) | Name of the Application Insights instance. | `string` | n/a | yes |
-| <a name="input_workspace_mode"></a> [workspace\_mode](#input\_workspace\_mode) | Application Insights mode. If `true` (default), the 'Workspace-based' mode is used. With `false`, the mode is set to legacy 'Classic'.<br><br>NOTICE. Azure support for classic Application Insights mode will end on Feb 29th 2024. It's already not available in some of the new regions. | `bool` | `true` | no |
-| <a name="input_workspace_name"></a> [workspace\_name](#input\_workspace\_name) | The name of the Log Analytics workspace. Can be `null`, in which case a default name is auto-generated. | `string` | `null` | no |
-| <a name="input_workspace_sku"></a> [workspace\_sku](#input\_workspace\_sku) | Azure Log Analytics Workspace mode SKU. For more information refer to [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-monitor//usage-estimated-costs#moving-to-the-new-pricing-model). | `string` | `"PerGB2018"` | no |
-| <a name="input_metrics_retention_in_days"></a> [metrics\_retention\_in\_days](#input\_metrics\_retention\_in\_days) | Specifies the retention period in days. Possible values are 0, 30, 60, 90, 120, 180, 270, 365, 550 or 730. Azure defaults is 90. | `number` | `null` | no |
-| <a name="input_location"></a> [location](#input\_location) | A name of a region in which the resources will be creatied. | `string` | n/a | yes |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | A name of an existing Resource Group. | `string` | n/a | yes |
-| <a name="input_tags"></a> [tags](#input\_tags) | A map of tags assigned to all resources created by this module. | `map(string)` | `{}` | no |
+## Module's Nameplate
 
-### Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_metrics_instrumentation_key"></a> [metrics\_instrumentation\_key](#output\_metrics\_instrumentation\_key) | The Instrumentation Key of the created instance of Azure Application Insights. <br><br>The instance is unused by default, but is ready to receive custom PAN-OS metrics from the firewalls. To use it, paste this Instrumentation Key into PAN-OS -> Device -> VM-Series -> Azure. |
-| <a name="output_application_insights_id"></a> [application\_insights\_id](#output\_application\_insights\_id) | An Azure ID of the Application Insights resource created by this module. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+Requirements needed by this module:
+
+- `terraform`, version: >= 1.3, < 2.0
+- `azurerm`, version: ~> 3.25
+
+
+Providers used in this module:
+
+- `azurerm`, version: ~> 3.25
+
+
+
+
+Resources used in this module:
+
+- `application_insights` (managed)
+- `log_analytics_workspace` (managed)
+- `log_analytics_workspace` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
+
+
+#### name
+
+The name of the Azure Log Analytics Workspace.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### resource_group_name
+
+The name of the Resource Group to use.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### location
+
+The name of the Azure region to deploy the resources in.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+
+#### application_insights
+
+A map defining Application Insights instances.
+
+Following properties are available:
+
+- `name`                      - (`string`, required) the name of the Application Insights instance
+- `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that will
+                                host the Application Insights instance.
+
+  This property can be handy in case one would like to use an existing Log Analytics Workspace, but for whatever reason the
+  Application Insights instances should be created in a separate Resource Group (due to limited access for example).
+
+- `metrics_retention_in_days` - (`number`, optional, defaults to `var.log_analytics_config.metrics_retention_in_days`)
+                                Application Insights data retention in days, possible values are between 30 and 730.
+
+
+Type: 
+
+```hcl
+map(object({
+    name                      = string
+    resource_group_name       = optional(string)
+    metrics_retention_in_days = optional(number)
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+### Optional Inputs
+
+
+
+
+
+#### tags
+
+The map of tags to assign to all created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### create_workspace
+
+Controls creation or sourcing of a Log Analytics Workspace.
+
+Type: bool
+
+Default value: `true`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### log_analytics_config
+
+Configuration of the log analytics workspace.
+
+Following properties are available:
+
+- `sku`                       - (`string`, optional, defaults to Azure defaults) the SKU of the Log Analytics Workspace.
+
+  As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
+  `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
+
+- `metrics_retention_in_days` - (`number`, optional, defaults to Azure defaults) workspace data retention in days, 
+                                possible values are between 30 and 730.
+
+
+Type: 
+
+```hcl
+object({
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+
+<!-- END_TF_DOCS -->
