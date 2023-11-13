@@ -127,6 +127,17 @@ variable "vm_image_configuration" {
   })
 }
 
+variable "ngfw_metrics" {
+  default = null
+  type = object({
+    name                      = string
+    create_workspace          = optional(bool, true)
+    resource_group_name       = optional(string)
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
+}
+
 variable "scale_sets" {
   default = null
   type = map(object({

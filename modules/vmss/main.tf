@@ -411,5 +411,4 @@ resource "azurerm_monitor_autoscale_setting" "this" {
   tags = var.tags
 }
 
-# TODO: take over the AI module and adjust it
-# TODO: test grain window - if adjustable or not
+# TODO: write the time_calculator module properly + a REDME and name it correctly

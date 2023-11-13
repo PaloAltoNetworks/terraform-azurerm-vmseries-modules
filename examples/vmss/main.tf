@@ -57,6 +57,27 @@ module "vnet" {
   tags = var.tags
 }
 
+module "ngfw_metrics" {
+  source = "../../modules/ngfw_metrics"
+
+  count = var.ngfw_metrics == null ? 0 : 1
+
+  create_workspace = var.ngfw_metrics.create_workspace
+
+  name                = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
+  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
+  location            = var.location
+
+  log_analytics_config = {
+    sku                       = var.ngfw_metrics.sku
+    metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
+  }
+
+  application_insights = { for k, v in var.scale_sets : k => { name = "${var.name_prefix}${v.name}-ai" } }
+
+  tags = var.tags
+}
+
 module "vmss" {
   source = "../../modules/vmss"
 
@@ -80,8 +101,11 @@ module "vmss" {
     }
   ]
 
-  autoscaling_configuration = each.value.autoscaling_configuration
-  autoscaling_profiles      = each.value.autoscaling_profiles
+  autoscaling_configuration = merge(
+    each.value.autoscaling_configuration,
+    { application_insights_id = try(module.ngfw_metrics[0].application_insights_ids[each.key], null) }
+  )
+  autoscaling_profiles = each.value.autoscaling_profiles
 
   tags = var.tags
 }
