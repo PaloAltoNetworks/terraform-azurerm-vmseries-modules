@@ -300,9 +300,9 @@ variable "autoscaling_profiles" {
   nullable    = false
   type = list(object({
     name          = string
-    minimum_count = number
-    default_count = optional(number)
-    maximum_count = number
+    minimum_count = optional(number)
+    default_count = number
+    maximum_count = optional(number)
     recurrence = optional(object({
       timezone   = optional(string)
       days       = list(string)
@@ -324,14 +324,13 @@ variable "autoscaling_profiles" {
       scale_in_config = object({
         threshold                  = number
         operator                   = optional(string, "<=")
-        grain_window_minutes       = number
+        grain_window_minutes       = optional(number)
         grain_aggregation_type     = optional(string, "Average")
-        aggregation_window_minutes = number
+        aggregation_window_minutes = optional(number)
         aggregation_window_type    = optional(string, "Average")
         cooldown_window_minutes    = number
         change_count_by            = optional(number, 1)
       })
     })), [])
   }))
-  # DataPlanePacketBufferUtilization, panSessionThroughputPps, panSessionThroughputKbps, panSessionActive, panSessionUtilization, DataPlaneCPUUtilizationPct
 }

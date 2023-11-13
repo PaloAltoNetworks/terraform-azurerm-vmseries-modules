@@ -51,19 +51,26 @@ scale_sets = {
           {
             name = "Percentage CPU"
             scale_out_config = {
-              grain_window_minutes       = 1 #TODO: check if this is even adjustable
+              threshold                  = 85
+              grain_window_minutes       = 1
               aggregation_window_minutes = 25
               cooldown_window_minutes    = 60
-              threshold                  = 85
             }
             scale_in_config = {
-              grain_window_minutes       = 1
-              aggregation_window_minutes = 30
-              cooldown_window_minutes    = 120
-              threshold                  = 60
+              threshold               = 60
+              cooldown_window_minutes = 120
             }
           }
         ]
+      },
+      {
+        name          = "overlapping profile"
+        default_count = 5
+        recurrence = {
+          days       = ["Friday"]
+          start_time = "10:30"
+          end_time   = "14:00"
+        }
       },
       {
         name          = "weekday_profile"
@@ -79,37 +86,38 @@ scale_sets = {
           {
             name = "Percentage CPU"
             scale_out_config = {
+              threshold                  = 70
               grain_window_minutes       = 5
-              operator                   = ">"
               aggregation_window_minutes = 30
               cooldown_window_minutes    = 60
-              threshold                  = 70
             }
             scale_in_config = {
-              grain_window_minutes       = 5
-              aggregation_window_minutes = 30
-              cooldown_window_minutes    = 120
-              threshold                  = 40
+              threshold               = 40
+              cooldown_window_minutes = 120
             }
           },
           {
             name = "Outbound Flows"
             scale_out_config = {
+              threshold                  = 500
               grain_window_minutes       = 5
-              operator                   = ">"
               aggregation_window_minutes = 30
               cooldown_window_minutes    = 60
-              threshold                  = 500
             }
             scale_in_config = {
-              grain_window_minutes       = 5
-              aggregation_window_minutes = 30
-              cooldown_window_minutes    = 60
-              threshold                  = 400
+              threshold               = 400
+              cooldown_window_minutes = 60
             }
           }
         ]
-      }
+      },
     ]
   }
 }
+
+# validations
+# - minimum, maximum count required when scale_rules != []
+# - operator in list of valid chars
+# - days is a valid list of days
+# - start time, end time are valid hours
+# - maximum number of rules and profiles not exceeded 

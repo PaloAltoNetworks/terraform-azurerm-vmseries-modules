@@ -58,7 +58,8 @@ module "vnet" {
 }
 
 module "vmss" {
-  source   = "../../modules/vmss"
+  source = "../../modules/vmss"
+
   for_each = coalesce(var.scale_sets, {})
 
   name                = "${var.name_prefix}${each.value.name}"
@@ -84,21 +85,3 @@ module "vmss" {
 
   tags = var.tags
 }
-
-# locals {
-#   scaling_rules_flat = flatten(
-#     [
-#       for vmss_name, vmss_definition in var.var.scale_sets : [
-#         for profile in vmss_definition.autoscaling_profiles : [
-#           for rule in profile.scale_rules : {}
-#         ]
-#       ]
-#     ]
-#   )
-# }
-
-# module "time" {
-#   source = "../../modules/vmss/time_calculator"
-
-#   for_each = 
-# }

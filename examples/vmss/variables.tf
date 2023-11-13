@@ -162,9 +162,9 @@ variable "scale_sets" {
     }))
     autoscaling_profiles = list(object({
       name          = string
-      minimum_count = number
-      default_count = optional(number)
-      maximum_count = number
+      minimum_count = optional(number)
+      default_count = number
+      maximum_count = optional(number)
       recurrence = optional(object({
         timezone   = optional(string)
         days       = list(string)
@@ -186,9 +186,9 @@ variable "scale_sets" {
         scale_in_config = object({
           threshold                  = number
           operator                   = optional(string)
-          grain_window_minutes       = number
+          grain_window_minutes       = optional(number)
           grain_aggregation_type     = optional(string)
-          aggregation_window_minutes = number
+          aggregation_window_minutes = optional(number)
           aggregation_window_type    = optional(string)
           cooldown_window_minutes    = number
           change_count_by            = optional(number)

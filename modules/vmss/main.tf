@@ -130,7 +130,7 @@ locals {
             name  = "${profile.name}-${replace(lower(rule.name), " ", "_")}-scale_in-${k}"
             value = v
           }
-          if strcontains(k, "window_minutes")
+          if strcontains(k, "window_minutes") && v != null
         ]
       ]
     ]
@@ -162,8 +162,8 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
       capacity {
         default = profile.value.default_count
-        minimum = profile.value.minimum_count
-        maximum = profile.value.maximum_count
+        minimum = coalesce(profile.value.minimum_count, profile.value.default_count)
+        maximum = coalesce(profile.value.maximum_count, profile.value.default_count)
       }
 
       dynamic "recurrence" {
@@ -209,18 +209,15 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             threshold        = rule.value.scale_out_config.threshold
             statistic        = rule.value.scale_out_config.grain_aggregation_type
             time_aggregation = rule.value.scale_out_config.aggregation_window_type
-            # time_grain       = rule.value.scale_out_config.grain_window_minutes
-            time_grain = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
-            # time_window = rule.value.scale_out_config.aggregation_window_minutes
-            time_window = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+            time_grain       = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+            time_window      = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
           }
 
           scale_action {
             direction = "Increase"
             value     = rule.value.scale_out_config.change_count_by
             type      = "ChangeCount"
-            # cooldown  = rule.value.scale_out_config.cooldown_window_minutes
-            cooldown = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
+            cooldown  = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
           }
         }
       }
@@ -258,18 +255,21 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             threshold        = rule.value.scale_in_config.threshold
             statistic        = rule.value.scale_in_config.grain_aggregation_type
             time_aggregation = rule.value.scale_in_config.aggregation_window_type
-            # time_grain       = rule.value.scale_in_config.grain_window_minutes
-            time_grain = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string
-            # time_window      = rule.value.scale_in_config.aggregation_window_minutes
-            time_window = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string
+            time_grain = try(
+              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string,
+              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+            )
+            time_window = try(
+              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string,
+              module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+            )
           }
 
           scale_action {
             direction = "Decrease"
             value     = rule.value.scale_in_config.change_count_by
             type      = "ChangeCount"
-            # cooldown  = rule.value.scale_in_config.cooldown_window_minutes
-            cooldown = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
+            cooldown  = module.ptd_time["${profile.value.name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
           }
         }
       }
@@ -332,18 +332,15 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             threshold        = rule.value.scale_out_config.threshold
             statistic        = rule.value.scale_out_config.grain_aggregation_type
             time_aggregation = rule.value.scale_out_config.aggregation_window_type
-            # time_grain       = rule.value.scale_out_config.grain_window_minutes
-            time_grain = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
-            # time_window = rule.value.scale_out_config.aggregation_window_minutes
-            time_window = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+            time_grain       = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+            time_window      = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
           }
 
           scale_action {
             direction = "Increase"
             value     = rule.value.scale_out_config.change_count_by
             type      = "ChangeCount"
-            # cooldown  = rule.value.scale_out_config.cooldown_window_minutes
-            cooldown = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
+            cooldown  = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-cooldown_window_minutes"].dt_string
           }
         }
       }
@@ -381,18 +378,21 @@ resource "azurerm_monitor_autoscale_setting" "this" {
             threshold        = rule.value.scale_in_config.threshold
             statistic        = rule.value.scale_in_config.grain_aggregation_type
             time_aggregation = rule.value.scale_in_config.aggregation_window_type
-            # time_grain       = rule.value.scale_in_config.grain_window_minutes
-            time_grain = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string
-            # time_window      = rule.value.scale_in_config.aggregation_window_minutes
-            time_window = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string
+            time_grain = try(
+              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-grain_window_minutes"].dt_string,
+              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-grain_window_minutes"].dt_string
+            )
+            time_window = try(
+              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-aggregation_window_minutes"].dt_string,
+              module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_out-aggregation_window_minutes"].dt_string
+            )
           }
 
           scale_action {
             direction = "Decrease"
             value     = rule.value.scale_in_config.change_count_by
             type      = "ChangeCount"
-            # cooldown  = rule.value.scale_in_config.cooldown_window_minutes
-            cooldown = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
+            cooldown  = module.ptd_time["${var.autoscaling_profiles[0].name}-${replace(lower(rule.value.name), " ", "_")}-scale_in-cooldown_window_minutes"].dt_string
           }
         }
       }
@@ -413,5 +413,3 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
 # TODO: take over the AI module and adjust it
 # TODO: test grain window - if adjustable or not
-# TODO: test what is the base profile if two are overlapping
-# TODO: add possbility to scale to a specific amount of nodes based on a schedule

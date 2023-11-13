@@ -127,7 +127,6 @@ Following properties are available:
 Name |  Description
 --- | ---
 `scale_set_name` | Name of the created scale set.
-`dt_string` | 
 
 ## Module's Nameplate
 
@@ -143,6 +142,10 @@ Providers used in this module:
 - `azurerm`, version: ~> 3.25
 
 
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`ptd_time` | - | ./time_calculator | 
 
 
 Resources used in this module:
@@ -503,9 +506,9 @@ Type:
 ```hcl
 list(object({
     name          = string
-    minimum_count = number
-    default_count = optional(number)
-    maximum_count = number
+    minimum_count = optional(number)
+    default_count = number
+    maximum_count = optional(number)
     recurrence = optional(object({
       timezone   = optional(string)
       days       = list(string)
@@ -527,9 +530,9 @@ list(object({
       scale_in_config = object({
         threshold                  = number
         operator                   = optional(string, "<=")
-        grain_window_minutes       = number
+        grain_window_minutes       = optional(number)
         grain_aggregation_type     = optional(string, "Average")
-        aggregation_window_minutes = number
+        aggregation_window_minutes = optional(number)
         aggregation_window_type    = optional(string, "Average")
         cooldown_window_minutes    = number
         change_count_by            = optional(number, 1)
