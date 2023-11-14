@@ -7,6 +7,7 @@ locals {
     "==" = "Equals"
     "!=" = "NotEquals"
   }
+  password = sensitive(var.authentication.password)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set
@@ -17,11 +18,11 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   resource_group_name  = var.resource_group_name
 
   admin_username                  = var.authentication.username
-  admin_password                  = var.authentication.disable_password_authentication ? null : var.authentication.password
+  admin_password                  = var.authentication.disable_password_authentication ? null : local.password
   disable_password_authentication = var.authentication.disable_password_authentication
 
   dynamic "admin_ssh_key" {
-    for_each = var.authentication.ssh_keys
+    for_each = { for v in var.authentication.ssh_keys : v => v }
     content {
       username   = var.authentication.username
       public_key = admin_ssh_key.value
@@ -62,7 +63,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   }
 
 
-  instances = var.autoscaling_configuration.autoscale_count_default
+  instances = var.autoscaling_configuration.default_count
 
   upgrade_mode = "Manual" # See README for more details no this setting.
 
@@ -103,7 +104,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
-  boot_diagnostics { storage_account_uri = var.diagnostics_storage_uri }
+  boot_diagnostics { storage_account_uri = var.scale_set_configuration.diagnostics_storage_uri }
 
   identity { type = "SystemAssigned" } # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
 
@@ -285,8 +286,8 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
       capacity {
         default = var.autoscaling_profiles[0].default_count
-        minimum = var.autoscaling_profiles[0].minimum_count
-        maximum = var.autoscaling_profiles[0].maximum_count
+        minimum = coalesce(var.autoscaling_profiles[0].minimum_count, var.autoscaling_profiles[0].default_count)
+        maximum = coalesce(var.autoscaling_profiles[0].maximum_count, var.autoscaling_profiles[0].default_count)
       }
 
       dynamic "recurrence" {
@@ -401,9 +402,9 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
   }
   notification {
-    email { custom_emails = var.autoscaling_configuration.autoscale_notification_emails }
+    email { custom_emails = var.autoscaling_configuration.notification_emails }
     dynamic "webhook" {
-      for_each = var.autoscaling_configuration.autoscale_webhooks_uris
+      for_each = var.autoscaling_configuration.webhooks_uris
       content { service_uri = webhook.value }
     }
   }

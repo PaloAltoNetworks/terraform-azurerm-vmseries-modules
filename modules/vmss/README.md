@@ -1,10 +1,14 @@
 <!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks VMSS Module for Azure
 
-A terraform module for VMSS VM-Series firewalls in Azure.
+A terraform module for deploying a Scale Set based on Next Generation Firewalls in Azure.
 
-**NOTE** \
-Due to [lack of proper method of running health probes](./main.tf#L21-54) against Pan-OS based VMs running in a Scale Set, the `upgrade_mode` property is hardcoded to `Manual`. For this mode to actually work the `roll_instances_when_required` provider feature has to be also configured and set to `false`. Unfortunately this cannot be set in the `vmss` module, it has to be specified in the **root** module.
+> [!Note]
+> Due to [lack of proper method of running health probes](#about-rolling-upgrades-and-auto-healing) against Pan-OS based VMs running in a
+> Scale Set, the `upgrade_mode` property is hardcoded to `Manual`.
+
+For this mode to actually work the `roll_instances_when_required` provider feature has to be also configured and set to `false`.
+Unfortunately this cannot be set in the `vmss` module, it has to be specified in the **root** module.
 
 Therefore, when using this module please add the following `provider` block to your code:
 
@@ -18,74 +22,82 @@ provider "azurerm" {
 }
 ```
 
+## About rolling upgrades and auto healing
+
+Both, the rolling upgrade mode and auto healing target the 1<sup>st</sup> NIC on a Scale Set VM with a health probe to verify if
+the VM is capable of handling traffic. Furthermore, for the health probe to work the 1<sup>st</sup> interface has to be added to
+a Load Balancer.
+
+This provides some obstacles when deploying such setup with Next Generation Firewall based Scale Set: most importantly the health
+probe would target the management interface which could lead to false-positives. A management service can respond to TCP/Http
+probes, while the data plane remains unconfigured. An easy solution would to bo configure an interface swap, unfortunately this
+is not available in the Azure VMSeries image yet.
+
+## Custom Metrics and Autoscaling
+
+Firewalls can publish custom metrics (for example `panSessionUtilization`) to Azure Application Insights to improve the
+autoscaling. This is a suggested way of setting up scaling rules as these metrics are gathered only from the data plane.
+
+This however requires some additional steps:
+
+- deploy the [`ngfw_metrics`](../ngfw\_metrics/README.md) module, this module outputs two properties:
+  - `application_insights_ids` - a map of IDs of the deployed Application Insights instances
+  - `metrics_instrumentation_keys` - a map of instrumentation keys for the deployed Application Insights instances
+- configure this module with the ID of the desired Application Insights instance, use the
+  [`var.autoscaling_configuration.application_insights_id`](#autoscaling\_configuration) property
+- depending on the bootstrap method you use, configure the PanOS VMSeries plugins with the metrics instrumentation key
+  belonging to the Application Insights instance of your choice.
+
+The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split to obtain
+back a result for solely a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report
+their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%,
+the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
+
+Therefore each Scale Set instance should be configured with a dedicated Application Insights instance.
+
 ## Usage
+
+Below you can find a simple example deploying a Scale Set w/o autoscaling, using defaults where possible:
 
 ```hcl
 module "vmss" {
   source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/vmss"
 
-  location                  = "Australia Central"
-  name_prefix               = "pan"
-  password                  = "your-password"
-  subnet_mgmt               = azurerm_subnet.subnet_mgmt
-  subnet_private            = azurerm_subnet.subnet_private
-  subnet_public             = module.networks.subnet_public
-  bootstrap_storage_account = module.panorama.bootstrap_storage_account
-  bootstrap_share_name      = "inboundsharename"
-  vhd_container             = "vhd-storage-container-id"
-  lb_backend_pool_id        = "private-backend-pool-id"
+  name                = "ngfw-vmss"
+  resource_group_name = "hub-rg"
+  location            = "West Europe"
+
+  authentication = {
+    username                        = "panadmin"
+    password                        = "c0mpl1c@t3d"
+    disable_password_authentication = true
+  }
+  vm_image_configuration = {
+    img_version = "10.2.4"
+  }
+  scale_set_configuration = {}
+  interfaces = [
+    {
+      name      = "managmeent"
+      subnet_id = "management_subnet_ID_string"
+    },
+    {
+      name                = "private"
+      subnet_id           = "private_subnet_ID_string"
+      lb_backend_pool_ids = ["LBI_backend_pool_ID"]
+    },
+    {
+      name                   = "managmeent"
+      subnet_id              = "management_subnet_ID_string"
+      lb_backend_pool_ids    = ["LBE_backend_pool_ID"]
+      appgw_backend_pool_ids = ["AppGW_backend_pool_ID"]
+    }
+  ]
+
+  autoscaling_configuration = {}
+  autoscaling_profiles      = []
 }
 ```
-
-## SOme info about rolling upgrades
-
-Allowing upgrade\_mode = "Rolling" would be actually a big architectural change. First of all
-Error: `health_probe_id` must be set or a health extension must be specified when `upgrade_mode` is set to "Rolling"
-VM-Series do not have a health extension
-Having health\_probe\_id, as visible in the next error message below, Azure requires the first NIC to be
-the load-balanced one. Azure complains about "inbound-nic-fw-mgmt", which in that case was the primary IP config
-of the first NIC
-
-```
-Error: Error creating Linux Virtual Machine Scale Set "inbound-VMSS" (Resource Group "example-vmss-inbound")
-compute.VirtualMachineScaleSetsClient#CreateOrUpdate: Failure sending request: StatusCode=0 -- Original Error
-
-Code="CannotUseHealthProbeWithoutLoadBalancing"
-
-Message="VM scale set /subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/EXAMPLE-VMSS-INBOUND/providers/Microsoft.Compute/virtualMachineScaleSets/inbound-VMSS cannot use probe /subscriptions/d47f1af8-9795-4e86-bbce-da72cfd0f8ec/resourceGroups/example-vmss-inbound/providers/Microsoft.Network/loadBalancers/inbound-public-elb/probes/inbound-public-elb as a HealthProbe because primary IP configuration inbound-nic-fw-mgmt of the scale set does not use load balancing. LoadBalancerBackendAddressPools property of the IP configuration must reference backend address pool of the load balancer that contains the probe."
-Details=[]
-│
-│   with module.inbound_scale_set.azurerm_linux_virtual_machine_scale_set.this
-│   on ../../modules/vmss/main.tf line 1, in resource "azurerm_linux_virtual_machine_scale_set" "this"
-│    1: resource "azurerm_linux_virtual_machine_scale_set" "this" {
-
-```
-
-Hence mgmt-interface-swap seems to be required on VM-Series, which would need a major overhaul of the
-subnet-related inputs. Without the mgmt-interface-swap, it seems impossible to have upgrade\_mode = "Rolling"
-The phony LB on a management network does not seem a viable solution. For now Azure does not support two internal
-load balancers per VM. Also, health checking HTTP/SSH on management port would wrongly consider that unconfigured
-VM-Series is good to use. Unconfigured VM-Series still shows HTTP/SSH on the management interface. This does not
-happen when checking a dataplane interface, because the data only shows HTTP/SSH after the initial commit applies
-a specific management profile
-Also the inbound vmss would have the ethernet1/1 public and ethernet1/2 private, but outbound vmss would have
-the ethernet1/1 private and ethernet1/2 public. That ensures the respective LB health probe works on ethernet1/1
-which is the first NIC
-The automatic\_instance\_repair also suffers from exactly the same problem
-"Automatic repairs not supported for this Virtual Machine Scale Set because a health probe or health extension was not provided."
-
-## Custom Metrics
-
-Firewalls can publish custom metrics (for example `panSessionUtilization`) to Azure Application Insights to improve the autoscaling.
-This however requires a manual initialization: copy the outputs `metrics_instrumentation_key` and paste it into your
-PAN-OS webUI -> Device -> VM-Series -> Azure. This module automatically
-completes solely the Step 1 of the [official procedure](https://docs.paloaltonetworks.com/vm-series/10-0/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall.html).
-
-If you manage the configuration from Panorama, this can be done in the same place, however the PAN-OS `VM-Series plugin` needs to be installed **on both** Panorama and VM-Series.
-
-The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split to obtain
-back a result for solely a single firewall. Thus for example if three firewalls use the same Instrumentation Key and report
-their respective session utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is *not possible* to know which of the firewalls reported the 90% utilization.
 
 ## Module's Required Inputs
 
@@ -106,18 +118,7 @@ Name | Type | Description
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`scale_set_configuration`](#scale_set_configuration) | `object` | Scale set parameters configuration.
 [`bootstrap_options`](#bootstrap_options) | `string` | Bootstrap options to pass to VM-Series instance.
-[`diagnostics_storage_uri`](#diagnostics_storage_uri) | `string` | The storage account's blob endpoint to hold diagnostic files.
-[`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies
-
-Following properties are available:
-- `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
-                                    be used to provide metrics for autoscaling; to **avoid false positives** this should be an
-                                    instance **dedicated to this Scale Set**
-- `autoscale_count_default`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
-                                    in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
-                                    to compare the metrics to the thresholds
-- `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
-                                    during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
+[`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies.
 [`autoscaling_profiles`](#autoscaling_profiles) | `list` | A list defining autoscaling profiles.
 
 
@@ -199,8 +200,7 @@ Following properties are available:
 
 > [!Important]
 > `ssh_keys` property is a list of strings, so each item should be the actual public key value.
-> If you would like to load them from files use the `file` function.
-> For example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+> If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
 
 
 
@@ -232,7 +232,7 @@ Following properties are available:
                               published image
 - `img_sku`                 - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
                               `az vm image list -o table --all --publisher paloaltonetworks`
-- `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for a offer/plan
+- `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                               on Azure Market Place
 - `custom_image_id`         - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
                               creating new Virtual Machines
@@ -259,12 +259,11 @@ object({
 
 
 
-
 #### interfaces
 
 List of the network interfaces specifications.
 
-> [!Notice]
+> [!Note]
 > The ORDER in which you specify the interfaces DOES MATTER.
 
 Interfaces will be attached to VM in the order you define here, therefore:
@@ -380,6 +379,8 @@ List of other, optional properties:
 - `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
                                     limited to a Single Placement Group, which means the number of instances will be capped
                                     at 100 Virtual Machines
+- `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
+                                    diagnostic files
 
 
 
@@ -398,6 +399,7 @@ object({
     proximity_placement_group_id = optional(string)
     single_placement_group       = optional(bool)
     disk_encryption_set_id       = optional(string)
+    diagnostics_storage_uri      = optional(string)
   })
 ```
 
@@ -411,7 +413,10 @@ Default value: `map[]`
 Bootstrap options to pass to VM-Series instance.
 
 Proper syntax is a string of semicolon separated properties, for example:
-`bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"`
+
+```hcl
+bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+```
 
 For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
 
@@ -422,35 +427,25 @@ Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### diagnostics_storage_uri
-
-The storage account's blob endpoint to hold diagnostic files.
-
-Type: string
-
-Default value: `&{}`
-
-<sup>[back to list](#modules-optional-inputs)</sup>
-
 
 #### autoscaling_configuration
 
-Autoscaling configuration common to all policies
+Autoscaling configuration common to all policies.
 
 Following properties are available:
 - `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
                                     be used to provide metrics for autoscaling; to **avoid false positives** this should be an
                                     instance **dedicated to this Scale Set**
-- `autoscale_count_default`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
+- `default_count`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
                                     in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
                                     to compare the metrics to the thresholds
 - `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
                                     during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
 - `scale_in_force_deletion`       - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a
                                     scale-in
-- `autoscale_notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
+- `notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
                                     events
-- `autoscale_webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
+- `webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
                                     are just arbitrary identifiers and the values are the webhook URIs
 
 
@@ -458,12 +453,12 @@ Type:
 
 ```hcl
 object({
-    application_insights_id       = optional(string)
-    autoscale_count_default       = optional(number, 2)
-    scale_in_policy               = optional(string)
-    scale_in_force_deletion       = optional(bool, false)
-    autoscale_notification_emails = optional(list(string), [])
-    autoscale_webhooks_uris       = optional(map(string), {})
+    application_insights_id = optional(string)
+    default_count           = optional(number, 2)
+    scale_in_policy         = optional(string)
+    scale_in_force_deletion = optional(bool, false)
+    notification_emails     = optional(list(string), [])
+    webhooks_uris           = optional(map(string), {})
   })
 ```
 
@@ -479,26 +474,137 @@ A list defining autoscaling profiles.
 > [!Note]
 > The order does matter. The 1<sup>st</sup> profile becomes the default one.
 
+There are some considerations when creating autoscaling configuration:
+
+1. the 1<sup>st</sup> profile created will become the default one, it cannot contain any schedule
+2. all other profiles should contain schedules
+3. the scaling rules are optional, if you skip them you will create a profile with a set number of VM instances 
+  (in such case the `minimum_count` and `maximum_count` properties are skipped).
+
 Following properties are available:
 
-- `name` - (`string`, required) the name of the profile
-- `minimum_count` - (`number`, required) minimum number of VMs when scaling in
-- `maximum_count` - (`number, required) maximum number of VMs when you scale out
-- `metrics` - (`map`, required) a map defining different metrics used for autoscaling. 
+- `name`            - (`string`, required) the name of the profile
+- `default_count`   - (`number`, required) the default number of VMs
+- `minimum_count`   - (`number`, optional, defaults to `default_count`) minimum number of VMs when scaling in
+- `maximum_count`   - (`number`, optional, defaults to `default_count`) maximum number of VMs when you scale out
+- `recurrence`      - (`map`, required for rules beside the 1st one) a map defining time schedule for the profile to apply
+  - `timezone`        - (`string`, optional, defaults to Azure default (UTC)) timezone for the time schedule, supported list can
+                        be found [here](https://learn.microsoft.com/en-us/rest/api/monitor/autoscale-settings/create-or-update?view=rest-monitor-2022-10-01&tabs=HTTP#:~:text=takes%20effect%20at.-,timeZone,-string)
+  - `days`            - (`list`, required) list of days of the week during which the profile is applicable, case sensitive, 
+                        possible values are "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" and "Sunday".
+  - `start_time`      - (`string`, required) profile start time in RFC3339 format
+  - `end_time`        - (`string`, required) profile end time in RFC3339 format
+- `scale_rules`     - (`list`, optional, defaults to `[]`) a list of maps defining metrics and rules for autoscaling. 
 
-  Following metrics are available: `DataPlaneCPUUtilizationPct`, `panSessionUtilization`, `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`.
+  By default all VMSS built-in metrics are available. Note, that these do not differentiate between management and data planes.
+  For more accuracy please use NGFW metrics.
 
-  Each metric definition is a map with two attributes:
+  Each metric definition is a map with 3 properties:
 
-  - `scaleout_threshold` - (`number`, required) threshold value which will cause the instance count to grow by 1 VM
-  - `scalein_threshold` - (`number`, required) threshold value which will cause the instance count to decrease by 1 VM
+  - `name`              - (`string`, required) name of the rule
+  - `scale_out_config`  - (`map`, required) definition of the rule used to scale-out
+  - `scale_in_config`   - (`map`, required) definition of the rule used to scale-in
 
-- `scale_out_config` - (`map`, required) a map defining how are metrics analyzed in scale out scenarios. Following properties are available:
+    Both `scale_out_config` and `scale_in_config` maps contain the same properties. The ones that are required for scale-out but
+    optional for scale-in, when skipped in the latter configuration, default to scale-out value.
+      
+    Following properties are available:
 
-  - `grain_agregation_type`     - (`string`, required) data agregation 
-  - `window_agregation_type`    - (`string`, required)
-  - `agregation_window_minutes` - (`number`, required)
-  - `cooldown_window_minutes`   - (`number`, required)
+    - `threshold`                   - (`number`, required) the threshold of a metric that triggers the scale action
+    - `operator`                    - (`string`, optional, defaults to `>=` or `<=` for scale-out and scale-in respectively)
+                                      the metric vs. threshold comparison operator, can be one of: `>`, `>=`, `<`, `<=`, `==`
+                                      or `!=`.
+    - `grain_window_minutes`        - (`number`, required for scale-out, optional for scale-in) granularity of metrics that the
+                                      rule monitors, between 1 minute and 12 hours (specified in minutes)
+    - `grain_aggregation_type`      - (`string`, optional, defaults to "Average") method used to combine data from 
+                                      `grain_window`, can be one of `Average`, `Max`, `Min` or `Sum`
+    - `aggregation_window_minutes`  - (`number`, required for scale-out, optional for scale-in) time window used to analyze
+                                      metrics, between 5 minutes and 12 hours (specified in minutes), must be greater than
+                                      `grain_window_minutes`
+    - `aggregation_window_type`     - (`string`, optional, defaults to "Average") method used to combine data from 
+                                      `aggregation_window`, can be one of `Average`, `Maximum`, `Minimum`, `Count`, `Last` or 
+                                      `Total`
+    - `cooldown_window_minutes`     - (`number`, required) the amount of time to wait after a scale action, between 1 minute and
+                                      1 week (specified in minutes)
+    - `change_count_by`             - (`number`, optional, default to `1`) a number of VM instances by which the total count of
+                                      instanced in a Scale Set will be changed during a scale action
+
+Example:
+
+```hcl
+# defining one profile
+autoscaling_profiles = [
+  {
+    name          = "default_profile"
+    default_count = 2
+    minimum_count = 2
+    maximum_count = 4
+    scale_rules = [
+      {
+        name = "DataPlaneCPUUtilizationPct"
+        scale_out_config = {
+          threshold                  = 85
+          grain_window_minutes       = 1
+          aggregation_window_minutes = 25
+          cooldown_window_minutes    = 60
+        }
+        scale_in_config = {
+          threshold               = 60
+          cooldown_window_minutes = 120
+        }
+      }
+    ]
+  }
+]
+
+# defining a profile with a rule scaling to 1 NGFW, used when no other rule is applicable
+# and a second rule used for autoscaling during office hours
+autoscaling_profiles = [
+  {
+    name          = "default_profile"
+    default_count = 1
+  },
+  {
+    name          = "weekday_profile"
+    default_count = 2
+    minimum_count = 2
+    maximum_count = 10
+    recurrence = {
+      days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+      start_time = "07:30"
+      end_time   = "17:00"
+    }
+    scale_rules = [
+      {
+        name = "Percentage CPU"
+        scale_out_config = {
+          threshold                  = 70
+          grain_window_minutes       = 5
+          aggregation_window_minutes = 30
+          cooldown_window_minutes    = 60
+        }
+        scale_in_config = {
+          threshold               = 40
+          cooldown_window_minutes = 120
+        }
+      },
+      {
+        name = "Outbound Flows"
+        scale_out_config = {
+          threshold                  = 500
+          grain_window_minutes       = 5
+          aggregation_window_minutes = 30
+          cooldown_window_minutes    = 60
+        }
+        scale_in_config = {
+          threshold               = 400
+          cooldown_window_minutes = 60
+        }
+      }
+    ]
+  },
+]
+```
 
 
 Type: 

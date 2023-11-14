@@ -175,12 +175,12 @@ variable "scale_sets" {
       disk_encryption_set_id       = optional(string)
     }), {})
     autoscaling_configuration = optional(object({
-      application_insights_id       = optional(string)
-      autoscale_count_default       = optional(number)
-      scale_in_policy               = optional(string)
-      scale_in_force_deletion       = optional(bool)
-      autoscale_notification_emails = optional(list(string), [])
-      autoscale_webhooks_uris       = optional(map(string), {})
+      application_insights_id = optional(string)
+      default_count           = optional(number)
+      scale_in_policy         = optional(string)
+      scale_in_force_deletion = optional(bool)
+      notification_emails     = optional(list(string), [])
+      webhooks_uris           = optional(map(string), {})
     }), {})
     interfaces = list(object({
       name                   = string
@@ -191,7 +191,7 @@ variable "scale_sets" {
       appgw_backend_pool_ids = optional(list(string))
       pip_domain_name_label  = optional(string)
     }))
-    autoscaling_profiles = list(object({
+    autoscaling_profiles = optional(list(object({
       name          = string
       minimum_count = optional(number)
       default_count = number
@@ -225,6 +225,6 @@ variable "scale_sets" {
           change_count_by            = optional(number)
         })
       })), [])
-    }))
+    })), [])
   }))
 }

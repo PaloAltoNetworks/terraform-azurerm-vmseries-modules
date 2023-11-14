@@ -69,33 +69,6 @@ scale_sets = {
       {
         name          = "default_profile"
         default_count = 2
-        minimum_count = 2
-        maximum_count = 4
-        scale_rules = [
-          {
-            name = "DataPlaneCPUUtilizationPct"
-            # name = "Percentage CPU"
-            scale_out_config = {
-              threshold                  = 85
-              grain_window_minutes       = 1
-              aggregation_window_minutes = 25
-              cooldown_window_minutes    = 60
-            }
-            scale_in_config = {
-              threshold               = 60
-              cooldown_window_minutes = 120
-            }
-          }
-        ]
-      },
-      {
-        name          = "overlapping profile"
-        default_count = 5
-        recurrence = {
-          days       = ["Friday"]
-          start_time = "10:30"
-          end_time   = "14:00"
-        }
       },
       {
         name          = "weekday_profile"
@@ -104,7 +77,7 @@ scale_sets = {
         maximum_count = 10
         recurrence = {
           days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
-          start_time = "7:30"
+          start_time = "07:30"
           end_time   = "17:00"
         }
         scale_rules = [
@@ -140,37 +113,16 @@ scale_sets = {
   }
   outbound = {
     name = "outbound"
+    autoscaling_configuration = {
+      default_count = 0
+    }
     interfaces = [
       {
-        name             = "management"
-        vnet_key         = "vmss"
-        subnet_key       = "vmss"
-        create_public_ip = true
+        name       = "management"
+        vnet_key   = "vmss"
+        subnet_key = "vmss"
+        # create_public_ip = true
       }
-    ]
-    autoscaling_profiles = [
-      {
-        name          = "default_profile"
-        default_count = 2
-        minimum_count = 2
-        maximum_count = 4
-        scale_rules = [
-          {
-            name = "DataPlaneCPUUtilizationPct"
-            # name = "Percentage CPU"
-            scale_out_config = {
-              threshold                  = 85
-              grain_window_minutes       = 1
-              aggregation_window_minutes = 25
-              cooldown_window_minutes    = 60
-            }
-            scale_in_config = {
-              threshold               = 60
-              cooldown_window_minutes = 120
-            }
-          }
-        ]
-      },
     ]
   }
 }

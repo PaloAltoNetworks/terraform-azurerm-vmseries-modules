@@ -35,8 +35,7 @@ variable "authentication" {
 
   > [!Important]
   > `ssh_keys` property is a list of strings, so each item should be the actual public key value.
-  > If you would like to load them from files use the `file` function.
-  > For example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+  > If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
 
   EOF
   type = object({
@@ -45,11 +44,10 @@ variable "authentication" {
     disable_password_authentication = optional(bool, true)
     ssh_keys                        = optional(list(string), [])
   })
-  # sensitive = true
-  # validation {
-  #   condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
-  #   error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
-  # }
+  validation {
+    condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
+    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
+  }
 }
 
 variable "vm_image_configuration" {
@@ -66,7 +64,7 @@ variable "vm_image_configuration" {
                                 published image
   - `img_sku`                 - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
                                 `az vm image list -o table --all --publisher paloaltonetworks`
-  - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for a offer/plan
+  - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                 on Azure Market Place
   - `custom_image_id`         - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
                                 creating new Virtual Machines
@@ -82,15 +80,14 @@ variable "vm_image_configuration" {
     enable_marketplace_plan = optional(bool, true)
     custom_image_id         = optional(string)
   })
-  # validation {
-  #   condition = (var.vm_configuration.custom_image_id != null && vm_configuration.img_version != null
-  #     ) || (
-  #     var.vm_configuration.custom_image_id == null && vm_configuration.img_version == null
-  #   )
-  #   error_message = "Either `custom_image_id` or `img_version` has to be defined."
-  # }
+  validation {
+    condition = (var.vm_image_configuration.custom_image_id != null && var.vm_image_configuration.img_version == null
+      ) || (
+      var.vm_image_configuration.custom_image_id == null && var.vm_image_configuration.img_version != null
+    )
+    error_message = "Either `custom_image_id` or `img_version` has to be defined."
+  }
 }
-
 
 variable "scale_set_configuration" {
   description = <<-EOF
@@ -128,6 +125,8 @@ variable "scale_set_configuration" {
   - `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
                                       limited to a Single Placement Group, which means the number of instances will be capped
                                       at 100 Virtual Machines
+  - `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
+                                      diagnostic files
 
   EOF
   default     = {}
@@ -144,11 +143,17 @@ variable "scale_set_configuration" {
     proximity_placement_group_id = optional(string)
     single_placement_group       = optional(bool)
     disk_encryption_set_id       = optional(string)
+    diagnostics_storage_uri      = optional(string)
   })
-  # validation {
-  #   condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.storage_account_type)
-  #   error_message = "The `storage_account_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
-  # }
+  validation {
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.storage_account_type)
+    error_message = "The `storage_account_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+  }
+  validation {
+    condition     = length(var.scale_set_configuration.zones) == 3 || var.scale_set_configuration.zones == null
+    error_message = "The `var.scale_set_configuration.zones` can either be a list of all Availability Zones or explicit `null`."
+  }
+
 }
 
 variable "bootstrap_options" {
@@ -156,28 +161,23 @@ variable "bootstrap_options" {
   Bootstrap options to pass to VM-Series instance.
 
   Proper syntax is a string of semicolon separated properties, for example:
-  `bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"`
+
+  ```hcl
+  bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+  ```
 
   For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
   EOF
   default     = null
-  # default     = ""
-  type = string
-  # nullable    = false
-  sensitive = true
-}
-
-variable "diagnostics_storage_uri" {
-  description = "The storage account's blob endpoint to hold diagnostic files."
-  default     = null
   type        = string
+  sensitive   = true
 }
 
 variable "interfaces" {
   description = <<-EOF
   List of the network interfaces specifications.
 
-  > [!Notice]
+  > [!Note]
   > The ORDER in which you specify the interfaces DOES MATTER.
 
   Interfaces will be attached to VM in the order you define here, therefore:
@@ -226,46 +226,46 @@ variable "interfaces" {
     appgw_backend_pool_ids = optional(list(string), [])
     pip_domain_name_label  = optional(string)
   }))
-  # validation {
-  #   condition     = length(var.interfaces[0].lb_backend_pool_ids) == 0 && length(var.interfaces[0].appgw_backend_pool_ids) == 0
-  #   error_message = "The `lb_backend_pool_ids` and `appgw_backend_pool_ids` properties are not acceptable for the 1st (management) interface."
-  # }
+  validation {
+    condition     = length(var.interfaces[0].lb_backend_pool_ids) == 0 && length(var.interfaces[0].appgw_backend_pool_ids) == 0
+    error_message = "The `lb_backend_pool_ids` and `appgw_backend_pool_ids` properties are not acceptable for the 1st (management) interface."
+  }
 }
 
 variable "autoscaling_configuration" {
   description = <<-EOF
-  Autoscaling configuration common to all policies
+  Autoscaling configuration common to all policies.
 
   Following properties are available:
   - `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
                                       be used to provide metrics for autoscaling; to **avoid false positives** this should be an
                                       instance **dedicated to this Scale Set**
-  - `autoscale_count_default`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
+  - `default_count`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
                                       in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
                                       to compare the metrics to the thresholds
   - `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
                                       during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
   - `scale_in_force_deletion`       - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a
                                       scale-in
-  - `autoscale_notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
+  - `notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
                                       events
-  - `autoscale_webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
+  - `webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
                                       are just arbitrary identifiers and the values are the webhook URIs
   EOF
   default     = {}
   nullable    = false
   type = object({
-    application_insights_id       = optional(string)
-    autoscale_count_default       = optional(number, 2)
-    scale_in_policy               = optional(string)
-    scale_in_force_deletion       = optional(bool, false)
-    autoscale_notification_emails = optional(list(string), [])
-    autoscale_webhooks_uris       = optional(map(string), {})
+    application_insights_id = optional(string)
+    default_count           = optional(number, 2)
+    scale_in_policy         = optional(string)
+    scale_in_force_deletion = optional(bool, false)
+    notification_emails     = optional(list(string), [])
+    webhooks_uris           = optional(map(string), {})
   })
-  # validation {
-  #   condition     = contains(["Default", "NewestVM", "OldestVM"], var.autoscaling_configuration.scale_in_policy)
-  #   error_message = "The `scale_in_policy` property can be one of: `Default`, `NewestVM`, `OldestVM`."
-  # }
+  validation {
+    condition     = var.autoscaling_configuration.scale_in_policy != null ? contains(["Default", "NewestVM", "OldestVM"], var.autoscaling_configuration.scale_in_policy) : true
+    error_message = "The `scale_in_policy` property can be one of: `Default`, `NewestVM`, `OldestVM`."
+  }
 }
 
 variable "autoscaling_profiles" {
@@ -275,26 +275,137 @@ variable "autoscaling_profiles" {
   > [!Note]
   > The order does matter. The 1<sup>st</sup> profile becomes the default one.
 
+  There are some considerations when creating autoscaling configuration:
+
+  1. the 1<sup>st</sup> profile created will become the default one, it cannot contain any schedule
+  2. all other profiles should contain schedules
+  3. the scaling rules are optional, if you skip them you will create a profile with a set number of VM instances 
+    (in such case the `minimum_count` and `maximum_count` properties are skipped).
+
   Following properties are available:
 
-  - `name` - (`string`, required) the name of the profile
-  - `minimum_count` - (`number`, required) minimum number of VMs when scaling in
-  - `maximum_count` - (`number, required) maximum number of VMs when you scale out
-  - `metrics` - (`map`, required) a map defining different metrics used for autoscaling. 
+  - `name`            - (`string`, required) the name of the profile
+  - `default_count`   - (`number`, required) the default number of VMs
+  - `minimum_count`   - (`number`, optional, defaults to `default_count`) minimum number of VMs when scaling in
+  - `maximum_count`   - (`number`, optional, defaults to `default_count`) maximum number of VMs when you scale out
+  - `recurrence`      - (`map`, required for rules beside the 1st one) a map defining time schedule for the profile to apply
+    - `timezone`        - (`string`, optional, defaults to Azure default (UTC)) timezone for the time schedule, supported list can
+                          be found [here](https://learn.microsoft.com/en-us/rest/api/monitor/autoscale-settings/create-or-update?view=rest-monitor-2022-10-01&tabs=HTTP#:~:text=takes%20effect%20at.-,timeZone,-string)
+    - `days`            - (`list`, required) list of days of the week during which the profile is applicable, case sensitive, 
+                          possible values are "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" and "Sunday".
+    - `start_time`      - (`string`, required) profile start time in RFC3339 format
+    - `end_time`        - (`string`, required) profile end time in RFC3339 format
+  - `scale_rules`     - (`list`, optional, defaults to `[]`) a list of maps defining metrics and rules for autoscaling. 
 
-    Following metrics are available: `DataPlaneCPUUtilizationPct`, `panSessionUtilization`, `panSessionActive`, `panSessionThroughputKbps`, `panSessionThroughputPps`, `DataPlanePacketBufferUtilization`.
+    By default all VMSS built-in metrics are available. Note, that these do not differentiate between management and data planes.
+    For more accuracy please use NGFW metrics.
 
-    Each metric definition is a map with two attributes:
+    Each metric definition is a map with 3 properties:
 
-    - `scaleout_threshold` - (`number`, required) threshold value which will cause the instance count to grow by 1 VM
-    - `scalein_threshold` - (`number`, required) threshold value which will cause the instance count to decrease by 1 VM
+    - `name`              - (`string`, required) name of the rule
+    - `scale_out_config`  - (`map`, required) definition of the rule used to scale-out
+    - `scale_in_config`   - (`map`, required) definition of the rule used to scale-in
 
-  - `scale_out_config` - (`map`, required) a map defining how are metrics analyzed in scale out scenarios. Following properties are available:
+      Both `scale_out_config` and `scale_in_config` maps contain the same properties. The ones that are required for scale-out but
+      optional for scale-in, when skipped in the latter configuration, default to scale-out value.
+      
+      Following properties are available:
 
-    - `grain_agregation_type`     - (`string`, required) data agregation 
-    - `window_agregation_type`    - (`string`, required)
-    - `agregation_window_minutes` - (`number`, required)
-    - `cooldown_window_minutes`   - (`number`, required)
+      - `threshold`                   - (`number`, required) the threshold of a metric that triggers the scale action
+      - `operator`                    - (`string`, optional, defaults to `>=` or `<=` for scale-out and scale-in respectively)
+                                        the metric vs. threshold comparison operator, can be one of: `>`, `>=`, `<`, `<=`, `==`
+                                        or `!=`.
+      - `grain_window_minutes`        - (`number`, required for scale-out, optional for scale-in) granularity of metrics that the
+                                        rule monitors, between 1 minute and 12 hours (specified in minutes)
+      - `grain_aggregation_type`      - (`string`, optional, defaults to "Average") method used to combine data from 
+                                        `grain_window`, can be one of `Average`, `Max`, `Min` or `Sum`
+      - `aggregation_window_minutes`  - (`number`, required for scale-out, optional for scale-in) time window used to analyze
+                                        metrics, between 5 minutes and 12 hours (specified in minutes), must be greater than
+                                        `grain_window_minutes`
+      - `aggregation_window_type`     - (`string`, optional, defaults to "Average") method used to combine data from 
+                                        `aggregation_window`, can be one of `Average`, `Maximum`, `Minimum`, `Count`, `Last` or 
+                                        `Total`
+      - `cooldown_window_minutes`     - (`number`, required) the amount of time to wait after a scale action, between 1 minute and
+                                        1 week (specified in minutes)
+      - `change_count_by`             - (`number`, optional, default to `1`) a number of VM instances by which the total count of
+                                        instanced in a Scale Set will be changed during a scale action
+
+  Example:
+
+  ```hcl
+  # defining one profile
+  autoscaling_profiles = [
+    {
+      name          = "default_profile"
+      default_count = 2
+      minimum_count = 2
+      maximum_count = 4
+      scale_rules = [
+        {
+          name = "DataPlaneCPUUtilizationPct"
+          scale_out_config = {
+            threshold                  = 85
+            grain_window_minutes       = 1
+            aggregation_window_minutes = 25
+            cooldown_window_minutes    = 60
+          }
+          scale_in_config = {
+            threshold               = 60
+            cooldown_window_minutes = 120
+          }
+        }
+      ]
+    }
+  ]
+
+  # defining a profile with a rule scaling to 1 NGFW, used when no other rule is applicable
+  # and a second rule used for autoscaling during office hours
+  autoscaling_profiles = [
+    {
+      name          = "default_profile"
+      default_count = 1
+    },
+    {
+      name          = "weekday_profile"
+      default_count = 2
+      minimum_count = 2
+      maximum_count = 10
+      recurrence = {
+        days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        start_time = "07:30"
+        end_time   = "17:00"
+      }
+      scale_rules = [
+        {
+          name = "Percentage CPU"
+          scale_out_config = {
+            threshold                  = 70
+            grain_window_minutes       = 5
+            aggregation_window_minutes = 30
+            cooldown_window_minutes    = 60
+          }
+          scale_in_config = {
+            threshold               = 40
+            cooldown_window_minutes = 120
+          }
+        },
+        {
+          name = "Outbound Flows"
+          scale_out_config = {
+            threshold                  = 500
+            grain_window_minutes       = 5
+            aggregation_window_minutes = 30
+            cooldown_window_minutes    = 60
+          }
+          scale_in_config = {
+            threshold               = 400
+            cooldown_window_minutes = 60
+          }
+        }
+      ]
+    },
+  ]
+  ```
   EOF
   default     = []
   nullable    = false
@@ -333,4 +444,109 @@ variable "autoscaling_profiles" {
       })
     })), [])
   }))
+  validation {
+    condition     = length(var.autoscaling_profiles) > 0 ? var.autoscaling_profiles[0].recurrence == null : true
+    error_message = "The `autoscaling_profiles->recurrence` property is not allowed in the 1st profile definition."
+  }
+  validation { # recurrence
+    condition = length(var.autoscaling_profiles) > 0 ? alltrue([
+      for v in slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles)) : v.recurrence != null
+    ]) : true
+    error_message = "The `autoscaling_profiles->recurrence` property is required in all profiles except the 1st one."
+  }
+  validation { # recurrence.days
+    condition = length(var.autoscaling_profiles) > 0 ? alltrue(flatten(
+      [for v in slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles)) :
+        [for day in v.recurrence.days :
+          contains(
+            ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+            day
+          )
+        ]
+      ]
+    )) : true
+    error_message = "The `autoscaling_profiles->recurrence.days` property can be one of: `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday` or `Sunday`."
+  }
+  validation { # recurrence.start_time
+    condition = length(var.autoscaling_profiles) > 0 ? alltrue([
+      for v in slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles)) :
+      can(regex("^(([0,1][0-9])|(2[0-3])):([0-5][0-9])$", v.recurrence.start_time))
+    ]) : true
+    error_message = "The `autoscaling_profiles->recurrence.start_time` property has to be a time in RFC3339 format."
+  }
+  validation { # recurrence.end_time
+    condition = length(var.autoscaling_profiles) > 0 ? alltrue([
+      for v in slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles)) :
+      can(regex("^(([0,1][0-9])|(2[0-3])):([0-5][0-9])$", v.recurrence.end_time))
+    ]) : true
+    error_message = "The `autoscaling_profiles->recurrence.end_time` property has to be a time in RFC3339 format."
+  }
+  validation { # scale_rule->operator
+    condition = alltrue(flatten([
+      for profile in var.autoscaling_profiles : [
+        for rule in profile.scale_rules : [
+          for config in ["scale_out_config", "scale_in_config"] :
+          contains([">", ">=", "<", "<=", "==", "!="], rule[config].operator)
+        ]
+      ]
+    ]))
+    error_message = "The `operator` property can be one of: `>`, `>=`, `<`, `<=`, `==` or `!=`."
+  }
+  validation { # scale_rule->grain_window_minutes
+    condition = alltrue(flatten([
+      for profile in var.autoscaling_profiles : [
+        for rule in profile.scale_rules : [
+          for config in ["scale_out_config", "scale_in_config"] :
+          rule[config].grain_window_minutes >= 1 && rule[config].grain_window_minutes <= 720
+          if rule[config].grain_window_minutes != null
+        ]
+      ]
+    ]))
+    error_message = "The `grain_window_minutes` property has to be between 1 minute and 12 hours."
+  }
+  validation { # scale_rule->grain_aggregation_type
+    condition = alltrue(flatten([
+      for profile in var.autoscaling_profiles : [
+        for rule in profile.scale_rules : [
+          for config in ["scale_out_config", "scale_in_config"] :
+          contains(["Average", "Max", "Min", "Sum"], rule[config].grain_aggregation_type)
+        ]
+      ]
+    ]))
+    error_message = "The `grain_aggregation_type` property can be one of: `Average`, `Max`, `Min` or `Sum`."
+  }
+  validation { # scale_rule->aggregation_window_minutes
+    condition = alltrue(flatten([
+      for profile in var.autoscaling_profiles : [
+        for rule in profile.scale_rules : [
+          for config in ["scale_out_config", "scale_in_config"] :
+          rule[config].aggregation_window_minutes >= 5 && rule[config].aggregation_window_minutes <= 720 && rule[config].aggregation_window_minutes > rule[config].grain_window_minutes
+          if rule[config].aggregation_window_minutes != null
+        ]
+      ]
+    ]))
+    error_message = "The `aggregation_window_minutes` property has to be between 5 minute and 12 hours and should be longer than `grain_window_minutes`."
+  }
+  validation { # scale_rule->aggregation_window_type
+    condition = alltrue(flatten([
+      for profile in var.autoscaling_profiles : [
+        for rule in profile.scale_rules : [
+          for config in ["scale_out_config", "scale_in_config"] :
+          contains(["Average", "Maximum", "Minimum", "Total", "Count", "Last"], rule[config].aggregation_window_type)
+        ]
+      ]
+    ]))
+    error_message = "The `aggregation_window_type` property can be one of: `Average`, `Maximum`, `Minimum`, `Count`, `Last` or `Total`."
+  }
+  validation { # scale_rule->cooldown_window_minutes
+    condition = alltrue(flatten([
+      for profile in var.autoscaling_profiles : [
+        for rule in profile.scale_rules : [
+          for config in ["scale_out_config", "scale_in_config"] :
+          rule[config].cooldown_window_minutes >= 1 && rule[config].cooldown_window_minutes <= 10080
+        ]
+      ]
+    ]))
+    error_message = "The `cooldown_window_minutes` property has to be between 1 minute and 1 week."
+  }
 }
