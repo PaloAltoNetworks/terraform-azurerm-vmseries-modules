@@ -3,16 +3,6 @@ variable "name" {
   type        = string
 }
 
-variable "create_natgw" {
-  description = <<-EOF
-  Triggers creation of a NAT Gateway when set to `true`.
-  
-  Set it to `false` to source an existing resource. In this 'mode' the module will only bind an existing NAT Gateway to specified subnets.
-  EOF
-  default     = true
-  type        = bool
-}
-
 variable "resource_group_name" {
   description = "Name of a Resource Group hosting the NAT Gateway (either the existing one or the one that will be created)."
   type        = string
@@ -29,6 +19,16 @@ variable "tags" {
   type        = map(string)
 }
 
+variable "create_natgw" {
+  description = <<-EOF
+  Triggers creation of a NAT Gateway when set to `true`.
+  
+  Set it to `false` to source an existing resource. In this 'mode' the module will only bind an existing NAT Gateway to specified subnets.
+  EOF
+  default     = true
+  type        = bool
+}
+
 variable "zone" {
   description = <<-EOF
   Controls if the NAT Gateway will be bound to a specific zone or not. This is a string with the zone number or `null`. Only for newly created resources.
@@ -40,12 +40,20 @@ variable "zone" {
   EOF
   default     = null
   type        = string
+  validation {
+    condition     = contains(["1", "2", "3"], var.zone)
+    error_message = "The [zone] variable should have value of either: \"1\", \"2\" or \"3\"."
+  }
 }
 
 variable "idle_timeout" {
-  description = "Connection IDLE timeout in minutes. Only for newly created resources."
-  default     = null
+  description = "Connection IDLE timeout in minutes (up to 120, by default 4). Only for newly created resources."
+  default     = 4
   type        = number
+  validation {
+    condition     = (var.idle_timeout >= 1 && var.idle_timeout <= 120)
+    error_message = "The [idle_timeout] variable should be a number between 1 and 120."
+  }
 }
 
 variable "subnet_ids" {
@@ -53,60 +61,94 @@ variable "subnet_ids" {
   type        = map(string)
 }
 
-variable "create_pip" {
+variable "public_ip" {
   description = <<-EOF
-  Set `true` to create a Public IP resource that will be connected to newly created NAT Gateway. Not used when NAT Gateway is only sourced.
+  A map defining a Public IP resource.
 
-  Setting this property to `false` has two meanings:
-  * when `existing_pip_name` is `null` simply no Public IP will be created
-  * when `existing_pip_name` is set to a name of an exiting Public IP resource it will be sourced and associated to this NAT Gateway.
-  EOF
-  default     = true
-  type        = bool
-}
+  List of available properties:
 
-variable "existing_pip_name" {
-  description = "Name of an existing Public IP resource to associate with the NAT Gateway. Only for newly created resources."
-  default     = null
-  type        = string
-}
+  - `create`              - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all
+  - `name`                - (`string`, required) name of a created or sourced Public IP
+  - `resource_group_name`  - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when `create = true`
 
-variable "existing_pip_resource_group_name" {
-  description = "Name of a resource group hosting the Public IP resource specified in `existing_pip_name`. When omitted Resource Group specified in `resource_group_name` will be used."
-  default     = null
-  type        = string
-}
+  The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
-variable "create_pip_prefix" {
-  description = <<-EOF
-  Set `true` to create a Public IP Prefix resource that will be connected to newly created NAT Gateway. Not used when NAT Gateway is only sourced.
+  `create` | `name` | operation
+  --- | --- | ---
+  `true` | `!null` | a Public IP resource is created in a resource group of the NAT Gateway
+  `false` | `!null` | a Public IP resource is sourced from a resource group of the NAT Gateway, the resource group can be overridden with `resource_group_name` property
+  `false` | `null` | a Public IP resource will not be created or sourced at all
+  
+  Example:
 
-  Setting this property to `false` has two meanings:
-  * when `existing_pip_prefix_name` is `null` simply no Public IP Prefix will be created
-  * when `existing_pip_prefix_name` is set to a name of an exiting Public IP Prefix resource it will be sourced and associated to this NAT Gateway.
-  EOF
-  default     = false
-  type        = bool
-}
+  ```hcl
+  # create a new Public IP
+  public_ip = {
+    create = true
+    name = "new-public-ip-name"
+  }
 
-variable "pip_prefix_length" {
-  description = <<-EOF
-  Number of bits of the Public IP Prefix. This basically specifies how many IP addresses are reserved. Azure default is `/28`.
-
-  This value can be between `0` and `31` but can be limited by limits set on Subscription level.
+  # source an existing Public IP from an external resource group
+  public_ip = {
+    create              = false
+    name                = "existing-public-ip-name"
+    resource_group_name = "external-rg-name"
+  }
+  ```
   EOF
   default     = null
-  type        = number
+  type = object({
+    create              = bool
+    name                = string
+    resource_group_name = optional(string)
+  })
 }
 
-variable "existing_pip_prefix_name" {
-  description = "Name of an existing Public IP Prefix resource to associate with the NAT Gateway. Only for newly created resources."
-  default     = null
-  type        = string
-}
+variable "public_ip_prefix" {
+  description = <<-EOF
+  A map defining a Public IP Prefix resource.
+  
+  List of available properties:
 
-variable "existing_pip_prefix_resource_group_name" {
-  description = "Name of a resource group hosting the Public IP Prefix resource specified in `existing_pip_name`. When omitted Resource Group specified in `resource_group_name` will be used."
+  - `create`              - (`bool`, required) controls whether a Public IP Prefix is created, sourced, or not used at all
+  - `name`                - (`string`, required) name of a created or sourced Public IP Prefix
+  - `resource_group_name`  - (`string`, optional) name of a resource group hosting the sourced Public IP Prefix resource, ignored when `create = true`
+  - `length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this value can be between `0` and `31` but can be limited on subscription level (Azure default is `/28`)
+
+  The module operates in 3 modes, depending on combination of `create` and `name` properties:
+
+  `create` | `name` | operation
+  --- | --- | ---
+  `true` | `!null` | a Public IP Prefix resource is created in a resource group of the NAT Gateway
+  `false` | `!null` | a Public IP Prefix resource is sourced from a resource group of the NAT Gateway, the resource group can be overridden with `resource_group_name` property
+  `false` | `null` | a Public IP Prefix resource will not be created or sourced at all
+
+  Example:
+
+  ```hcl
+  # create a new Public IP Prefix, default prefix length is `/28`
+  public_ip_prefix = {
+    create = true
+    name   = "new-public-ip-prefix-name"
+  }
+
+  # source an existing Public IP Prefix from an external resource group
+  public_ip = {
+    create              = false
+    name                = "existing-public-ip-prefix-name"
+    resource_group_name = "external-rg-name"
+  }
+  ```
+  EOF
   default     = null
-  type        = string
+  type = object({
+    create              = bool
+    name                = string
+    resource_group_name = optional(string)
+    length              = optional(number)
+  })
+  validation {
+    condition     = var.public_ip_prefix.length >= 0 && var.public_ip_prefix.length <= 31
+    error_message = "The [length] property should be a number between 0 and 31."
+  }
 }
