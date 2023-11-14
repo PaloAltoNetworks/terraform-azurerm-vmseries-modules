@@ -140,7 +140,7 @@ locals {
 }
 
 module "ptd_time" {
-  source   = "./time_calculator"
+  source   = "./dt_string_converter"
   for_each = local.profile_time_windows
   time     = each.value
 }

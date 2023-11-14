@@ -1,7 +1,8 @@
 terraform {}
 
 variable "time" {
-  type = number
+  description = "The time value in minutes to be converted to string representation."
+  type        = number
 }
 
 locals {
@@ -13,5 +14,6 @@ locals {
 }
 
 output "dt_string" {
-  value = local.dt_string
+  description = "Azure string time representation."
+  value       = local.dt_string
 }
