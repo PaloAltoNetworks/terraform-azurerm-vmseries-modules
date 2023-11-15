@@ -101,20 +101,20 @@ vnets = {
       "management" = {
         name                            = "mgmt-snet"
         address_prefixes                = ["10.0.0.0/28"]
-        network_security_group          = "management"
-        route_table                     = "management"
+        network_security_group_key      = "management"
+        route_table_key                 = "management"
         enable_storage_service_endpoint = true
       }
       "private" = {
         name             = "private-snet"
         address_prefixes = ["10.0.0.16/28"]
-        route_table      = "private"
+        route_table_key  = "private"
       }
       "public" = {
-        name                   = "public-snet"
-        address_prefixes       = ["10.0.0.32/28"]
-        network_security_group = "public"
-        route_table            = "public"
+        name                       = "public-snet"
+        address_prefixes           = ["10.0.0.32/28"]
+        network_security_group_key = "public"
+        route_table_key            = "public"
       }
       "appgw" = {
         name             = "appgw-snet"
