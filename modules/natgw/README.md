@@ -47,7 +47,7 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | A map of tags that will be assigned to resources created by this module.
 [`create_natgw`](#create_natgw) | `bool` | Triggers creation of a NAT Gateway when set to `true`.
-[`zone`](#zone) | `string` | Controls if the NAT Gateway will be bound to a specific zone or not.
+[`zone`](#zone) | `string` | Controls whether the NAT Gateway will be bound to a specific zone or not.
 [`idle_timeout`](#idle_timeout) | `number` | Connection IDLE timeout in minutes (up to 120, by default 4).
 [`public_ip`](#public_ip) | `object` | A map defining a Public IP resource.
 [`public_ip_prefix`](#public_ip_prefix) | `object` | A map defining a Public IP Prefix resource.
@@ -124,7 +124,9 @@ Type: string
 
 #### subnet_ids
 
-A map of subnet IDs what will be bound with this NAT Gateway. Value is the subnet ID, key value does not matter but should be unique, typically it can be a subnet name.
+A map of subnet IDs what will be bound with this NAT Gateway. Value is the subnet ID, key value does not matter but should be
+unique, typically it can be a subnet name.
+
 
 Type: map(string)
 
@@ -154,7 +156,8 @@ Default value: `map[]`
 
 Triggers creation of a NAT Gateway when set to `true`.
   
-Set it to `false` to source an existing resource. In this 'mode' the module will only bind an existing NAT Gateway to specified subnets.
+Set it to `false` to source an existing resource. In this 'mode' the module will only bind an existing NAT Gateway to specified
+subnets.
 
 
 Type: bool
@@ -165,10 +168,13 @@ Default value: `true`
 
 #### zone
 
-Controls if the NAT Gateway will be bound to a specific zone or not. This is a string with the zone number or `null`. Only for newly created resources.
+Controls whether the NAT Gateway will be bound to a specific zone or not. This is a string with the zone number or `null`. Only
+for newly created resources.
 
-NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. 
-Keep in mind that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But if that zone becomes unavailable resources in other zones will loose internet connectivity. 
+NAT Gateway is not zone-redundant. It is a zonal resource. It means that it's always deployed in a zone. It's up to the user to
+decide if a zone will be specified during resource deployment or if Azure will take that decision for the user. Keep in mind
+that regardless of the fact that NAT Gateway is placed in a specific zone it can serve traffic for resources in all zones. But
+if that zone becomes unavailable, resources in other zones will lose internet connectivity.
 
 For design considerations, limitation and examples of zone-resiliency architecture please refer to [Microsoft documentation](https://learn.microsoft.com/en-us/azure/virtual-network/nat-gateway/nat-availability-zones).
 
@@ -196,16 +202,18 @@ A map defining a Public IP resource.
 
 List of available properties:
 
-- `create`              - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all
-- `name`                - (`string`, required) name of a created or sourced Public IP
-- `resource_group_name`  - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when `create = true`
+- `create`              - (`bool`, required) controls whether a Public IP is created, sourced, or not used at all.
+- `name`                - (`string`, required) name of a created or sourced Public IP.
+- `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP resource, ignored when
+                          `create = true`.
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
 `create` | `name` | operation
 --- | --- | ---
 `true` | `!null` | a Public IP resource is created in a resource group of the NAT Gateway
-`false` | `!null` | a Public IP resource is sourced from a resource group of the NAT Gateway, the resource group can be overridden with `resource_group_name` property
+`false` | `!null` | a Public IP resource is sourced from a resource group of the NAT Gateway, the resource group can be
+                    overridden with `resource_group_name` property
 `false` | `null` | a Public IP resource will not be created or sourced at all
   
 Example:
@@ -247,17 +255,20 @@ A map defining a Public IP Prefix resource.
   
 List of available properties:
 
-- `create`              - (`bool`, required) controls whether a Public IP Prefix is created, sourced, or not used at all
-- `name`                - (`string`, required) name of a created or sourced Public IP Prefix
-- `resource_group_name`  - (`string`, optional) name of a resource group hosting the sourced Public IP Prefix resource, ignored when `create = true`
-- `length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this value can be between `0` and `31` but can be limited on subscription level (Azure default is `/28`)
+- `create`              - (`bool`, required) controls whether a Public IP Prefix is created, sourced, or not used at all.
+- `name`                - (`string`, required) name of a created or sourced Public IP Prefix.
+- `resource_group_name` - (`string`, optional) name of a resource group hosting the sourced Public IP Prefix resource, ignored
+                          when `create = true`.
+- `length`              - (`number`, optional, defaults to `28`) number of bits of the Public IP Prefix, this value can be
+                          between `0` and `31` but can be limited on subscription level (Azure default is `/28`).
 
 The module operates in 3 modes, depending on combination of `create` and `name` properties:
 
 `create` | `name` | operation
 --- | --- | ---
 `true` | `!null` | a Public IP Prefix resource is created in a resource group of the NAT Gateway
-`false` | `!null` | a Public IP Prefix resource is sourced from a resource group of the NAT Gateway, the resource group can be overridden with `resource_group_name` property
+`false` | `!null` | a Public IP Prefix resource is sourced from a resource group of the NAT Gateway, the resource group can be
+                    overridden with `resource_group_name` property
 `false` | `null` | a Public IP Prefix resource will not be created or sourced at all
 
 Example:
@@ -285,7 +296,7 @@ object({
     create              = bool
     name                = string
     resource_group_name = optional(string)
-    length              = optional(number)
+    length              = optional(number, 28)
   })
 ```
 

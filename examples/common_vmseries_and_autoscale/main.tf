@@ -62,23 +62,16 @@ module "natgw" {
 
   for_each = var.natgws
 
-  create_natgw        = try(each.value.create_natgw, true)
-  name                = "${var.name_prefix}${each.value.name}"
-  resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
+  create_natgw        = each.value.create_natgw
+  name                = each.value.create_natgw ? "${var.name_prefix}${each.value.name}" : each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
   zone                = try(each.value.zone, null)
-  idle_timeout        = try(each.value.idle_timeout, null)
+  idle_timeout        = each.value.idle_timeout
   subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
-  create_pip                       = try(each.value.create_pip, true)
-  existing_pip_name                = try(each.value.existing_pip_name, null)
-  existing_pip_resource_group_name = try(each.value.existing_pip_resource_group_name, null)
-
-  create_pip_prefix                       = try(each.value.create_pip_prefix, false)
-  pip_prefix_length                       = try(each.value.create_pip_prefix, false) ? try(each.value.pip_prefix_length, null) : null
-  existing_pip_prefix_name                = try(each.value.existing_pip_prefix_name, null)
-  existing_pip_prefix_resource_group_name = try(each.value.existing_pip_prefix_resource_group_name, null)
-
+  public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
+  public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)
 
   tags       = var.tags
   depends_on = [module.vnet]
