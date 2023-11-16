@@ -101,37 +101,41 @@ module "load_balancer" {
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
   resource_group_name = local.resource_group.name
-  enable_zones        = var.enable_zones
-  avzones             = try(each.value.avzones, null)
+  zones               = each.value.zones
 
-  network_security_group_name = try(
-    "${var.name_prefix}${var.vnets[each.value.nsg_vnet_key].network_security_groups[each.value.nsg_key].name}",
-    each.value.network_security_group_name,
+  health_probes = each.value.health_probes
+
+  nsg_auto_rules_settings = try(
+    {
+      nsg_name = try(
+        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[each.value.nsg_auto_rules_settings.nsg_key].name}",
+        each.value.nsg_auto_rules_settings.nsg_name
+      )
+      nsg_resource_group_name = try(
+        var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].resource_group_name,
+        each.value.nsg_auto_rules_settings.nsg_resource_group_name,
+        null
+      )
+      source_ips    = each.value.nsg_auto_rules_settings.source_ips
+      base_priority = each.value.nsg_auto_rules_settings.base_priority
+    },
     null
   )
-  # network_security_group_name          = try(each.value.network_security_group_name, null)
-  network_security_resource_group_name = try(
-    var.vnets[each.value.nsg_vnet_key].resource_group_name,
-    each.value.network_security_group_rg_name,
-    null
-  )
-  network_security_allow_source_ips = try(each.value.network_security_allow_source_ips, [])
 
   frontend_ips = {
-    for k, v in each.value.frontend_ips : k => {
-      create_public_ip         = try(v.create_public_ip, false)
-      public_ip_name           = try(v.public_ip_name, null)
-      public_ip_resource_group = try(v.public_ip_resource_group, null)
-      private_ip_address       = try(v.private_ip_address, null)
-      subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
-      in_rules                 = try(v.in_rules, {})
-      out_rules                = try(v.out_rules, {})
-    }
+    for k, v in each.value.frontend_ips : k => merge(
+      v,
+      {
+        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
+        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+      }
+    )
   }
 
   tags       = var.tags
   depends_on = [module.vnet]
 }
+
 
 
 
