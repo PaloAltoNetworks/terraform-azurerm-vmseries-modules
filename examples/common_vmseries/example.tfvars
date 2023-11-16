@@ -157,6 +157,9 @@ load_balancers = {
   }
 }
 
+ngfw_metrics = {
+  name = "metrics"
+}
 
 
 # # --- VMSERIES PART --- #
