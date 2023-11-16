@@ -22,7 +22,7 @@ module "vnet" {
 
   for_each = var.vnets
 
-  name                   = "${var.name_prefix}${each.value.name}"
+  name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
@@ -30,13 +30,15 @@ module "vnet" {
   address_space = each.value.address_space
 
   create_subnets = each.value.create_subnets
-  subnets = each.value.create_subnets ? {
-    for k, v in each.value.subnets : k => merge(v, { name = "${var.name_prefix}${v.name}" })
-  } : each.value.subnets
+  subnets        = each.value.subnets
 
-  network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  network_security_groups = {
+    for k, v in each.value.network_security_groups :
+    k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
-  route_tables = { for k, v in each.value.route_tables : k => merge(v, { name = "${var.name_prefix}${v.name}" })
+  route_tables = {
+    for k, v in each.value.route_tables :
+    k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
 
   tags = var.tags

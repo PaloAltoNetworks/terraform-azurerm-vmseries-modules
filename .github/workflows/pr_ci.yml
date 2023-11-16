@@ -22,7 +22,7 @@ on:
 jobs:
   pr_ci_wrkflw:
     name: Run CI
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v2.2
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/pr_ci.yml@v2.3
     secrets: inherit
     if: github.actor != 'dependabot[bot]'
     with:
@@ -31,3 +31,4 @@ jobs:
       validate_max_parallel: 20
       test_max_parallel: 10
       terratest_action: Plan # keep in mind that this has to start with capital letter
+      apply_timeout: 60

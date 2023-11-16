@@ -22,4 +22,4 @@ on:
 jobs:
   lint_pr_title:
     name: Lint PR
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/lint_pr_title.yml@v2
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/lint_pr_title.yml@v2.3
