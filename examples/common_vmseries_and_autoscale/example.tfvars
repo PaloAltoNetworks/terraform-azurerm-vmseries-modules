@@ -128,10 +128,12 @@ vnets = {
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name                              = "public-lb"
-    nsg_vnet_key                      = "transit"
-    nsg_key                           = "public"
-    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    name = "public-lb"
+    nsg_auto_rules_settings = {
+      nsg_vnet_key = "transit"
+      nsg_key      = "public"
+      source_ips   = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -168,38 +170,35 @@ load_balancers = {
 }
 
 appgws = {
-  # "public" = {
-  #   name       = "public-appgw"
-  #   vnet_key   = "transit"
-  #   subnet_key = "appgw"
-  #   zones      = ["1", "2", "3"]
-  #   capacity   = 2
-  #   rules = {
-  #     "minimum" = {
-  #       priority = 1
-  #       listener = {
-  #         port = 80
-  #       }
-  #       rewrite_sets = {
-  #         "xff-strip-port" = {
-  #           sequence = 100
-  #           request_headers = {
-  #             "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
-  #           }
-  #         }
-  #       }
-  #     }
-  #   }
-  # }
+  "public" = {
+    name       = "public-appgw"
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
+    capacity   = 2
+    rules = {
+      "minimum" = {
+        priority = 1
+        listener = {
+          port = 80
+        }
+        rewrite_sets = {
+          "xff-strip-port" = {
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+  }
 }
-
-
 
 # --- VMSERIES PART --- #
 ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
-
 
 vm_image_configuration = {
   img_version = "10.2.4"
@@ -228,11 +227,11 @@ scale_sets = {
         load_balancer_key = "private"
       },
       {
-        name              = "public"
-        subnet_key        = "public"
-        load_balancer_key = "public"
-        # application_gateway_key = "public"
-        create_public_ip = true
+        name                    = "public"
+        subnet_key              = "public"
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
+        create_public_ip        = true
       }
     ]
     autoscaling_profiles = [
@@ -268,81 +267,4 @@ scale_sets = {
       },
     ]
   }
-  common2 = {
-    name = "common2-vmss"
-    scale_set_configuration = {
-      vnet_key          = "transit"
-      bootstrap_options = "type=dhcp-client"
-    }
-    interfaces = [
-      {
-        name             = "management"
-        subnet_key       = "management"
-        create_public_ip = true
-      },
-      {
-        name              = "private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
-        name              = "public"
-        subnet_key        = "public"
-        load_balancer_key = "public"
-        # application_gateway_key = "public"
-        create_public_ip = true
-      }
-    ]
-  }
 }
-
-# vmss = {
-#   "common" = {
-#     name              = "common-vmss"
-#     vnet_key          = "transit"
-#     zones             = ["1", "2", "3"]
-#     bootstrap_options = "type=dhcp-client"
-
-#     interfaces = [
-#       {
-#         name       = "management"
-#         subnet_key = "management"
-#         create_pip = true # see disclaimer on README for details
-#       },
-#       {
-#         name              = "private"
-#         subnet_key        = "private"
-#         load_balancer_key = "private"
-#       },
-#       {
-#         name                    = "public"
-#         subnet_key              = "public"
-#         load_balancer_key       = "public"
-#         application_gateway_key = "public"
-#         create_pip              = true
-#       }
-#     ]
-
-#     autoscale_config = {
-#       count_default = 2
-#       count_minimum = 1
-#       count_maximum = 3
-#     }
-#     autoscale_metrics = {
-#       "DataPlaneCPUUtilizationPct" = {
-#         scaleout_threshold = 80
-#         scalein_threshold  = 20
-#       }
-#     }
-#     scaleout_config = {
-#       statistic        = "Average"
-#       time_aggregation = "Average"
-#       window_minutes   = 10
-#       cooldown_minutes = 30
-#     }
-#     scalein_config = {
-#       window_minutes   = 10
-#       cooldown_minutes = 300
-#     }
-#   }
-# }

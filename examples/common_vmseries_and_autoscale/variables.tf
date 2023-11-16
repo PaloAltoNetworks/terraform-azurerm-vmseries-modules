@@ -362,7 +362,6 @@ variable "scale_sets" {
       bootstrap_options            = optional(string)
       vm_size                      = optional(string)
       zones                        = optional(list(string))
-      zone_balance                 = optional(bool)
       storage_account_type         = optional(string)
       accelerated_networking       = optional(bool)
       encryption_at_host_enabled   = optional(bool)
