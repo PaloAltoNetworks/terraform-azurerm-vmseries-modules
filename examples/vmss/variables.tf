@@ -134,8 +134,9 @@ variable "ngfw_metrics" {
   All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
   > [!Note]
-  > We do not explicitly define Application Insights instances. Each Virtual Machine Scale Set will receive one automatically.
-  > The name of the Application Insights instance will be derived from the Scale Set name, suffixed with `-ai`.
+  > We do not explicitly define Application Insights instances. Each Virtual Machine Scale Set will receive one automatically
+  > if there is at least one autoscaling profile defined.
+  > The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
 
   Following properties are available:
 
@@ -159,13 +160,62 @@ variable "ngfw_metrics" {
 }
 
 variable "scale_sets" {
-  default = null
+  description = <<-EOF
+  A map defining Azure Virtual Machine Scale Set based on Next Generation Firewall image.
+
+  For details and defaults for available options please refer to the[`vmss`](../../modules/vmss/README.md) module.
+
+  Following properties are available:
+
+  - `name`                    - (`string`) name of the scale set, will be prefixed with the value of `var.name_prefix`
+  - `scale_set_configuration` - (`map`, optional, defaults to `{}`) a map that groups most common Scale Set configuration options.
+
+    Below we present only the most important ones, for the rest please refer to
+    [module's documentation](../../modules/vmss/README.md#scale_set_configuration):
+
+    - `vm_size`               - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
+                                Deployment Guide* as only a few selected sizes are supported
+    - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
+                                this Scale Set will be created
+    - `storage_account_type`  - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
+                                possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                                `vm_size` values)
+
+  - `autoscaling_configuration` - (`map`, optional, defaults to `{}`) a map that groups common autoscaling configuration, but not
+                                  the scaling profiles (metrics thresholds, etc)
+
+    Below we present only the most important properties, for the rest please refer to
+    [module's documentation](../../modules/vmss/README.md#autoscaling_configuration).
+
+    - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in the
+                          scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the
+                          metrics to the thresholds
+
+  - `interfaces`  - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup> interface
+                    should be the management one. Following properties are available:
+    - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`)
+    - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
+                                  `var.vnets`
+    - `vnet_key`                - (`string`, required) a key of a VNET hosting the subnet specified by `subnet_key`
+    - `create_public_ip`        - (`bool`, optional, defaults to module defaults) create Public IP for an interface
+    - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the
+                                  `var.loadbalancers` variable
+    - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the
+                                  `var.appgws`
+    - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label
+                                  for each VM instance
+
+  - `autoscaling_profiles`  - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
+                              configuration please refer to
+                              [module's documentation](../../modules/vmss/README.md#autoscaling_profiles)
+
+  EOF
+  default     = null
   type = map(object({
     name = string
     scale_set_configuration = optional(object({
       vm_size                      = optional(string)
       zones                        = optional(list(string))
-      zone_balance                 = optional(bool)
       storage_account_type         = optional(string)
       accelerated_networking       = optional(bool)
       encryption_at_host_enabled   = optional(bool)
@@ -175,7 +225,6 @@ variable "scale_sets" {
       disk_encryption_set_id       = optional(string)
     }), {})
     autoscaling_configuration = optional(object({
-      application_insights_id = optional(string)
       default_count           = optional(number)
       scale_in_policy         = optional(string)
       scale_in_force_deletion = optional(bool)
@@ -183,13 +232,13 @@ variable "scale_sets" {
       webhooks_uris           = optional(map(string), {})
     }), {})
     interfaces = list(object({
-      name                   = string
-      vnet_key               = string
-      subnet_key             = string
-      create_public_ip       = optional(bool)
-      lb_backend_pool_ids    = optional(list(string))
-      appgw_backend_pool_ids = optional(list(string))
-      pip_domain_name_label  = optional(string)
+      name                    = string
+      vnet_key                = string
+      subnet_key              = string
+      create_public_ip        = optional(bool)
+      load_balancer_key       = optional(string)
+      application_gateway_key = optional(string)
+      pip_domain_name_label   = optional(string)
     }))
     autoscaling_profiles = optional(list(object({
       name          = string

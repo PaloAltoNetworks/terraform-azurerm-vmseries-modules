@@ -36,7 +36,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   single_placement_group       = var.scale_set_configuration.single_placement_group
   sku                          = var.scale_set_configuration.vm_size
   zones                        = var.scale_set_configuration.zones
-  zone_balance                 = var.scale_set_configuration.zone_balance
+  zone_balance                 = length(coalesce(var.scale_set_configuration.zones, [])) > 0
   provision_vm_agent           = false
 
   dynamic "plan" {
@@ -67,7 +67,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
   upgrade_mode = "Manual" # See README for more details no this setting.
 
-  custom_data = var.bootstrap_options == null ? null : base64encode(var.bootstrap_options)
+  custom_data = var.scale_set_configuration.bootstrap_options == null ? null : base64encode(var.scale_set_configuration.bootstrap_options)
 
   scale_in {
     rule                   = var.autoscaling_configuration.scale_in_policy

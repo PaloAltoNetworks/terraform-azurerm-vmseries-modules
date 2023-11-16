@@ -60,7 +60,7 @@ module "vnet" {
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"
 
-  count = var.ngfw_metrics == null ? 0 : 1
+  count = var.ngfw_metrics != null && anytrue([for _, v in var.scale_sets : length(v.autoscaling_profiles) > 0]) ? 1 : 0
 
   create_workspace = var.ngfw_metrics.create_workspace
 

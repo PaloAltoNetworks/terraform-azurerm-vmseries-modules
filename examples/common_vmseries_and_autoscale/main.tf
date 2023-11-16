@@ -1,6 +1,6 @@
 # Generate a random password.
 resource "random_password" "this" {
-  count = var.vmseries_password == null ? 1 : 0
+  count = var.authentication.password == null ? 1 : 0
 
   length           = 16
   min_lower        = 16 - 4
@@ -11,8 +11,8 @@ resource "random_password" "this" {
 }
 
 locals {
-  vmseries_password               = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
-  disable_password_authentication = local.vmseries_password == null ? true : false
+  password       = coalesce(var.authentication.password, try(random_password.this[0].result, null))
+  authentication = merge(var.authentication, { password = local.password })
 }
 
 # Create or source the Resource Group.
@@ -129,21 +129,23 @@ module "load_balancer" {
   depends_on = [module.vnet]
 }
 
+module "ngfw_metrics" {
+  source = "../../modules/ngfw_metrics"
 
-# Create the scale sets and related resources.
-module "ai" {
-  source = "../../modules/application_insights"
+  count = var.ngfw_metrics != null && anytrue([for _, v in var.scale_sets : length(v.autoscaling_profiles) > 0]) ? 1 : 0
 
-  for_each = { for k, v in var.vmss : k => "${v.name}-ai" if can(v.autoscale_metrics) }
+  create_workspace = var.ngfw_metrics.create_workspace
 
-  name                = "${var.name_prefix}${each.value}"
-  resource_group_name = local.resource_group.name
+  name                = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
+  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
   location            = var.location
 
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+  log_analytics_config = {
+    sku                       = var.ngfw_metrics.sku
+    metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
+  }
+
+  application_insights = { for k, v in var.scale_sets : k => { name = "${var.name_prefix}${v.name}-ai" } }
 
   tags = var.tags
 }
@@ -181,71 +183,32 @@ module "appgw" {
 module "vmss" {
   source = "../../modules/vmss"
 
-  for_each = var.vmss
+  for_each = coalesce(var.scale_sets, {})
 
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  username                        = var.vmseries_username
-  password                        = local.vmseries_password
-  disable_password_authentication = local.disable_password_authentication
-  img_sku                         = var.vmseries_sku
-  img_version                     = try(each.value.version, var.vmseries_version)
-  vm_size                         = try(each.value.vm_size, var.vmseries_vm_size)
-  zone_balance                    = var.enable_zones
-  zones                           = var.enable_zones ? try(each.value.zones, null) : []
+  authentication          = local.authentication
+  scale_set_configuration = each.value.scale_set_configuration
+  vm_image_configuration  = var.vm_image_configuration
 
-  encryption_at_host_enabled   = try(each.value.encryption_at_host_enabled, null)
-  overprovision                = try(each.value.overprovision, null)
-  platform_fault_domain_count  = try(each.value.platform_fault_domain_count, null)
-  proximity_placement_group_id = try(each.value.proximity_placement_group_id, null)
-  scale_in_policy              = try(each.value.scale_in_policy, null)
-  scale_in_force_deletion      = try(each.value.scale_in_force_deletion, null)
-  single_placement_group       = try(each.value.single_placement_group, null)
-  storage_account_type         = try(each.value.storage_account_type, null)
-  disk_encryption_set_id       = try(each.value.disk_encryption_set_id, null)
-  use_custom_image             = try(each.value.use_custom_image, false)
-  custom_image_id              = try(each.value.use_custom_image, false) ? each.value.custom_image_id : null
-
-  accelerated_networking = try(each.value.accelerated_networking, null)
   interfaces = [
     for v in each.value.interfaces : {
       name                   = v.name
-      subnet_id              = module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key]
-      create_pip             = try(v.create_pip, false)
-      pip_domain_name_label  = try(v.pip_domain_name_label, null)
+      subnet_id              = module.vnet[each.value.scale_set_configuration.vnet_key].subnet_ids[v.subnet_key]
+      create_public_ip       = v.create_public_ip
+      pip_domain_name_label  = v.pip_domain_name_label
       lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])
       appgw_backend_pool_ids = try([module.appgw[v.application_gateway_key].backend_pool_id], [])
     }
   ]
 
-  bootstrap_options = each.value.bootstrap_options
-
-  application_insights_id = can(each.value.autoscale_metrics) ? module.ai[each.key].application_insights_id : null
-
-  autoscale_count_default       = try(each.value.autoscale_config.count_default, null)
-  autoscale_count_minimum       = try(each.value.autoscale_config.count_minimum, null)
-  autoscale_count_maximum       = try(each.value.autoscale_config.count_maximum, null)
-  autoscale_notification_emails = try(each.value.autoscale_config.notification_emails, null)
-
-  autoscale_metrics = try(each.value.autoscale_metrics, {})
-
-  scaleout_statistic        = try(each.value.scaleout_config.statistic, null)
-  scaleout_time_aggregation = try(each.value.scaleout_config.time_aggregation, null)
-  scaleout_window_minutes   = try(each.value.scaleout_config.window_minutes, null)
-  scaleout_cooldown_minutes = try(each.value.scaleout_config.cooldown_minutes, null)
-
-  scalein_statistic        = try(each.value.scalein_config.statistic, null)
-  scalein_time_aggregation = try(each.value.scalein_config.time_aggregation, null)
-  scalein_window_minutes   = try(each.value.scalein_config.window_minutes, null)
-  scalein_cooldown_minutes = try(each.value.scalein_config.cooldown_minutes, null)
+  autoscaling_configuration = merge(
+    each.value.autoscaling_configuration,
+    { application_insights_id = try(module.ngfw_metrics[0].application_insights_ids[each.key], null) }
+  )
+  autoscaling_profiles = each.value.autoscaling_profiles
 
   tags = var.tags
-
-  depends_on = [
-    module.ai,
-    module.vnet,
-    module.appgw
-  ]
 }

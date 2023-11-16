@@ -1,7 +1,7 @@
 # --- GENERAL --- #
 location            = "North Europe"
 resource_group_name = "autoscale-common"
-name_prefix         = "example-"
+name_prefix         = "fosix-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -23,7 +23,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -101,20 +101,20 @@ vnets = {
       "management" = {
         name                            = "mgmt-snet"
         address_prefixes                = ["10.0.0.0/28"]
-        network_security_group          = "management"
-        route_table                     = "management"
+        network_security_group_key      = "management"
+        route_table_key                 = "management"
         enable_storage_service_endpoint = true
       }
       "private" = {
         name             = "private-snet"
         address_prefixes = ["10.0.0.16/28"]
-        route_table      = "private"
+        route_table_key  = "private"
       }
       "public" = {
-        name                   = "public-snet"
-        address_prefixes       = ["10.0.0.32/28"]
-        network_security_group = "public"
-        route_table            = "public"
+        name                       = "public-snet"
+        address_prefixes           = ["10.0.0.32/28"]
+        network_security_group_key = "public"
+        route_table_key            = "public"
       }
       "appgw" = {
         name             = "appgw-snet"
@@ -166,50 +166,59 @@ load_balancers = {
 }
 
 appgws = {
-  "public" = {
-    name       = "public-appgw"
-    vnet_key   = "transit"
-    subnet_key = "appgw"
-    zones      = ["1", "2", "3"]
-    capacity   = 2
-    rules = {
-      "minimum" = {
-        priority = 1
-        listener = {
-          port = 80
-        }
-        rewrite_sets = {
-          "xff-strip-port" = {
-            sequence = 100
-            request_headers = {
-              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
-            }
-          }
-        }
-      }
-    }
-  }
+  # "public" = {
+  #   name       = "public-appgw"
+  #   vnet_key   = "transit"
+  #   subnet_key = "appgw"
+  #   zones      = ["1", "2", "3"]
+  #   capacity   = 2
+  #   rules = {
+  #     "minimum" = {
+  #       priority = 1
+  #       listener = {
+  #         port = 80
+  #       }
+  #       rewrite_sets = {
+  #         "xff-strip-port" = {
+  #           sequence = 100
+  #           request_headers = {
+  #             "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+  #           }
+  #         }
+  #       }
+  #     }
+  #   }
+  # }
 }
 
 
 
 # --- VMSERIES PART --- #
-application_insights = {}
+ngfw_metrics = {
+  name = "ngwf-log-analytics-wrksp"
+}
 
-vmseries_version = "10.2.3"
-vmseries_vm_size = "Standard_DS3_v2"
-vmss = {
-  "common" = {
-    name              = "common-vmss"
-    vnet_key          = "transit"
-    zones             = ["1", "2", "3"]
-    bootstrap_options = "type=dhcp-client"
 
+vm_image_configuration = {
+  img_version = "10.2.4"
+}
+
+authentication = {
+  disable_password_authentication = false
+}
+
+scale_sets = {
+  common = {
+    name = "common-vmss"
+    scale_set_configuration = {
+      vnet_key          = "transit"
+      bootstrap_options = "type=dhcp-client"
+    }
     interfaces = [
       {
-        name       = "management"
-        subnet_key = "management"
-        create_pip = true # see disclaimer on README for details
+        name             = "management"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
         name              = "private"
@@ -217,34 +226,121 @@ vmss = {
         load_balancer_key = "private"
       },
       {
-        name                    = "public"
-        subnet_key              = "public"
-        load_balancer_key       = "public"
-        application_gateway_key = "public"
-        create_pip              = true
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
+        # application_gateway_key = "public"
+        create_public_ip = true
       }
     ]
-
-    autoscale_config = {
-      count_default = 2
-      count_minimum = 1
-      count_maximum = 3
+    autoscaling_profiles = [
+      {
+        name          = "default_profile"
+        default_count = 0
+      },
+      {
+        name          = "weekday_profile"
+        default_count = 2
+        minimum_count = 1
+        maximum_count = 3
+        recurrence = {
+          days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+          start_time = "07:30"
+          end_time   = "17:00"
+        }
+        scale_rules = [
+          {
+            name = "DataPlaneCPUUtilizationPct"
+            scale_out_config = {
+              threshold                  = 70
+              grain_window_minutes       = 5
+              aggregation_window_minutes = 30
+              cooldown_window_minutes    = 60
+            }
+            scale_in_config = {
+              threshold               = 40
+              cooldown_window_minutes = 120
+            }
+          },
+        ]
+      },
+    ]
+  }
+  common2 = {
+    name = "common2-vmss"
+    scale_set_configuration = {
+      vnet_key          = "transit"
+      bootstrap_options = "type=dhcp-client"
     }
-    autoscale_metrics = {
-      "DataPlaneCPUUtilizationPct" = {
-        scaleout_threshold = 80
-        scalein_threshold  = 20
+    interfaces = [
+      {
+        name             = "management"
+        subnet_key       = "management"
+        create_public_ip = true
+      },
+      {
+        name              = "private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
+      },
+      {
+        name              = "public"
+        subnet_key        = "public"
+        load_balancer_key = "public"
+        # application_gateway_key = "public"
+        create_public_ip = true
       }
-    }
-    scaleout_config = {
-      statistic        = "Average"
-      time_aggregation = "Average"
-      window_minutes   = 10
-      cooldown_minutes = 30
-    }
-    scalein_config = {
-      window_minutes   = 10
-      cooldown_minutes = 300
-    }
+    ]
   }
 }
+
+# vmss = {
+#   "common" = {
+#     name              = "common-vmss"
+#     vnet_key          = "transit"
+#     zones             = ["1", "2", "3"]
+#     bootstrap_options = "type=dhcp-client"
+
+#     interfaces = [
+#       {
+#         name       = "management"
+#         subnet_key = "management"
+#         create_pip = true # see disclaimer on README for details
+#       },
+#       {
+#         name              = "private"
+#         subnet_key        = "private"
+#         load_balancer_key = "private"
+#       },
+#       {
+#         name                    = "public"
+#         subnet_key              = "public"
+#         load_balancer_key       = "public"
+#         application_gateway_key = "public"
+#         create_pip              = true
+#       }
+#     ]
+
+#     autoscale_config = {
+#       count_default = 2
+#       count_minimum = 1
+#       count_maximum = 3
+#     }
+#     autoscale_metrics = {
+#       "DataPlaneCPUUtilizationPct" = {
+#         scaleout_threshold = 80
+#         scalein_threshold  = 20
+#       }
+#     }
+#     scaleout_config = {
+#       statistic        = "Average"
+#       time_aggregation = "Average"
+#       window_minutes   = 10
+#       cooldown_minutes = 30
+#     }
+#     scalein_config = {
+#       window_minutes   = 10
+#       cooldown_minutes = 300
+#     }
+#   }
+# }

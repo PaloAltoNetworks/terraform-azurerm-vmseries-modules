@@ -105,6 +105,15 @@ variable "scale_set_configuration" {
   - `storage_account_type`  - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                               possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                               `vm_size` values)
+  - `bootstrap_options`      - bootstrap options to pass to VM-Series instance.
+
+    Proper syntax is a string of semicolon separated properties, for example:
+
+    ```hcl
+    bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+    ```
+
+    For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
 
   List of other, optional properties: 
 
@@ -113,8 +122,6 @@ variable "scale_set_configuration" {
                                       management interface (always disabled)
   - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
                                       used to encrypt this VM's disk
-  - `zone_balance`                  - (`bool`, optional, defaults to `true`) when set to `true` VMs in this Scale Set will be
-                                      evenly distributed across configured Availability Zones
   - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
                                       by enabling Encryption at Host
   - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
@@ -133,8 +140,8 @@ variable "scale_set_configuration" {
   nullable    = false
   type = object({
     vm_size                      = optional(string, "Standard_D3_v2")
+    bootstrap_options            = optional(string)
     zones                        = optional(list(string), ["1", "2", "3"])
-    zone_balance                 = optional(bool, true)
     storage_account_type         = optional(string, "StandardSSD_LRS")
     accelerated_networking       = optional(bool, true)
     encryption_at_host_enabled   = optional(bool)
@@ -154,23 +161,6 @@ variable "scale_set_configuration" {
     error_message = "The `var.scale_set_configuration.zones` can either be a list of all Availability Zones or explicit `null`."
   }
 
-}
-
-variable "bootstrap_options" {
-  description = <<-EOF
-  Bootstrap options to pass to VM-Series instance.
-
-  Proper syntax is a string of semicolon separated properties, for example:
-
-  ```hcl
-  bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
-  ```
-
-  For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
-  EOF
-  default     = null
-  type        = string
-  sensitive   = true
 }
 
 variable "interfaces" {
@@ -237,20 +227,20 @@ variable "autoscaling_configuration" {
   Autoscaling configuration common to all policies.
 
   Following properties are available:
-  - `application_insights_id`       - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
-                                      be used to provide metrics for autoscaling; to **avoid false positives** this should be an
-                                      instance **dedicated to this Scale Set**
-  - `default_count`       - (`number`, optional, defaults to `2`) minimum number of instances that should be present
-                                      in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
-                                      to compare the metrics to the thresholds
-  - `scale_in_policy`               - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
-                                      during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
-  - `scale_in_force_deletion`       - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a
-                                      scale-in
-  - `notification_emails` - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
-                                      events
-  - `webhooks_uris`       - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
-                                      are just arbitrary identifiers and the values are the webhook URIs
+  - `application_insights_id` - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
+                                be used to provide metrics for autoscaling; to **avoid false positives** this should be an
+                                instance **dedicated to this Scale Set**
+  - `default_count`           - (`number`, optional, defaults to `2`) minimum number of instances that should be present
+                                in the scale set when the autoscaling engine cannot read the metrics or is otherwise unable
+                                to compare the metrics to the thresholds
+  - `scale_in_policy`         - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
+                                during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
+  - `scale_in_force_deletion` - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a 
+                                scale-in
+  - `notification_emails`     - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
+                                events
+  - `webhooks_uris`           - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
+                                are just arbitrary identifiers and the values are the webhook URIs
   EOF
   default     = {}
   nullable    = false
@@ -444,6 +434,10 @@ variable "autoscaling_profiles" {
       })
     })), [])
   }))
+  validation { # profiles count
+    condition     = length(var.autoscaling_profiles) <= 20
+    error_message = "Azure supports up to 20 autoscaling profiles."
+  }
   validation {
     condition     = length(var.autoscaling_profiles) > 0 ? var.autoscaling_profiles[0].recurrence == null : true
     error_message = "The `autoscaling_profiles->recurrence` property is not allowed in the 1st profile definition."
@@ -480,6 +474,10 @@ variable "autoscaling_profiles" {
       can(regex("^(([0,1][0-9])|(2[0-3])):([0-5][0-9])$", v.recurrence.end_time))
     ]) : true
     error_message = "The `autoscaling_profiles->recurrence.end_time` property has to be a time in RFC3339 format."
+  }
+  validation { # scale_rules count
+    condition     = alltrue([for profile in var.autoscaling_profiles : length(profile.scale_rules) <= 10])
+    error_message = "Azure supports up to 10 scale rules per autoscaling profile."
   }
   validation { # scale_rule->operator
     condition = alltrue(flatten([

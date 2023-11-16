@@ -61,7 +61,7 @@ variable "log_analytics_config" {
     error_message = "The `var.log_analytics_config.sku` property has to have a value of either: `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation` or `PerGB2018`."
   }
   validation {
-    condition     = var.log_analytics_config.metrics_retention_in_days != null && var.log_analytics_config.metrics_retention_in_days >= 30 && var.log_analytics_config.metrics_retention_in_days <= 730
+    condition     = var.log_analytics_config.metrics_retention_in_days != null ? var.log_analytics_config.metrics_retention_in_days >= 30 && var.log_analytics_config.metrics_retention_in_days <= 730 : true
     error_message = "The `var.log_analytics_config.metrics_retention_in_days` property can take values between 30 and 730 (both inclusive)."
   }
 }

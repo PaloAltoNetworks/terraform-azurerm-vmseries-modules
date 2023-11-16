@@ -111,25 +111,4 @@ scale_sets = {
       },
     ]
   }
-  outbound = {
-    name = "outbound"
-    autoscaling_configuration = {
-      default_count = 0
-    }
-    interfaces = [
-      {
-        name       = "management"
-        vnet_key   = "vmss"
-        subnet_key = "vmss"
-        # create_public_ip = true
-      }
-    ]
-  }
 }
-
-# validations
-# - minimum, maximum count required when scale_rules != []
-# - operator in list of valid chars
-# - days is a valid list of days
-# - start time, end time are valid hours
-# - maximum number of rules and profiles not exceeded 
