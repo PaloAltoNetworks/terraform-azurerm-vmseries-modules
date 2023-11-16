@@ -127,15 +127,15 @@ This module is designed to work in several *modes* depending on which variables 
 Name | Type | Description
 --- | --- | ---
 [`name`](#name) | `string` | The name of the Azure Virtual Network.
-[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group to use.
-[`location`](#location) | `string` | Location of the deployed resources.
+[`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
+[`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 
 
 ## Module's Optional Inputs
 
 Name | Type | Description
 --- | --- | ---
-[`tags`](#tags) | `map` | Map of tags to assign to all created resources.
+[`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`create_virtual_network`](#create_virtual_network) | `bool` | Controls Virtual Network creation.
 [`address_space`](#address_space) | `list` | The address space used by the virtual network.
 [`network_security_groups`](#network_security_groups) | `map` | Map of objects describing Network Security Groups.
@@ -200,7 +200,7 @@ Type: string
 
 #### resource_group_name
 
-Name of the Resource Group to use.
+The name of the Resource Group to use.
 
 Type: string
 
@@ -208,7 +208,7 @@ Type: string
 
 #### location
 
-Location of the deployed resources.
+The name of the Azure region to deploy the resources in.
 
 Type: string
 
@@ -231,7 +231,7 @@ Type: string
 
 #### tags
 
-Map of tags to assign to all created resources.
+The map of tags to assign to all created resources.
 
 Type: map(string)
 
@@ -241,7 +241,10 @@ Default value: `map[]`
 
 #### create_virtual_network
 
-Controls Virtual Network creation. If `true`, create the Virtual Network, otherwise just use a pre-existing network.
+Controls Virtual Network creation.
+  
+When set to `true`, creates the Virtual Network, otherwise just use a pre-existing network.
+
 
 Type: bool
 
@@ -251,7 +254,10 @@ Default value: `true`
 
 #### address_space
 
-The address space used by the virtual network. You can supply more than one address space. Required only when you create a VNET.
+The address space used by the virtual network.
+  
+You can supply more than one address space. Required only when you create a VNET.
+
 
 Type: list(string)
 
@@ -266,23 +272,44 @@ Map of objects describing Network Security Groups.
 List of available properties:
 
 - `name`   - (`string`, required) name of the Network Security Group.
-- `rules`  - (`map`, optional) A list of objects representing Network Security Rules.
+- `rules`  - (`map`, optional, defaults to `{}`) A list of objects representing Network Security Rules.
 
-  Notice, all port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value, example: `21-23`. Following attributes are available:
+  > [!NOTE]
+  > All port values are integers between `0` and `65535`. Port ranges can be specified as `minimum-maximum` port value,
+  > example: `21-23`.
+    
+  Following attributes are available:
 
   - `name`                          - (`string`, required) name of the rule
-  - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096 and must be unique for each rule in the collection. The lower the priority number, the higher the priority of the rule.
-  - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming or outgoing traffic. Possible values are `Inbound` and `Outbound`.
-  - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied. Possible values are `Allow` and `Deny`.
-  - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol)
-  - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or a range of ports. This can also be an `*` to match all.
-  - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports or ranges of ports.
-  - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port or a range of ports. This can also be an `*` to match all.
-  - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of destination ports or a ranges of ports.
-  - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP range or `*` to match any IP. This can also be a tag. To see all available tags for a region use the following command (example for US West Central): `az network list-service-tags --location westcentralus`.
-  - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source address prefixes. Tags are not allowed.
-  - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix` for details.
-  - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of destination address prefixes. Tags are not allowed.
+  - `priority`                      - (`number`, required) numeric priority of the rule. The value can be between 100 and 4096
+                                      and must be unique for each rule in the collection. The lower the priority number,
+                                      the higher the priority of the rule.
+  - `direction`                     - (`string`, required) the direction specifies if rule will be evaluated on incoming
+                                      or outgoing traffic. Possible values are `Inbound` and `Outbound`.
+  - `access`                        - (`string`, required) specifies whether network traffic is allowed or denied.
+                                      Possible values are `Allow` and `Deny`.
+  - `protocol`                      - (`string`, required) a network protocol this rule applies to. Possible values include
+                                      `Tcp`, `Udp`, `Icmp`, or `*` (which matches all). For supported values refer to the
+                                      [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_securityrule#protocol)
+  - `source_port_range`             - (`string`, required, mutually exclusive with `source_port_ranges`) a source port or
+                                      a range of ports. This can also be an `*` to match all.
+  - `source_port_ranges`            - (`list`, required, mutually exclusive with `source_port_range`) a list of source ports
+                                      or ranges of ports.
+  - `source_address_prefix`         - (`string`, required, mutually exclusive with `source_address_prefixes`) source CIDR or IP
+                                      range or `*` to match any IP. This can also be a tag. To see all available tags for a
+                                      region use the following command (example for US West Central):
+                                      `az network list-service-tags --location westcentralus`.
+  - `source_address_prefixes`       - (`list`, required, mutually exclusive with `source_address_prefix`) a list of source
+                                      address prefixes. Tags are not allowed.
+  - `destination_port_range`        - (`string`, required, mutually exclusive with `destination_port_ranges`) destination port
+                                      or a range of ports. This can also be an `*` to match all.
+  - `destination_port_ranges`       - (`list`, required, mutually exclusive with `destination_port_range`) a list of
+                                      destination ports or a ranges of ports.
+  - `destination_address_prefix`    - (`string`, required, mutually exclusive with `destination_address_prefixes`) destination
+                                      CIDR or IP range or `*` to match any IP. Tags are allowed, see `source_address_prefix`
+                                      for details.
+  - `destination_address_prefixes`  - (`list`, required,  mutually exclusive with `destination_address_prefixes`) a list of 
+                                      destination address prefixes. Tags are not allowed.
 
 Example:
 ```hcl
@@ -291,33 +318,36 @@ Example:
     name = "network_security_group_1"
     rules = {
       "AllOutbound" = {
+        name =                     = "DefaultOutbound"
         priority                   = 100
         direction                  = "Outbound"
         access                     = "Allow"
         protocol                   = "Tcp"
         source_port_range          = "*"
-        destination_port_range     = "*"
         source_address_prefix      = "*"
+        destination_port_range     = "*"
         destination_address_prefix = "*"
       },
       "AllowSSH" = {
+        name                       = "InboundSSH"
         priority                   = 200
         direction                  = "Inbound"
         access                     = "Allow"
         protocol                   = "Tcp"
         source_port_range          = "*"
-        destination_port_range     = "22"
         source_address_prefix      = "*"
+        destination_port_range     = "22"
         destination_address_prefix = "*"
       },
       "AllowWebBrowsing" = {
+        name                       = "InboundWeb"
         priority                   = 300
         direction                  = "Inbound"
         access                     = "Allow"
         protocol                   = "Tcp"
         source_port_range          = "*"
-        destination_port_ranges    = ["80","443"]
         source_address_prefix      = "*"
+        destination_port_ranges    = ["80","443"]
         destination_address_prefix = "VirtualNetwork"
       }
     }
@@ -342,10 +372,10 @@ map(object({
       protocol                     = string
       source_port_range            = optional(string)
       source_port_ranges           = optional(list(string))
-      destination_port_range       = optional(string)
-      destination_port_ranges      = optional(list(string))
       source_address_prefix        = optional(string)
       source_address_prefixes      = optional(list(string))
+      destination_port_range       = optional(string)
+      destination_port_ranges      = optional(list(string))
       destination_address_prefix   = optional(string)
       destination_address_prefixes = optional(list(string))
     })), {})
@@ -451,11 +481,15 @@ If however `create_subnets` is set to `false` this is just a mapping between the
 List of available attributes of each subnet entry:
 
 - `name`                            - (`string`, required) name of a subnet.
-- `address_prefixes`                - (`list(string)`, required when `create_subnets = true`) a list of address prefixes within VNET's address space to assign to a created subnet.
-- `network_security_group_key`      - (`string`, optional, defaults to `null`) a key identifying an NSG defined in `network_security_groups` that should be assigned to this subnet.
-- `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in `route_tables` that should be assigned to this subnet.
-- `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service endpoint on a subnet.
-                                      This is a suggested setting for the management interface when full bootstrapping using an Azure Storage Account is used.
+- `address_prefixes`                - (`list(string)`, required when `create_subnets = true`) a list of address prefixes within
+                                      VNET's address space to assign to a created subnet.
+- `network_security_group_key`      - (`string`, optional, defaults to `null`) a key identifying an NSG defined in
+                                      `network_security_groups` that should be assigned to this subnet.
+- `route_table_key`                 - (`string`, optional, defaults to `null`) a key identifying a Route Table defined in
+                                      `route_tables` that should be assigned to this subnet.
+- `enable_storage_service_endpoint` - (`bool`, optional, defaults to `false`) a flag that enables `Microsoft.Storage` service
+                                      endpoint on a subnet. This is a suggested setting for the management interface when full
+                                      bootstrapping using an Azure Storage Account is used.
 
 Example:
 ```hcl

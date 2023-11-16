@@ -31,7 +31,7 @@ module "vnet" {
 
   for_each = var.vnets
 
-  name                   = "${var.name_prefix}${each.value.name}"
+  name                   = each.value.create_virtual_network ? "${var.name_prefix}${each.value.name}" : each.value.name
   create_virtual_network = each.value.create_virtual_network
   resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
   location               = var.location
@@ -39,9 +39,7 @@ module "vnet" {
   address_space = each.value.address_space
 
   create_subnets = each.value.create_subnets
-  subnets = each.value.create_subnets ? {
-    for k, v in each.value.subnets : k => merge(v, { name = "${var.name_prefix}${v.name}" })
-  } : each.value.subnets
+  subnets        = each.value.subnets
 
   network_security_groups = { for k, v in each.value.network_security_groups : k => merge(v, { name = "${var.name_prefix}${v.name}" })
   }
@@ -249,38 +247,50 @@ module "vmseries" {
 
 # Sample application VMs and Load Balancers
 module "load_balancer" {
+  source = "../../modules/loadbalancer"
+
   for_each = var.load_balancers
-  source   = "../../modules/loadbalancer"
 
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
   resource_group_name = local.resource_group.name
-  enable_zones        = var.enable_zones
-  avzones             = try(each.value.avzones, null)
+  zones               = each.value.zones
 
-  network_security_group_name          = try(each.value.network_security_group_name, null)
-  network_security_resource_group_name = try(each.value.network_security_group_rg_name, null)
-  network_security_allow_source_ips    = try(each.value.network_security_allow_source_ips, [])
+  health_probes = each.value.health_probes
+
+  nsg_auto_rules_settings = try(
+    {
+      nsg_name = try(
+        "${var.name_prefix}${var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].network_security_groups[each.value.nsg_auto_rules_settings.nsg_key].name}",
+        each.value.nsg_auto_rules_settings.nsg_name
+      )
+      nsg_resource_group_name = try(
+        var.vnets[each.value.nsg_auto_rules_settings.nsg_vnet_key].resource_group_name,
+        each.value.nsg_auto_rules_settings.nsg_resource_group_name,
+        null
+      )
+      source_ips    = each.value.nsg_auto_rules_settings.source_ips
+      base_priority = each.value.nsg_auto_rules_settings.base_priority
+    },
+    null
+  )
 
   frontend_ips = {
-    for k, v in each.value.frontend_ips : k => {
-      create_public_ip         = try(v.create_public_ip, false)
-      public_ip_name           = try(v.public_ip_name, null)
-      public_ip_resource_group = try(v.public_ip_resource_group, null)
-      private_ip_address       = try(v.private_ip_address, null)
-      subnet_id                = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
-      in_rules                 = try(v.in_rules, {})
-      out_rules                = try(v.out_rules, {})
-      zones                    = var.enable_zones ? try(v.zones, null) : null # For the regions without AZ support.
-
-      gateway_load_balancer_frontend_ip_configuration_id = try(v.gwlb_key, null) != null ? module.gwlb[v.gwlb_key].frontend_ip_config_id : null
-    }
+    for k, v in each.value.frontend_ips : k => merge(
+      v,
+      {
+        public_ip_name = v.create_public_ip ? "${var.name_prefix}${v.public_ip_name}" : "${v.public_ip_name}",
+        subnet_id      = try(module.vnet[v.vnet_key].subnet_ids[v.subnet_key], null)
+        gwlb_fip_id    = try(module.gwlb[v.gwlb_key].frontend_ip_config_id, null)
+      }
+    )
   }
 
-  tags = var.tags
-
+  tags       = var.tags
   depends_on = [module.vnet]
 }
+
+
 
 resource "random_password" "appvms" {
   count = try(var.appvms_common.password, null) == null ? 1 : 0

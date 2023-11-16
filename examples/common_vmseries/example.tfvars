@@ -91,20 +91,20 @@ vnets = {
       "management" = {
         name                            = "mgmt-snet"
         address_prefixes                = ["10.0.0.0/28"]
-        network_security_group          = "management"
-        route_table                     = "management"
+        network_security_group_key      = "management"
+        route_table_key                 = "management"
         enable_storage_service_endpoint = true
       }
       "private" = {
         name             = "private-snet"
         address_prefixes = ["10.0.0.16/28"]
-        route_table      = "private"
+        route_table_key  = "private"
       }
       "public" = {
-        name                   = "public-snet"
-        address_prefixes       = ["10.0.0.32/28"]
-        network_security_group = "public"
-        route_table            = "public"
+        name                       = "public-snet"
+        address_prefixes           = ["10.0.0.32/28"]
+        network_security_group_key = "public"
+        route_table_key            = "public"
       }
       "appgw" = {
         name             = "appgw-snet"
@@ -122,12 +122,14 @@ load_balancers = {
     nsg_vnet_key                      = "transit"
     nsg_key                           = "public"
     network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
-    avzones                           = ["1", "2", "3"]
     frontend_ips = {
-      "palo-lb-app1" = {
+      "app1" = {
+        name             = "app1"
+        public_ip_name   = "public-lb-app1-pip"
         create_public_ip = true
         in_rules = {
           "balanceHttp" = {
+            name     = "HTTP"
             protocol = "Tcp"
             port     = 80
           }
@@ -136,15 +138,16 @@ load_balancers = {
     }
   }
   "private" = {
-    name    = "private-lb"
-    avzones = ["1", "2", "3"]
+    name = "private-lb"
     frontend_ips = {
       "ha-ports" = {
+        name               = "private-vmseries"
         vnet_key           = "transit"
         subnet_key         = "private"
         private_ip_address = "10.0.0.30"
         in_rules = {
           HA_PORTS = {
+            name     = "HA-ports"
             port     = 0
             protocol = "All"
           }
