@@ -64,7 +64,7 @@ vnets = {
       "vms" = {
         name             = "vms"
         address_prefixes = ["10.100.1.0/26"]
-        route_table      = "nva"
+        route_table_key  = "nva"
       }
       "bastion" = {
         name             = "AzureBastionSubnet"
