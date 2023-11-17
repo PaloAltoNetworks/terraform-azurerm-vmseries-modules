@@ -22,7 +22,7 @@ jobs:
     uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@v2.3
     with:
       pre-commit-hooks: terraform_fmt terraform_docs terraform_tflint checkov
-      checkout-branch: pre-commit-dependencies-update
+      branch: pre-commit-dependencies-update
 
   comment-pr:
     name: Give comment on the PR if pre-commit failed
