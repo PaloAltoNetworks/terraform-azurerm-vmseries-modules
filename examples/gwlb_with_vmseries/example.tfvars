@@ -1,6 +1,6 @@
 # Common
 name_prefix         = "example-"
-location            = "East US"
+location            = "North Europe"
 resource_group_name = "vmseries-gwlb"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
