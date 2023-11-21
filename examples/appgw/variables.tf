@@ -118,8 +118,8 @@ variable "appgws" {
   - `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
   - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
-  - `waf_enabled`                       - (`bool`, optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`
   - `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
+  - `waf`                               - (`object`, required) WAF configuration
   - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
   - `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
   - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
@@ -144,7 +144,6 @@ variable "appgws" {
     vnet_key           = string
     subnet_key         = string
     managed_identities = optional(list(string))
-    waf_enabled        = optional(bool, false)
     capacity = object({
       static = optional(number)
       autoscale = optional(object({
@@ -152,6 +151,21 @@ variable "appgws" {
         max = optional(number)
       }))
     })
+    waf = optional(object({
+      enabled                  = bool
+      firewall_mode            = optional(string)
+      rule_set_type            = optional(string, "OWASP")
+      rule_set_version         = optional(string)
+      disabled_rule_group      = optional(list(string))
+      file_upload_limit_mb     = optional(number, 100)
+      request_body_check       = optional(bool, true)
+      max_request_body_size_kb = optional(number, 128)
+      exclusion = optional(list(object({
+        match_variable          = string
+        selector_match_operator = optional(string)
+        selector                = optional(string)
+      })), [])
+    }))
     enable_http2                   = optional(bool)
     zones                          = list(string)
     frontend_ip_configuration_name = optional(string, "public_ipconfig")

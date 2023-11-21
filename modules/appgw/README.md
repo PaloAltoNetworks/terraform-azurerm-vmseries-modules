@@ -586,7 +586,7 @@ Name | Type | Description
 [`zones`](#zones) | `list` | A list of zones the Application Gateway should be available in.
 [`domain_name_label`](#domain_name_label) | `string` | Label for the Domain Name.
 [`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
-[`waf_enabled`](#waf_enabled) | `bool` | Enables WAF Application Gateway.
+[`waf`](#waf) | `object` | WAF configuration for Application Gateway.
 [`capacity`](#capacity) | `object` | Capacity configuration for Application Gateway.
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
 [`ssl_global`](#ssl_global) | `object` | Global SSL settings.
@@ -993,13 +993,40 @@ Default value: `false`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### waf_enabled
+#### waf
 
-Enables WAF Application Gateway. This only sets the SKU. This module does not support WAF rules configuration.
+WAF configuration for Application Gateway.
 
-Type: bool
+Object defines static or autoscale configuration using attributes:
+- `enabled`    - (`bool`, required) Enables WAF Application Gateway. This only sets the SKU. 
+                                    This module does not support WAF rules configuration.
+...
+...
+...
 
-Default value: `false`
+
+Type: 
+
+```hcl
+object({
+    enabled                  = bool
+    firewall_mode            = optional(string)
+    rule_set_type            = optional(string, "OWASP")
+    rule_set_version         = optional(string)
+    disabled_rule_group      = optional(list(string), [])
+    file_upload_limit_mb     = optional(number, 100)
+    request_body_check       = optional(bool, true)
+    max_request_body_size_kb = optional(number, 128)
+    exclusion = optional(list(object({
+      match_variable          = string
+      selector_match_operator = optional(string)
+      selector                = optional(string)
+    })), [])
+  })
+```
+
+
+Default value: `map[enabled:false]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

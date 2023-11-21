@@ -114,6 +114,66 @@ appgws = {
       }
     }
   }
+  "public-waf" = {
+    name           = "appgw-waf"
+    public_ip_name = "pip-waf"
+    vnet_key       = "transit"
+    subnet_key     = "appgw"
+    zones          = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    waf = {
+      enabled             = true
+      firewall_mode       = "Prevention"
+      rule_set_type       = "OWASP"
+      rule_set_version    = "3.2"
+      disabled_rule_group = ["REQUEST-921-PROTOCOL-ATTACK", "REQUEST-931-APPLICATION-ATTACK-RFI"]
+      exclusion = [{
+        match_variable          = "RequestHeaderNames"
+        selector_match_operator = "Contains"
+        selector                = "Cache-Control"
+      }]
+    }
+    backends = {
+      waf = {
+        name                  = "waf-backend"
+        port                  = 80
+        protocol              = "Http"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+      }
+    }
+    listeners = {
+      waf = {
+        name = "waf-listener"
+        port = 80
+      }
+    }
+    rewrites = {
+      waf = {
+        name = "waf-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "waf-xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      minimum = {
+        name     = "waf-rule"
+        priority = 1
+        backend  = "waf"
+        listener = "waf"
+        rewrite  = "waf"
+      }
+    }
+  }
   # If you test example for Application Gateway with SSL, you need to created directory files and create keys and certs using commands:
   # 1. Create CA private key and certificate:
   #    openssl genrsa 2048 > ca-key1.pem
