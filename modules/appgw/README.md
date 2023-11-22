@@ -998,11 +998,20 @@ Default value: `false`
 WAF configuration for Application Gateway.
 
 Object defines static or autoscale configuration using attributes:
-- `enabled`    - (`bool`, required) Enables WAF Application Gateway. This only sets the SKU. 
+- `enabled`                       - (`bool`, required) Enables WAF Application Gateway. This only sets the SKU.
                                     This module does not support WAF rules configuration.
-...
-...
-...
+- `enabled`                       - (`bool`, required) Is the Web Application Firewall enabled?
+- `firewall_mode`                 - (`string`, optional) The Web Application Firewall Mode
+- `rule_set_type`                 - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
+- `rule_set_version`              - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
+- `disabled_rule_group`           - (`list`, optional, defaults to `[]`) The rule group where specific rules should be disabled
+- `file_upload_limit_mb`          - (`number`, optional, defaults to `100`) The File Upload Limit in MB
+- `request_body_check`            - (`bool`, optional, defaults to `true`) Is Request Body Inspection enabled?
+- `max_request_body_size_kb`      - (`number`, optional, defaults to `128`) The Maximum Request Body Size in KB
+- `exclusion`                     - (`list`, optional) One or more exclusion defined as:
+    -   `match_variable`          - (`string`, required) Match variable of the exclusion rule to exclude header, cookie or GET arguments.
+    -   `selector_match_operator` - (`string`, optional) Operator which will be used to search in the variable content
+    -   `selector`                - (`string`, optional) String value which will be used for the filter operation
 
 
 Type: 

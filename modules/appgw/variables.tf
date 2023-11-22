@@ -76,11 +76,20 @@ variable "waf" {
   WAF configuration for Application Gateway.
 
   Object defines static or autoscale configuration using attributes:
-  - `enabled`    - (`bool`, required) Enables WAF Application Gateway. This only sets the SKU. 
+  - `enabled`                       - (`bool`, required) Enables WAF Application Gateway. This only sets the SKU.
                                       This module does not support WAF rules configuration.
-  ...
-  ...
-  ...
+  - `enabled`                       - (`bool`, required) Is the Web Application Firewall enabled?
+  - `firewall_mode`                 - (`string`, optional) The Web Application Firewall Mode
+  - `rule_set_type`                 - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
+  - `rule_set_version`              - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
+  - `disabled_rule_group`           - (`list`, optional, defaults to `[]`) The rule group where specific rules should be disabled
+  - `file_upload_limit_mb`          - (`number`, optional, defaults to `100`) The File Upload Limit in MB
+  - `request_body_check`            - (`bool`, optional, defaults to `true`) Is Request Body Inspection enabled?
+  - `max_request_body_size_kb`      - (`number`, optional, defaults to `128`) The Maximum Request Body Size in KB
+  - `exclusion`                     - (`list`, optional) One or more exclusion defined as:
+      -   `match_variable`          - (`string`, required) Match variable of the exclusion rule to exclude header, cookie or GET arguments.
+      -   `selector_match_operator` - (`string`, optional) Operator which will be used to search in the variable content
+      -   `selector`                - (`string`, optional) String value which will be used for the filter operation
   EOF
   default = {
     enabled = false
@@ -101,6 +110,38 @@ variable "waf" {
       selector                = optional(string)
     })), [])
   })
+  validation {
+    condition     = contains(["Detection", "Prevention"], coalesce(var.waf.firewall_mode, "Detection"))
+    error_message = "For `firewall_mode` possible values are Detection and Prevention"
+  }
+  validation {
+    condition     = contains(["OWASP", "Microsoft_BotManagerRuleSet"], var.waf.rule_set_type)
+    error_message = "For `rule_set_type` possible values are OWASP and Microsoft_BotManagerRuleSet"
+  }
+  validation {
+    condition     = contains(["0.1", "1.0", "2.2.9", "3.0", "3.1", "3.2"], coalesce(var.waf.rule_set_version, "3.2"))
+    error_message = "For `rule_set_version` possible values are 0.1, 1.0, 2.2.9, 3.0, 3.1 and 3.2"
+  }
+  validation {
+    condition     = var.waf.file_upload_limit_mb >= 1 && var.waf.file_upload_limit_mb <= 750
+    error_message = "The `file_upload_limit_mb` must be between 1 to 750."
+  }
+  validation {
+    condition     = var.waf.max_request_body_size_kb >= 1 && var.waf.max_request_body_size_kb <= 128
+    error_message = "The `max_request_body_size_kb` must be between 1 to 128."
+  }
+  validation {
+    condition     = length(setsubtract(coalesce(var.waf.disabled_rule_group, []), ["BadBots", "crs_20_protocol_violations", "crs_21_protocol_anomalies", "crs_23_request_limits", "crs_30_http_policy", "crs_35_bad_robots", "crs_40_generic_attacks", "crs_41_sql_injection_attacks", "crs_41_xss_attacks", "crs_42_tight_security", "crs_45_trojans", "General", "GoodBots", "Known-CVEs", "REQUEST-911-METHOD-ENFORCEMENT", "REQUEST-913-SCANNER-DETECTION", "REQUEST-920-PROTOCOL-ENFORCEMENT", "REQUEST-921-PROTOCOL-ATTACK", "REQUEST-930-APPLICATION-ATTACK-LFI", "REQUEST-931-APPLICATION-ATTACK-RFI", "REQUEST-932-APPLICATION-ATTACK-RCE", "REQUEST-933-APPLICATION-ATTACK-PHP", "REQUEST-941-APPLICATION-ATTACK-XSS", "REQUEST-942-APPLICATION-ATTACK-SQLI", "REQUEST-943-APPLICATION-ATTACK-SESSION-FIXATION", "REQUEST-944-APPLICATION-ATTACK-JAVA", "UnknownBots"])) == 0
+    error_message = "For `disabled_rule_group` possible values are: BadBots, crs_20_protocol_violations, crs_21_protocol_anomalies, crs_23_request_limits, crs_30_http_policy, crs_35_bad_robots, crs_40_generic_attacks, crs_41_sql_injection_attacks, crs_41_xss_attacks, crs_42_tight_security, crs_45_trojans, General, GoodBots, Known-CVEs, REQUEST-911-METHOD-ENFORCEMENT, REQUEST-913-SCANNER-DETECTION, REQUEST-920-PROTOCOL-ENFORCEMENT, REQUEST-921-PROTOCOL-ATTACK, REQUEST-930-APPLICATION-ATTACK-LFI, REQUEST-931-APPLICATION-ATTACK-RFI, REQUEST-932-APPLICATION-ATTACK-RCE, REQUEST-933-APPLICATION-ATTACK-PHP, REQUEST-941-APPLICATION-ATTACK-XSS, REQUEST-942-APPLICATION-ATTACK-SQLI, REQUEST-943-APPLICATION-ATTACK-SESSION-FIXATION, REQUEST-944-APPLICATION-ATTACK-JAVA and UnknownBots."
+  }
+  validation {
+    condition     = length(setsubtract(coalesce([for v in var.waf.exclusion : v.match_variable], []), ["RequestArgKeys", "RequestArgNames", "RequestArgValues", "RequestCookieKeys", "RequestCookieNames", "RequestCookieValues", "RequestHeaderKeys", "RequestHeaderNames", "RequestHeaderValues"])) == 0
+    error_message = "For `match_variable` possible values are: RequestArgKeys, RequestArgNames, RequestArgValues, RequestCookieKeys, RequestCookieNames, RequestCookieValues, RequestHeaderKeys, RequestHeaderNames and RequestHeaderValues."
+  }
+  validation {
+    condition     = length(setsubtract(coalesce([for v in var.waf.exclusion : v.selector_match_operator], []), ["Contains", "EndsWith", "Equals", "EqualsAny", "StartsWith"])) == 0
+    error_message = "For `selector_match_operator` possible values are: Contains, EndsWith, Equals, EqualsAny and StartsWith"
+  }
 }
 
 variable "capacity" {
