@@ -330,8 +330,8 @@ module "appgw" {
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
   managed_identities = each.value.managed_identities
-  waf_enabled        = each.value.waf_enabled
   capacity           = each.value.capacity
+  waf                = each.value.waf
   enable_http2       = each.value.enable_http2
   zones              = each.value.zones
 

@@ -124,16 +124,10 @@ appgws = {
       static = 2
     }
     waf = {
-      enabled             = true
-      firewall_mode       = "Prevention"
-      rule_set_type       = "OWASP"
-      rule_set_version    = "3.2"
-      disabled_rule_group = ["REQUEST-921-PROTOCOL-ATTACK", "REQUEST-931-APPLICATION-ATTACK-RFI"]
-      exclusion = [{
-        match_variable          = "RequestHeaderNames"
-        selector_match_operator = "Contains"
-        selector                = "Cache-Control"
-      }]
+      enabled          = true
+      firewall_mode    = "Prevention"
+      rule_set_type    = "OWASP"
+      rule_set_version = "3.2"
     }
     backends = {
       waf = {

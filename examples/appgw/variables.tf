@@ -119,7 +119,7 @@ variable "appgws" {
   - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
   - `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
-  - `waf`                               - (`object`, required) WAF configuration
+  - `waf`                               - (`object`, required) WAF basic configuration, defining WAF rules is not supported
   - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
   - `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
   - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
