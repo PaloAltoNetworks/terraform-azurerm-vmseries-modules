@@ -586,7 +586,7 @@ Name | Type | Description
 [`zones`](#zones) | `list` | A list of zones the Application Gateway should be available in.
 [`domain_name_label`](#domain_name_label) | `string` | Label for the Domain Name.
 [`enable_http2`](#enable_http2) | `bool` | Enable HTTP2 on the Application Gateway.
-[`waf`](#waf) | `object` | WAF configuration for Application Gateway.
+[`waf`](#waf) | `object` | Object sets only the SKU and provide basic WAF configuration for Application Gateway.
 [`capacity`](#capacity) | `object` | Capacity configuration for Application Gateway.
 [`managed_identities`](#managed_identities) | `list` | A list of existing User-Assigned Managed Identities.
 [`ssl_global`](#ssl_global) | `object` | Global SSL settings.
@@ -995,42 +995,24 @@ Default value: `false`
 
 #### waf
 
-WAF configuration for Application Gateway.
+Object sets only the SKU and provide basic WAF configuration for Application Gateway.
 
-Object defines static or autoscale configuration using attributes:
-- `enabled`                       - (`bool`, required) Enables WAF Application Gateway. This only sets the SKU.
-                                    This module does not support WAF rules configuration.
-- `enabled`                       - (`bool`, required) Is the Web Application Firewall enabled?
-- `firewall_mode`                 - (`string`, optional) The Web Application Firewall Mode
-- `rule_set_type`                 - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
-- `rule_set_version`              - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
-- `disabled_rule_group`           - (`list`, optional, defaults to `[]`) The rule group where specific rules should be disabled
-- `file_upload_limit_mb`          - (`number`, optional, defaults to `100`) The File Upload Limit in MB
-- `request_body_check`            - (`bool`, optional, defaults to `true`) Is Request Body Inspection enabled?
-- `max_request_body_size_kb`      - (`number`, optional, defaults to `128`) The Maximum Request Body Size in KB
-- `exclusion`                     - (`list`, optional) One or more exclusion defined as:
-    -   `match_variable`          - (`string`, required) Match variable of the exclusion rule to exclude header, cookie or GET arguments.
-    -   `selector_match_operator` - (`string`, optional) Operator which will be used to search in the variable content
-    -   `selector`                - (`string`, optional) String value which will be used for the filter operation
+This module does not support WAF rules configuration and advanced WAF settings.
+Only below attributes are allowed:
+- `enabled`          - (`bool`, required) Enables WAF Application Gateway
+- `firewall_mode`    - (`string`, optional) The Web Application Firewall Mode
+- `rule_set_type`    - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
+- `rule_set_version` - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
 
 
 Type: 
 
 ```hcl
 object({
-    enabled                  = bool
-    firewall_mode            = optional(string)
-    rule_set_type            = optional(string, "OWASP")
-    rule_set_version         = optional(string)
-    disabled_rule_group      = optional(list(string), [])
-    file_upload_limit_mb     = optional(number, 100)
-    request_body_check       = optional(bool, true)
-    max_request_body_size_kb = optional(number, 128)
-    exclusion = optional(list(object({
-      match_variable          = string
-      selector_match_operator = optional(string)
-      selector                = optional(string)
-    })), [])
+    enabled          = bool
+    firewall_mode    = optional(string)
+    rule_set_type    = optional(string, "OWASP")
+    rule_set_version = optional(string)
   })
 ```
 

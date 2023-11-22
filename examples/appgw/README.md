@@ -194,19 +194,10 @@ map(object({
       }))
     })
     waf = optional(object({
-      enabled                  = bool
-      firewall_mode            = optional(string)
-      rule_set_type            = optional(string, "OWASP")
-      rule_set_version         = optional(string)
-      disabled_rule_group      = optional(list(string))
-      file_upload_limit_mb     = optional(number, 100)
-      request_body_check       = optional(bool, true)
-      max_request_body_size_kb = optional(number, 128)
-      exclusion = optional(list(object({
-        match_variable          = string
-        selector_match_operator = optional(string)
-        selector                = optional(string)
-      })), [])
+      enabled          = bool
+      firewall_mode    = optional(string)
+      rule_set_type    = optional(string, "OWASP")
+      rule_set_version = optional(string)
     }))
     enable_http2                   = optional(bool)
     zones                          = list(string)

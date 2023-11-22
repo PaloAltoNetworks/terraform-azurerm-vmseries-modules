@@ -55,30 +55,10 @@ resource "azurerm_application_gateway" "this" {
     for_each = var.waf.enabled ? [1] : []
 
     content {
-      enabled                  = var.waf.enabled
-      firewall_mode            = var.waf.firewall_mode
-      rule_set_type            = var.waf.rule_set_type
-      rule_set_version         = var.waf.rule_set_version
-      file_upload_limit_mb     = var.waf.file_upload_limit_mb
-      request_body_check       = var.waf.request_body_check
-      max_request_body_size_kb = var.waf.max_request_body_size_kb
-
-      dynamic "disabled_rule_group" {
-        for_each = var.waf.disabled_rule_group
-
-        content {
-          rule_group_name = disabled_rule_group.value
-        }
-      }
-      dynamic "exclusion" {
-        for_each = var.waf.exclusion
-
-        content {
-          match_variable          = exclusion.value.match_variable
-          selector_match_operator = exclusion.value.selector_match_operator
-          selector                = exclusion.value.selector
-        }
-      }
+      enabled          = var.waf.enabled
+      firewall_mode    = var.waf.firewall_mode
+      rule_set_type    = var.waf.rule_set_type
+      rule_set_version = var.waf.rule_set_version
     }
   }
 
