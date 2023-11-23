@@ -155,6 +155,31 @@ resource "azurerm_monitor_autoscale_setting" "this" {
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id
 
   # the default profile or (when more then one) the profiles representing start times
+
+  # This code covers the Microsoft logic for creating multiple autoscaling profiles.
+  # From the variables point of view, the definition tries to mimic the Azure Portal interface.
+  # When defining 2 and more profiles, for the 2nd and latter are specifying start and end time (in HH:MM format).
+  # From the code/ARM point of view, there is nothing like end time for a profile. Instead of that the 1st (default)
+  # profile is being duplicated with the start time equal to the end time of a particular profile.
+
+  # Example. We have 3 profiles (let's skip the days part when configuring a profile window as it is not used in the logic):
+  #   - profile1 - the 1st one, default
+  #   - profile2 - starts at 7:00 ends at 17:00
+  #   - profile3 - start at 21:00 end at 22:30
+  # In this case `profile1` will never be created explicitly. Instead of that we will get 4 profiles, like the following:
+  #   - vmss_profile_1 - starts at 7:00, contains configuration of `profile2`
+  #   - vmss_profile_2 - starts at 21:00, contains configuration of `profile3`
+  #   - vmss_profile_3 - starts at 17:00, contains configuration of `profile1`
+  #   - vmss_profile_4 - starts at 22:30, contains configuration of `profile1`
+  # `vmss_profile_1` and `vmss_profile_2` will have names of `profile2` and `profile3` respectively.
+  # `vmss_profile_3` and `vmss_profile_4` will have auto-calculated names in the following format:
+  #     `name:profile1,for:profile#`, where `profile#` will be `profile3` and `profile4` respectively.
+
+  # Therefore, in the code below you have two dynamic `profile` blocks. The 1st one is defining the profiles with the
+  # starting time.
+  # The 2nd block is being run only when you have more than one profile and defines the closing profiles,
+  # so the ones with the end time.
+
   dynamic "profile" {
     # for_each = length(var.autoscaling_profiles) == 1 ? var.autoscaling_profiles : slice(var.autoscaling_profiles, 1, length(var.autoscaling_profiles))
     for_each = slice(var.autoscaling_profiles, length(var.autoscaling_profiles) == 1 ? 0 : 1, length(var.autoscaling_profiles))
