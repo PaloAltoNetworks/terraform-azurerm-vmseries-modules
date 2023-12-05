@@ -74,7 +74,8 @@ variable "vnets" {
     hub_resource_group_name = optional(string)
     hub_vnet_name           = optional(string)
     network_security_groups = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       rules = optional(map(object({
         name                         = string
         priority                     = number

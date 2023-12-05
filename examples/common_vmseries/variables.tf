@@ -97,7 +97,8 @@ variable "vnets" {
       })), {})
     })), {})
     route_tables = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       routes = map(object({
         name                = string
         address_prefix      = string
