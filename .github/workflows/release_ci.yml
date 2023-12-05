@@ -17,7 +17,7 @@ concurrency: release
 jobs:
   release_wrkflw:
     name: Do release
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@v2.3
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/release_ci.yml@dependabot/github_actions/tj-actions/changed-files-40
     secrets: inherit
     with:
       cloud: azure
