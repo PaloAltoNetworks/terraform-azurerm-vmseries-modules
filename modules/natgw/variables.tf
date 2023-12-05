@@ -62,8 +62,9 @@ variable "idle_timeout" {
 
 variable "subnet_ids" {
   description = <<-EOF
-  A map of subnet IDs what will be bound with this NAT Gateway. Value is the subnet ID, key value does not matter but should be
-  unique, typically it can be a subnet name.
+  A map of subnet IDs what will be bound with this NAT Gateway.
+  
+  Value is the subnet ID, key value does not matter but should be unique, typically it can be a subnet name.
   EOF
   type        = map(string)
 }

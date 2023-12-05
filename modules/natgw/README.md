@@ -66,7 +66,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.3, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.25
 
 
@@ -124,8 +124,9 @@ Type: string
 
 #### subnet_ids
 
-A map of subnet IDs what will be bound with this NAT Gateway. Value is the subnet ID, key value does not matter but should be
-unique, typically it can be a subnet name.
+A map of subnet IDs what will be bound with this NAT Gateway.
+  
+Value is the subnet ID, key value does not matter but should be unique, typically it can be a subnet name.
 
 
 Type: map(string)
