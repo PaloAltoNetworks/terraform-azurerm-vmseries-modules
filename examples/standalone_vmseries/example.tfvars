@@ -18,7 +18,8 @@ vnets = {
       "management" = {
         name = "mgmt-nsg"
         rules = {
-          vmseries_mgmt_allow_inbound = {
+          mgmt_inbound = {
+            name                       = "vmseries-management-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
@@ -33,9 +34,9 @@ vnets = {
     }
     subnets = {
       "management" = {
-        name                   = "mgmt-snet"
-        address_prefixes       = ["10.0.0.0/28"]
-        network_security_group = "management"
+        name                       = "mgmt-snet"
+        address_prefixes           = ["10.0.0.0/28"]
+        network_security_group_key = "management"
       }
     }
   }

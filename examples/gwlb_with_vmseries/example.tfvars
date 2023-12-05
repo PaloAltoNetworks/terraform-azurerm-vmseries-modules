@@ -29,7 +29,8 @@ vnets = {
       mgmt = {
         name = "vmseries-mgmt"
         rules = {
-          vmseries-mgmt-allow-inbound = {
+          mgmt_inbound = {
+            name                       = "vmseries-management-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
@@ -50,6 +51,7 @@ vnets = {
         name = "vmseries-mgmt"
         routes = {
           data-blackhole = {
+            name           = "data-blackhole-udr"
             address_prefix = "10.0.1.16/28"
             next_hop_type  = "None"
           }
@@ -59,6 +61,7 @@ vnets = {
         name = "vmseries-data"
         routes = {
           mgmt-blackhole = {
+            name           = "mgmt-blackhole-udr"
             address_prefix = "10.0.1.0/28"
             next_hop_type  = "None"
           }
@@ -81,7 +84,8 @@ vnets = {
       web = {
         name = "app1-web"
         rules = {
-          application-allow-inbound = {
+          application-inbound = {
+            name                       = "application-allow-inbound"
             priority                   = 100
             direction                  = "Inbound"
             access                     = "Allow"
@@ -206,18 +210,21 @@ vmseries_common = {
 load_balancers = {
   app1 = {
     name = "app1-web"
-
     frontend_ips = {
       app1 = {
+        name             = "app1"
         create_public_ip = true
+        public_ip_name   = "lb-app1-pip"
         gwlb_key         = "gwlb"
         in_rules = {
           http = {
+            name        = "HTTP"
             floating_ip = false
             port        = 80
             protocol    = "Tcp"
           }
           https = {
+            name        = "HTTPs"
             floating_ip = false
             port        = 443
             protocol    = "Tcp"
@@ -225,6 +232,7 @@ load_balancers = {
         }
         out_rules = {
           outbound = {
+            name     = "tcp-outbound"
             protocol = "Tcp"
           }
         }
