@@ -74,9 +74,12 @@ resource "azurerm_virtual_machine" "panorama" {
     admin_password = var.password
   }
 
-  boot_diagnostics {
-    enabled     = var.boot_diagnostic_storage_uri != null ? true : false
-    storage_uri = var.boot_diagnostic_storage_uri
+  dynamic "boot_diagnostics" {
+    for_each = var.boot_diagnostic_storage_uri != null ? [1] : []
+    content {
+      enabled     = true
+      storage_uri = var.boot_diagnostic_storage_uri
+    }
   }
 
   os_profile_linux_config {
