@@ -1,55 +1,34 @@
-locals {
-  bootstrap_filenames = { for f in try(fileset(var.bootstrap_files_dir, "**"), {}) : f => "${var.bootstrap_files_dir}/${f}" }
-  # invert var.files map 
-  inverted_files     = { for k, v in var.files : v => k }
-  inverted_filenames = merge(local.bootstrap_filenames, local.inverted_files)
-  # invert local.filenames map
-  filenames = { for k, v in local.inverted_filenames : v => k }
-}
-
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account
 resource "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 1 : 0
 
   name                     = var.name
   location                 = var.location
   resource_group_name      = var.resource_group_name
-  min_tls_version          = var.min_tls_version
+  min_tls_version          = var.storage_network_security.min_tls_version
   account_replication_type = "LRS"
   account_tier             = "Standard"
+  account_kind             = "StorageV2"
   tags                     = var.tags
 
-  queue_properties {
-    logging {
-      delete                = true
-      read                  = true
-      write                 = true
-      version               = "1.0"
-      retention_policy_days = var.retention_policy_days
+  dynamic "network_rules" {
+    for_each = length(var.storage_network_security.allowed_public_ips) > 0 || length(var.storage_network_security.allowed_subnet_ids) > 0 ? [1] : []
+    content {
+      default_action             = "Deny"
+      ip_rules                   = var.storage_network_security.allowed_public_ips
+      virtual_network_subnet_ids = var.storage_network_security.allowed_subnet_ids
     }
-  }
-  blob_properties {
-    delete_retention_policy {
-      days = var.blob_delete_retention_policy_days
-    }
-  }
-  network_rules {
-    default_action             = var.storage_acl == true ? "Deny" : "Allow"
-    ip_rules                   = var.storage_acl == true ? var.storage_allow_inbound_public_ips : null
-    virtual_network_subnet_ids = var.storage_acl == true ? var.storage_allow_vnet_subnet_ids : null
   }
 
   lifecycle {
     precondition {
-      condition     = var.storage_acl == true ? (length(var.storage_allow_vnet_subnet_ids) > 0 || length(var.storage_allow_inbound_public_ips) > 0) : true
-      error_message = "If 'storage_acl' is set to true, at least on of 'storage_allow_vnet_subnet_ids' or 'storage_allow_inbound_public_ips' must be a non-empty list."
-    }
-    precondition {
-      condition     = (length(var.storage_allow_vnet_subnet_ids) > 0 || length(var.storage_allow_inbound_public_ips) > 0) ? var.storage_acl == true : true
-      error_message = "If either 'storage_allow_vnet_subnet_ids' or 'storage_allow_inbound_public_ips' is a non-empty list, 'storage_acl' must be set to true."
+      condition     = var.location != null
+      error_message = "When creating a storage account the `location` variable cannot be null."
     }
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account
 data "azurerm_storage_account" "this" {
   count = var.create_storage_account ? 0 : 1
 
@@ -61,47 +40,91 @@ locals {
   storage_account = var.create_storage_account ? azurerm_storage_account.this[0] : data.azurerm_storage_account.this[0]
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share
 resource "azurerm_storage_share" "this" {
-  count = var.storage_share_name != null ? 1 : 0
+  for_each = var.file_shares
 
-  name                 = var.storage_share_name
+  name                 = each.value.name
   storage_account_name = local.storage_account.name
-  quota                = var.storage_share_quota
-  access_tier          = var.storage_share_access_tier
+  quota                = coalesce(each.value.quota, var.file_shares_configuration.quota)
+  access_tier          = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
+}
 
-  lifecycle {
-    precondition {
-      condition = var.storage_share_name != null ? alltrue([
-        can(regex("^[a-z0-9](-?[a-z0-9])+$", var.storage_share_name)),
-        can(regex("^([a-z0-9-]){3,63}$", var.storage_share_name))
-      ]) : true
-      error_message = "A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL schema."
+locals {
+  package_folders = ["content", "config", "software", "plugins", "license"]
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory
+resource "azurerm_storage_share_directory" "this" {
+  for_each = {
+    for v in setproduct(keys(var.file_shares), local.package_folders) :
+    join("-", v) => {
+      share_key   = v[0]
+      folder_name = v[1]
     }
+  }
+
+  name                 = each.value.folder_name
+  share_name           = azurerm_storage_share.this[each.value.share_key].name
+  storage_account_name = local.storage_account.name
+}
+
+locals {
+  bootstrap_filenames = {
+    for k, v in var.file_shares : k => {
+      for f in try(fileset(v.bootstrap_package_path, "**"), {}) : f => "${v.bootstrap_package_path}/${f}"
+    }
+  }
+
+  # invert var.files map 
+  inverted_files = {
+    for k, v in var.file_shares : k => {
+      for k, v in v.bootstrap_files : v => k
+    }
+  }
+
+  inverted_filenames = {
+    for k, _ in var.file_shares : k => merge(local.bootstrap_filenames[k], local.inverted_files[k])
+  }
+
+  # invert local.filenames map
+  filenames = {
+    for k, _ in var.file_shares : k => { for _k, _v in local.inverted_filenames[k] : _v => _k }
+  }
+  filenames_across_fileshares_flat = flatten([
+    for file_share, share_files in local.filenames : [
+      for source_path, dest_path in share_files : {
+        file_share      = file_share
+        source_path     = source_path
+        remote_path     = regex("^(.*)/", dest_path)[0]
+        remote_filename = regex("[^/]+$", dest_path)
+      }
+    ]
+  ])
+
+  filenames_across_fileshares = {
+    for v in local.filenames_across_fileshares_flat :
+    replace("${v.file_share}-${v.source_path}", "/[./]+/", "-") => v
   }
 }
 
-resource "azurerm_storage_share_directory" "this" {
-  for_each = var.storage_share_name != null ? toset([
-    "content",
-    "config",
-    "software",
-    "plugins",
-    "license"
-  ]) : toset([])
-
-  name                 = each.key
-  share_name           = azurerm_storage_share.this[0].name
-  storage_account_name = local.storage_account.name
-}
-
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_file
 resource "azurerm_storage_share_file" "this" {
-  for_each = var.storage_share_name != null ? local.filenames : {}
+  for_each = local.filenames_across_fileshares
 
-  name             = regex("[^/]*$", each.value)
-  path             = replace(each.value, "/[/]*[^/]*$/", "")
-  storage_share_id = azurerm_storage_share.this[0].id
-  source           = each.key
-  content_md5      = try(var.files_md5[each.key], filemd5(each.key))
+  # When creating files inside of a File Share we need to specify the path and filename separately
+  # regardless that the provider's documentation states that `name` can be also a path.
+  # When this is resource is used that way it errors out with the following message:
+  #   `... unexpected new value: Root object was present, but now absent.`
+  # The file is being created but state is not updated.
+  name             = each.value.remote_filename
+  path             = each.value.remote_path
+  storage_share_id = azurerm_storage_share.this[each.value.file_share].id
+  source           = each.value.source_path
+  content_md5 = try(
+    var.file_shares[each.value.file_share].bootstrap_files_md5[each.value.source_path],
+    filemd5(each.value.source_path)
+  )
 
   depends_on = [azurerm_storage_share_directory.this]
 }
