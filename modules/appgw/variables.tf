@@ -537,7 +537,7 @@ variable "rules" {
   description = <<-EOF
   A map of rules for the Application Gateway.
 
-  A rule combines, http settings and health check configuration.
+  A rule combines, backend, listener, rewrites and redirects configurations.
   A key is an application name that is used to prefix all components inside Application Gateway that are created for this application.
 
   Every rule contains attributes:
