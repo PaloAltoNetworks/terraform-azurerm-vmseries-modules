@@ -171,7 +171,7 @@ variable "ssl_global" {
                                         Normally you can set it also for `Custom` policies but the name is discarded
                                         on Azure side causing an update to Application Gateway each time terraform code is run.
                                         Therefore this property is omitted in the code for `Custom` policies.
-                                        For the `Predefined` polcies, check the Microsoft documentation
+                                        For the `Predefined` policies, check the Microsoft documentation
                                         https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
                                         for possible values as they tend to change over time.
                                         The default value is currently (Q1 2023) a Microsoft's default.
