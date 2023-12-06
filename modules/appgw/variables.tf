@@ -573,6 +573,14 @@ variable "rules" {
     condition     = length(flatten([for _, rule in var.rules : rule.name])) == length(distinct(flatten([for _, rule in var.rules : rule.name])))
     error_message = "The `name` property has to be unique among all rules."
   }
+  validation {
+    condition = alltrue([for _, rule in var.rules :
+      rule.backend != null && rule.redirect == null && rule.url_path_map == null ||
+      rule.backend == null && rule.redirect != null && rule.url_path_map == null ||
+      rule.backend == null && rule.redirect == null && rule.url_path_map != null
+    ])
+    error_message = "Either `backend`, `redirect` or `url_path_map` is required, but not all as they are mutually exclusive."
+  }
 }
 
 variable "redirects" {
