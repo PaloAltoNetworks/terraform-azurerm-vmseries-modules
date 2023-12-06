@@ -335,8 +335,9 @@ variable "route_tables" {
 
   List of available properties:
 
-  - `name`          - (`string`, required) name of a Route Table.
-  - `routes`        - (`map`, required) a map of Route Table entries (UDRs):
+  - `name`                          - (`string`, required) name of a Route Table.
+  - `disable_bgp_route_propagation` - (`bool`, optional, defaults to `false`) controls propagation of routes learned by BGP
+  - `routes`                        - (`map`, required) a map of Route Table entries (UDRs):
     - `name`                    - (`string`, required) a name of a UDR.
     - `address_prefix`          - (`string`, required) the destination CIDR to which the route applies, such as `10.1.0.0/16`.
     - `next_hop_type`           - (`string`, required) the type of Azure hop the packet should be sent to.
@@ -379,7 +380,8 @@ variable "route_tables" {
   default     = {}
   nullable    = false
   type = map(object({
-    name = string
+    name                          = string
+    disable_bgp_route_propagation = optional(bool, false)
     routes = map(object({
       name                = string
       address_prefix      = string
