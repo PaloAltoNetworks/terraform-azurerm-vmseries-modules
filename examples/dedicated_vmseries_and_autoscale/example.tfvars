@@ -126,12 +126,14 @@ vnets = {
 
 natgws = {
   "natgw" = {
-    name              = "public-natgw"
-    vnet_key          = "transit"
-    subnet_keys       = ["public", "management"]
-    create_pip        = false
-    create_pip_prefix = true
-    pip_prefix_length = 29
+    name        = "public-natgw"
+    vnet_key    = "transit"
+    subnet_keys = ["public", "management"]
+    public_ip_prefix = {
+      create = true
+      name   = "public-natgw-ippre"
+      length = 29
+    }
   }
 }
 
