@@ -732,7 +732,8 @@ Every listener contains attributes:
 - `protocol`                 - (`string`, optional) The Protocol to use for this HTTP Listener.
 - `host_names`               - (`list`, optional) A list of Hostname(s) should be used for this HTTP Listener.
                                It allows special wildcard characters.
-- `ssl_profile_name`         - (`string`, optional) The name of the associated SSL Profile which should be used for this HTTP Listener.
+- `ssl_profile_name`         - (`string`, optional) The name of the associated SSL Profile which should be used
+                               for this HTTP Listener.
 - `ssl_certificate_path`     - (`string`, optional) Path to the file with tThe base64-encoded PFX certificate data.
 - `ssl_certificate_pass`     - (`string`, optional) Password for the pfx file specified in data.
 - `ssl_certificate_vault_id` - (`string`, optional) Secret Id of (base-64 encoded unencrypted pfx) Secret
@@ -773,7 +774,8 @@ Every probe contains attributes:
 - `port`       - (`number`, optional) Custom port which will be used for probing the backend servers.
 - `protocol`   - (`string`, optional, defaults `Http`) The protocol which should be used.
 - `interval`   - (`number`, optional, defaults `5`) The interval between two consecutive probes in seconds.
-- `timeout`    - (`number`, optional, defaults `30`) The timeout used for this Probe, which indicates when a probe becomes unhealthy.
+- `timeout`    - (`number`, optional, defaults `30`) The timeout used for this Probe,
+                 which indicates when a probe becomes unhealthy.
 - `threshold`  - (`number`, optional, defaults `2`) The unhealthy Threshold for this Probe, which indicates
                  the amount of retries which should be attempted before a node is deemed unhealthy.
 - `match_code` - (`list`, optional) The list of allowed status codes for this Health Probe.
@@ -808,7 +810,8 @@ Every rewrite contains attributes:
 - `name`                - (`string`) Rewrite Rule Set name
 - `rules`               - (`object`, optional) Rewrite Rule Set defined with attributes:
     - `name`            - (`string`, required) Rewrite Rule name.
-    - `sequence`        - (`number`, required) Rule sequence of the rewrite rule that determines the order of execution in a set.
+    - `sequence`        - (`number`, required) Rule sequence of the rewrite rule that determines
+                          the order of execution in a set.
     - `conditions`      - (`map`, optional) One or more condition blocks as defined below:
       - `pattern`       - (`string`, required) The pattern, either fixed string or regular expression,
                           that evaluates the truthfulness of the condition.
@@ -847,11 +850,13 @@ map(object({
 A map of rules for the Application Gateway.
 
 A rule combines, backend, listener, rewrites and redirects configurations.
-A key is an application name that is used to prefix all components inside Application Gateway that are created for this application.
+A key is an application name that is used to prefix all components inside Application Gateway
+that are created for this application.
 
 Every rule contains attributes:
 - `name`         - (`string`, required) Rule name.
-- `priority`     - (`string`, required) Rule evaluation order can be dictated by specifying an integer value from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
+- `priority`     - (`string`, required) Rule evaluation order can be dictated by specifying an integer value
+                   from 1 to 20000 with 1 being the highest priority and 20000 being the lowest priority.
 - `backend`      - (`string`, optional) Backend settings` key
 - `listener`     - (`string`, required) Listener's key
 - `rewrite`      - (`string`, optional) Rewrite's key
@@ -882,7 +887,8 @@ A map of redirects for the Application Gateway.
 
 Every redirect contains attributes:
 - `name`                 - (`string`, required) The name of redirect.
-- `type`                 - (`string`, required) The type of redirect. Possible values are Permanent, Temporary, Found and SeeOther
+- `type`                 - (`string`, required) The type of redirect.
+                           Possible values are Permanent, Temporary, Found and SeeOther
 - `target_listener`      - (`string`, optional) The name of the listener to redirect to.
 - `target_url`           - (`string`, optional) The URL to redirect the request to.
 - `include_path`         - (`bool`, optional) Whether or not to include the path in the redirected URL.
@@ -1081,10 +1087,11 @@ Default value: `&{}`
 Global SSL settings.
 
 SSL settings are defined by attributes:
-- `ssl_policy_type`                 - (`string`, required) type of an SSL policy. Possible values are `Predefined` or `Custom` or `CustomV2`.
-                                      If the value is `Custom` the following values are mandatory:
+- `ssl_policy_type`                 - (`string`, required) type of an SSL policy. Possible values are `Predefined`
+                                      or `Custom` or `CustomV2`. If the value is `Custom` the following values are mandatory:
                                       `ssl_policy_cipher_suites` and `ssl_policy_min_protocol_version`.
-- `ssl_policy_name`                 - (`string`, optional) name of an SSL policy. Supported only for `ssl_policy_type` set to `Predefined`.
+- `ssl_policy_name`                 - (`string`, optional) name of an SSL policy.
+                                      Supported only for `ssl_policy_type` set to `Predefined`.
                                       Normally you can set it also for `Custom` policies but the name is discarded
                                       on Azure side causing an update to Application Gateway each time terraform code is run.
                                       Therefore this property is omitted in the code for `Custom` policies.
@@ -1092,8 +1099,10 @@ SSL settings are defined by attributes:
                                       https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
                                       for possible values as they tend to change over time.
                                       The default value is currently (Q1 2023) a Microsoft's default.
-- `ssl_policy_min_protocol_version` - (`string`, optional) minimum version of the TLS protocol for SSL Policy. Required only for `ssl_policy_type` set to `Custom`.
-- `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites. Required only for `ssl_policy_type` set to `Custom`.
+- `ssl_policy_min_protocol_version` - (`string`, optional) minimum version of the TLS protocol for SSL Policy.
+                                      Required only for `ssl_policy_type` set to `Custom`.
+- `ssl_policy_cipher_suites`        - (`list`, optional) a list of accepted cipher suites.
+                                      Required only for `ssl_policy_type` set to `Custom`.
                                       For possible values see documentation:
                                       https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/application_gateway#cipher_suites
 
@@ -1132,7 +1141,8 @@ Backend pool.
 
 Object contains attributes:
 - `name`         - (`string`, required) name of the backend pool.
-- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends for the Application Gateway.
+- `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends
+                   for the Application Gateway.
 
 
 Type: 

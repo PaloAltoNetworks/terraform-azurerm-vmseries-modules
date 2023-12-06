@@ -171,10 +171,11 @@ resource "azurerm_application_gateway" "this" {
       host_name                           = backend_http_settings.value.hostname
       path                                = backend_http_settings.value.path
       request_timeout                     = backend_http_settings.value.timeout
-      probe_name                          = backend_http_settings.value.probe != null && var.probes != null ? var.probes[backend_http_settings.value.probe].name : null
-      cookie_based_affinity               = backend_http_settings.value.cookie_based_affinity
-      affinity_cookie_name                = backend_http_settings.value.affinity_cookie_name
-      trusted_root_certificate_names      = [for k, v in backend_http_settings.value.root_certs : v.name]
+      probe_name = (backend_http_settings.value.probe != null && var.probes != null ?
+      var.probes[backend_http_settings.value.probe].name : null)
+      cookie_based_affinity          = backend_http_settings.value.cookie_based_affinity
+      affinity_cookie_name           = backend_http_settings.value.affinity_cookie_name
+      trusted_root_certificate_names = [for k, v in backend_http_settings.value.root_certs : v.name]
     }
   }
 
@@ -198,8 +199,9 @@ resource "azurerm_application_gateway" "this" {
       frontend_port_name             = http_listener.value.port
       protocol                       = http_listener.value.protocol
       host_names                     = http_listener.value.host_names
-      ssl_certificate_name           = try(http_listener.value.ssl_certificate_path, http_listener.value.ssl_certificate_vault_id, null) != null ? http_listener.key : null
-      ssl_profile_name               = http_listener.value.ssl_profile_name
+      ssl_certificate_name = (try(http_listener.value.ssl_certificate_path,
+      http_listener.value.ssl_certificate_vault_id, null) != null ? http_listener.key : null)
+      ssl_profile_name = http_listener.value.ssl_profile_name
 
       dynamic "custom_error_configuration" {
         for_each = http_listener.value.custom_error_pages
@@ -216,9 +218,10 @@ resource "azurerm_application_gateway" "this" {
     for_each = var.redirects
 
     content {
-      name                 = redirect_configuration.value.name
-      redirect_type        = redirect_configuration.value.type
-      target_listener_name = redirect_configuration.value.target_listener != null ? var.listeners[redirect_configuration.value.target_listener].name : null
+      name          = redirect_configuration.value.name
+      redirect_type = redirect_configuration.value.type
+      target_listener_name = (redirect_configuration.value.target_listener != null ?
+      var.listeners[redirect_configuration.value.target_listener].name : null)
       target_url           = redirect_configuration.value.target_url
       include_path         = redirect_configuration.value.include_path
       include_query_string = redirect_configuration.value.include_query_string
@@ -298,12 +301,22 @@ resource "azurerm_application_gateway" "this" {
       rule_type = request_routing_rule.value.url_path_map != null ? "PathBasedRouting" : "Basic"
       priority  = request_routing_rule.value.priority
 
-      http_listener_name          = var.listeners[request_routing_rule.value.listener].name
-      backend_address_pool_name   = request_routing_rule.value.backend != null ? var.backend_pool.name : null
-      backend_http_settings_name  = request_routing_rule.value.backend != null ? var.backends[request_routing_rule.value.backend].name : null
-      redirect_configuration_name = request_routing_rule.value.redirect != null ? var.redirects[request_routing_rule.value.redirect].name : null
-      rewrite_rule_set_name       = request_routing_rule.value.rewrite != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
-      url_path_map_name           = request_routing_rule.value.url_path_map != null ? var.url_path_maps[request_routing_rule.value.url_path_map].name : null
+      http_listener_name = var.listeners[request_routing_rule.value.listener].name
+      backend_address_pool_name = (
+        request_routing_rule.value.backend != null ? var.backend_pool.name : null
+      )
+      backend_http_settings_name = (
+        request_routing_rule.value.backend != null ? var.backends[request_routing_rule.value.backend].name : null
+      )
+      redirect_configuration_name = (
+        request_routing_rule.value.redirect != null ? var.redirects[request_routing_rule.value.redirect].name : null
+      )
+      rewrite_rule_set_name = (
+        request_routing_rule.value.rewrite != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
+      )
+      url_path_map_name = (
+        request_routing_rule.value.url_path_map != null ? var.url_path_maps[request_routing_rule.value.url_path_map].name : null
+      )
     }
   }
 

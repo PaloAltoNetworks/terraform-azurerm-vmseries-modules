@@ -82,16 +82,22 @@ A map defining VNETs.
 
 For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-- `create_virtual_network`  - (`bool`, optional, defaults to `false`) when set to `true` will create a VNET, `false` will source an existing VNET.
-- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be a full resource name, including prefixes.
-- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly created VNET
-- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which the VNET will reside or is sourced from
-
-- `create_subnets`          - (`bool`, optinoal, defaults to `true`) if `true`, create Subnets inside the Virtual Network, otherwise use source existing subnets
-- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see [VNET module documentation](../../modules/vnet/README.md#subnets)
-
-- `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
-- `route_tables`            - (`map`, optional) map of Route Tables to create, for details see [VNET module documentation](../../modules/vnet/README.md#route_tables)
+- `create_virtual_network`  - (`bool`, optional, defaults to `false`) when set to `true` will create a VNET,
+                              `false` will source an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false`
+                              this should be a full resource name, including prefixes.
+- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs
+                              for a newly created VNET
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group
+                              in which the VNET will reside or is sourced from
+- `create_subnets`          - (`bool`, optinoal, defaults to `true`) if `true`,
+                              create Subnets inside the Virtual Network, otherwise use source existing subnets
+- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#subnets)
+- `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+- `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables)
 
 
 Type: 
@@ -149,33 +155,51 @@ map(object({
 
 A map defining all Application Gateways in the current deployment.
 
-For detailed documentation on how to configure this resource, for available properties, especially for the defaults, refer to [module documentation](../../modules/appgw/README.md).
+For detailed documentation on how to configure this resource, for available properties, especially for the defaults,
+refer to [module documentation](../../modules/appgw/README.md).
 
 Following properties are supported:
 - `name`                              - (`string`, required) name of the Application Gateway.
 - `public_ip`                         - (`string`, required) public IP address.
 - `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
-- `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
-- `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
-- `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`.
+                                        This has to be a subnet dedicated to Application Gateways v2.
+- `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities,
+                                        which Application Gateway uses to retrieve certificates from Key Vault.
+- `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
 - `waf`                               - (`object`, required) WAF basic configuration, defining WAF rules is not supported
 - `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
-- `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
+- `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region -
+                                        this property is used by both: the Application Gateway and the Public IP created
+                                        in front of the AppGW.
 - `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
-- `vmseries_public_nic_name`          - (`string`, optional) VM-Series NIC name, for which IP address will be used in backend pool
-- `listeners`                         - (`map`, required) map of listeners (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `backend_pool`                      - (`object`, optional) backend pool (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `backends`                          - (`map`, optional) map of backends (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `probes`                            - (`map`, optional) map of probes (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `rewrites`                          - (`map`, optional) map of rewrites (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `rules`                             - (`map`, required) map of rules (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `redirects`                         - (`map`, optional) map of redirects (refer to [module documentation](../../modules/appgw/README.md) for details)
-- `url_path_maps`                     - (`map`, optional) map of URL path maps (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `vmseries_public_nic_name`          - (`string`, optional) VM-Series NIC name, for which IP address
+                                        will be used in backend pool
+- `listeners`                         - (`map`, required) map of listeners (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `backend_pool`                      - (`object`, optional) backend pool (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `backends`                          - (`map`, optional) map of backends (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `probes`                            - (`map`, optional) map of probes (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `rewrites`                          - (`map`, optional) map of rewrites (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `rules`                             - (`map`, required) map of rules (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `redirects`                         - (`map`, optional) map of redirects (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
+- `url_path_maps`                     - (`map`, optional) map of URL path maps (refer to
+                                        [module documentation](../../modules/appgw/README.md) for details)
 - `ssl_policy_type`                   - (`string`, optional) type of an SSL policy, defaults to `Predefined`
 - `ssl_policy_name`                   - (`string`, optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
-- `ssl_policy_min_protocol_version`   - (`string`, optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
-- `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
-- `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
+- `ssl_policy_min_protocol_version`   - (`string`, optional) minimum version of the TLS protocol for SSL Policy,
+                                        for `ssl_policy_type` set to `Custom`
+- `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites,
+                                        for `ssl_policy_type` set to `Custom`
+- `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS
+                                        listeners by providing a name of the profile in the `ssl_profile_name` property
 
 
 Type: 
@@ -328,14 +352,16 @@ Default value: `map[]`
 #### name_prefix
 
 A prefix that will be added to all created resources.
-There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+There is no default delimiter applied between the prefix and the resource name.
+Please include the delimiter in the actual prefix.
 
 Example:
 ```hcl
 name_prefix = "test-"
 ```
 
-NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+even if it is also prefixed with the same value as the one in this property.
 
 
 Type: string
@@ -346,7 +372,8 @@ Default value: ``
 
 #### create_resource_group
 
-When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+When set to `true` it will cause a Resource Group creation.
+Name of the newly specified RG is controlled by `resource_group_name`.
 When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
 
 
