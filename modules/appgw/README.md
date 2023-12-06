@@ -44,7 +44,7 @@ module "appgw" {
 }
 ```
 
-Below there are provided sample values for `appgws` map (in comments you can find also commands to create SSL/TLS certificats, if required):
+Below are sample values for `appgws` map (in comments you can find also commands to create SSL/TLS certificates, if required):
 
 ```hcl
 appgws = {
@@ -836,7 +836,7 @@ map(object({
 
 A map of rules for the Application Gateway.
 
-A rule combines, http settings and health check configuration.
+A rule combines, backend, listener, rewrites and redirects configurations.
 A key is an application name that is used to prefix all components inside Application Gateway that are created for this application.
 
 Every rule contains attributes:
@@ -1078,7 +1078,7 @@ SSL settings are defined by attributes:
                                       Normally you can set it also for `Custom` policies but the name is discarded
                                       on Azure side causing an update to Application Gateway each time terraform code is run.
                                       Therefore this property is omitted in the code for `Custom` policies.
-                                      For the `Predefined` polcies, check the Microsoft documentation
+                                      For the `Predefined` policies, check the Microsoft documentation
                                       https://docs.microsoft.com/en-us/azure/application-gateway/application-gateway-ssl-policy-overview
                                       for possible values as they tend to change over time.
                                       The default value is currently (Q1 2023) a Microsoft's default.
