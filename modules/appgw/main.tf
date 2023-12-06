@@ -1,6 +1,6 @@
 locals {
   # Calculate a map of unique frontend ports based on the `listener.port` values defined in `rules` map.
-  # A unque set of ports will be created upfront and then referenced in the listener's config.
+  # A unique set of ports will be created upfront and then referenced in the listener's config.
   front_ports_list = distinct([for k, v in var.listeners : v.port])
   front_ports_map  = { for v in local.front_ports_list : v => v }
 
