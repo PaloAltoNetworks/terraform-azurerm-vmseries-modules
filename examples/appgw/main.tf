@@ -16,6 +16,18 @@ locals {
   resource_group = var.create_resource_group ? azurerm_resource_group.this[0] : data.azurerm_resource_group.this[0]
 }
 
+# Create public IP in order to reuse it in 1 of the application gateways
+resource "azurerm_public_ip" "this" {
+  name                = "pip-existing"
+  resource_group_name = "${var.name_prefix}${var.resource_group_name}"
+  location            = var.location
+
+  sku               = "Standard"
+  allocation_method = "Static"
+  zones             = ["1", "2", "3"]
+  tags              = var.tags
+}
+
 # Manage the network required for the topology.
 module "vnet" {
   source = "../../modules/vnet"
@@ -44,7 +56,7 @@ module "appgw" {
   for_each = var.appgws
 
   name                = each.value.name
-  public_ip_name      = each.value.public_ip_name
+  public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
@@ -69,5 +81,5 @@ module "appgw" {
   ssl_profiles = each.value.ssl_profiles
 
   tags       = var.tags
-  depends_on = [module.vnet]
+  depends_on = [module.vnet, azurerm_public_ip.this]
 }

@@ -48,6 +48,7 @@ Name | Version | Source | Description
 
 Resources used in this module:
 
+- `public_ip` (managed)
 - `resource_group` (managed)
 - `resource_group` (data)
 
@@ -152,7 +153,7 @@ For detailed documentation on how to configure this resource, for available prop
 
 Following properties are supported:
 - `name`                              - (`string`, required) name of the Application Gateway.
-- `public_ip_name`                    - (`string`, required) name for the public IP address.
+- `public_ip`                         - (`string`, required) public IP address.
 - `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
 - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
 - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
@@ -181,8 +182,12 @@ Type:
 
 ```hcl
 map(object({
-    name               = string
-    public_ip_name     = string
+    name = string
+    public_ip = object({
+      name           = string
+      resource_group = optional(string)
+      create         = optional(bool, true)
+    })
     vnet_key           = string
     subnet_key         = string
     managed_identities = optional(list(string))

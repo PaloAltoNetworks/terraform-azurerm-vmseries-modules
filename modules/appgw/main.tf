@@ -14,9 +14,17 @@ locals {
   root_certs_map = { for v in local.root_certs_flat_list : v.name => v.path }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
+data "azurerm_public_ip" "this" {
+  count               = var.public_ip.create ? 0 : 1
+  name                = var.public_ip.name
+  resource_group_name = coalesce(var.public_ip.resource_group, var.resource_group_name)
+}
+
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  name                = var.public_ip_name
+  count               = var.public_ip.create ? 1 : 0
+  name                = var.public_ip.name
   resource_group_name = var.resource_group_name
   location            = var.location
 
@@ -78,7 +86,7 @@ resource "azurerm_application_gateway" "this" {
 
   frontend_ip_configuration {
     name                 = var.frontend_ip_configuration_name
-    public_ip_address_id = azurerm_public_ip.this.id
+    public_ip_address_id = var.public_ip.create ? azurerm_public_ip.this[0].id : data.azurerm_public_ip.this[0].id
   }
 
   # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs

@@ -48,9 +48,13 @@ variable "zones" {
   }
 }
 
-variable "public_ip_name" {
-  description = "Name for the public IP address."
-  type        = string
+variable "public_ip" {
+  description = "Public IP address."
+  type = object({
+    name           = string
+    resource_group = optional(string)
+    create         = optional(bool, true)
+  })
 }
 
 variable "domain_name_label" {

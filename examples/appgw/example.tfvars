@@ -40,11 +40,13 @@ vnets = {
 
 appgws = {
   "public-http-minimum" = {
-    name           = "appgw-http-minimum"
-    public_ip_name = "pip-http-minimum"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-http-minimum"
+    public_ip = {
+      name = "pip-http-minimum"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }
@@ -78,12 +80,65 @@ appgws = {
       }
     }
   }
+  "public-http-existing" = {
+    name = "appgw-http-existing"
+    public_ip = {
+      name   = "pip-existing"
+      create = false
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    backends = {
+      existing = {
+        name                  = "http-backend"
+        port                  = 80
+        protocol              = "Http"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+      }
+    }
+    listeners = {
+      existing = {
+        name = "existing-listener"
+        port = 80
+      }
+    }
+    rewrites = {
+      existing = {
+        name = "existing-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "existing-xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      existing = {
+        name     = "existing-rule"
+        priority = 1
+        backend  = "existing"
+        listener = "existing"
+        rewrite  = "existing"
+      }
+    }
+  }
   "public-http-autoscale" = {
-    name           = "appgw-http-autoscale"
-    public_ip_name = "pip-http-autoscale"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-http-autoscale"
+    public_ip = {
+      name = "pip-http-autoscale"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       autoscale = {
         min = 2
@@ -115,11 +170,13 @@ appgws = {
     }
   }
   "public-waf" = {
-    name           = "appgw-waf"
-    public_ip_name = "pip-waf"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-waf"
+    public_ip = {
+      name = "pip-waf"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }
@@ -181,11 +238,13 @@ appgws = {
   #    openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
   #    openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
   "public-ssl-custom" = {
-    name           = "appgw-ssl-custom"
-    public_ip_name = "pip-ssl-custom"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-ssl-custom"
+    public_ip = {
+      name = "pip-ssl-custom"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }
@@ -470,11 +529,13 @@ appgws = {
     }
   }
   "public-ssl-predefined" = {
-    name           = "appgw-ssl-predefined"
-    public_ip_name = "pip-ssl-predefined"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-ssl-predefined"
+    public_ip = {
+      name = "pip-ssl-predefined"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }

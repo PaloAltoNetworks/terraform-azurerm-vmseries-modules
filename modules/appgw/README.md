@@ -567,7 +567,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Application Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`public_ip_name`](#public_ip_name) | `string` | Name for the public IP address.
+[`public_ip`](#public_ip) | `object` | Public IP address.
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
 [`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
@@ -624,6 +624,7 @@ Resources used in this module:
 
 - `application_gateway` (managed)
 - `public_ip` (managed)
+- `public_ip` (data)
 
 ## Inputs/Outpus details
 
@@ -656,11 +657,20 @@ Type: string
 
 
 
-#### public_ip_name
+#### public_ip
 
-Name for the public IP address.
+Public IP address.
 
-Type: string
+Type: 
+
+```hcl
+object({
+    name           = string
+    resource_group = optional(string)
+    create         = optional(bool, true)
+  })
+```
+
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
