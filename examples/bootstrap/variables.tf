@@ -49,9 +49,15 @@ variable "enable_zones" {
 
 variable "bootstrap_storages" {
   description = <<-EOF
-  A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs. This variable defines only Storage Accounts, file shares are defined per each VM. See `vmseries` variable, `bootstrap_storage` property.
+  A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs. This variable defines only Storage
+  Accounts, file shares are defined per each VM. See `vmseries` variable, `bootstrap_storage` property.
 
-  Following properties are supported (except for name, all are optional):
+  This resource does not support the `vat.name_prefix` variable. The value of the `name` property will become the name of the
+  Storage Account.
+
+  Following properties are supported:
+
+  - 
 
 
   EOF
