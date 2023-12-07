@@ -181,7 +181,6 @@ appgws = {
       static = 2
     }
     waf = {
-      enabled          = true
       firewall_mode    = "Prevention"
       rule_set_type    = "OWASP"
       rule_set_version = "3.2"

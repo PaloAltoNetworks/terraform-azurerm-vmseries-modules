@@ -1015,7 +1015,6 @@ Object sets only the SKU and provide basic WAF configuration for Application Gat
 
 This module does not support WAF rules configuration and advanced WAF settings.
 Only below attributes are allowed:
-- `enabled`          - (`bool`, required) Enables WAF Application Gateway
 - `firewall_mode`    - (`string`, optional) The Web Application Firewall Mode
 - `rule_set_type`    - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
 - `rule_set_version` - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
@@ -1025,7 +1024,6 @@ Type:
 
 ```hcl
 object({
-    enabled          = bool
     firewall_mode    = optional(string)
     rule_set_type    = optional(string, "OWASP")
     rule_set_version = optional(string)
@@ -1033,7 +1031,7 @@ object({
 ```
 
 
-Default value: `map[enabled:false]`
+Default value: `&{}`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

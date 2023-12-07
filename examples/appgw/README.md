@@ -223,7 +223,6 @@ map(object({
       }))
     })
     waf = optional(object({
-      enabled          = bool
       firewall_mode    = optional(string)
       rule_set_type    = optional(string, "OWASP")
       rule_set_version = optional(string)

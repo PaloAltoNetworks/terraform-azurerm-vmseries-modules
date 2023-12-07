@@ -45,8 +45,8 @@ resource "azurerm_application_gateway" "this" {
   tags                = var.tags
 
   sku {
-    name     = var.waf.enabled ? "WAF_v2" : "Standard_v2"
-    tier     = var.waf.enabled ? "WAF_v2" : "Standard_v2"
+    name     = var.waf != null ? "WAF_v2" : "Standard_v2"
+    tier     = var.waf != null ? "WAF_v2" : "Standard_v2"
     capacity = var.capacity.static != null ? var.capacity.static : null
   }
 
@@ -60,10 +60,10 @@ resource "azurerm_application_gateway" "this" {
   }
 
   dynamic "waf_configuration" {
-    for_each = var.waf.enabled ? [1] : []
+    for_each = var.waf != null ? [1] : []
 
     content {
-      enabled          = var.waf.enabled
+      enabled          = var.waf != null
       firewall_mode    = var.waf.firewall_mode
       rule_set_type    = var.waf.rule_set_type
       rule_set_version = var.waf.rule_set_version

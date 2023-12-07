@@ -81,31 +81,27 @@ variable "waf" {
 
   This module does not support WAF rules configuration and advanced WAF settings.
   Only below attributes are allowed:
-  - `enabled`          - (`bool`, required) Enables WAF Application Gateway
   - `firewall_mode`    - (`string`, optional) The Web Application Firewall Mode
   - `rule_set_type`    - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
   - `rule_set_version` - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
   EOF
-  default = {
-    enabled = false
-  }
-  nullable = false
+  default     = null
   type = object({
-    enabled          = bool
     firewall_mode    = optional(string)
     rule_set_type    = optional(string, "OWASP")
     rule_set_version = optional(string)
   })
   validation {
-    condition     = contains(["Detection", "Prevention"], coalesce(var.waf.firewall_mode, "Detection"))
+    condition     = var.waf != null ? contains(["Detection", "Prevention"], coalesce(var.waf.firewall_mode, "Detection")) : true
     error_message = "For `firewall_mode` possible values are Detection and Prevention"
   }
   validation {
-    condition     = contains(["OWASP", "Microsoft_BotManagerRuleSet"], var.waf.rule_set_type)
+    condition     = var.waf != null ? contains(["OWASP", "Microsoft_BotManagerRuleSet"], var.waf.rule_set_type) : true
     error_message = "For `rule_set_type` possible values are OWASP and Microsoft_BotManagerRuleSet"
   }
   validation {
-    condition     = contains(["0.1", "1.0", "2.2.9", "3.0", "3.1", "3.2"], coalesce(var.waf.rule_set_version, "3.2"))
+    condition = var.waf != null ? contains(
+    ["0.1", "1.0", "2.2.9", "3.0", "3.1", "3.2"], coalesce(var.waf.rule_set_version, "3.2")) : true
     error_message = "For `rule_set_version` possible values are 0.1, 1.0, 2.2.9, 3.0, 3.1 and 3.2"
   }
 }
