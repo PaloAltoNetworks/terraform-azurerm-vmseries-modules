@@ -1,21 +1,22 @@
 <!-- BEGIN_TF_DOCS -->
 # Palo Alto Networks Application Gateway Module for Azure
 
-A terraform module for deploying a Application Gateway and its components required for the VM-Series firewalls in Azure.
+A terraform module for deploying a Application Gateway v2 and its components required for the VM-Series firewalls in Azure.
 
 ## Usage
 
 In order to use module `appgw`, you need to deploy `azurerm_resource_group` and use module `vnet` as prerequisites.
-Then you can use below code as an example of calling module to create APP GW:
+Then you can use below code as an example of calling module to create Application Gateway:
 
 ```hcl
+# Create Application Gateay
 module "appgw" {
   source = "../../modules/appgw"
 
   for_each = var.appgws
 
   name                = each.value.name
-  public_ip_name      = each.value.public_ip_name
+  public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
@@ -44,16 +45,27 @@ module "appgw" {
 }
 ```
 
-Below are sample values for `appgws` map (in comments you can find also commands to create SSL/TLS certificates, if required):
+The examples below are meant to show most common use cases and to serve as a base for more complex
+application gateways definitions.
+
+### Example 1
+
+Application Gateway with:
+* new public IP
+* HTTP listener
+* static capacity
+* rewriting HTTP headers
 
 ```hcl
 appgws = {
   "public-http-minimum" = {
-    name           = "appgw-http-minimum"
-    public_ip_name = "pip-http-minimum"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-http-minimum"
+    public_ip = {
+      name = "pip-http-minimum"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }
@@ -87,12 +99,90 @@ appgws = {
       }
     }
   }
+}
+```
+
+### Example 2
+
+Application Gateway with:
+* existing public IP
+* HTTP listener
+* static capacity
+* rewriting HTTP headers
+
+```hcl
+appgws = {
+  "public-http-existing" = {
+    name = "appgw-http-existing"
+    public_ip = {
+      name   = "pip-existing"
+      create = false
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    backends = {
+      existing = {
+        name                  = "http-backend"
+        port                  = 80
+        protocol              = "Http"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+      }
+    }
+    listeners = {
+      existing = {
+        name = "existing-listener"
+        port = 80
+      }
+    }
+    rewrites = {
+      existing = {
+        name = "existing-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "existing-xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      existing = {
+        name     = "existing-rule"
+        priority = 1
+        backend  = "existing"
+        listener = "existing"
+        rewrite  = "existing"
+      }
+    }
+  }
+}
+```
+
+### Example 3
+
+Application Gateway with:
+* new public IP
+* HTTP listener
+* autoscaling
+
+```hcl
+appgws = {
   "public-http-autoscale" = {
-    name           = "appgw-http-autoscale"
-    public_ip_name = "pip-http-autoscale"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-http-autoscale"
+    public_ip = {
+      name = "pip-http-autoscale"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       autoscale = {
         min = 2
@@ -123,42 +213,312 @@ appgws = {
       }
     }
   }
-  # If you test example for Application Gateway with SSL, you need to created directory files and create keys and certs using commands:
-  # 1. Create CA private key and certificate:
-  #    openssl genrsa 2048 > ca-key1.pem
-  #    openssl req -new -x509 -nodes -days 365000 -key ca-key1.pem -out ca-cert1.pem
-  #    openssl genrsa 2048 > ca-key2.pem
-  #    openssl req -new -x509 -nodes -days 365000 -key ca-key2.pem -out ca-cert2.pem
-  # 2. Create server certificate:
-  #    openssl req -newkey rsa:2048 -nodes -keyout test1.key -x509 -days 365 -CA ca-cert1.pem -CAkey ca-key1.pem -out test1.crt
-  #    openssl req -newkey rsa:2048 -nodes -keyout test2.key -x509 -days 365 -CA ca-cert2.pem -CAkey ca-key2.pem -out test2.crt
-  # 3. Create PFX file with key and certificate:
-  #    openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
-  #    openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
+}
+```
+
+### Example 4
+
+Application Gateway with:
+* new public IP
+* WAF enabled
+* HTTP listener
+* static capacity
+* rewriting HTTP headers
+
+```hcl
+appgws = {
+  "public-waf" = {
+    name = "appgw-waf"
+    public_ip = {
+      name = "pip-waf"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    waf = {
+      prevention_mode  = true
+      rule_set_type    = "OWASP"
+      rule_set_version = "3.2"
+    }
+    backends = {
+      waf = {
+        name                  = "waf-backend"
+        port                  = 80
+        protocol              = "Http"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+      }
+    }
+    listeners = {
+      waf = {
+        name = "waf-listener"
+        port = 80
+      }
+    }
+    rewrites = {
+      waf = {
+        name = "waf-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "waf-xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      minimum = {
+        name     = "waf-rule"
+        priority = 1
+        backend  = "waf"
+        listener = "waf"
+        rewrite  = "waf"
+      }
+    }
+  }
+}
+```
+
+### Prerequisites for example 5 and 6
+
+If you need to test example for Application Gateway with SSL, you need to created directory files
+and create keys and certs using commands:
+
+1. Create CA private key and certificate:
+```bash
+   openssl genrsa 2048 > ca-key1.pem
+   openssl req -new -x509 -nodes -days 365000 -key ca-key1.pem -out ca-cert1.pem
+   openssl genrsa 2048 > ca-key2.pem
+   openssl req -new -x509 -nodes -days 365000 -key ca-key2.pem -out ca-cert2.pem
+```
+2. Create server certificate:
+```bash
+   openssl req -newkey rsa:2048 -nodes -keyout test1.key -x509 -days 365 -CA ca-cert1.pem -CAkey ca-key1.pem -out test1.crt
+   openssl req -newkey rsa:2048 -nodes -keyout test2.key -x509 -days 365 -CA ca-cert2.pem -CAkey ca-key2.pem -out test2.crt
+```
+3. Create PFX file with key and certificate:
+```bash
+   openssl pkcs12 -inkey test1.key -in test1.crt -export -out test1.pfx
+   openssl pkcs12 -inkey test2.key -in test2.crt -export -out test2.pfx
+```
+
+### Example 5
+
+Application Gateway with:
+* new public IP
+* multi site HTTPS listener (many host names on port 443)
+* static capacity
+* rewriting HTTPS headers
+
+```hcl
+appgws = {
+  "public-ssl-predefined" = {
+    name = "appgw-ssl-predefined"
+    public_ip = {
+      name = "pip-ssl-predefined"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    ssl_global = {
+      ssl_policy_type = "Predefined"
+      ssl_policy_name = "AppGwSslPolicy20170401"
+    }
+    ssl_profiles = {
+      profile1 = {
+        name            = "appgw-ssl-profile1"
+        ssl_policy_name = "AppGwSslPolicy20170401S"
+      }
+    }
+    frontend_ip_configuration_name = "public_ipconfig"
+    listeners = {
+      https1 = {
+        name                 = "https1-listener"
+        port                 = 443
+        protocol             = "Https"
+        ssl_profile_name     = "appgw-ssl-profile1"
+        ssl_certificate_path = "./files/test1.pfx"
+        ssl_certificate_pass = ""
+        host_names           = ["test1.appgw.local"]
+      }
+      https2 = {
+        name                 = "https2-listener"
+        port                 = 443
+        protocol             = "Https"
+        ssl_certificate_path = "./files/test2.pfx"
+        ssl_certificate_pass = ""
+        host_names           = ["test2.appgw.local"]
+      }
+    }
+    backend_pool = {
+      name = "vmseries-pool"
+    }
+    backends = {
+      https1 = {
+        name                  = "https1-settings"
+        port                  = 481
+        protocol              = "Https"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+        hostname_from_backend = false
+        hostname              = "test1.appgw.local"
+        root_certs = {
+          test = {
+            name = "https-application-test1"
+            path = "./files/ca-cert1.pem"
+          }
+        }
+      }
+      https2 = {
+        name                  = "https2-settings"
+        port                  = 482
+        protocol              = "Https"
+        timeout               = 60
+        cookie_based_affinity = "Enabled"
+        hostname_from_backend = false
+        hostname              = "test2.appgw.local"
+        root_certs = {
+          test = {
+            name = "https-application-test2"
+            path = "./files/ca-cert2.pem"
+          }
+        }
+      }
+    }
+    rewrites = {
+      https1 = {
+        name = "https1-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "https1-xff-strip-port"
+            sequence = 100
+            conditions = {
+              "http_resp_X-Forwarded-Proto" = {
+                pattern     = "https"
+                ignore_case = true
+                negate      = true
+              }
+            }
+            request_headers = {
+              "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
+              "X-Forwarded-Proto" = "https"
+            }
+          }
+        }
+      }
+      https2 = {
+        name = "https2-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "https2-xff-strip-port"
+            sequence = 100
+            conditions = {
+              "http_resp_X-Forwarded-Proto" = {
+                pattern     = "https"
+                ignore_case = true
+                negate      = true
+              }
+            }
+            request_headers = {
+              "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
+              "X-Forwarded-Proto" = "https"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      https1 = {
+        name     = "https1-rule"
+        priority = 2
+        backend  = "https1"
+        listener = "https1"
+        rewrite  = "https1"
+      }
+      https2 = {
+        name     = "https2-rule"
+        priority = 3
+        backend  = "https2"
+        listener = "https2"
+        rewrite  = "https2"
+      }
+    }
+  }
+}
+```
+
+### Example 6
+
+Application Gateway with:
+* new public IP
+* multiple listener:
+  * HTTP
+  * multi site HTTPS (many host names on port 443)
+  * redirect
+  * path based
+* static capacity
+* rewriting HTTP and HTTPS headers
+* custom SSL profiles and policies
+* custom health probes
+* rewrites
+
+```hcl
+appgws = {
   "public-ssl-custom" = {
-    name           = "appgw-ssl-custom"
-    public_ip_name = "pip-ssl-custom"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw-ssl-custom"
+    public_ip = {
+      name = "pip-ssl-custom"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }
     ssl_global = {
       ssl_policy_type                 = "Custom"
       ssl_policy_min_protocol_version = "TLSv1_0"
-      ssl_policy_cipher_suites        = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
+      ssl_policy_cipher_suites = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+        "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
+        "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+        "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+        "TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256",
+        "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256",
+      "TLS_RSA_WITH_AES_256_GCM_SHA384"]
     }
     ssl_profiles = {
       profile1 = {
         name                            = "appgw-ssl-profile1"
         ssl_policy_min_protocol_version = "TLSv1_1"
-        ssl_policy_cipher_suites        = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256", "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA", "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
+        ssl_policy_cipher_suites = ["TLS_DHE_DSS_WITH_3DES_EDE_CBC_SHA", "TLS_DHE_DSS_WITH_AES_128_CBC_SHA",
+          "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA", "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256",
+          "TLS_DHE_RSA_WITH_AES_128_CBC_SHA", "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_DHE_RSA_WITH_AES_256_CBC_SHA",
+          "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA",
+          "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256",
+          "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA", "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384",
+          "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384", "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA",
+          "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256", "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256", "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384", "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"]
       }
       profile2 = {
         name                            = "appgw-ssl-profile2"
         ssl_policy_min_protocol_version = "TLSv1_2"
-        ssl_policy_cipher_suites        = ["TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA", "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
+        ssl_policy_cipher_suites = ["TLS_RSA_WITH_3DES_EDE_CBC_SHA", "TLS_RSA_WITH_AES_128_CBC_SHA",
+          "TLS_RSA_WITH_AES_128_CBC_SHA256", "TLS_RSA_WITH_AES_128_GCM_SHA256", "TLS_RSA_WITH_AES_256_CBC_SHA",
+        "TLS_RSA_WITH_AES_256_CBC_SHA256", "TLS_RSA_WITH_AES_256_GCM_SHA384"]
       }
     }
     frontend_ip_configuration_name = "public_ipconfig"
@@ -421,139 +781,6 @@ appgws = {
             redirect = "redirect_url"
           }
         }
-      }
-    }
-  }
-  "public-ssl-predefined" = {
-    name           = "appgw-ssl-predefined"
-    public_ip_name = "pip-ssl-predefined"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
-    capacity = {
-      static = 2
-    }
-    ssl_global = {
-      ssl_policy_type = "Predefined"
-      ssl_policy_name = "AppGwSslPolicy20170401"
-    }
-    ssl_profiles = {
-      profile1 = {
-        name            = "appgw-ssl-profile1"
-        ssl_policy_name = "AppGwSslPolicy20170401S"
-      }
-    }
-    frontend_ip_configuration_name = "public_ipconfig"
-    listeners = {
-      https1 = {
-        name                 = "https1-listener"
-        port                 = 443
-        protocol             = "Https"
-        ssl_profile_name     = "appgw-ssl-profile1"
-        ssl_certificate_path = "./files/test1.pfx"
-        ssl_certificate_pass = ""
-        host_names           = ["test1.appgw.local"]
-      }
-      https2 = {
-        name                 = "https2-listener"
-        port                 = 443
-        protocol             = "Https"
-        ssl_certificate_path = "./files/test2.pfx"
-        ssl_certificate_pass = ""
-        host_names           = ["test2.appgw.local"]
-      }
-    }
-    backend_pool = {
-      name = "vmseries-pool"
-    }
-    backends = {
-      https1 = {
-        name                  = "https1-settings"
-        port                  = 481
-        protocol              = "Https"
-        timeout               = 60
-        cookie_based_affinity = "Enabled"
-        hostname_from_backend = false
-        hostname              = "test1.appgw.local"
-        root_certs = {
-          test = {
-            name = "https-application-test1"
-            path = "./files/ca-cert1.pem"
-          }
-        }
-      }
-      https2 = {
-        name                  = "https2-settings"
-        port                  = 482
-        protocol              = "Https"
-        timeout               = 60
-        cookie_based_affinity = "Enabled"
-        hostname_from_backend = false
-        hostname              = "test2.appgw.local"
-        root_certs = {
-          test = {
-            name = "https-application-test2"
-            path = "./files/ca-cert2.pem"
-          }
-        }
-      }
-    }
-    rewrites = {
-      https1 = {
-        name = "https1-set"
-        rules = {
-          "xff-strip-port" = {
-            name     = "https1-xff-strip-port"
-            sequence = 100
-            conditions = {
-              "http_resp_X-Forwarded-Proto" = {
-                pattern     = "https"
-                ignore_case = true
-                negate      = true
-              }
-            }
-            request_headers = {
-              "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
-              "X-Forwarded-Proto" = "https"
-            }
-          }
-        }
-      }
-      https2 = {
-        name = "https2-set"
-        rules = {
-          "xff-strip-port" = {
-            name     = "https2-xff-strip-port"
-            sequence = 100
-            conditions = {
-              "http_resp_X-Forwarded-Proto" = {
-                pattern     = "https"
-                ignore_case = true
-                negate      = true
-              }
-            }
-            request_headers = {
-              "X-Forwarded-For"   = "{var_add_x_forwarded_for_proxy}"
-              "X-Forwarded-Proto" = "https"
-            }
-          }
-        }
-      }
-    }
-    rules = {
-      https1 = {
-        name     = "https1-rule"
-        priority = 2
-        backend  = "https1"
-        listener = "https1"
-        rewrite  = "https1"
-      }
-      https2 = {
-        name     = "https2-rule"
-        priority = 3
-        backend  = "https2"
-        listener = "https2"
-        rewrite  = "https2"
       }
     }
   }
