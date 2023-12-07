@@ -177,7 +177,7 @@ variable "scale_sets" {
                                 Deployment Guide* as only a few selected sizes are supported
     - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
                                 this Scale Set will be created
-    - `storage_account_type`  - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
+    - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
                                 possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                                 `vm_size` values)
 
@@ -216,7 +216,7 @@ variable "scale_sets" {
     scale_set_configuration = optional(object({
       vm_size                      = optional(string)
       zones                        = optional(list(string))
-      storage_account_type         = optional(string)
+      disk_type                    = optional(string)
       accelerated_networking       = optional(bool)
       encryption_at_host_enabled   = optional(bool)
       overprovision                = optional(bool)

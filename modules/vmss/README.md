@@ -133,7 +133,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.2, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.25
 
 
@@ -354,7 +354,7 @@ List of either required or important properties:
                             Deployment Guide* as only a few selected sizes are supported
 - `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
                             this Scale Set will be created
-- `storage_account_type`  - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
+- `disk_type`             - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                             possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                             `vm_size` values)
 - `bootstrap_options`      - bootstrap options to pass to VM-Series instance.
@@ -396,7 +396,7 @@ object({
     vm_size                      = optional(string, "Standard_D3_v2")
     bootstrap_options            = optional(string)
     zones                        = optional(list(string), ["1", "2", "3"])
-    storage_account_type         = optional(string, "StandardSSD_LRS")
+    disk_type                    = optional(string, "StandardSSD_LRS")
     accelerated_networking       = optional(bool, true)
     encryption_at_host_enabled   = optional(bool)
     overprovision                = optional(bool, true)

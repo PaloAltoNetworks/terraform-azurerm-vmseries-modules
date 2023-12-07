@@ -102,7 +102,7 @@ variable "scale_set_configuration" {
                               Deployment Guide* as only a few selected sizes are supported
   - `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
                               this Scale Set will be created
-  - `storage_account_type`  - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
+  - `disk_type`             - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                               possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                               `vm_size` values)
   - `bootstrap_options`      - bootstrap options to pass to VM-Series instance.
@@ -142,7 +142,7 @@ variable "scale_set_configuration" {
     vm_size                      = optional(string, "Standard_D3_v2")
     bootstrap_options            = optional(string)
     zones                        = optional(list(string), ["1", "2", "3"])
-    storage_account_type         = optional(string, "StandardSSD_LRS")
+    disk_type                    = optional(string, "StandardSSD_LRS")
     accelerated_networking       = optional(bool, true)
     encryption_at_host_enabled   = optional(bool)
     overprovision                = optional(bool, true)
@@ -153,8 +153,8 @@ variable "scale_set_configuration" {
     diagnostics_storage_uri      = optional(string)
   })
   validation {
-    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.storage_account_type)
-    error_message = "The `storage_account_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.disk_type)
+    error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
   }
   validation {
     condition     = length(var.scale_set_configuration.zones) == 3 || var.scale_set_configuration.zones == null

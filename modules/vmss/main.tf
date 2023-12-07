@@ -59,7 +59,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   os_disk {
     caching                = "ReadWrite"
     disk_encryption_set_id = var.scale_set_configuration.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
-    storage_account_type   = var.scale_set_configuration.storage_account_type
+    storage_account_type   = var.scale_set_configuration.disk_type
   }
 
 
@@ -158,7 +158,7 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
   # This code covers the Microsoft logic for creating multiple autoscaling profiles.
   # From the variables point of view, the definition tries to mimic the Azure Portal interface.
-  # When defining 2 and more profiles, for the 2nd and latter are specifying start and end time (in HH:MM format).
+  # When defining 2 and more profiles, for the 2nd and latter we are specifying start and end time (in HH:MM format).
   # From the code/ARM point of view, there is nothing like end time for a profile. Instead of that the 1st (default)
   # profile is being duplicated with the start time equal to the end time of a particular profile.
 
@@ -436,5 +436,3 @@ resource "azurerm_monitor_autoscale_setting" "this" {
 
   tags = var.tags
 }
-
-# TODO: write the time_calculator module properly + a REDME and name it correctly
