@@ -397,10 +397,10 @@ variable "backends" {
   - `path`                  - (`string`, optional) The Path which should be used as a prefix for all HTTP requests.
   - `hostname_from_backend` - (`bool`, optional) Whether host header should be picked from the host name of the backend server.
   - `hostname`              - (`string`, optional) Host header to be sent to the backend servers.
-  - `port`                  - (`number`, required) The port which should be used for this Backend HTTP Settings Collection.
-  - `protocol`              - (`string`, required) The Protocol which should be used. Possible values are Http and Https.
-  - `timeout`               - (`number`, required) The request timeout in seconds, which must be between 1 and 86400 seconds.
-  - `cookie_based_affinity` - (`string`, required) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
+  - `port`                  - (`number`, optional) The port which should be used for this Backend HTTP Settings Collection.
+  - `protocol`              - (`string`, optional) The Protocol which should be used. Possible values are Http and Https.
+  - `timeout`               - (`number`, optional) The request timeout in seconds, which must be between 1 and 86400 seconds.
+  - `cookie_based_affinity` - (`string`, optional) Is Cookie-Based Affinity enabled? Possible values are Enabled and Disabled.
   - `affinity_cookie_name`  - (`string`, optional) The name of the affinity cookie.
   - `probe`                 - (`string`, optional) Probe's key.
   - `root_certs`            - (`map`, optional) A list of trusted_root_certificate names.
