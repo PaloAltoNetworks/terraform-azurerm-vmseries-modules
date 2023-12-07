@@ -67,7 +67,8 @@ variable "vnets" {
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
     network_security_groups = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       rules = optional(map(object({
         name                         = string
         priority                     = number

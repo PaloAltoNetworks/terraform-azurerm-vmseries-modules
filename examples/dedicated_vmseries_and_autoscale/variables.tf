@@ -79,7 +79,8 @@ variable "vnets" {
     create_virtual_network = optional(bool, true)
     address_space          = optional(list(string))
     network_security_groups = optional(map(object({
-      name = string
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -118,41 +119,65 @@ variable "vnets" {
 
 variable "natgws" {
   description = <<-EOF
-  A map defining Nat Gateways. 
+  A map defining NAT Gateways. 
 
-  Please note that a NatGW is a zonal resource, this means it's always placed in a zone (even when you do not specify one explicitly). Please refer to Microsoft documentation for notes on NatGW's zonal resiliency. 
-
+  Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
+  explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
+  For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
+  
   Following properties are supported:
-
-  - `name` : a name of the newly created NatGW.
-  - `create_natgw` : (default: `true`) create or source (when `false`) an existing NatGW. Created or sourced: the NatGW will be assigned to a subnet created by the `vnet` module.
-  - `resource_group_name : name of a Resource Group hosting the NatGW (newly create or the existing one).
-  - `zone` : Availability Zone in which the NatGW will be placed, when skipped AzureRM will pick a zone.
-  - `idle_timeout` : connection IDLE timeout in minutes, for newly created resources
-  - `vnet_key` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.
-  - `subnet_keys` : a list of subnets (key values) the NatGW will be assigned to, defined in `var.vnets` for a VNET described by `vnet_name`.
-  - `create_pip` : (default: `true`) create a Public IP that will be attached to a NatGW
-  - `existing_pip_name` : when `create_pip` is set to `false`, source and attach and existing Public IP to the NatGW
-  - `existing_pip_resource_group_name` : when `create_pip` is set to `false`, name of the Resource Group hosting the existing Public IP
-  - `create_pip_prefix` : (default: `false`) create a Public IP Prefix that will be attached to the NatGW.
-  - `pip_prefix_length` : length of the newly created Public IP Prefix, can bet between 0 and 31 but this actually supported value depends on the Subscription.
-  - `existing_pip_prefix_name` : when `create_pip_prefix` is set to `false`, source and attach and existing Public IP Prefix to the NatGW
-  - `existing_pip_prefix_resource_group_name` : when `create_pip_prefix` is set to `false`, name of the Resource Group hosting the existing Public IP Prefix.
+  - `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
+                           created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
+  - `name`               - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
+                           resource name, including prefixes.
+  - `resource_group_name - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
+                           one).
+  - `zone`               - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
+                           AzureRM will pick a zone.
+  - `idle_timeout`       - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
+  - `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
+                           NAT Gateway will be assigned to.
+  - `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
+                           in `var.vnets` for a VNET described by `vnet_name`.
+  - `public_ip`          - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
+  - `public_ip_prefix`   - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
 
   Example:
   ```
   natgws = {
     "natgw" = {
-      name         = "public-natgw"
-      vnet_key     = "transit-vnet"
-      subnet_keys  = ["public"]
-      zone         = 1
+      name        = "natgw"
+      vnet_key    = "transit-vnet"
+      subnet_keys = ["management"]
+      public_ip = {
+        create = true
+        name   = "natgw-pip"
+      }
     }
   }
   ```
   EOF
   default     = {}
-  type        = any
+  type = map(object({
+    create_natgw        = optional(bool, true)
+    name                = string
+    resource_group_name = optional(string)
+    zone                = optional(string)
+    idle_timeout        = optional(number, 4)
+    vnet_key            = string
+    subnet_keys         = list(string)
+    public_ip = optional(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+    }))
+    public_ip_prefix = optional(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      length              = optional(number)
+    }))
+  }))
 }
 
 

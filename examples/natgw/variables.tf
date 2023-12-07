@@ -13,15 +13,15 @@ variable "location" {
 variable "name_prefix" {
   description = <<-EOF
   A prefix that will be added to all created resources.
-  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+  There is no default delimiter applied between the prefix and resource name. Please include the delimiter in the actual prefix.
 
   Example:
-  ```
+  ```hcl
   name_prefix = "test-"
   ```
   
-  NOTICE. This prefix is not applied to existing resources.
-  If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify its full name, even
+  if it is also prefixed with the same value as the one in this property.
   EOF
   default     = ""
   type        = string
@@ -40,6 +40,7 @@ variable "resource_group_name" {
   description = "Name of the Resource Group."
   type        = string
 }
+
 
 ### VNET
 variable "vnets" {
@@ -67,15 +68,12 @@ variable "vnets" {
   EOF
 
   type = map(object({
-    name                    = string
-    resource_group_name     = optional(string)
-    create_virtual_network  = optional(bool, true)
-    address_space           = optional(list(string))
-    hub_resource_group_name = optional(string)
-    hub_vnet_name           = optional(string)
+    name                   = string
+    resource_group_name    = optional(string)
+    create_virtual_network = optional(bool, true)
+    address_space          = optional(list(string))
     network_security_groups = optional(map(object({
-      name                          = string
-      disable_bgp_route_propagation = optional(bool)
+      name = string
       rules = optional(map(object({
         name                         = string
         priority                     = number
@@ -112,69 +110,67 @@ variable "vnets" {
   }))
 }
 
-variable "hub_resource_group_name" {
-  description = "Name of the Resource Group hosting the hub/transit infrastructure. This value is required to create peering between the spoke and the hub VNET."
-  type        = string
-  default     = null
-}
 
-variable "hub_vnet_name" {
-  description = "Name of the hub/transit VNET. This value is required to create peering between the spoke and the hub VNET."
-  type        = string
-  default     = null
-}
-
-variable "vm_size" {
-  description = "Azure test VM size."
-  default     = "Standard_D1_v2"
-  type        = string
-}
-
-variable "username" {
-  description = "Name of the VM admin account."
-  default     = "panadmin"
-  type        = string
-}
-
-variable "password" {
-  description = "A password for the admin account."
-  default     = null
-  type        = string
-}
-
-variable "test_vms" {
+### NATGW
+variable "natgws" {
   description = <<-EOF
-  A map defining test VMs.
+  A map defining NAT Gateways. 
 
-  Values contain the following elements:
+  Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
+  explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
+  For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
+  
+  Following properties are supported:
+  - `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
+                           created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
+  - `name`               - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
+                           resource name, including prefixes.
+  - `resource_group_name - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
+                           one).
+  - `zone`               - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
+                           AzureRM will pick a zone.
+  - `idle_timeout`       - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
+  - `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
+                           NAT Gateway will be assigned to.
+  - `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
+                           in `var.vnets` for a VNET described by `vnet_name`.
+  - `public_ip`          - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
+  - `public_ip_prefix`   - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
 
-  - `name`: a name of the VM
-  - `vnet_key`: a key describing a VNET defined in `var.vnets`
-  - `subnet_key`: a key describing a subnet found in a VNET definition
-
+  Example:
+  ```
+  natgws = {
+    "natgw" = {
+      name        = "natgw"
+      vnet_key    = "transit-vnet"
+      subnet_keys = ["management"]
+      public_ip = {
+        create = true
+        name   = "natgw-pip"
+      }
+    }
+  }
+  ```
   EOF
   default     = {}
   type = map(object({
-    name       = string
-    vnet_key   = string
-    subnet_key = string
-  }))
-}
-
-variable "bastions" {
-  description = <<-EOF
-  A map containing Azure Bastion definitions.
-
-  This map follows resource definition convention, following values are available:
-  - `name`: Bastion name
-  - `vnet_key`: a key describing a VNET defined in `var.vnets`. This VNET should already have an existing subnet called `AzureBastionSubnet` (the name is hardcoded by Microsoft).
-  - `subnet_key`: a key pointing to a subnet dedicated to a Bastion deployment (the name should be `AzureBastionSubnet`.)
-
-  EOF
-  default     = {}
-  type = map(object({
-    name       = string
-    vnet_key   = string
-    subnet_key = string
+    create_natgw        = optional(bool, true)
+    name                = string
+    resource_group_name = optional(string)
+    zone                = optional(string)
+    idle_timeout        = optional(number, 4)
+    vnet_key            = string
+    subnet_keys         = list(string)
+    public_ip = optional(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+    }))
+    public_ip_prefix = optional(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      length              = optional(number)
+    }))
   }))
 }
