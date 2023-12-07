@@ -183,7 +183,7 @@ variable "appgws" {
       }))
     })
     waf = optional(object({
-      firewall_mode    = optional(string)
+      prevention_mode  = bool
       rule_set_type    = optional(string, "OWASP")
       rule_set_version = optional(string)
     }))

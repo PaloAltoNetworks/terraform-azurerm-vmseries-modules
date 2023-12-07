@@ -64,7 +64,7 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       enabled          = var.waf != null
-      firewall_mode    = var.waf.firewall_mode
+      firewall_mode    = var.waf.prevention_mode ? "Prevention" : "Detection"
       rule_set_type    = var.waf.rule_set_type
       rule_set_version = var.waf.rule_set_version
     }

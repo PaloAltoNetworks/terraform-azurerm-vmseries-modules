@@ -77,24 +77,20 @@ variable "enable_http2" {
 
 variable "waf" {
   description = <<-EOF
-  Object sets only the SKU and provide basic WAF configuration for Application Gateway.
+  Object sets only the SKU and provide basic WAF (Web Application Firewall) configuration for Application Gateway.
 
   This module does not support WAF rules configuration and advanced WAF settings.
   Only below attributes are allowed:
-  - `firewall_mode`    - (`string`, optional) The Web Application Firewall Mode
+  - `prevention_mode`    - (`bool`, required) `true` if WAF mode is Prevention, `false` for Detection mode
   - `rule_set_type`    - (`string`, optional, defaults to `OWASP`) The Type of the Rule Set used for this Web Application Firewall
   - `rule_set_version` - (`string`, optional) The Version of the Rule Set used for this Web Application Firewall
   EOF
   default     = null
   type = object({
-    firewall_mode    = optional(string)
+    prevention_mode  = bool
     rule_set_type    = optional(string, "OWASP")
     rule_set_version = optional(string)
   })
-  validation {
-    condition     = var.waf != null ? contains(["Detection", "Prevention"], coalesce(var.waf.firewall_mode, "Detection")) : true
-    error_message = "For `firewall_mode` possible values are Detection and Prevention"
-  }
   validation {
     condition     = var.waf != null ? contains(["OWASP", "Microsoft_BotManagerRuleSet"], var.waf.rule_set_type) : true
     error_message = "For `rule_set_type` possible values are OWASP and Microsoft_BotManagerRuleSet"
