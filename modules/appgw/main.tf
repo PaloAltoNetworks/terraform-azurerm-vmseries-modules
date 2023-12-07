@@ -320,4 +320,14 @@ resource "azurerm_application_gateway" "this" {
     }
   }
 
+  lifecycle {
+    precondition {
+      condition = var.probes != null ? alltrue(flatten([
+        for k, probe in var.probes : probe.host != null || alltrue(flatten([
+          for b, backend in var.backends : backend.probe == k ? backend.hostname != null : true
+        ]))
+      ])) : true
+      error_message = "Custom health probes needs to have defined host or backend settings needs to contain overriden host name."
+    }
+  }
 }

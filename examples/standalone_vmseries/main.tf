@@ -336,13 +336,20 @@ module "appgw" {
 
   frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
   listeners                      = each.value.listeners
-  backend_pool                   = each.value.backend_pool
-  backends                       = each.value.backends
-  probes                         = each.value.probes
-  rewrites                       = each.value.rewrites
-  rules                          = each.value.rules
-  redirects                      = each.value.redirects
-  url_path_maps                  = each.value.url_path_maps
+  backend_pool = {
+    name = "vmseries"
+    vmseries_ips = [
+      for k, v in var.vmseries : module.vmseries[k].interfaces[
+        "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}"
+      ].private_ip_address if try(v.add_to_appgw_backend, false)
+    ]
+  }
+  backends      = each.value.backends
+  probes        = each.value.probes
+  rewrites      = each.value.rewrites
+  rules         = each.value.rules
+  redirects     = each.value.redirects
+  url_path_maps = each.value.url_path_maps
 
   ssl_global   = each.value.ssl_global
   ssl_profiles = each.value.ssl_profiles

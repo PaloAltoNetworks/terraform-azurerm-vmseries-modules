@@ -340,6 +340,7 @@ appgws = {
         protocol              = "Http"
         timeout               = 60
         cookie_based_affinity = "Enabled"
+        probe                 = "http"
       }
       https1 = {
         name                  = "https1-settings"
@@ -375,6 +376,13 @@ appgws = {
       }
     }
     probes = {
+      http = {
+        name     = "http-probe"
+        path     = "/"
+        protocol = "Http"
+        timeout  = 10
+        host     = "127.0.0.1"
+      }
       https1 = {
         name     = "https-probe1"
         path     = "/"

@@ -168,7 +168,6 @@ module "appgw" {
 
   frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
   listeners                      = each.value.listeners
-  backend_pool                   = each.value.backend_pool
   backends                       = each.value.backends
   probes                         = each.value.probes
   rewrites                       = each.value.rewrites
