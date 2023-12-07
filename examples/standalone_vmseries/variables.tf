@@ -424,7 +424,7 @@ variable "vmseries" {
   EOF
 }
 
-# Application Gateway
+### Application Gateway
 variable "appgws" {
   description = <<-EOF
   A map defining all Application Gateways in the current deployment.
@@ -433,7 +433,7 @@ variable "appgws" {
 
   Following properties are supported:
   - `name`                              - (`string`, required) name of the Application Gateway.
-  - `public_ip_name`                    - (`string`, required) name for the public IP address.
+  - `public_ip`                         - (`string`, required) public IP address.
   - `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
   - `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
   - `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
@@ -458,9 +458,14 @@ variable "appgws" {
   - `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
   EOF
   default     = {}
+  nullable    = false
   type = map(object({
-    name               = string
-    public_ip_name     = string
+    name = string
+    public_ip = object({
+      name           = string
+      resource_group = optional(string)
+      create         = optional(bool, true)
+    })
     vnet_key           = string
     subnet_key         = string
     managed_identities = optional(list(string))
@@ -472,8 +477,7 @@ variable "appgws" {
       }))
     })
     waf = optional(object({
-      enabled          = bool
-      firewall_mode    = optional(string)
+      prevention_mode  = bool
       rule_set_type    = optional(string, "OWASP")
       rule_set_version = optional(string)
     }))

@@ -322,7 +322,7 @@ module "appgw" {
   for_each = var.appgws
 
   name                = each.value.name
-  public_ip_name      = each.value.public_ip_name
+  public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]

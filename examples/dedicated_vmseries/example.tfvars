@@ -162,11 +162,13 @@ load_balancers = {
 # --- APPLICATION GATEWAYs --- #
 appgws = {
   "public" = {
-    name           = "appgw"
-    public_ip_name = "pip"
-    vnet_key       = "transit"
-    subnet_key     = "appgw"
-    zones          = ["1", "2", "3"]
+    name = "appgw"
+    public_ip = {
+      name = "pip"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
     capacity = {
       static = 2
     }
