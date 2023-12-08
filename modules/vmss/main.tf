@@ -22,7 +22,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   disable_password_authentication = var.authentication.disable_password_authentication
 
   dynamic "admin_ssh_key" {
-    for_each = { for v in var.authentication.ssh_keys : v => v }
+    for_each = { for k, v in var.authentication.ssh_keys : k => v }
     content {
       username   = var.authentication.username
       public_key = admin_ssh_key.value
@@ -40,7 +40,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   provision_vm_agent           = false
 
   dynamic "plan" {
-    for_each = var.image.enable_marketplace_plan ? ["one"] : []
+    for_each = var.image.enable_marketplace_plan ? [1] : []
     content {
       name      = var.image.sku
       publisher = var.image.publisher
@@ -92,7 +92,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
         application_gateway_backend_address_pool_ids = nic.value.appgw_backend_pool_ids
 
         dynamic "public_ip_address" {
-          for_each = nic.value.create_public_ip ? ["one"] : []
+          for_each = nic.value.create_public_ip ? [1] : []
           iterator = pip
 
           content {
