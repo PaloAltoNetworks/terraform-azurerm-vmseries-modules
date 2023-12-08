@@ -49,11 +49,14 @@ resource "azurerm_storage_share" "this" {
   quota                = coalesce(each.value.quota, var.file_shares_configuration.quota)
   access_tier          = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
 }
+# TODO add an option to source file shares
+
 
 locals {
   package_folders = ["content", "config", "software", "plugins", "license"]
 }
 
+# TODO add an option to disable folders creation
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory
 resource "azurerm_storage_share_directory" "this" {
   for_each = {
@@ -68,6 +71,7 @@ resource "azurerm_storage_share_directory" "this" {
   share_name           = azurerm_storage_share.this[each.value.share_key].name
   storage_account_name = local.storage_account.name
 }
+
 
 locals {
   bootstrap_filenames = {
