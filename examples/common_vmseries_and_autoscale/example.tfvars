@@ -200,18 +200,16 @@ ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
 
-vm_image_configuration = {
-  img_version = "10.2.4"
-}
-
-authentication = {
-  disable_password_authentication = false
-}
-
 scale_sets = {
   common = {
     name = "common-vmss"
-    scale_set_configuration = {
+    image = {
+      version = "10.2.4"
+    }
+    authentication = {
+      disable_password_authentication = false
+    }
+    virtual_machine_scale_set = {
       vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
     }

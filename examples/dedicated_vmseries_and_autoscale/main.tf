@@ -1,6 +1,8 @@
 # Generate a random password.
 resource "random_password" "this" {
-  count = var.authentication.password == null ? 1 : 0
+  count = anytrue([
+    for _, v in var.scale_sets : v.authentication.password == null
+  ]) ? 1 : 0
 
   length           = 16
   min_lower        = 16 - 4
@@ -11,8 +13,13 @@ resource "random_password" "this" {
 }
 
 locals {
-  password       = coalesce(var.authentication.password, try(random_password.this[0].result, null))
-  authentication = merge(var.authentication, { password = local.password })
+  authentication = {
+    for k, v in var.scale_sets : k =>
+    merge(
+      v.authentication,
+      { password = coalesce(v.authentication.password, try(random_password.this[0].result, null)) }
+    )
+  }
 }
 
 # Create or source the Resource Group.
@@ -184,20 +191,20 @@ module "appgw" {
 module "vmss" {
   source = "../../modules/vmss"
 
-  for_each = coalesce(var.scale_sets, {})
+  for_each = var.scale_sets
 
   name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  authentication          = local.authentication
-  scale_set_configuration = each.value.scale_set_configuration
-  vm_image_configuration  = var.vm_image_configuration
+  authentication            = local.authentication[each.key]
+  virtual_machine_scale_set = each.value.virtual_machine_scale_set
+  image                     = each.value.image
 
   interfaces = [
     for v in each.value.interfaces : {
       name                   = v.name
-      subnet_id              = module.vnet[each.value.scale_set_configuration.vnet_key].subnet_ids[v.subnet_key]
+      subnet_id              = module.vnet[each.value.virtual_machine_scale_set.vnet_key].subnet_ids[v.subnet_key]
       create_public_ip       = v.create_public_ip
       pip_domain_name_label  = v.pip_domain_name_label
       lb_backend_pool_ids    = try([module.load_balancer[v.load_balancer_key].backend_pool_id], [])

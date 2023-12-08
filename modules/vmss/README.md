@@ -107,7 +107,7 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`authentication`](#authentication) | `object` | A map defining authentication settings (including username and password).
-[`vm_image_configuration`](#vm_image_configuration) | `object` | Basic Azure VM configuration.
+[`image`](#image) | `object` | Basic Azure VM configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interfaces specifications.
 
 
@@ -116,7 +116,7 @@ Name | Type | Description
 Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`scale_set_configuration`](#scale_set_configuration) | `object` | Scale set parameters configuration.
+[`virtual_machine_scale_set`](#virtual_machine_scale_set) | `object` | Scale set parameters configuration.
 [`autoscaling_configuration`](#autoscaling_configuration) | `object` | Autoscaling configuration common to all policies.
 [`autoscaling_profiles`](#autoscaling_profiles) | `list` | A list defining autoscaling profiles.
 
@@ -217,39 +217,39 @@ object({
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### vm_image_configuration
+#### image
 
 Basic Azure VM configuration.
 
 Following properties are available:
 
-- `img_version`             - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
+- `version`                 - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
                               `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
-- `img_publisher`           - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
+- `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
                               which should be deployed
-- `img_offer`               - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
+- `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
                               published image
-- `img_sku`                 - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
+- `sku`                     - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
                               `az vm image list -o table --all --publisher paloaltonetworks`
 - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                               on Azure Market Place
-- `custom_image_id`         - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
+- `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
                               creating new Virtual Machines
 
 > [!Important]
-> `custom_image_id` and `img_version` properties are mutually exclusive.
+> `custom_id` and `version` properties are mutually exclusive.
 
 
 Type: 
 
 ```hcl
 object({
-    img_version             = optional(string)
-    img_publisher           = optional(string, "paloaltonetworks")
-    img_offer               = optional(string, "vmseries-flex")
-    img_sku                 = optional(string, "byol")
+    version                 = optional(string)
+    publisher               = optional(string, "paloaltonetworks")
+    offer                   = optional(string, "vmseries-flex")
+    sku                     = optional(string, "byol")
     enable_marketplace_plan = optional(bool, true)
-    custom_image_id         = optional(string)
+    custom_id               = optional(string)
   })
 ```
 
@@ -341,7 +341,7 @@ Default value: `map[]`
 
 
 
-#### scale_set_configuration
+#### virtual_machine_scale_set
 
 Scale set parameters configuration.
 
@@ -350,13 +350,13 @@ Nevertheless they should be at least reviewed to meet deployment requirements.
 
 List of either required or important properties: 
 
-- `vm_size`               - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
+- `size`                  - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
                             Deployment Guide* as only a few selected sizes are supported
 - `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
                             this Scale Set will be created
 - `disk_type`             - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                             possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
-                            `vm_size` values)
+                            `size` values)
 - `bootstrap_options`      - bootstrap options to pass to VM-Series instance.
 
   Proper syntax is a string of semicolon separated properties, for example:
@@ -393,7 +393,7 @@ Type:
 
 ```hcl
 object({
-    vm_size                      = optional(string, "Standard_D3_v2")
+    size                         = optional(string, "Standard_D3_v2")
     bootstrap_options            = optional(string)
     zones                        = optional(list(string), ["1", "2", "3"])
     disk_type                    = optional(string, "StandardSSD_LRS")

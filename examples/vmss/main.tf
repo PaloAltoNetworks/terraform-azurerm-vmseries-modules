@@ -87,9 +87,9 @@ module "vmss" {
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  authentication          = local.authentication
-  scale_set_configuration = each.value.scale_set_configuration
-  vm_image_configuration  = var.vm_image_configuration
+  authentication            = local.authentication
+  virtual_machine_scale_set = each.value.virtual_machine_scale_set
+  image                     = var.image
   interfaces = [
     for v in each.value.interfaces : {
       name                  = v.name

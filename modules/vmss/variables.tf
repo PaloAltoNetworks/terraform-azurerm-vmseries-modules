@@ -50,46 +50,46 @@ variable "authentication" {
   }
 }
 
-variable "vm_image_configuration" {
+variable "image" {
   description = <<-EOF
   Basic Azure VM configuration.
 
   Following properties are available:
 
-  - `img_version`             - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
+  - `version`                 - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
                                 `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
-  - `img_publisher`           - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
+  - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
                                 which should be deployed
-  - `img_offer`               - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
+  - `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
                                 published image
-  - `img_sku`                 - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
+  - `sku`                     - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
                                 `az vm image list -o table --all --publisher paloaltonetworks`
   - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                 on Azure Market Place
-  - `custom_image_id`         - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
+  - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
                                 creating new Virtual Machines
 
   > [!Important]
-  > `custom_image_id` and `img_version` properties are mutually exclusive.
+  > `custom_id` and `version` properties are mutually exclusive.
   EOF
   type = object({
-    img_version             = optional(string)
-    img_publisher           = optional(string, "paloaltonetworks")
-    img_offer               = optional(string, "vmseries-flex")
-    img_sku                 = optional(string, "byol")
+    version                 = optional(string)
+    publisher               = optional(string, "paloaltonetworks")
+    offer                   = optional(string, "vmseries-flex")
+    sku                     = optional(string, "byol")
     enable_marketplace_plan = optional(bool, true)
-    custom_image_id         = optional(string)
+    custom_id               = optional(string)
   })
   validation {
-    condition = (var.vm_image_configuration.custom_image_id != null && var.vm_image_configuration.img_version == null
+    condition = (var.image.custom_id != null && var.image.version == null
       ) || (
-      var.vm_image_configuration.custom_image_id == null && var.vm_image_configuration.img_version != null
+      var.image.custom_id == null && var.image.version != null
     )
-    error_message = "Either `custom_image_id` or `img_version` has to be defined."
+    error_message = "Either `custom_id` or `version` has to be defined."
   }
 }
 
-variable "scale_set_configuration" {
+variable "virtual_machine_scale_set" {
   description = <<-EOF
   Scale set parameters configuration.
 
@@ -98,13 +98,13 @@ variable "scale_set_configuration" {
 
   List of either required or important properties: 
 
-  - `vm_size`               - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
+  - `size`                  - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
                               Deployment Guide* as only a few selected sizes are supported
   - `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
                               this Scale Set will be created
   - `disk_type`             - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                               possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
-                              `vm_size` values)
+                              `size` values)
   - `bootstrap_options`      - bootstrap options to pass to VM-Series instance.
 
     Proper syntax is a string of semicolon separated properties, for example:
@@ -139,7 +139,7 @@ variable "scale_set_configuration" {
   default     = {}
   nullable    = false
   type = object({
-    vm_size                      = optional(string, "Standard_D3_v2")
+    size                         = optional(string, "Standard_D3_v2")
     bootstrap_options            = optional(string)
     zones                        = optional(list(string), ["1", "2", "3"])
     disk_type                    = optional(string, "StandardSSD_LRS")
@@ -153,12 +153,12 @@ variable "scale_set_configuration" {
     diagnostics_storage_uri      = optional(string)
   })
   validation {
-    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.scale_set_configuration.disk_type)
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine_scale_set.disk_type)
     error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
   }
   validation {
-    condition     = length(var.scale_set_configuration.zones) == 3 || var.scale_set_configuration.zones == null
-    error_message = "The `var.scale_set_configuration.zones` can either be a list of all Availability Zones or explicit `null`."
+    condition     = length(var.virtual_machine_scale_set.zones) == 3 || var.virtual_machine_scale_set.zones == null
+    error_message = "The `var.virtual_machine_scale_set.zones` can either be a list of all Availability Zones or explicit `null`."
   }
 
 }

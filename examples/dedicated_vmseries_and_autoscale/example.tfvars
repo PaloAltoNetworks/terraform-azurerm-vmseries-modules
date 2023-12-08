@@ -1,7 +1,7 @@
 # --- GENERAL --- #
 location            = "North Europe"
 resource_group_name = "autoscale-dedicated"
-name_prefix         = "example-"
+name_prefix         = "fosix-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -188,18 +188,12 @@ ngfw_metrics = {
   name = "ngwf-log-analytics-wrksp"
 }
 
-vm_image_configuration = {
-  img_version = "10.2.4"
-}
-
-authentication = {
-  disable_password_authentication = false
-}
-
 scale_sets = {
   inbound = {
-    name = "inbound-vmss"
-    scale_set_configuration = {
+    name           = "inbound-vmss"
+    image          = { version = "10.2.4" }
+    authentication = { disable_password_authentication = false }
+    virtual_machine_scale_set = {
       vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
@@ -244,8 +238,13 @@ scale_sets = {
     ]
   }
   obew = {
-    name = "obew-vmss"
-    scale_set_configuration = {
+    name  = "obew-vmss"
+    image = { version = "10.2.4" }
+    authentication = {
+      password                        = "123QWEasd"
+      disable_password_authentication = false
+    }
+    virtual_machine_scale_set = {
       vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null

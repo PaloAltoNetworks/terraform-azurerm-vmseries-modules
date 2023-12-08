@@ -29,37 +29,37 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
-  encryption_at_host_enabled   = var.scale_set_configuration.encryption_at_host_enabled
-  overprovision                = var.scale_set_configuration.overprovision
-  platform_fault_domain_count  = var.scale_set_configuration.platform_fault_domain_count
-  proximity_placement_group_id = var.scale_set_configuration.proximity_placement_group_id
-  single_placement_group       = var.scale_set_configuration.single_placement_group
-  sku                          = var.scale_set_configuration.vm_size
-  zones                        = var.scale_set_configuration.zones
-  zone_balance                 = length(coalesce(var.scale_set_configuration.zones, [])) > 0
+  encryption_at_host_enabled   = var.virtual_machine_scale_set.encryption_at_host_enabled
+  overprovision                = var.virtual_machine_scale_set.overprovision
+  platform_fault_domain_count  = var.virtual_machine_scale_set.platform_fault_domain_count
+  proximity_placement_group_id = var.virtual_machine_scale_set.proximity_placement_group_id
+  single_placement_group       = var.virtual_machine_scale_set.single_placement_group
+  sku                          = var.virtual_machine_scale_set.size
+  zones                        = var.virtual_machine_scale_set.zones
+  zone_balance                 = length(coalesce(var.virtual_machine_scale_set.zones, [])) > 0
   provision_vm_agent           = false
 
   dynamic "plan" {
-    for_each = var.vm_image_configuration.enable_marketplace_plan ? ["one"] : []
+    for_each = var.image.enable_marketplace_plan ? ["one"] : []
     content {
-      name      = var.vm_image_configuration.img_sku
-      publisher = var.vm_image_configuration.img_publisher
-      product   = var.vm_image_configuration.img_offer
+      name      = var.image.sku
+      publisher = var.image.publisher
+      product   = var.image.offer
     }
   }
 
   source_image_reference {
-    publisher = var.vm_image_configuration.custom_image_id == null ? var.vm_image_configuration.img_publisher : null
-    offer     = var.vm_image_configuration.custom_image_id == null ? var.vm_image_configuration.img_offer : null
-    sku       = var.vm_image_configuration.custom_image_id == null ? var.vm_image_configuration.img_sku : null
-    version   = var.vm_image_configuration.img_version
+    publisher = var.image.custom_id == null ? var.image.publisher : null
+    offer     = var.image.custom_id == null ? var.image.offer : null
+    sku       = var.image.custom_id == null ? var.image.sku : null
+    version   = var.image.version
   }
 
-  source_image_id = var.vm_image_configuration.custom_image_id
+  source_image_id = var.image.custom_id
   os_disk {
     caching                = "ReadWrite"
-    disk_encryption_set_id = var.scale_set_configuration.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
-    storage_account_type   = var.scale_set_configuration.disk_type
+    disk_encryption_set_id = var.virtual_machine_scale_set.disk_encryption_set_id #  The Disk Encryption Set must have the Reader Role Assignment scoped on the Key Vault - in addition to an Access Policy to the Key Vault.
+    storage_account_type   = var.virtual_machine_scale_set.disk_type
   }
 
 
@@ -67,7 +67,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
   upgrade_mode = "Manual" # See README for more details no this setting.
 
-  custom_data = var.scale_set_configuration.bootstrap_options == null ? null : base64encode(var.scale_set_configuration.bootstrap_options)
+  custom_data = var.virtual_machine_scale_set.bootstrap_options == null ? null : base64encode(var.virtual_machine_scale_set.bootstrap_options)
 
   scale_in {
     rule                   = var.autoscaling_configuration.scale_in_policy
@@ -82,7 +82,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
       name                          = nic.value.name
       primary                       = nic.key == 0 ? true : false
       enable_ip_forwarding          = nic.key == 0 ? false : true
-      enable_accelerated_networking = nic.key == 0 ? false : var.scale_set_configuration.accelerated_networking
+      enable_accelerated_networking = nic.key == 0 ? false : var.virtual_machine_scale_set.accelerated_networking
 
       ip_configuration {
         name                                         = "primary"
@@ -104,7 +104,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
-  boot_diagnostics { storage_account_uri = var.scale_set_configuration.diagnostics_storage_uri }
+  boot_diagnostics { storage_account_uri = var.virtual_machine_scale_set.diagnostics_storage_uri }
 
   identity { type = "SystemAssigned" } # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
 

@@ -280,64 +280,55 @@ variable "ngfw_metrics" {
 }
 
 ### VMSERIES
-variable "authentication" {
-  default = {}
-  type = object({
-    username                        = optional(string)
-    password                        = optional(string)
-    disable_password_authentication = optional(bool)
-    ssh_keys                        = optional(list(string), [])
-  })
-}
-
-variable "vm_image_configuration" {
-  default = {}
-  type = object({
-    img_version             = optional(string)
-    img_publisher           = optional(string)
-    img_offer               = optional(string)
-    img_sku                 = optional(string)
-    enable_marketplace_plan = optional(bool)
-    custom_image_id         = optional(string)
-  })
-}
 
 variable "scale_sets" {
   description = <<-EOF
   A map defining Azure Virtual Machine Scale Set based on Next Generation Firewall image.
 
-  For details and defaults for available options please refer to the[`vmss`](../../modules/vmss/README.md) module.
+  For details and defaults for available options please refer to the [`vmss`](../../modules/vmss/README.md) module.
 
   Following properties are available:
 
-  - `name`                    - (`string`) name of the scale set, will be prefixed with the value of `var.name_prefix`
-  - `scale_set_configuration` - (`map`, optional, defaults to `{}`) a map that groups most common Scale Set configuration options.
+  - `name`                      - (`string`, required) name of the scale set, will be prefixed with the value of `var.name_prefix`
+  - `authentication`            - (`map`, optional, defaults to module defaults) authentication setting for VM deployed in this
+                                  scale set
+  - `image`                     - (`map`, required) properties defining a base image used to spawn VMs in this Scale Set.
 
-    Below we present only the most important ones, for the rest please refer to
-    [module's documentation](../../modules/vmss/README.md#scale_set_configuration):
+      The `image` property is required but there are only 2 properties (mutually exclusive) that have to be set up, either:
 
-    - `vnet_key`              - (`string`, required) a key of a VNET hosting the subnets specified by `interfaces->subnet_key`
-    - `vm_size`               - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
-                                Deployment Guide* as only a few selected sizes are supported
-    - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
-                                this Scale Set will be created
-    - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
-                                possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
-                                `vm_size` values)
-    - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VM-Series instance
+      - `version`   - (`string`) describes the PanOS image version from Azure's Marketplace
+      - `custom_id` - (`string`) absolute ID of your own custom PanOS image
+
+      For details on the other properties refer to [module's documentation](../../modules/vmss/README.md#authentication).
+
+  - `virtual_machine_scale_set` - (`map`, optional, defaults to module defaults) a map that groups most common Scale Set
+                                  configuration options.
+
+      Below we present only the most important ones, for the rest please refer to
+      [module's documentation](../../modules/vmss/README.md#virtual_machine_scale_set):
+
+      - `vnet_key`              - (`string`, required) a key of a VNET hosting the subnets specified by `interfaces->subnet_key`
+      - `size`                  - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
+                                  Deployment Guide* as only a few selected sizes are supported
+      - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
+                                  this Scale Set will be created
+      - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
+                                  possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                                  `vm_size` values)
+      - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VM-Series instance
 
   - `autoscaling_configuration` - (`map`, optional, defaults to `{}`) a map that groups common autoscaling configuration, but not
                                   the scaling profiles (metrics thresholds, etc)
 
-    Below we present only the most important properties, for the rest please refer to
-    [module's documentation](../../modules/vmss/README.md#autoscaling_configuration).
+      Below we present only the most important properties, for the rest please refer to
+      [module's documentation](../../modules/vmss/README.md#autoscaling_configuration).
 
-    - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in the
-                          scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the
-                          metrics to the thresholds
+      - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in the
+                            scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the
+                            metrics to the thresholds
 
-  - `interfaces`  - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup> interface
-                    should be the management one. Following properties are available:
+  - `interfaces`              - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
+                                interface should be the management one. Following properties are available:
     - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`)
     - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
                                   `var.vnets`
@@ -349,18 +340,33 @@ variable "scale_sets" {
     - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label
                                   for each VM instance
 
-  - `autoscaling_profiles`  - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
-                              configuration please refer to
-                              [module's documentation](../../modules/vmss/README.md#autoscaling_profiles)
+  - `autoscaling_profiles`    - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
+                                configuration please refer to
+                                [module's documentation](../../modules/vmss/README.md#autoscaling_profiles)
 
   EOF
-  default     = null
+  default     = {}
+  nullable    = false
   type = map(object({
     name = string
-    scale_set_configuration = optional(object({
+    authentication = object({
+      username                        = optional(string)
+      password                        = optional(string)
+      disable_password_authentication = optional(bool)
+      ssh_keys                        = optional(list(string))
+    })
+    image = object({
+      version                 = optional(string)
+      publisher               = optional(string)
+      offer                   = optional(string)
+      sku                     = optional(string)
+      enable_marketplace_plan = optional(bool)
+      custom_id               = optional(string)
+    })
+    virtual_machine_scale_set = optional(object({
       vnet_key                     = string
       bootstrap_options            = optional(string)
-      vm_size                      = optional(string)
+      size                         = optional(string)
       zones                        = optional(list(string))
       disk_type                    = optional(string)
       accelerated_networking       = optional(bool)

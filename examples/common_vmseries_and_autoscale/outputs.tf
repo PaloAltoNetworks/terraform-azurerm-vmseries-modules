@@ -1,11 +1,11 @@
-output "username" {
+output "usernames" {
   description = "Initial administrative username to use for VM-Series."
-  value       = var.authentication.username
+  value       = { for k, v in local.authentication : k => v.username }
 }
 
-output "password" {
+output "passwords" {
   description = "Initial administrative password to use for VM-Series."
-  value       = local.password
+  value       = { for k, v in local.authentication : k => v.password }
   sensitive   = true
 }
 

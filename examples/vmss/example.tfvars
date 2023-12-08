@@ -46,7 +46,7 @@ ngfw_metrics = {
   metrics_retention_in_days = 120
 }
 
-vm_image_configuration = {
+image = {
   img_version = "10.2.4"
 }
 

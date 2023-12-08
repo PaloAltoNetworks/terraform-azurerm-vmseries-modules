@@ -115,7 +115,7 @@ variable "authentication" {
   })
 }
 
-variable "vm_image_configuration" {
+variable "image" {
   default = {}
   type = object({
     img_version             = optional(string)
@@ -168,10 +168,10 @@ variable "scale_sets" {
   Following properties are available:
 
   - `name`                    - (`string`) name of the scale set, will be prefixed with the value of `var.name_prefix`
-  - `scale_set_configuration` - (`map`, optional, defaults to `{}`) a map that groups most common Scale Set configuration options.
+  - `virtual_machine_scale_set` - (`map`, optional, defaults to `{}`) a map that groups most common Scale Set configuration options.
 
     Below we present only the most important ones, for the rest please refer to
-    [module's documentation](../../modules/vmss/README.md#scale_set_configuration):
+    [module's documentation](../../modules/vmss/README.md#virtual_machine_scale_set):
 
     - `vm_size`               - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
                                 Deployment Guide* as only a few selected sizes are supported
@@ -213,7 +213,7 @@ variable "scale_sets" {
   default     = null
   type = map(object({
     name = string
-    scale_set_configuration = optional(object({
+    virtual_machine_scale_set = optional(object({
       vm_size                      = optional(string)
       zones                        = optional(list(string))
       disk_type                    = optional(string)
