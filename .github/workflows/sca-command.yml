@@ -53,7 +53,7 @@ jobs:
     needs: init
     permissions:
       contents: read
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@v2.3
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@dependabot/github_actions/actions/setup-python-5
     secrets: inherit
     with:
       pre-commit-hooks: terraform_fmt terraform_docs terraform_tflint checkov
