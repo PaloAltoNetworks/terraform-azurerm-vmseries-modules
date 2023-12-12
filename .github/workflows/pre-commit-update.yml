@@ -13,13 +13,13 @@ on:
 jobs:
   update:
     name: "Update Pre-Commit dependencies"
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre-commit-update.yml@v2.3
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre-commit-update.yml@dependabot/github_actions/actions/setup-python-5
 
   pre-commit:
     name: Run Pre-Commit with the udpated config
     needs: [update]
     if: needs.update.outputs.pr_operation == 'created' || needs.update.outputs.pr_operation == 'updated'
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@v2.3
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_pre_commit.yml@dependabot/github_actions/actions/setup-python-5
     with:
       pre-commit-hooks: terraform_fmt terraform_docs terraform_tflint checkov
       branch: pre-commit-dependencies-update
@@ -28,7 +28,7 @@ jobs:
     name: Give comment on the PR if pre-commit failed
     needs: [pre-commit, update]
     if: always() && (needs.pre-commit.result == 'failure' || needs.pre-commit.result == 'success')
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_comment_pr.yml@v2.3
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/_comment_pr.yml@dependabot/github_actions/actions/setup-python-5
     with:
       pr_number: ${{ needs.update.outputs.pr_number }}
       job_result: ${{ needs.pre-commit.result }}

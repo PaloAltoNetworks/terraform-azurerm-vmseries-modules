@@ -41,7 +41,7 @@ jobs:
       contents: read
       pull-requests: write
       id-token: write
-    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/test_command.yml@v2.3
+    uses: PaloAltoNetworks/terraform-modules-vmseries-ci-workflows/.github/workflows/test_command.yml@dependabot/github_actions/actions/setup-python-5
     secrets: inherit
     with:
       cloud: azure
