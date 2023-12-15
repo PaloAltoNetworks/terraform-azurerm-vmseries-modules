@@ -23,7 +23,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.2.3.4"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -170,7 +170,7 @@ bootstrap_storage = {
         subnet_key = "management"
       }
     }
-    storage_allow_inbound_public_ips = ["1.2.3.4"] # TODO: whitelist public IP addresses subnets (minimum /30 CIDR) that will be used to apply the terraform code from
+    storage_allow_inbound_public_ips = ["1.2.3.4"]
   }
 }
 
@@ -263,7 +263,7 @@ vmseries = {
   "fw-obew-2" = {
     name = "obew-firewall-02"
     bootstrap_storage = {
-      name                   = "bootstrap"
+      bootstrap_key          = "bootstrap"
       static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
       template_bootstrap_xml = "templates/bootstrap_obew.tmpl"
     }

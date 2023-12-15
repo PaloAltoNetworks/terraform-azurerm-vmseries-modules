@@ -283,7 +283,12 @@ variable "availability_sets" {
   Please verify how many update and fault domain are supported in a region before deploying this resource.
   EOF
   default     = {}
-  type        = any
+  nullable    = false
+  type = map(object({
+    name                = string
+    update_domain_count = optional(number, 5)
+    fault_domain_count  = optional(number, 3)
+  }))
 }
 
 
@@ -293,9 +298,31 @@ variable "bootstrap_storages" {
   EOF
   default     = {}
   nullable    = false
-  # type        = map(object({
-  #   name = 
-  # }))
+  type = map(object({
+    name                   = string
+    create_storage_account = optional(bool)
+    resource_group_name    = optional(string)
+    file_shares_configuration = optional(object({
+      create_file_shares            = optional(bool)
+      disable_package_dirs_creation = optional(bool)
+      quota                         = optional(number)
+      access_tier                   = optional(string)
+      vnet_key                      = optional(string)
+    }), {})
+    storage_network_security = optional(object({
+      min_tls_version     = optional(string)
+      allowed_public_ips  = optional(list(string))
+      allowed_subnet_keys = optional(list(string), [])
+    }), {})
+    file_shares = optional(map(object({
+      name                   = string
+      bootstrap_package_path = optional(string)
+      bootstrap_files        = optional(map(string))
+      bootstrap_files_md5    = optional(map(string))
+      quota                  = optional(number)
+      access_tier            = optional(string)
+    })), {})
+  }))
 }
 
 variable "vmseries" {
@@ -323,9 +350,19 @@ variable "vmseries" {
       custom_id               = optional(string)
     })
     virtual_machine = object({
-      vnet_key                     = string
-      size                         = optional(string)
-      bootstrap_options            = optional(string)
+      vnet_key          = string
+      size              = optional(string)
+      bootstrap_options = optional(string)
+      bootstrap_storage = optional(object({
+        bootstrap_key          = string
+        static_files           = optional(map(string), {})
+        template_bootstrap_xml = optional(string)
+        bootstrap_package_path = optional(string)
+        private_snet_key       = string
+        public_snet_key        = string
+        ai_update_interval     = optional(number, 5)
+        intranet_cidr          = optional(string)
+      }))
       zone                         = string
       disk_type                    = optional(string)
       disk_name                    = optional(string)
@@ -341,7 +378,7 @@ variable "vmseries" {
     interfaces = list(object({
       name                     = string
       subnet_key               = string
-      create_public_ip         = optional(bool)
+      create_public_ip         = optional(bool, false)
       public_ip_name           = optional(string)
       public_ip_resource_group = optional(string)
       private_ip_address       = optional(string)

@@ -72,8 +72,10 @@ variable "bootstrap_storages" {
       allowed_subnet_ids = optional(list(string))
     }), {})
     file_shares_configuration = optional(object({
-      quota       = optional(number)
-      access_tier = optional(string)
+      create_file_shares            = optional(bool)
+      disable_package_dirs_creation = optional(bool)
+      quota                         = optional(number)
+      access_tier                   = optional(string)
     }), {})
     file_shares = optional(map(object({
       name                   = string

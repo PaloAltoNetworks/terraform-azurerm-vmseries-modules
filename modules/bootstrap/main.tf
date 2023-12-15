@@ -42,21 +42,34 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share
 resource "azurerm_storage_share" "this" {
-  for_each = var.file_shares
+  for_each = var.file_shares_configuration.create_file_shares ? var.file_shares : {}
 
   name                 = each.value.name
   storage_account_name = local.storage_account.name
   quota                = coalesce(each.value.quota, var.file_shares_configuration.quota)
   access_tier          = coalesce(each.value.access_tier, var.file_shares_configuration.access_tier)
 }
-# TODO add an option to source file shares
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_share
+data "azurerm_storage_share" "this" {
+  for_each = var.file_shares_configuration.create_file_shares ? {} : var.file_shares
+
+  name                 = each.value.name
+  storage_account_name = local.storage_account.name
+
+  lifecycle {
+    precondition {
+      condition     = !var.file_shares_configuration.create_file_shares && !var.create_storage_account
+      error_message = "You cannot source File Shares from a newly created Storage Account."
+    }
+  }
+}
 
 locals {
+  file_shares     = var.file_shares_configuration.create_file_shares ? azurerm_storage_share.this : data.azurerm_storage_share.this
   package_folders = ["content", "config", "software", "plugins", "license"]
 }
 
-# TODO add an option to disable folders creation
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_share_directory
 resource "azurerm_storage_share_directory" "this" {
   for_each = {
@@ -65,10 +78,11 @@ resource "azurerm_storage_share_directory" "this" {
       share_key   = v[0]
       folder_name = v[1]
     }
+    if !var.file_shares_configuration.disable_package_dirs_creation
   }
 
   name                 = each.value.folder_name
-  share_name           = azurerm_storage_share.this[each.value.share_key].name
+  share_name           = local.file_shares[each.value.share_key].name
   storage_account_name = local.storage_account.name
 }
 
@@ -118,12 +132,12 @@ resource "azurerm_storage_share_file" "this" {
 
   # When creating files inside of a File Share we need to specify the path and filename separately
   # regardless that the provider's documentation states that `name` can be also a path.
-  # When this is resource is used that way it errors out with the following message:
+  # When this resource is used that way it errors out with the following message:
   #   `... unexpected new value: Root object was present, but now absent.`
   # The file is being created but state is not updated.
   name             = each.value.remote_filename
   path             = each.value.remote_path
-  storage_share_id = azurerm_storage_share.this[each.value.file_share].id
+  storage_share_id = local.file_shares[each.value.file_share].id
   source           = each.value.source_path
   content_md5 = try(
     var.file_shares[each.value.file_share].bootstrap_files_md5[each.value.source_path],

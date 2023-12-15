@@ -83,9 +83,10 @@ variable "file_shares_configuration" {
   Following options are available:
   
   - `create_file_shares`            - (`bool`, optional, defaults to `true`) controls if the File Shares specified in the
-                                      `file_shares` variable are created or sourced
-  - `disable_package_dirs_creation` - (`bool`, optional, defaults to `true`) controls if the bootstrap package folder structure is
-                                      created in the newly created or sourced File Share
+                                      `file_shares` variable are created or sourced, if the latter, the storage account also 
+                                      has to be sourced.
+  - `disable_package_dirs_creation` - (`bool`, optional, defaults to `true`) for sourced File Shares, controls if the bootstrap
+                                      package folder structure is created
   - `quota`                         - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between
                                       1 and 5120 (5TB)
   - `access_tier`                   - (`string`, optional, defaults to `Cool`) access tier for a File Share, can be one of: 
@@ -95,7 +96,7 @@ variable "file_shares_configuration" {
   nullable    = false
   type = object({
     create_file_shares            = optional(bool, true)
-    disable_package_dirs_creation = optional(bool, true)
+    disable_package_dirs_creation = optional(bool, false)
     quota                         = optional(number, 10)
     access_tier                   = optional(string, "Cool")
   })
@@ -106,6 +107,10 @@ variable "file_shares_configuration" {
   validation {
     condition     = contains(["Cool", "Hot", "Premium", "TransactionOptimized"], var.file_shares_configuration.access_tier)
     error_message = "The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\"."
+  }
+  validation {
+    condition     = var.file_shares_configuration.create_file_shares ? !var.file_shares_configuration.disable_package_dirs_creation : true
+    error_message = "The `disable_package_dirs_creation` cannot be set to true for newly created File Shares."
   }
 }
 

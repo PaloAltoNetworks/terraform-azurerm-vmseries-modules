@@ -4,8 +4,10 @@
 A terraform module for deploying a storage account and the dependencies required to
 [bootstrap a VM-Series firewalls in Azure](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-the-vm-series-firewall-in-azure.html#idd51f75b8-e579-44d6-a809-2fafcfe4b3b6).
 
-It can create (or source an existing) Azure Storage Account and it can create multiple File Shares withing the Storage Account and
-upload files to them. Each file share will contain a folder structure required by the bootstrap package.
+It can create (or source an existing) Azure Storage Account and it can create (or source) multiple File Shares withing the Storage
+Account and upload files to them. When creating File Shares each share will contain a folder structure required by the bootstrap
+package. When sourcing existing shares, you can disable the folder structure creation, but keep in mind that the folders have to
+present on the share before you try to upload any files to them.
 
 The file uploading can be done in two ways:
 
@@ -17,21 +19,99 @@ specification will override files from the local bootstrap package.
 
 ## Usage
 
-Simple example usage is shown below. For more *real life* code please check [examples folder](../../examples/).
+For more *real life* code please check [examples folder](../../examples/).
+The examples below are just showing 3 typical use cases.
+
+### Empty Storage account
+
+The module is used only to create a Storage Account with module defaults where possible.
+
+```hcl
+module "empty_storage" {
+  source = "../../modules/bootstrap"
+
+  name                = "someemptystorage"
+  resource_group_name = "rg-name"
+  location            = "North Europe"
+}
+```
+
+### Full bootstrap storage
+
+This code will create a storage account for 3 NGFWs. Please **note** that:
+
+- we will override the default access tier from `Cool` to `Hot` and increase the default quota to 20GB
+- we will lower the default TLS to 1.1 and limit access to the Storage Account to one public IP
+- `vm01` and `vm02` will use a full bootstrap package stored locally under the `bootstrap_package` path
+- for `vm01` we will additionally overwrite some files from the bootstrap package
+- `vm03` will not use a full bootstrap package, we will upload just a single file to the Storage Account. Additionally we will
+    override the `access_tier` for this File Share to `Cool` and the quota to 1GB.
 
 ```hcl
 module "bootstrap" {
-  source = "PaloAltoNetworks/vmseries-modules/azurerm//modules/bootstrap"
+  source = "../../modules/bootstrap"
 
-  storage_account_name = "accountname"
-  resource_group_name  = "rg-name"
-  location             = "West US"
+  name                = "samplebootstrapstorage"
+  resource_group_name = "rg-name"
+  location            = "North Europe"
 
-  storage_share_name = "vm_bootstrap"
+  file_shares_configuration = {
+    access_tier = "Hot"
+    quota       = 20
+  }
+  storage_network_security = {
+    min_tls_version    = "TLS1_1"
+    allowed_public_ips = ["1.2.3.4"]
+  }
+  file_shares = {
+    "vm01" = {
+      name                   = "vm01"
+      bootstrap_package_path = "bootstrap_package"
+      bootstrap_files = {
+        "files/init-cfg.txt"         = "config/init-cfg.txt"
+        "files/nested/bootstrap.xml" = "config/bootstrap.xml"
+      }
+    }
+    "vm02" = {
+      name                   = "vm02"
+      bootstrap_package_path = "./bootstrap_package/"
+    }
+    "vm03" = {
+      name        = "vm03"
+      access_tier = "Cool"
+      quota       = 1
+      bootstrap_files = {
+        "files/init-cfg.txt" = "config/init-cfg.txt"
+      }
+    }
+  }
+}
+```
 
-  files = {
-    "files/init-cfg.txt" = "config/init-cfg.txt"
-    "files/bootstrap.xml" = "config/bootstrap.xml"
+### Source existing Storage Account and File Share
+
+The sample below shows how to source an existing Storage Account with an existing File Share.
+
+Please **note** that we will also skip bootstrap package folder structure creation. The sourced File Share should have this folder
+structure already present.
+
+```hcl
+module "existing_storage" {
+  source = "../../modules/bootstrap"
+
+  create_storage_account = false
+  name                   = "sampleexistingstorage"
+  resource_group_name    = "rg-name"
+
+  file_shares_configuration = {
+    create_file_shares            = false
+    disable_package_dirs_creation = true
+  }
+  file_shares = {
+    existing_share = {
+      name                   = "bootstrap"
+      bootstrap_package_path = "bootstrap_package"
+    }
   }
 }
 ```
@@ -39,7 +119,7 @@ module "bootstrap" {
 ## MD5 file hashes
 
 This module uses MD5 hashes to verify file content change. This means that any file modification done between Terraform runs will
-be discovered and the remote file will be overridden. This has some implications though.
+be discovered and the remote file will be overwritten. This has some implications though.
 
 The module can calculate hashes for the existing files - any files that were present before Terraform run.
 
@@ -98,6 +178,7 @@ Resources used in this module:
 - `storage_share_directory` (managed)
 - `storage_share_file` (managed)
 - `storage_account` (data)
+- `storage_share` (data)
 
 ## Inputs/Outpus details
 
@@ -216,9 +297,10 @@ Any of this can be overridden in a particular File Share definition. See [`file_
 Following options are available:
   
 - `create_file_shares`            - (`bool`, optional, defaults to `true`) controls if the File Shares specified in the
-                                    `file_shares` variable are created or sourced
-- `disable_package_dirs_creation` - (`bool`, optional, defaults to `true`) controls if the bootstrap package folder structure is
-                                    created in the newly created or sourced File Share
+                                    `file_shares` variable are created or sourced, if the latter, the storage account also 
+                                    has to be sourced.
+- `disable_package_dirs_creation` - (`bool`, optional, defaults to `true`) for sourced File Shares, controls if the bootstrap
+                                    package folder structure is created
 - `quota`                         - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between
                                     1 and 5120 (5TB)
 - `access_tier`                   - (`string`, optional, defaults to `Cool`) access tier for a File Share, can be one of: 
@@ -230,7 +312,7 @@ Type:
 ```hcl
 object({
     create_file_shares            = optional(bool, true)
-    disable_package_dirs_creation = optional(bool, true)
+    disable_package_dirs_creation = optional(bool, false)
     quota                         = optional(number, 10)
     access_tier                   = optional(string, "Cool")
   })
