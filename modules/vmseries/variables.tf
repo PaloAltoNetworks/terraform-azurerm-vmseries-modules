@@ -44,10 +44,6 @@ variable "authentication" {
     disable_password_authentication = optional(bool, true)
     ssh_keys                        = optional(list(string), [])
   })
-  validation {
-    condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
-    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
-  }
 }
 
 variable "image" {
