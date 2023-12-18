@@ -9,7 +9,7 @@ output "storage_account_primary_access_key" {
   sensitive   = true
 }
 
-output "file_share_url" {
+output "file_share_urls" {
   description = "The File Shares' share URL used for bootstrap configuration."
   value       = { for k, v in azurerm_storage_share.this : k => v.url }
 }

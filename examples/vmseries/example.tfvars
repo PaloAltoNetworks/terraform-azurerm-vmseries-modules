@@ -1,6 +1,6 @@
 # --- GENERAL --- #
 location            = "North Europe"
-resource_group_name = "vmseries-refactor"
+resource_group_name = "vmseries-refactoring"
 name_prefix         = "fosix-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
@@ -22,7 +22,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"]
+            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -92,6 +92,7 @@ bootstrap_storages = {
     }
     storage_network_security = {
       allowed_subnet_keys = ["management"]
+      allowed_public_ips  = ["134.238.135.14", "134.238.135.140"]
     }
   }
 }
@@ -109,16 +110,15 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key          = "transit"
-      size              = "Standard_DS3_v2"
-      bootstrap_options = "type=dhcp-client"
-      zone              = null
-      avset_key         = "aset"
-      disk_name         = "fancy-disk-name"
-      bootstrap_storage = {
-        bootstrap_key          = "bootstrap"
+      vnet_key  = "transit"
+      size      = "Standard_DS3_v2"
+      zone      = null
+      avset_key = "aset"
+      disk_name = "fancy-disk-name"
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
         static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-        template_bootstrap_xml = "templates/bootstrap_common.tmpl"
+        bootstrap_xml_template = "templates/bootstrap_common.tmpl"
         bootstrap_package_path = "bootstrap_package"
         private_snet_key       = "private"
         public_snet_key        = "public"
@@ -126,17 +126,57 @@ vmseries = {
     }
     interfaces = [
       {
-        name             = "mgmt"
+        name             = "vm01-mgmt"
         subnet_key       = "management"
         create_public_ip = true
         public_ip_name   = "fancy-pip-name"
       },
       {
-        name       = "private"
+        name       = "vm01-private"
         subnet_key = "private"
       },
       {
-        name       = "public"
+        name       = "vm01-public"
+        subnet_key = "public"
+        # load_balancer_key = "lbe"
+      }
+    ]
+  }
+  "fw-2" = {
+    name = "firewall02"
+    authentication = {
+      disable_password_authentication = false
+      # ssh_keys                        = ["~/.ssh/id_rsa.pub"]
+    }
+    image = {
+      version = "10.2.3"
+    }
+    virtual_machine = {
+      vnet_key  = "transit"
+      size      = "Standard_DS3_v2"
+      zone      = null
+      avset_key = "aset"
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap_common.tmpl"
+        bootstrap_package_path = "bootstrap_package"
+        private_snet_key       = "private"
+        public_snet_key        = "public"
+      }
+    }
+    interfaces = [
+      {
+        name             = "vm02-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
+      },
+      {
+        name       = "vm02-private"
+        subnet_key = "private"
+      },
+      {
+        name       = "vm02-public"
         subnet_key = "public"
         # load_balancer_key = "lbe"
       }

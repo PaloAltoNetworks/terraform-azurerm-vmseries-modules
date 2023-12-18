@@ -157,9 +157,77 @@ module "load_balancer" {
 #   tags = var.tags
 # }
 
-# TODO: add locals to create file_shares based on templated value + list of VMs
-# TODO: test bootstrapping on a VM
+resource "local_file" "bootstrap_xml" {
+  for_each = {
+    for k, v in var.vmseries :
+    k => v.virtual_machine
+    if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
+  }
 
+  filename = "files/${each.key}-bootstrap.xml"
+  content = templatefile(
+    each.value.bootstrap_package.bootstrap_xml_template,
+    {
+      private_azure_router_ip = cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.private_snet_key],
+        1
+      )
+
+      public_azure_router_ip = cidrhost(
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.public_snet_key],
+        1
+      )
+
+      # FIXME: fix this when metrics module gets merged
+      ai_instr_key = null
+      # ai_instr_key = try(
+      #   module.ai[try(var.application_insights.name, "${each.value.name}-ai")].metrics_instrumentation_key,
+      #   null
+      # )
+
+      ai_update_interval = each.value.bootstrap_package.ai_update_interval
+
+      private_network_cidr = coalesce(
+        each.value.bootstrap_package.intranet_cidr,
+        module.vnet[each.value.vnet_key].vnet_cidr[0]
+      )
+
+      # FIXME: fix this when testing in real example
+      mgmt_profile_appgw_cidr = []
+      # mgmt_profile_appgw_cidr = flatten([
+      #   for _, v in var.appgws : var.vnets[v.vnet_key].subnets[v.subnet_key].address_prefixes
+      # ])
+    }
+  )
+
+  depends_on = [
+    # module.ai,# FIXME: fix this when metrics module gets merged
+    module.vnet
+  ]
+}
+
+# TODO: add locals to create file_shares based on templated value + list of VMs
+locals {
+  bootstrap_file_shares_flat = flatten([
+    for k, v in var.vmseries : merge(v.virtual_machine.bootstrap_package, { vm_key = k })
+  ])
+
+  bootstrap_file_shares = { for k, v in var.bootstrap_storages : k => {
+    for file_share in local.bootstrap_file_shares_flat : file_share.vm_key => {
+      name                   = file_share.vm_key
+      bootstrap_package_path = file_share.bootstrap_package_path
+      bootstrap_files = merge(
+        file_share.static_files,
+        file_share.bootstrap_xml_template == null ? {} : {
+          "files/${file_share.vm_key}-bootstrap.xml" = "config/bootstrap.xml"
+        }
+      )
+      bootstrap_files_md5 = file_share.bootstrap_xml_template == null ? {} : {
+        "files/${file_share.vm_key}-bootstrap.xml" = local_file.bootstrap_xml[file_share.vm_key].content_md5
+      }
+    } if file_share.bootstrap_storage_key == k }
+  }
+}
 
 module "bootstrap" {
   source = "../../modules/bootstrap"
@@ -180,62 +248,10 @@ module "bootstrap" {
     ] }
   )
   file_shares_configuration = each.value.file_shares_configuration
-  file_shares               = each.value.file_shares
+  file_shares               = local.bootstrap_file_shares[each.key]
 
   tags = var.tags
 }
-
-resource "local_file" "bootstrap_xml" {
-  for_each = {
-    for k, v in var.vmseries :
-    k => v.virtual_machine
-    if try(v.virtual_machine.bootstrap_storage.template_bootstrap_xml != null, false)
-  }
-
-  filename = "files/${each.key}-bootstrap.xml"
-  content = templatefile(
-    each.value.bootstrap_storage.template_bootstrap_xml,
-    {
-      private_azure_router_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_storage.private_snet_key],
-        1
-      )
-
-      public_azure_router_ip = cidrhost(
-        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_storage.public_snet_key],
-        1
-      )
-
-      # FIXME: fix this when metrics module gets merged
-      ai_instr_key = null
-      # ai_instr_key = try(
-      #   module.ai[try(var.application_insights.name, "${each.value.name}-ai")].metrics_instrumentation_key,
-      #   null
-      # )
-
-      ai_update_interval = each.value.bootstrap_storage.ai_update_interval
-
-      private_network_cidr = coalesce(
-        each.value.bootstrap_storage.intranet_cidr,
-        module.vnet[each.value.vnet_key].vnet_cidr[0]
-      )
-
-      # FIXME: fix this when testing in real example
-      mgmt_profile_appgw_cidr = []
-      # mgmt_profile_appgw_cidr = flatten([
-      #   for _, v in var.appgws : var.vnets[v.vnet_key].subnets[v.subnet_key].address_prefixes
-      # ])
-    }
-  )
-
-  depends_on = [
-    # module.ai,# FIXME: fix this when metrics module gets merged
-    module.vnet
-  ]
-}
-
-
-
 
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
@@ -252,8 +268,8 @@ resource "azurerm_availability_set" "this" {
 module "vmseries" {
   source = "../../modules/vmseries"
 
-  # for_each = var.vmseries
-  for_each = {}
+  for_each = var.vmseries
+  # for_each = {}
 
   name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
@@ -266,6 +282,18 @@ module "vmseries" {
     {
       disk_name = "${var.name_prefix}${coalesce(each.value.virtual_machine.disk_name, "${each.value.name}-osdisk")}"
       avset_id  = try(azurerm_availability_set.this[each.value.virtual_machine.avset_key].id, null)
+      bootstrap_options = try(
+        coalesce(
+          each.value.virtual_machine.bootstrap_options,
+          join(",", [
+            "storage-account=${module.bootstrap[each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+            "access-key=${module.bootstrap[each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+            "file-share=${each.key}",
+            "share-directory=None"
+          ]),
+        ),
+        null
+      )
     }
   )
 

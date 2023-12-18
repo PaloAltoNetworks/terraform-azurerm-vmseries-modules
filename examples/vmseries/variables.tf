@@ -353,10 +353,10 @@ variable "vmseries" {
       vnet_key          = string
       size              = optional(string)
       bootstrap_options = optional(string)
-      bootstrap_storage = optional(object({
-        bootstrap_key          = string
+      bootstrap_package = optional(object({
+        bootstrap_storage_key  = string
         static_files           = optional(map(string), {})
-        template_bootstrap_xml = optional(string)
+        bootstrap_xml_template = optional(string)
         bootstrap_package_path = optional(string)
         private_snet_key       = string
         public_snet_key        = string
@@ -386,4 +386,5 @@ variable "vmseries" {
       add_to_appgw_backend     = optional(bool, false)
     }))
   }))
+  # TODO: add validation, either bootstrap options or bootstrap storage can be present, not both
 }
