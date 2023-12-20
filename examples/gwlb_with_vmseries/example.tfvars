@@ -103,10 +103,15 @@ vnets = {
 
 gateway_load_balancers = {
   gwlb = {
-    name       = "vmseries-gwlb"
-    vnet_key   = "security"
-    subnet_key = "data"
-    zones      = null
+    name  = "vmseries-gwlb"
+    zones = null
+
+    frontend_ips = {
+      default = {
+        vnet_key   = "security"
+        subnet_key = "data"
+      }
+    }
 
     health_probes = {
       default = {

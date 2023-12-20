@@ -18,8 +18,8 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Azure Load Balancer.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`frontend_ip`](#frontend_ip) | `object` | Frontend IP configuration of the gateway load balancer.
-[`health_probes`](#health_probes) | `map` | Health probe configuration for the gateway load balancer backends.
+[`frontend_ips`](#frontend_ips) | `map` | Map of frontend IP configurations of the Gateway Load Balancer.
+[`health_probes`](#health_probes) | `map` | Map of health probes configuration for the Gateway Load Balancer backends.
 
 
 ## Module's Optional Inputs
@@ -28,8 +28,8 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | Controls zones for Gateway Load Balancer's Fronted IP configurations.
-[`backends`](#backends) | `map` | Map with backend configurations for the gateway load balancer.
-[`lb_rule`](#lb_rule) | `map` | Load balancing rule config.
+[`backends`](#backends) | `map` | Map with backend configurations for the Gateway Load Balancer.
+[`lb_rules`](#lb_rules) | `map` | Map of load balancing rules configuration.
 
 
 
@@ -94,28 +94,28 @@ Type: string
 
 
 
-#### frontend_ip
+#### frontend_ips
 
-Frontend IP configuration of the gateway load balancer.
+Map of frontend IP configurations of the Gateway Load Balancer.
 
 Following settings are available:
-- `name`                          - (Required|string) Name of the frontend IP configuration. `var.name` by default.
-- `subnet_id`                     - (Required|string) Id of a subnet to associate with the configuration.
-- `private_ip_address`            - (Optional|string) Private IP address to assign.
-- `private_ip_address_allocation` - (Optional|string) The allocation method for the private IP address.
-- `private_ip_address_version`    - (Optional|string) The IP version for the private IP address.
+- `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
+- `subnet_id`                     - (`string`, required) id of a subnet to associate with the configuration.
+- `private_ip_address`            - (`string`, optional) private IP address to assign.
+- `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) the allocation method for the private IP address.
+- `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
 
 
 Type: 
 
 ```hcl
-object({
+map(object({
     name                          = string
     subnet_id                     = string
     private_ip_address            = optional(string)
-    private_ip_address_allocation = optional(string)
-    private_ip_address_version    = optional(string)
-  })
+    private_ip_address_allocation = optional(string, "Dynamic")
+    private_ip_address_version    = optional(string, "IPv4")
+  }))
 ```
 
 
@@ -123,18 +123,18 @@ object({
 
 #### health_probes
 
-Health probe configuration for the gateway load balancer backends.
+Map of health probes configuration for the Gateway Load Balancer backends.
 
 Following settings are available:
-- `name`                - (Optional|string) Name of the health probe. Defaults to `name` variable value.
-- `port`                - (Required|int)
-- `protocol`            - (Optional|string)
-- `probe_threshold`     - (Optional|int)
-- `request_path`        - (Optional|string)
-- `interval_in_seconds` - (Optional|int)
-- `number_of_probes`    - (Optional|int)
-
-For details, please refer to [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe#argument-reference).
+- `name`                - (`string`, optional) name of the health probe. Defaults to `name` variable value.
+- `port`                - (`number`, required) port to run the probe against
+- `protocol`            - (`string`, optional, defaults to `Tcp`) protocol used by the health probe,
+                          can be one of "Tcp", "Http" or "Https".
+- `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoin.
+- `request_path`        - (`string`, optional) used only for non `Tcp` probes,
+                          the URI used to check the endpoint status when `protocol` is set to `Http(s)`
+- `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
+- `number_of_probes`    - (`number`, optional)
 
 
 Type: 
@@ -143,10 +143,10 @@ Type:
 map(object({
     name                = optional(string)
     port                = number
-    protocol            = optional(string)
+    protocol            = optional(string, "Tcp")
+    interval_in_seconds = optional(number)
     probe_threshold     = optional(number)
     request_path        = optional(string)
-    interval_in_seconds = optional(number)
     number_of_probes    = optional(number)
   }))
 ```
@@ -192,16 +192,17 @@ Default value: `[1 2 3]`
 
 #### backends
 
-Map with backend configurations for the gateway load balancer. Azure GWLB rule can have up to two backends.
+Map with backend configurations for the Gateway Load Balancer. Azure GWLB rule can have up to two backends.
 
 Following settings are available:
-- `name`              - (Optional|string) Name of the backend. If not specified name is generated from `name` variable and backend key.
-- `tunnel_interfaces` - (Required|map) Map with tunnel interfaces specs.)
+- `name`              - (`string`, optional) name of the backend.
+                        If not specified name is generated from `name` variable and backend key.
+- `tunnel_interfaces` - (`map`, required) map with tunnel interfaces.
 
-Each tunnel interface specification consists of following settings (refer to [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_backend_address_pool#tunnel_interface) for details):
-- `identifier` - (Required|int) Interface identifier.
-- `port`       - (Required|int) Interface port.
-- `type`       - (Required|string) Either "External" or "Internal".
+Each tunnel interface specification consists of following settings:
+- `identifier` - (`number`, required) interface identifier.
+- `port`       - (`number`, required) interface port.
+- `type`       - (`string`, required) either "External" or "Internal".
 
 If one backend is specified, it has to have both external and internal tunnel interfaces specified.
 For two backends, each has to have exactly one.
@@ -209,7 +210,9 @@ For two backends, each has to have exactly one.
 On GWLB inspection enabled VM-Series instance, `identifier` and `port` default to:
 - `800`/`2000` for `Internal` tunnel type
 - `801`/`2001` for `External` tunnel type
-Variable default reflects this configuration on GWLB side. Additionally, for VM-Series tunnel interface protocol is always VXLAN.
+
+Variable default reflects this configuration on GWLB side.
+Additionally, for VM-Series tunnel interface protocol is always VXLAN.
 
 
 Type: 
@@ -231,18 +234,27 @@ Default value: `map[ext-int:map[tunnel_interfaces:map[external:map[identifier:80
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### lb_rule
+#### lb_rules
 
-Load balancing rule config.
+Map of load balancing rules configuration.
 
 Available options:
-- `name`              - (Optional|string) Name for the rule. Defaults to `var.frontend_ip_config.name`.
-- `load_distribution` - (Optional|string) Refer to [provider docs](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule#load_distribution).
+- `name`              - (`string`, optional) name for the rule.
+- `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
+                        to be used by the Gateway Load Balancer.
 
 
-Type: map(string)
+Type: 
 
-Default value: `&{}`
+```hcl
+map(object({
+    name              = optional(string)
+    load_distribution = optional(string, "Default")
+  }))
+```
+
+
+Default value: `map[default-rule:map[]]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
