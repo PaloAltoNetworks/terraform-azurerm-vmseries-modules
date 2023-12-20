@@ -5,11 +5,7 @@ A Terraform module for deploying a Gateway Load Balancer for VM-Series firewalls
 
 ## Usage
 
-For usage see any of the reference architecture examples.
-
-...
-TODO: examples
-...
+For usage see example `gwlb_with_vmseries`.
 
 ## Module's Required Inputs
 
@@ -242,6 +238,7 @@ Available options:
 - `name`              - (`string`, optional) name for the rule.
 - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
                         to be used by the Gateway Load Balancer.
+- `backend_key`       - (`string`, optional) key of the backend
 - `health_probe_key`  - (`string`, optional, defaults to `default`) key of the health probe assigned to LB rule.
 
 
@@ -251,6 +248,7 @@ Type:
 map(object({
     name              = optional(string)
     load_distribution = optional(string, "Default")
+    backend_key       = optional(string)
     health_probe_key  = optional(string, "default")
   }))
 ```

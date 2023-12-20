@@ -62,8 +62,9 @@ resource "azurerm_lb_rule" "this" {
   probe_id        = azurerm_lb_probe.this[each.value.health_probe_key].id
 
   frontend_ip_configuration_name = azurerm_lb.this.frontend_ip_configuration[0].name
-  backend_address_pool_ids       = [for _, v in azurerm_lb_backend_address_pool.this : v.id]
-  load_distribution              = each.value.load_distribution
+  backend_address_pool_ids = (each.value.backend_key != null ?
+  [azurerm_lb_backend_address_pool.this[each.value.backend_key].id] : [for _, v in azurerm_lb_backend_address_pool.this : v.id])
+  load_distribution = each.value.load_distribution
 
   # HA port rule - required by Azure GWLB
   protocol      = "All"

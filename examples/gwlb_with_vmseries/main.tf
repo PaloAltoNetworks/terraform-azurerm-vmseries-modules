@@ -60,6 +60,7 @@ module "gwlb" {
 
   backends      = each.value.backends
   health_probes = each.value.health_probes
+  lb_rules      = each.value.lb_rules
 
   zones = var.enable_zones ? try(each.value.zones, null) : null
   frontend_ips = { for k, frontend_ip in each.value.frontend_ips : k => {

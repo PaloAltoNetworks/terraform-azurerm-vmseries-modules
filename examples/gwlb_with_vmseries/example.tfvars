@@ -119,6 +119,10 @@ gateway_load_balancers = {
       }
     }
 
+    lb_rules = {
+      default-rule = {}
+    }
+
     backends = {
       ext-int = {
         tunnel_interfaces = {
