@@ -58,16 +58,16 @@ module "gwlb" {
   resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
 
-  backends     = each.value.backends
-  health_probe = each.value.health_probe
+  backends      = each.value.backends
+  health_probes = each.value.health_probes
 
-  frontend_ip_config = {
-    name                          = try(each.value.frontend_ip_config.name, "${var.name_prefix}${each.value.name}")
-    private_ip_address_allocation = try(each.value.frontend_ip_config.private_ip_address_allocation, null)
-    private_ip_address_version    = try(each.value.frontend_ip_config.private_ip_address_version, null)
-    private_ip_address            = try(each.value.frontend_ip_config.private_ip_address, null)
+  zones = var.enable_zones ? try(each.value.zones, null) : null
+  frontend_ip = {
+    name                          = try(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
+    private_ip_address_allocation = try(each.value.frontend_ip.private_ip_address_allocation, null)
+    private_ip_address_version    = try(each.value.frontend_ip.private_ip_address_version, null)
+    private_ip_address            = try(each.value.frontend_ip.private_ip_address, null)
     subnet_id                     = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
-    zones                         = var.enable_zones ? try(each.value.frontend_ip_config.zones, null) : null
   }
 
   tags = var.tags

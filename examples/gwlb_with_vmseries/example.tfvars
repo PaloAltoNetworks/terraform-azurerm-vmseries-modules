@@ -106,9 +106,12 @@ gateway_load_balancers = {
     name       = "vmseries-gwlb"
     vnet_key   = "security"
     subnet_key = "data"
+    zones      = null
 
-    health_probe = {
-      port = 80
+    health_probes = {
+      default = {
+        port = 80
+      }
     }
 
     backends = {

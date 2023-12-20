@@ -40,10 +40,10 @@ variable "tags" {
 variable "vnets" {
   description = <<-EOF
   A map defining VNETs.
-  
+
   For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
 
-  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+  - `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET,
                                 `false` will source an existing VNET.
   - `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
                                 a full resource name, including prefixes.
@@ -112,10 +112,10 @@ variable "gateway_load_balancers" {
   - `name`                - (required|string) Gateway Load Balancer name.
   - `vnet_key`            - (required|string) Key of a VNet from `var.vnets` that contains target Subnet for LB's frontned. Used to get Subnet ID in combination with `subnet_key` below.
   - `subnet_key`          - (required|string) Key of a Subnet from `var.vnets[vnet_key]`.
-  - `frontend_ip_config`  - (optional|map) Remaining Frontned IP configuration.
+  - `frontend_ip`         - (optional|map) Remaining Frontned IP configuration.
   - `resource_group_name` - (optional|string) LB's Resource Group, by default the one specified by `var.resource_group_name`.
   - `backends`            - (optional|map) LB's backend configurations.
-  - `heatlh_probe`        - (optional|map) Health probe configuration.
+  - `health_probes`       - (optional|map) Health probes configuration.
 
   Please consult [module documentation](../../modules/gwlb/README.md) for details.
   EOF
@@ -257,7 +257,7 @@ variable "load_balancers" {
                                 please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
                                 for more specific use cases and available properties
   - `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
-                                that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
+                                that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check
                                 [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
                                 for available properties; please note that in this example two additional properties are
                                 available:
@@ -270,7 +270,7 @@ variable "load_balancers" {
 
     Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-    > [!NOTE] 
+    > [!NOTE]
     > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
 
     - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map

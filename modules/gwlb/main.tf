@@ -3,23 +3,22 @@ resource "azurerm_lb" "this" {
   resource_group_name = var.resource_group_name
   location            = var.location
   sku                 = "Gateway"
+  tags                = var.tags
 
   frontend_ip_configuration {
-    name                          = try(var.frontend_ip_config.name, var.name)
-    private_ip_address_allocation = try(var.frontend_ip_config.private_ip_address_allocation, null)
-    private_ip_address_version    = try(var.frontend_ip_config.private_ip_address_version, null)
-    private_ip_address            = try(var.frontend_ip_config.private_ip_address, null)
-    subnet_id                     = var.frontend_ip_config.subnet_id
-    zones                         = try(var.frontend_ip_config.zones, null)
+    name                          = var.frontend_ip.name
+    private_ip_address_allocation = var.frontend_ip.private_ip_address_allocation
+    private_ip_address_version    = var.frontend_ip.private_ip_address_version
+    private_ip_address            = var.frontend_ip.private_ip_address
+    subnet_id                     = var.frontend_ip.subnet_id
+    zones                         = var.frontend_ip.subnet_id != null ? var.zones : null
   }
-
-  tags = var.tags
 }
 
 resource "azurerm_lb_backend_address_pool" "this" {
   for_each = var.backends
 
-  name            = try(each.value.name, "${var.name}-${each.key}")
+  name            = coalesce(each.value.name, "${var.name}-${each.key}")
   loadbalancer_id = azurerm_lb.this.id
 
   dynamic "tunnel_interface" {
@@ -27,28 +26,30 @@ resource "azurerm_lb_backend_address_pool" "this" {
     content {
       identifier = tunnel_interface.value.identifier
       port       = tunnel_interface.value.port
-      protocol   = "VXLAN"
+      protocol   = tunnel_interface.value.protocol
       type       = tunnel_interface.value.type
     }
   }
 }
 
 resource "azurerm_lb_probe" "this" {
-  name            = try(var.health_probe.name, var.name)
+  for_each = var.health_probes
+
+  name            = coalesce(each.value.name, var.name)
   loadbalancer_id = azurerm_lb.this.id
 
-  port                = try(var.health_probe.port, null)
-  protocol            = try(var.health_probe.protocol, null)
-  probe_threshold     = try(var.health_probe.probe_threshold, null)
-  request_path        = try(var.health_probe.request_path, null)
-  interval_in_seconds = try(var.health_probe.interval_in_seconds, null)
-  number_of_probes    = try(var.health_probe.number_of_probes, null)
+  port                = each.value.port
+  protocol            = each.value.protocol
+  probe_threshold     = each.value.probe_threshold
+  request_path        = each.value.request_path
+  interval_in_seconds = each.value.interval_in_seconds
+  number_of_probes    = each.value.number_of_probes
 }
 
 resource "azurerm_lb_rule" "this" {
   name            = try(var.lb_rule.name, azurerm_lb.this.frontend_ip_configuration[0].name)
   loadbalancer_id = azurerm_lb.this.id
-  probe_id        = azurerm_lb_probe.this.id
+  probe_id        = azurerm_lb_probe.this["default"].id
 
   frontend_ip_configuration_name = azurerm_lb.this.frontend_ip_configuration[0].name
   backend_address_pool_ids       = [for _, v in azurerm_lb_backend_address_pool.this : v.id]
