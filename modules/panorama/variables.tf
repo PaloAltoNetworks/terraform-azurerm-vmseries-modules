@@ -1,170 +1,238 @@
-# Location
-variable "location" {
-  description = "Region to deploy Panorama into."
-  type        = string
-}
-
-variable "enable_zones" {
-  description = "If false, the input `avzone` is ignored and all created public IPs default not to use Availability Zones (the `No-Zone` setting). It is intended for the regions that do not yet support Availability Zones."
-  default     = true
-  type        = bool
-}
-
-variable "avzone" {
-  description = "The availability zone to use, for example \"1\", \"2\", \"3\". Ignored if `enable_zones` is false. Use `avzone = null` to disable the use of Availability Zones."
-  default     = null
-}
-
-variable "avzones" {
-  description = <<-EOF
-  After provider version 3.x you need to specify in which availability zone(s) you want to place IP.
-  ie: for zone-redundant with 3 availability zone in current region value will be:
-  ```["1","2","3"]```
-  EOF
-  default     = []
-  type        = list(string)
-}
-
-# Naming
 variable "name" {
-  description = "The Panorama common name."
+  description = "The name of the Azure Virtual Machine."
   type        = string
 }
 
-variable "os_disk_name" {
-  description = "The name of OS disk. The name is auto-generated when not provided."
-  default     = null
-  type        = string
-}
 variable "resource_group_name" {
-  description = "The name of the existing resource group where to place all the resources created by this module."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
-# Instance settings
-variable "panorama_size" {
-  description = "Virtual Machine size."
-  default     = "Standard_D5_v2"
-}
-
-variable "username" {
-  description = "Initial administrative username to use for Panorama. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-username-requirements-when-creating-a-vm)."
-  default     = "panadmin"
+variable "location" {
+  description = "The name of the Azure region to deploy the resources in."
   type        = string
 }
 
-variable "password" {
-  description = "Initial administrative password to use for Panorama. If not defined the `ssh_key` variable must be specified. Mind the [Azure-imposed restrictions](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/faq#what-are-the-password-requirements-when-creating-a-vm)."
-  default     = null
-  type        = string
-  sensitive   = true
+variable "tags" {
+  description = "The map of tags to assign to all created resources."
+  default     = {}
+  type        = map(any)
 }
 
-variable "ssh_keys" {
+variable "authentication" {
   description = <<-EOF
-  A list of initial administrative SSH public keys that allow key-pair authentication.
-  
-  This is a list of strings, so each item should be the actual public key value. If you would like to load them from files instead, following method is available:
+  A map defining authentication settings (including username and password).
 
-  ```
-  [
-    file("/path/to/public/keys/key_1.pub"),
-    file("/path/to/public/keys/key_2.pub")
-  ]
-  ```
-  
-  If the `password` variable is also set, VM-Series will accept both authentication methods.
+  Following properties are available:
+
+  - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama username.
+  - `password`                        - (`string`, optional, defaults to `null`) the initial administrative Panorama password.
+  - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
+  - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys.
+
+  > [!Important]
+  > The `password` property is required when `ssh_keys` is not specified.
+
+  > [!Important]
+  > `ssh_keys` property is a list of strings, so each item should be the actual public key value.
+  > If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+
   EOF
-  default     = []
-  type        = list(string)
-}
-
-variable "enable_plan" {
-  description = "Enable usage of the Offer/Plan on Azure Marketplace. Even plan sku \"byol\", which means \"bring your own license\", still requires accepting on the Marketplace (as of 2021). Can be set to `false` when using a custom image."
-  default     = true
-  type        = bool
-}
-
-variable "panorama_disk_type" {
-  description = "Specifies the type of managed disk to create. Possible values are either Standard_LRS, StandardSSD_LRS, Premium_LRS or UltraSSD_LRS."
-  default     = "StandardSSD_LRS"
-  type        = string
-
+  type = object({
+    username                        = optional(string, "panadmin")
+    password                        = optional(string)
+    disable_password_authentication = optional(bool, true)
+    ssh_keys                        = optional(list(string), [])
+  })
   validation {
-    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], var.panorama_disk_type)
-    error_message = "Panorama disk type need to be one of list Standard_LR, StandardSSD_LRS, Premium_LRS, UltraSSD_LRS."
+    condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
+    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device."
   }
 }
 
-variable "panorama_sku" {
-  description = "Panorama SKU."
-  default     = "byol"
-  type        = string
+variable "image" {
+  description = <<-EOF
+  Basic Azure VM configuration.
+
+  Following properties are available:
+
+  - `version`                 - (`string`, optional, defaults to `null`) Panorama PAN-OS version; list available with 
+                                `az vm image list -o table --publisher paloaltonetworks --offer panorama --all` command.
+  - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for an image
+                                which should be deployed.
+  - `offer`                   - (`string`, optional, defaults to `panorama`) the Azure Offer identifier corresponding to a
+                                published image.
+  - `sku`                     - (`string`, optional, defaults to `byol`) Panorama SKU; list available with
+                                `az vm image list -o table --all --publisher paloaltonetworks` command.
+  - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
+                                on Azure Marketplace.
+  - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PAN-OS image to be used
+                                for creating new Virtual Machines.
+
+  > [!Important]
+  > `custom_id` and `version` properties are mutually exclusive.
+  
+  EOF
+  type = object({
+    version                 = optional(string)
+    publisher               = optional(string, "paloaltonetworks")
+    offer                   = optional(string, "panorama")
+    sku                     = optional(string, "byol")
+    enable_marketplace_plan = optional(bool, true)
+    custom_id               = optional(string)
+  })
+  validation {
+    condition = (var.image.custom_id != null && var.image.version == null
+    ) || (var.image.custom_id == null && var.image.version != null)
+    error_message = "Either `custom_id` or `version` has to be defined."
+  }
 }
 
-variable "panorama_version" {
-  description = "Panorama PAN-OS Software version. List published images with `az vm image list -o table --all --publisher paloaltonetworks --offer panorama`"
-  default     = "10.0.3"
-  type        = string
+variable "virtual_machine" {
+  description = <<-EOF
+  Firewall parameters configuration.
+
+  This map contains basic, as well as some optional Firewall parameters. Both types contain sane defaults.
+  Nevertheless they should be at least reviewed to meet deployment requirements.
+
+  List of either required or important properties: 
+
+  - `size`      - (`string`, optional, defaults to `Standard_D5_v2`) Azure VM size (type). Consult the *Panorama Deployment
+                  Guide* as only a few selected sizes are supported.
+  - `zone`      - (`number`, required) Availability Zone to place the VM in, `null` value means a non-zonal deployment.
+  - `disk_type` - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created, possible 
+                  values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected 
+                  `vm_size` values).
+  - `disk_name` - (`string`, optional, defaults to VM name + `-disk` suffix) name od the OS disk.
+
+  List of other, optional properties: 
+
+  - `avset_key`                    - (`string`, optional, default to `null) identifier of the Availability Set to use
+  - `disk_encryption_set_id`       - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
+                                     used to encrypt this VM's disk
+  - `encryption_at_host_enabled`   - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
+                                     by enabling Encryption at Host
+  - `proximity_placement_group_id` - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
+                                     in which the Firewall should be assigned to
+  - `diagnostics_storage_uri`      - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
+                                     diagnostic files
+  - `identity_type`                - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
+                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
+                                     "SystemAssigned, UserAssigned".
+  - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
+                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned"
+
+  EOF
+  type = object({
+    size                       = optional(string, "Standard_D5_v2")
+    zone                       = string
+    disk_type                  = optional(string, "StandardSSD_LRS")
+    disk_name                  = string
+    avset_id                   = optional(string)
+    encryption_at_host_enabled = optional(bool, false)
+    disk_encryption_set_id     = optional(string)
+    diagnostics_storage_uri    = optional(string)
+    identity_type              = optional(string, "SystemAssigned")
+    identity_ids               = optional(list(string), [])
+  })
+  validation {
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine.disk_type)
+    error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
+  }
+  validation {
+    condition     = contains(["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"], var.virtual_machine.identity_type)
+    error_message = "The `identity_type` property can be one of \"SystemAssigned\", \"UserAssigned\" or \"SystemAssigned, UserAssigned\"."
+  }
+  validation {
+    condition     = var.virtual_machine.identity_type == "SystemAssigned" ? length(var.virtual_machine.identity_ids) == 0 : length(var.virtual_machine.identity_ids) >= 0
+    error_message = "The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\"."
+  }
 }
 
-variable "panorama_publisher" {
-  description = "Panorama Publisher."
-  default     = "paloaltonetworks"
-  type        = string
-}
-
-variable "panorama_offer" {
-  description = "Panorama offer."
-  default     = "panorama"
-  type        = string
-}
-
-variable "custom_image_id" {
-  description = "Absolute ID of your own Custom Image to be used for creating Panorama. If set, the `username`, `password`, `panorama_version`, `panorama_publisher`, `panorama_offer`, `panorama_sku` inputs are all ignored (these are used only for published images, not custom ones). The Custom Image is expected to contain PAN-OS software."
-  default     = null
-  type        = string
-}
-
-# Networking
 variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
 
-  NOTICE. The ORDER in which you specify the interfaces DOES MATTER.
-  Interfaces will be attached to VM in the order you define here, therefore the first should be the management interface.
+  > [!Note]
+  > The ORDER in which you specify the interfaces DOES MATTER.
+
+  Interfaces will be attached to VM in the order you define here, therefore:
+
+  - The first should be the management interface, which does not participate in data filtering.
+  - The remaining ones are the dataplane interfaces.
   
-  Options for an interface object:
-  - `name`                     - (required|string) Interface name.
-  - `subnet_id`                - (required|string) Identifier of an existing subnet to create interface in.
-  - `create_public_ip`         - (optional|bool) If true, create a public IP for the interface and ignore the `public_ip_address_id`. Default is false.
-  - `private_ip_address`       - (optional|string) Static private IP to asssign to the interface. If null, dynamic one is allocated.
-  - `public_ip_name`           - (optional|string) Name of an existing public IP to associate to the interface, used only when `create_public_ip` is `false`.
-  - `public_ip_resource_group` - (optional|string) Name of a Resource Group that contains public IP resource to associate to the interface. When not specified defaults to `var.resource_group_name`. Used only when `create_public_ip` is `false`.
+  Following configuration options are available:
+
+  - `name`                     - (`string`, required) the interface name.
+  - `subnet_id`                - (`string`, required) ID of an existing subnet to create the interface in.
+  - `private_ip_address`       - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
+                                 skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                 to change as long as the VM is running. Any stop/deallocate/restart operation might cause the
+                                 IP to change.
+  - `create_public_ip`         - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
+  - `public_ip_name`           - (`string`, optional, defaults to `null`) name of the public IP to associate with the interface. 
+                                 When `create_public_ip` is set to `true` this will become a name of a newly created Public IP
+                                 interface. Otherwise this is a name of an existing interfaces that will be sourced and attached
+                                 to the interface.
+  - `public_ip_resource_group` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
+                                 contains public IP that that will be associated with the interface. Used only when 
+                                 `create_public_ip` is `false`.
 
   Example:
 
-  ```
+  ```hcl
   [
+    # management interface with a new public IP
     {
-      name                 = "mgmt"
-      subnet_id            = azurerm_subnet.my_mgmt_subnet.id
-      public_ip_address_id = azurerm_public_ip.my_mgmt_ip.id
-      create_public_ip     = true
-    }
+      name             = "pano-mgmt"
+      subnet_id        = azurerm_subnet.my_mgmt_subnet.id
+      public_ip_name   = "pano-mgmt-pip"
+      create_public_ip = true
+    },
+    # public interface reusing an existing public IP resource
+    {
+      name             = "pano-public"
+      subnet_id        = azurerm_subnet.my_pub_subnet.id
+      create_public_ip = false
+      public_ip_name   = "pano-public-pip"
+    },
   ]
   ```
+  
   EOF
-  type        = list(any)
+  type = list(object({
+    name                     = string
+    subnet_id                = string
+    private_ip_address       = optional(string)
+    create_public_ip         = optional(bool, false)
+    public_ip_name           = optional(string)
+    public_ip_resource_group = optional(string)
+  }))
+  validation {
+    condition = (var.interfaces.create_public_ip == true && length(var.interfaces.public_ip_name) > 0
+      ) || (var.interfaces.create_public_ip == false && length(var.interfaces.public_ip_name) > 0
+    ) || (var.interfaces.create_public_ip == false && var.interfaces.public_ip_name == null)
+    error_message = "The `public_ip_name` property is required when `create_public_ip` is `true`."
+  }
 }
 
 # Storage
 variable "logging_disks" {
   description = <<-EOF
-   A map of objects describing the additional disk configuration. The keys of the map are the names and values are { size, zone, lun }. 
-   The size value is provided in GB. The recommended size for additional (optional) disks is at least 2TB (2048 GB). Example:
+   A map of objects describing the additional disk configuration.
+   
+  Following configuration options are available:
+  
+  - `name`      - (`string`, required) the Managed Disk name.
+  - `size`      - (`string`, optional, defaults to "2048") size of the disk in GB. The recommended size for additional disks
+                  is at least 2TB (2048 GB).
+  - `lun`       - (`string`, required) the Logical Unit Number of the Data Disk, which needs to be unique within the VM.
+  - `disk_type` - (`string`, optional, defaults to "StandardSSD_LRS") type of Managed Disk which should be created, possible 
+                  values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`.
+    
+  Example:
 
-  ```
+  ```hcl
   {
     logs-1 = {
       size: "2048"
@@ -179,21 +247,21 @@ variable "logging_disks" {
     }
   }
   ```
-
+  
   EOF
   default     = {}
-  type        = map(any)
-}
-
-
-variable "boot_diagnostic_storage_uri" {
-  description = "Existing diagnostic storage uri"
-  default     = null
-  type        = string
-}
-
-variable "tags" {
-  description = "A map of tags to be associated with the resources created."
-  default     = {}
-  type        = map(any)
+  type = map(object({
+    name      = string
+    size      = optional(string, "2048")
+    lun       = string
+    disk_type = optional(string, "StandardSSD_LRS")
+  }))
+  validation {
+    condition     = contains(["2048", "4096", "6144", "8192", "10240", "12288", "14336", "16384", "18432", "20480", "22528", "24576"], var.logging_disks.size)
+    error_message = "The `size` property value must be a multiple of `2048` but not higher than `24576` (24 TB)."
+  }
+  validation {
+    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], var.logging_disks.disk_type)
+    error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`."
+  }
 }
