@@ -59,7 +59,7 @@ resource "azurerm_lb_rule" "this" {
 
   name            = coalesce(each.value.name, azurerm_lb.this.frontend_ip_configuration[0].name)
   loadbalancer_id = azurerm_lb.this.id
-  probe_id        = azurerm_lb_probe.this["default"].id
+  probe_id        = azurerm_lb_probe.this[each.value.health_probe_key].id
 
   frontend_ip_configuration_name = azurerm_lb.this.frontend_ip_configuration[0].name
   backend_address_pool_ids       = [for _, v in azurerm_lb_backend_address_pool.this : v.id]

@@ -212,6 +212,7 @@ variable "lb_rules" {
   - `name`              - (`string`, optional) name for the rule.
   - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
                           to be used by the Gateway Load Balancer.
+  - `health_probe_key`  - (`string`, optional, defaults to `default`) key of the health probe assigned to LB rule.
   EOF
   default = {
     default-rule = {}
@@ -219,6 +220,7 @@ variable "lb_rules" {
   type = map(object({
     name              = optional(string)
     load_distribution = optional(string, "Default")
+    health_probe_key  = optional(string, "default")
   }))
   validation { # load_distribution
     condition = (var.lb_rules == null ?
