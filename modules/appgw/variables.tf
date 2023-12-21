@@ -26,7 +26,8 @@ variable "zones" {
   description = <<-EOF
   A list of zones the Application Gateway should be available in.
 
-  NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
+  **Note!** \
+  This is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
   pinned to a single zone or zone-redundant (so available in all zones in a region).
   Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset,
   but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during
@@ -44,16 +45,25 @@ variable "zones" {
   type        = list(string)
   validation {
     condition     = var.zones == null || length(setsubtract(var.zones, ["1", "2", "3"])) == 0
-    error_message = "The `var.zones` can either bea non empty list of Availability Zones or explicit `null`."
+    error_message = "The `var.zones` can either be a non empty list of Availability Zones or explicit `null`."
   }
 }
 
 variable "public_ip" {
-  description = "Public IP address."
+  description = <<-EOF
+  A map defining a Public IP address resource that the Application Gateway will use to listen for incoming requests.
+
+  Following properties are available:
+
+  - `name`                - (`string`, required) name of the created or source Public IP resource
+  - `create`              - (`bool`, optional, defaults to `true`) controls if the public IP is created or sourced.
+  - `resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group hosting the
+                            existing Public IP resource
+  EOF
   type = object({
-    name           = string
-    resource_group = optional(string)
-    create         = optional(bool, true)
+    name                = string
+    create              = optional(bool, true)
+    resource_group_name = optional(string)
   })
 }
 
@@ -299,7 +309,6 @@ variable "ssl_profiles" {
 variable "frontend_ip_configuration_name" {
   description = "Frontend IP configuration name"
   default     = "public_ipconfig"
-  nullable    = false
   type        = string
 }
 

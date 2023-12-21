@@ -334,7 +334,7 @@ module "appgw" {
     name = "vmseries"
     vmseries_ips = [
       for k, v in var.vmseries : module.vmseries[k].interfaces[
-        "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}"
+        "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}" # TODO: fix this so that we do not need to use vmseries_public_nic_name
       ].private_ip_address if try(v.add_to_appgw_backend, false)
     ]
   }

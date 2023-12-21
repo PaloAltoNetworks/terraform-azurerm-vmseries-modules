@@ -481,12 +481,14 @@ variable "appgws" {
   - `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
   - `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name = string
     public_ip = object({
-      name           = string
-      resource_group = optional(string)
-      create         = optional(bool, true)
+      name                = string
+      resource_group_name = optional(string)
+      create              = optional(bool, true)
     })
     vnet_key           = string
     subnet_key         = string
