@@ -39,29 +39,19 @@ variable "frontend_ip" {
   - `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
   - `subnet_id`                     - (`string`, required) id of a subnet to associate with the configuration.
   - `private_ip_address`            - (`string`, optional) private IP address to assign.
-  - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) the allocation method for the private IP address.
   - `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
   EOF
   nullable    = false
   type = object({
-    name                          = string
-    subnet_id                     = string
-    private_ip_address            = optional(string)
-    private_ip_address_allocation = optional(string, "Dynamic")
-    private_ip_address_version    = optional(string, "IPv4")
+    name                       = string
+    subnet_id                  = string
+    private_ip_address         = optional(string)
+    private_ip_address_version = optional(string, "IPv4")
   })
   validation { # private_ip_address
     condition = (var.frontend_ip.private_ip_address != null ?
     can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", var.frontend_ip.private_ip_address)) : true)
     error_message = "The `private_ip_address` property should be in IPv4 format."
-  }
-  validation { # private_ip_address
-    condition     = var.frontend_ip.private_ip_address != null ? var.frontend_ip.private_ip_address_allocation == "Static" : true
-    error_message = "If the `private_ip_address` property is defined, then `private_ip_address_allocation` has to be `Static`."
-  }
-  validation { # private_ip_address_allocation
-    condition     = contains(["Dynamic", "Static"], var.frontend_ip.private_ip_address_allocation)
-    error_message = "The `private_ip_address_allocation` property can be one of \"Dynamic\", \"Static\"."
   }
   validation { # private_ip_address_version
     condition     = contains(["IPv4", "IPv6"], var.frontend_ip.private_ip_address_version)

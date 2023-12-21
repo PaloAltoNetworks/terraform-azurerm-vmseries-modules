@@ -8,7 +8,7 @@ resource "azurerm_lb" "this" {
 
   frontend_ip_configuration {
     name                          = var.frontend_ip.name
-    private_ip_address_allocation = var.frontend_ip.private_ip_address_allocation
+    private_ip_address_allocation = var.frontend_ip.private_ip_address != null ? "Static" : "Dynamic"
     private_ip_address_version    = var.frontend_ip.private_ip_address_version
     private_ip_address            = var.frontend_ip.private_ip_address
     subnet_id                     = var.frontend_ip.subnet_id

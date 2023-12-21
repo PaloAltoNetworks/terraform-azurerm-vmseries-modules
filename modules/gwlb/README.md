@@ -37,11 +37,10 @@ For more customized requirements, below extended definition of GWLB can be appli
     zones = []
 
     frontend_ip = {
-      name                          = "custom-name-frontend-ip"
-      vnet_key                      = "security"
-      subnet_key                    = "data"
-      private_ip_address            = "10.0.1.24"
-      private_ip_address_allocation = "Static"
+      name               = "custom-name-frontend-ip"
+      vnet_key           = "security"
+      subnet_key         = "data"
+      private_ip_address = "10.0.1.24"
     }
 
     lb_rule = {
@@ -171,7 +170,6 @@ Following settings are available:
 - `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
 - `subnet_id`                     - (`string`, required) id of a subnet to associate with the configuration.
 - `private_ip_address`            - (`string`, optional) private IP address to assign.
-- `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) the allocation method for the private IP address.
 - `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
 
 
@@ -179,11 +177,10 @@ Type:
 
 ```hcl
 object({
-    name                          = string
-    subnet_id                     = string
-    private_ip_address            = optional(string)
-    private_ip_address_allocation = optional(string, "Dynamic")
-    private_ip_address_version    = optional(string, "IPv4")
+    name                       = string
+    subnet_id                  = string
+    private_ip_address         = optional(string)
+    private_ip_address_version = optional(string, "IPv4")
   })
 ```
 
