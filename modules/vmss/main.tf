@@ -7,6 +7,16 @@ locals {
     "==" = "Equals"
     "!=" = "NotEquals"
   }
+
+  panos_metrics = [
+    "DataPlanePacketBufferUtilization",
+    "panSessionThroughputPps",
+    "panSessionThroughputKbps",
+    "panSessionActive",
+    "panSessionUtilization",
+    "DataPlaneCPUUtilizationPct"
+  ]
+
   password = sensitive(var.authentication.password)
 }
 
@@ -36,7 +46,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
   single_placement_group       = var.virtual_machine_scale_set.single_placement_group
   sku                          = var.virtual_machine_scale_set.size
   zones                        = var.virtual_machine_scale_set.zones
-  zone_balance                 = length(coalesce(var.virtual_machine_scale_set.zones, [])) > 0
+  zone_balance                 = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2 # zone balance is available from at least 2 zones
   provision_vm_agent           = false
 
   dynamic "plan" {
@@ -106,7 +116,10 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
 
   boot_diagnostics { storage_account_uri = var.virtual_machine_scale_set.diagnostics_storage_uri }
 
-  identity { type = "SystemAssigned" } # (Required) The type of Managed Identity which should be assigned to the Linux Virtual Machine Scale Set. Possible values are SystemAssigned, UserAssigned and SystemAssigned, UserAssigned.
+  identity {
+    type         = var.virtual_machine_scale_set.identity_type
+    identity_ids = var.virtual_machine_scale_set.identity_ids
+  }
 
   tags = var.tags
 }
@@ -207,30 +220,10 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = profile.value.scale_rules
         content {
           metric_trigger {
-            metric_name = rule.value.name
-            metric_resource_id = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator = local.operator[rule.value.scale_out_config.operator]
+            metric_name        = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator           = local.operator[rule.value.scale_out_config.operator]
 
             threshold        = rule.value.scale_out_config.threshold
             statistic        = rule.value.scale_out_config.grain_aggregation_type
@@ -253,30 +246,10 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = profile.value.scale_rules
         content {
           metric_trigger {
-            metric_name = rule.value.name
-            metric_resource_id = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator = local.operator[rule.value.scale_in_config.operator]
+            metric_name        = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator           = local.operator[rule.value.scale_in_config.operator]
 
             threshold        = rule.value.scale_in_config.threshold
             statistic        = rule.value.scale_in_config.grain_aggregation_type
@@ -330,30 +303,10 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = var.autoscaling_profiles[0].scale_rules
         content {
           metric_trigger {
-            metric_name = rule.value.name
-            metric_resource_id = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator = local.operator[rule.value.scale_out_config.operator]
+            metric_name        = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator           = local.operator[rule.value.scale_out_config.operator]
 
             threshold        = rule.value.scale_out_config.threshold
             statistic        = rule.value.scale_out_config.grain_aggregation_type
@@ -376,30 +329,10 @@ resource "azurerm_monitor_autoscale_setting" "this" {
         for_each = var.autoscaling_profiles[0].scale_rules
         content {
           metric_trigger {
-            metric_name = rule.value.name
-            metric_resource_id = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
-            metric_namespace = contains(
-              [
-                "DataPlanePacketBufferUtilization",
-                "panSessionThroughputPps",
-                "panSessionThroughputKbps",
-                "panSessionActive",
-                "panSessionUtilization",
-                "DataPlaneCPUUtilizationPct"
-              ],
-              rule.value.name
-            ) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
-            operator = local.operator[rule.value.scale_in_config.operator]
+            metric_name        = rule.value.name
+            metric_resource_id = contains(local.panos_metrics, rule.value.name) ? var.autoscaling_configuration.application_insights_id : azurerm_linux_virtual_machine_scale_set.this.id
+            metric_namespace   = contains(local.panos_metrics, rule.value.name) ? "Azure.ApplicationInsights" : "microsoft.compute/virtualmachinescalesets"
+            operator           = local.operator[rule.value.scale_in_config.operator]
 
             threshold        = rule.value.scale_in_config.threshold
             statistic        = rule.value.scale_in_config.grain_aggregation_type

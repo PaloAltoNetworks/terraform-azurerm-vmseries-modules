@@ -30,12 +30,12 @@ variable "authentication" {
   - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
   - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys
 
-  > [!Important]
-  > The `password` property is required when `ssh_keys` is not specified.
+  **Important!** \
+  The `password` property is required when `ssh_keys` is not specified. You can have both, password and key authentication.
 
-  > [!Important]
-  > `ssh_keys` property is a list of strings, so each item should be the actual public key value.
-  > If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+  **Important!** \
+  `ssh_keys` property is a list of strings, so each item should be the actual public key value.
+  If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
 
   EOF
   type = object({
@@ -45,8 +45,16 @@ variable "authentication" {
     ssh_keys                        = optional(list(string), [])
   })
   validation {
-    condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
-    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device"
+    condition = !(
+      var.authentication.password == null && !var.authentication.disable_password_authentication && length(var.authentication.ssh_keys) == 0
+    )
+    error_message = "At least `password` or `ssh_keys` property has to be set when `disable_password_authentication` is `false`."
+  }
+  validation {
+    condition = !(
+      var.authentication.disable_password_authentication && length(var.authentication.ssh_keys) == 0
+    )
+    error_message = "The `ssh_keys` property has to be set when `disable_password_authentication` is `true`."
   }
 }
 
@@ -58,19 +66,19 @@ variable "image" {
 
   - `version`                 - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
                                 `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
-  - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
+  - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for an image
                                 which should be deployed
   - `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
                                 published image
-  - `sku`                     - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
+  - `sku`                     - (`string`, optional, defaults to `byol`) VMSeries SKU, list available with
                                 `az vm image list -o table --all --publisher paloaltonetworks`
   - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                 on Azure Market Place
   - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
                                 creating new Virtual Machines
 
-  > [!Important]
-  > `custom_id` and `version` properties are mutually exclusive.
+  **Important!** \
+  `custom_id` and `version` properties are mutually exclusive.
   EOF
   type = object({
     version                 = optional(string)
@@ -99,31 +107,31 @@ variable "virtual_machine_scale_set" {
   List of either required or important properties: 
 
   - `size`                  - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
-                              Deployment Guide* as only a few selected sizes are supported
-  - `zones`                 - (`list`, optional, defaults to `["1", "2", "3"]`) a list of Availability Zones in which VMs from
+                              Deployment Guide* as only few selected sizes are supported. The default one is a VM-300 equivalent.
+  - `zones`                 - (`list`, optional, defaults to `null`) a list of Availability Zones in which VMs from
                               this Scale Set will be created
   - `disk_type`             - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                               possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                               `size` values)
-  - `bootstrap_options`      - bootstrap options to pass to VM-Series instance.
+  - `bootstrap_options`     - bootstrap options to pass to VM-Series instance.
 
-    Proper syntax is a string of semicolon separated properties, for example:
+      Proper syntax is a string of semicolon separated properties, for example:
 
-    ```hcl
-    bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
-    ```
+      ```hcl
+      bootstrap_options = "type=dhcp-client;panorama-server=1.2.3.4"
+      ```
 
-    For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
+      For more details on bootstrapping [see documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components).
 
-  List of other, optional properties: 
+  List of other, optional properties:
 
-  - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
+  - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true` enables Azure accelerated
                                       networking (SR-IOV) for all dataplane network interfaces, this does not affect the
                                       management interface (always disabled)
   - `disk_encryption_set_id`        - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
                                       used to encrypt this VM's disk
-  - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
-                                      by enabling Encryption at Host
+  - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted by enabling
+                                      Encryption at Host
   - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
   - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
                                       are used by this Virtual Machine Scale Set
@@ -134,6 +142,11 @@ variable "virtual_machine_scale_set" {
                                       at 100 Virtual Machines
   - `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
                                       diagnostic files
+  - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
+                                      should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
+                                      "SystemAssigned, UserAssigned".
+  - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
+                                      assigned to this VM. Required only if `identity_type` is not "SystemAssigned"
 
   EOF
   default     = {}
@@ -141,7 +154,7 @@ variable "virtual_machine_scale_set" {
   type = object({
     size                         = optional(string, "Standard_D3_v2")
     bootstrap_options            = optional(string)
-    zones                        = optional(list(string), ["1", "2", "3"])
+    zones                        = optional(list(string))
     disk_type                    = optional(string, "StandardSSD_LRS")
     accelerated_networking       = optional(bool, true)
     encryption_at_host_enabled   = optional(bool)
@@ -151,24 +164,40 @@ variable "virtual_machine_scale_set" {
     single_placement_group       = optional(bool)
     disk_encryption_set_id       = optional(string)
     diagnostics_storage_uri      = optional(string)
+    identity_type                = optional(string, "SystemAssigned")
+    identity_ids                 = optional(list(string), [])
   })
   validation {
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine_scale_set.disk_type)
     error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS`."
   }
+  # validation {
+  #   condition     = length(var.virtual_machine_scale_set.zones) == 3 || var.virtual_machine_scale_set.zones == null
+  #   error_message = "The `var.virtual_machine_scale_set.zones` can either be a list of all Availability Zones or explicit `null`."
+  # }
   validation {
-    condition     = length(var.virtual_machine_scale_set.zones) == 3 || var.virtual_machine_scale_set.zones == null
-    error_message = "The `var.virtual_machine_scale_set.zones` can either be a list of all Availability Zones or explicit `null`."
+    condition = contains(
+      ["SystemAssigned", "UserAssigned", "SystemAssigned, UserAssigned"],
+      var.virtual_machine_scale_set.identity_type
+    )
+    error_message = "The `identity_type` property can be one of \"SystemAssigned\", \"UserAssigned\" or \"SystemAssigned, UserAssigned\"."
   }
-
+  validation {
+    condition     = var.virtual_machine_scale_set.identity_type == "SystemAssigned" ? length(var.virtual_machine_scale_set.identity_ids) == 0 : length(var.virtual_machine_scale_set.identity_ids) >= 0
+    error_message = "The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\"."
+  }
+  validation {
+    condition     = !(var.virtual_machine_scale_set.proximity_placement_group_id != null && length(coalesce(var.virtual_machine_scale_set.zones, [])) > 1)
+    error_message = "Proximity placement group can be used only when Scale Set is not zonal or uses just one Availability Zone."
+  }
 }
 
 variable "interfaces" {
   description = <<-EOF
   List of the network interfaces specifications.
 
-  > [!Note]
-  > The ORDER in which you specify the interfaces DOES MATTER.
+  **Note!** \
+  The ORDER in which you specify the interfaces DOES MATTER.
 
   Interfaces will be attached to VM in the order you define here, therefore:
 
@@ -184,7 +213,7 @@ variable "interfaces" {
                                   pools to associate the interface with
   - `appgw_backend_pool_ids`    - (`list`, optional, defaults to `[]`) a list of identifier of Application Gateway's backend
                                   pools to associate the interface with
-  - `pip_domain_name_label`     - (`string`, optional, defaults to `null`) the Prefix which should be used for the Domain Name
+  - `pip_domain_name_label`     - (`string`, optional, defaults to `null`) the IP Prefix which should be used for the Domain Name
                                   Label for each Virtual Machine Instance.
 
   Example:
@@ -227,6 +256,7 @@ variable "autoscaling_configuration" {
   Autoscaling configuration common to all policies.
 
   Following properties are available:
+
   - `application_insights_id` - (`string`, optional, defaults to `null`) an ID of Application Insights instance that should
                                 be used to provide metrics for autoscaling; to **avoid false positives** this should be an
                                 instance **dedicated to this Scale Set**
@@ -236,10 +266,10 @@ variable "autoscaling_configuration" {
   - `scale_in_policy`         - (`string`, optional, defaults to Azure default) controls which VMs are chosen for removal
                                 during a scale-in, can be one of: `Default`, `NewestVM`, `OldestVM`.
   - `scale_in_force_deletion` - (`bool`, optional, defaults to `false`) when `true` will **force delete** machines during a 
-                                scale-in
+                                scale-in operation
   - `notification_emails`     - (`list`, optional, defaults to `[]`) list of email addresses to notify about autoscaling
                                 events
-  - `webhooks_uris`           - (`map`, optional, defaults to `{}`) the URIs receive autoscaling events; a map where keys
+  - `webhooks_uris`           - (`map`, optional, defaults to `{}`) the URIs that receive autoscaling events; a map where keys
                                 are just arbitrary identifiers and the values are the webhook URIs
   EOF
   default     = {}
@@ -262,8 +292,8 @@ variable "autoscaling_profiles" {
   description = <<-EOF
   A list defining autoscaling profiles.
 
-  > [!Note]
-  > The order does matter. The 1<sup>st</sup> profile becomes the default one.
+  **Note!** \
+  The order does matter. The 1<sup>st</sup> profile becomes the default one.
 
   There are some considerations when creating autoscaling configuration:
 
@@ -287,38 +317,37 @@ variable "autoscaling_profiles" {
     - `end_time`        - (`string`, required) profile end time in RFC3339 format
   - `scale_rules`     - (`list`, optional, defaults to `[]`) a list of maps defining metrics and rules for autoscaling. 
 
-    By default all VMSS built-in metrics are available. Note, that these do not differentiate between management and data planes.
-    For more accuracy please use NGFW metrics.
+      **Note!** \
+      By default all VMSS built-in metrics are available. These do not differentiate between management and data planes.
+      For more accuracy please use NGFW metrics.
 
-    Each metric definition is a map with 3 properties:
+      Each metric definition is a map with 3 properties:
 
-    - `name`              - (`string`, required) name of the rule
-    - `scale_out_config`  - (`map`, required) definition of the rule used to scale-out
-    - `scale_in_config`   - (`map`, required) definition of the rule used to scale-in
+      - `name`              - (`string`, required) name of the rule
+      - `scale_out_config`  - (`map`, required) definition of the rule used to scale-out
+      - `scale_in_config`   - (`map`, required) definition of the rule used to scale-in
 
-      Both `scale_out_config` and `scale_in_config` maps contain the same properties. The ones that are required for scale-out but
-      optional for scale-in, when skipped in the latter configuration, default to scale-out value.
-      
-      Following properties are available:
-
-      - `threshold`                   - (`number`, required) the threshold of a metric that triggers the scale action
-      - `operator`                    - (`string`, optional, defaults to `>=` or `<=` for scale-out and scale-in respectively)
-                                        the metric vs. threshold comparison operator, can be one of: `>`, `>=`, `<`, `<=`, `==`
-                                        or `!=`.
-      - `grain_window_minutes`        - (`number`, required for scale-out, optional for scale-in) granularity of metrics that the
-                                        rule monitors, between 1 minute and 12 hours (specified in minutes)
-      - `grain_aggregation_type`      - (`string`, optional, defaults to "Average") method used to combine data from 
-                                        `grain_window`, can be one of `Average`, `Max`, `Min` or `Sum`
-      - `aggregation_window_minutes`  - (`number`, required for scale-out, optional for scale-in) time window used to analyze
-                                        metrics, between 5 minutes and 12 hours (specified in minutes), must be greater than
-                                        `grain_window_minutes`
-      - `aggregation_window_type`     - (`string`, optional, defaults to "Average") method used to combine data from 
-                                        `aggregation_window`, can be one of `Average`, `Maximum`, `Minimum`, `Count`, `Last` or 
-                                        `Total`
-      - `cooldown_window_minutes`     - (`number`, required) the amount of time to wait after a scale action, between 1 minute and
-                                        1 week (specified in minutes)
-      - `change_count_by`             - (`number`, optional, default to `1`) a number of VM instances by which the total count of
-                                        instanced in a Scale Set will be changed during a scale action
+          Both `scale_out_config` and `scale_in_config` maps contain the same properties. The ones that are required for scale-out
+          but optional for scale-in, when skipped in the latter configuration, default to scale-out values:
+          
+          - `threshold`                   - (`number`, required) the threshold of a metric that triggers the scale action
+          - `operator`                    - (`string`, optional, defaults to `>=` or `<=` for scale-out and scale-in respectively)
+                                            the metric vs. threshold comparison operator, can be one of: `>`, `>=`, `<`, `<=`,
+                                            `==` or `!=`.
+          - `grain_window_minutes`        - (`number`, required for scale-out, optional for scale-in) granularity of metrics that
+                                            the rule monitors, between 1 minute and 12 hours (specified in minutes)
+          - `grain_aggregation_type`      - (`string`, optional, defaults to "Average") method used to combine data from 
+                                            `grain_window`, can be one of `Average`, `Max`, `Min` or `Sum`
+          - `aggregation_window_minutes`  - (`number`, required for scale-out, optional for scale-in) time window used to analyze
+                                            metrics, between 5 minutes and 12 hours (specified in minutes), must be greater than
+                                            `grain_window_minutes`
+          - `aggregation_window_type`     - (`string`, optional, defaults to "Average") method used to combine data from 
+                                            `aggregation_window`, can be one of `Average`, `Maximum`, `Minimum`, `Count`, `Last`
+                                            or `Total`
+          - `cooldown_window_minutes`     - (`number`, required) the amount of time to wait after a scale action, between 1 minute
+                                            and 1 week (specified in minutes)
+          - `change_count_by`             - (`number`, optional, default to `1`) a number of VM instances by which the total count
+                                            of instances in a Scale Set will be changed during a scale action
 
   Example:
 
@@ -349,7 +378,7 @@ variable "autoscaling_profiles" {
   ]
 
   # defining a profile with a rule scaling to 1 NGFW, used when no other rule is applicable
-  # and a second rule used for autoscaling during office hours
+  # and a second rule used for autoscaling during 'office hours'
   autoscaling_profiles = [
     {
       name          = "default_profile"

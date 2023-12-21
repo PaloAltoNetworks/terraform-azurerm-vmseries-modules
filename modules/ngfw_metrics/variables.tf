@@ -26,7 +26,7 @@ variable "create_workspace" {
   type        = bool
 }
 
-variable "log_analytics_config" {
+variable "log_analytics_workspace" {
   description = <<-EOF
   Configuration of the log analytics workspace.
 
@@ -34,8 +34,8 @@ variable "log_analytics_config" {
 
   - `sku`                       - (`string`, optional, defaults to Azure defaults) the SKU of the Log Analytics Workspace.
 
-    As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
-    `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
+      As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
+      `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
 
   - `metrics_retention_in_days` - (`number`, optional, defaults to Azure defaults) workspace data retention in days, 
                                   possible values are between 30 and 730.
@@ -47,7 +47,7 @@ variable "log_analytics_config" {
     metrics_retention_in_days = optional(number)
   })
   validation {
-    condition = var.log_analytics_config.sku != null ? contains([
+    condition = var.log_analytics_workspace.sku != null ? contains([
       "Free",
       "PerNode",
       "Premium",
@@ -56,13 +56,13 @@ variable "log_analytics_config" {
       "Unlimited",
       "CapacityReservation",
       "PerGB2018"],
-      var.log_analytics_config.sku
+      var.log_analytics_workspace.sku
     ) : true
-    error_message = "The `var.log_analytics_config.sku` property has to have a value of either: `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation` or `PerGB2018`."
+    error_message = "The `var.log_analytics_workspace.sku` property has to have a value of either: `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation` or `PerGB2018`."
   }
   validation {
-    condition     = var.log_analytics_config.metrics_retention_in_days != null ? var.log_analytics_config.metrics_retention_in_days >= 30 && var.log_analytics_config.metrics_retention_in_days <= 730 : true
-    error_message = "The `var.log_analytics_config.metrics_retention_in_days` property can take values between 30 and 730 (both inclusive)."
+    condition     = var.log_analytics_workspace.metrics_retention_in_days != null ? var.log_analytics_workspace.metrics_retention_in_days >= 30 && var.log_analytics_workspace.metrics_retention_in_days <= 730 : true
+    error_message = "The `var.log_analytics_workspace.metrics_retention_in_days` property can take values between 30 and 730 (both inclusive)."
   }
 }
 
@@ -79,7 +79,7 @@ variable "application_insights" {
     This property can be handy in case one would like to use an existing Log Analytics Workspace, but for whatever reason the
     Application Insights instances should be created in a separate Resource Group (due to limited access for example).
 
-  - `metrics_retention_in_days` - (`number`, optional, defaults to `var.log_analytics_config.metrics_retention_in_days`)
+  - `metrics_retention_in_days` - (`number`, optional, defaults to `var.log_analytics_workspace.metrics_retention_in_days`)
                                   Application Insights data retention in days, possible values are between 30 and 730.
   EOF
   type = map(object({

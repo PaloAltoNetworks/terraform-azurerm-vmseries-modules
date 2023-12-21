@@ -6,7 +6,6 @@ tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
 
 # --- VNET PART --- #
 vnets = {
@@ -23,7 +22,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["0.0.0.0/0"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -190,13 +189,20 @@ ngfw_metrics = {
 
 scale_sets = {
   inbound = {
-    name           = "inbound-vmss"
-    image          = { version = "10.2.4" }
-    authentication = { disable_password_authentication = false }
+    name = "inbound-vmss"
+    image = {
+      version = "10.2.4"
+    }
+    authentication = {
+      disable_password_authentication = false
+    }
     virtual_machine_scale_set = {
       vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
+    }
+    autoscaling_configuration = {
+      default_count = 2
     }
     interfaces = [
       {
@@ -213,41 +219,22 @@ scale_sets = {
         load_balancer_key = "public"
       }
     ]
-    autoscaling_profiles = [
-      {
-        name          = "default_profile"
-        default_count = 2
-        minimum_count = 1
-        maximum_count = 5
-        scale_rules = [
-          {
-            name = "DataPlaneCPUUtilizationPct"
-            scale_out_config = {
-              threshold                  = 70
-              grain_window_minutes       = 5
-              aggregation_window_minutes = 30
-              cooldown_window_minutes    = 60
-            }
-            scale_in_config = {
-              threshold               = 40
-              cooldown_window_minutes = 120
-            }
-          },
-        ]
-      },
-    ]
   }
   obew = {
-    name  = "obew-vmss"
-    image = { version = "10.2.4" }
+    name = "obew-vmss"
+    image = {
+      version = "10.2.4"
+    }
     authentication = {
-      password                        = "123QWEasd"
       disable_password_authentication = false
     }
     virtual_machine_scale_set = {
       vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
       zones             = null
+    }
+    autoscaling_configuration = {
+      default_count = 2
     }
     interfaces = [
       {
@@ -263,29 +250,6 @@ scale_sets = {
         name       = "public"
         subnet_key = "public"
       }
-    ]
-    autoscaling_profiles = [
-      {
-        name          = "default_profile"
-        default_count = 2
-        minimum_count = 1
-        maximum_count = 5
-        scale_rules = [
-          {
-            name = "DataPlaneCPUUtilizationPct"
-            scale_out_config = {
-              threshold                  = 70
-              grain_window_minutes       = 5
-              aggregation_window_minutes = 30
-              cooldown_window_minutes    = 60
-            }
-            scale_in_config = {
-              threshold               = 40
-              cooldown_window_minutes = 120
-            }
-          },
-        ]
-      },
     ]
   }
 }

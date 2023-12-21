@@ -1,11 +1,11 @@
 output "usernames" {
-  description = "Initial administrative username to use for VM-Series."
-  value       = { for k, v in local.authentication : k => v.username }
+  description = "Initial firewall administrative usernames for all deployed Scale Sets."
+  value       = { for k, v in module.vmss : k => v.username }
 }
 
 output "passwords" {
-  description = "Initial administrative password to use for VM-Series."
-  value       = { for k, v in local.authentication : k => v.password }
+  description = "Initial firewall administrative passwords for all deployed Scale Sets."
+  value       = { for k, v in module.vmss : k => v.password }
   sensitive   = true
 }
 

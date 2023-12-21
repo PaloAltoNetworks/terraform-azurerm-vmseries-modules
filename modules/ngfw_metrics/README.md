@@ -8,18 +8,18 @@ It will work with both a standalone Next Generation Firewall and ones deployed i
 In both situations the instrumentation key for the Application Insights has to be provided in the firewall's configuration.
 For more information please refer to [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall).
 
-> [!Note]
-> This module supports only the workspace mode - Azure support for classic Application Insights mode will end on Feb 29th 2024.
+**Note!** \
+This module supports only the workspace mode - Azure support for classic Application Insights mode will end on Feb 29th 2024.
 
-This module is designed to deploy (or source) a single Log Analytics Workspace and one or more Application Insights instances
-connected to that workspace.
+This module is designed to deploy (or source) a single Log Analytics Workspace and to create one or more Application Insights
+instances connected to that workspace.
 
-> [!Important]
-> The metrics gathered within a single Azure Application Insights instance cannot be split back to obtain a result for a single
-> firewall. Thus for example, if three firewalls use the same Instrumentation Key and report their respective session
-> utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is
-> **not possible** to know which of the firewalls reported the 90% utilization.
-> Therefore each firewall (or a Scale Set) should send the metrics to a dedicated Application Insights instance.
+**Important!** \
+The metrics gathered within a single Azure Application Insights instance cannot be split back to obtain a result for a single
+firewall. Thus, for example, if three firewalls use the same Instrumentation Key and report their respective session
+utilizations as 90%, 20%, 10%, it is possible to see in Azure the average of 40%, the sum of 120%, the max of 90%, but it is
+**not possible** to know which of the firewalls reported the 90% utilization.
+Therefore each firewall (or a Scale Set) should send the metrics to a dedicated Application Insights instance.
 
 Since upgrade to provider 3.x, when destroying infrastructure a resource is being left behind:
 `microsoft.alertsmanagement/smartdetectoralertrules`. This resource is not present in the state nor code, it's being created by
@@ -71,7 +71,7 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`create_workspace`](#create_workspace) | `bool` | Controls creation or sourcing of a Log Analytics Workspace.
-[`log_analytics_config`](#log_analytics_config) | `object` | Configuration of the log analytics workspace.
+[`log_analytics_workspace`](#log_analytics_workspace) | `object` | Configuration of the log analytics workspace.
 
 
 
@@ -79,8 +79,8 @@ Name | Type | Description
 
 Name |  Description
 --- | ---
-`metrics_instrumentation_keys` | The Instrumentation Key of the created Application Insights instances.
-`application_insights_ids` | An Azure ID of the created Application Insights instances.
+`metrics_instrumentation_keys` | The Instrumentation Key of the Application Insights instances.
+`application_insights_ids` | An Azure ID of the Application Insights instances.
 
 ## Module's Nameplate
 
@@ -88,12 +88,12 @@ Name |  Description
 Requirements needed by this module:
 
 - `terraform`, version: >= 1.3, < 2.0
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
@@ -149,7 +149,7 @@ Following properties are available:
   This property can be handy in case one would like to use an existing Log Analytics Workspace, but for whatever reason the
   Application Insights instances should be created in a separate Resource Group (due to limited access for example).
 
-- `metrics_retention_in_days` - (`number`, optional, defaults to `var.log_analytics_config.metrics_retention_in_days`)
+- `metrics_retention_in_days` - (`number`, optional, defaults to `var.log_analytics_workspace.metrics_retention_in_days`)
                                 Application Insights data retention in days, possible values are between 30 and 730.
 
 
@@ -194,7 +194,7 @@ Default value: `true`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### log_analytics_config
+#### log_analytics_workspace
 
 Configuration of the log analytics workspace.
 
@@ -202,8 +202,8 @@ Following properties are available:
 
 - `sku`                       - (`string`, optional, defaults to Azure defaults) the SKU of the Log Analytics Workspace.
 
-  As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
-  `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
+    As of API version `2018-04-03` the Azure default value is `PerGB2018`, other possible values are:
+    `Free`, `PerNode`, `Premium`, `Standard`, `Standalone`, `Unlimited`, `CapacityReservation`.
 
 - `metrics_retention_in_days` - (`number`, optional, defaults to Azure defaults) workspace data retention in days, 
                                 possible values are between 30 and 730.

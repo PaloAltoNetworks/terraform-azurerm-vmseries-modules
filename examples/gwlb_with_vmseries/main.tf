@@ -85,7 +85,7 @@ module "ngfw_metrics" {
   resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
   location            = var.location
 
-  log_analytics_config = {
+  log_analytics_workspace = {
     sku                       = var.ngfw_metrics.sku
     metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
   }

@@ -2,6 +2,7 @@
 resource "random_password" "this" {
   count = anytrue([
     for _, v in var.scale_sets : v.authentication.password == null
+    if !v.authentication.disable_password_authentication
   ]) ? 1 : 0
 
   length           = 16
@@ -17,7 +18,10 @@ locals {
     for k, v in var.scale_sets : k =>
     merge(
       v.authentication,
-      { password = coalesce(v.authentication.password, try(random_password.this[0].result, null)) }
+      {
+        ssh_keys = [for ssh_key in v.authentication.ssh_keys : file(ssh_key)]
+        password = try(coalesce(v.authentication.password, random_password.this[0].result), null)
+      }
     )
   }
 }
@@ -91,8 +95,6 @@ module "natgw" {
   depends_on = [module.vnet]
 }
 
-
-
 # create load balancers, both internal and external
 module "load_balancer" {
   source = "../../modules/loadbalancer"
@@ -140,7 +142,7 @@ module "load_balancer" {
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"
 
-  count = var.ngfw_metrics != null && anytrue([for _, v in var.scale_sets : length(v.autoscaling_profiles) > 0]) ? 1 : 0
+  count = var.ngfw_metrics != null ? 1 : 0
 
   create_workspace = var.ngfw_metrics.create_workspace
 
@@ -148,12 +150,16 @@ module "ngfw_metrics" {
   resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
   location            = var.location
 
-  log_analytics_config = {
+  log_analytics_workspace = {
     sku                       = var.ngfw_metrics.sku
     metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
   }
 
-  application_insights = { for k, v in var.scale_sets : k => { name = "${var.name_prefix}${v.name}-ai" } }
+  application_insights = {
+    for k, v in var.scale_sets :
+    k => { name = "${var.name_prefix}${v.name}-ai" }
+    if length(v.autoscaling_profiles) > 0
+  }
 
   tags = var.tags
 }

@@ -6,8 +6,8 @@ resource "azurerm_log_analytics_workspace" "this" {
   resource_group_name = var.resource_group_name
   location            = var.location
 
-  retention_in_days = var.log_analytics_config.metrics_retention_in_days
-  sku               = var.log_analytics_config.sku
+  retention_in_days = var.log_analytics_workspace.metrics_retention_in_days
+  sku               = var.log_analytics_workspace.sku
 
   tags = var.tags
 }
@@ -30,7 +30,7 @@ resource "azurerm_application_insights" "this" {
 
   workspace_id      = var.create_workspace ? azurerm_log_analytics_workspace.this[0].id : data.azurerm_log_analytics_workspace.this[0].id
   application_type  = "other"
-  retention_in_days = each.value.metrics_retention_in_days == null ? var.log_analytics_config.metrics_retention_in_days : each.value.metrics_retention_in_days
+  retention_in_days = each.value.metrics_retention_in_days == null ? var.log_analytics_workspace.metrics_retention_in_days : each.value.metrics_retention_in_days
 
   tags = var.tags
 }

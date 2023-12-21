@@ -295,14 +295,15 @@ variable "availability_sets" {
 
 variable "ngfw_metrics" {
   description = <<-EOF
-  A map defining metrics related resources for Next Generation Firewall.
+  A map controlling metrics-relates resources.
+
+  When set to explicit `null` (default) it will disable any metrics resources in this deployment.
+
+  When defined it will either create or source a Log Analytics Workspace and create Application Insights instances (one per each
+  Scale Set). All instances will be automatically connected to the workspace.
+  The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
 
   All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
-
-  > [!Note]
-  > We do not explicitly define Application Insights instances. Each Virtual Machine will receive one automatically
-  > as long as this object is not `null`.
-  > The name of the Application Insights instance will be derived from the VM's name and suffixed with `-ai`.
 
   Following properties are available:
 
@@ -313,7 +314,8 @@ variable "ngfw_metrics" {
                                   the Log Analytics Workspace
   - `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
   - `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
-                                  days, possible values are between 30 and 730.
+                                  days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
+                                  the Application Insights instances.
   EOF
   default     = null
   type = object({

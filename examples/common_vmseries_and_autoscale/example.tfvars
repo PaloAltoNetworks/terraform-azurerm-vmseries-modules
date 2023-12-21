@@ -7,7 +7,6 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-
 # --- VNET PART --- #
 vnets = {
   "transit" = {
@@ -23,7 +22,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["0.0.0.0/0"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -212,6 +211,10 @@ scale_sets = {
     virtual_machine_scale_set = {
       vnet_key          = "transit"
       bootstrap_options = "type=dhcp-client"
+      zones             = ["1", "2", "3"]
+    }
+    autoscaling_configuration = {
+      default_count = 1
     }
     interfaces = [
       {

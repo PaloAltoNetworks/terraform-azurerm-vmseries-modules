@@ -1,7 +1,7 @@
 # --- GENERAL --- #
 location            = "North Europe"
 resource_group_name = "transit-vnet-dedicated"
-name_prefix         = "fosix-"
+name_prefix         = "example-"
 tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
@@ -23,7 +23,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.2.3.4"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -170,7 +170,7 @@ bootstrap_storage = {
         subnet_key = "management"
       }
     }
-    storage_allow_inbound_public_ips = ["134.238.135.14", "134.238.135.140"] # TODO: whitelist public IP addresses subnets (minimum /30 CIDR) that will be used to apply the terraform code from
+    storage_allow_inbound_public_ips = ["134.238.135.14", "134.238.135.140"]
   }
 }
 
