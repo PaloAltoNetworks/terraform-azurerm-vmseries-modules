@@ -246,20 +246,20 @@ Interfaces will be attached to VM in the order you define here, therefore:
   
 Following configuration options are available:
 
-- `name`                     - (`string`, required) the interface name.
-- `subnet_id`                - (`string`, required) ID of an existing subnet to create the interface in.
-- `private_ip_address`       - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                               skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
-                               to change as long as the VM is running. Any stop/deallocate/restart operation might cause the
-                               IP to change.
-- `create_public_ip`         - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
-- `public_ip_name`           - (`string`, optional, defaults to `null`) name of the public IP to associate with the interface. 
-                               When `create_public_ip` is set to `true` this will become a name of a newly created Public IP
-                               interface. Otherwise this is a name of an existing interfaces that will be sourced and attached
-                               to the interface.
-- `public_ip_resource_group` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
-                               contains public IP that that will be associated with the interface. Used only when 
-                               `create_public_ip` is `false`.
+- `name`                          - (`string`, required) the interface name.
+- `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in.
+- `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
+                                    skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                    to change as long as the VM is running. Any stop/deallocate/restart operation might cause
+                                    the IP to change.
+- `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface.
+- `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
+                                    interface. When `create_public_ip` is set to `true` this will become a name of a newly
+                                    created Public IP interface. Otherwise this is a name of an existing interfaces that will
+                                    be sourced and attached to the interface.
+- `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
+                                    contains public IP that that will be associated with the interface. Used only when 
+                                    `create_public_ip` is `false`.
 
 Example:
 
@@ -288,12 +288,12 @@ Type:
 
 ```hcl
 list(object({
-    name                     = string
-    subnet_id                = string
-    private_ip_address       = optional(string)
-    create_public_ip         = optional(bool, false)
-    public_ip_name           = optional(string)
-    public_ip_resource_group = optional(string)
+    name                          = string
+    subnet_id                     = string
+    private_ip_address            = optional(string)
+    create_public_ip              = optional(bool, false)
+    public_ip_name                = optional(string)
+    public_ip_resource_group_name = optional(string)
   }))
 ```
 
