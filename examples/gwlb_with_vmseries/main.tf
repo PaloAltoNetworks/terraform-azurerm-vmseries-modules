@@ -58,18 +58,17 @@ module "gwlb" {
   resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
 
-  backends      = each.value.backends
-  health_probes = each.value.health_probes
-  lb_rules      = each.value.lb_rules
+  backends     = try(each.value.backends, null)
+  health_probe = try(each.value.health_probe, null)
+  lb_rule      = try(each.value.lb_rule, null)
 
   zones = var.enable_zones ? try(each.value.zones, null) : null
-  frontend_ips = { for k, frontend_ip in each.value.frontend_ips : k => {
-    name                          = try(frontend_ip.name, "${var.name_prefix}${each.value.name}")
-    private_ip_address_allocation = try(frontend_ip.private_ip_address_allocation, null)
-    private_ip_address_version    = try(frontend_ip.private_ip_address_version, null)
-    private_ip_address            = try(frontend_ip.private_ip_address, null)
-    subnet_id                     = module.vnet[frontend_ip.vnet_key].subnet_ids[frontend_ip.subnet_key]
-    }
+  frontend_ip = {
+    name                          = try(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
+    private_ip_address_allocation = try(each.value.frontend_ip.private_ip_address_allocation, null)
+    private_ip_address_version    = try(each.value.frontend_ip.private_ip_address_version, null)
+    private_ip_address            = try(each.value.frontend_ip.private_ip_address, null)
+    subnet_id                     = module.vnet[each.value.frontend_ip.vnet_key].subnet_ids[each.value.frontend_ip.subnet_key]
   }
 
   tags = var.tags

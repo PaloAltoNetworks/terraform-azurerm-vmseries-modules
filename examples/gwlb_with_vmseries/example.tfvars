@@ -103,43 +103,11 @@ vnets = {
 
 gateway_load_balancers = {
   gwlb = {
-    name  = "vmseries-gwlb"
-    zones = null
+    name = "vmseries-gwlb"
 
-    frontend_ips = {
-      default = {
-        vnet_key   = "security"
-        subnet_key = "data"
-      }
-    }
-
-    health_probes = {
-      default = {
-        port = 80
-      }
-    }
-
-    lb_rules = {
-      default-rule = {}
-    }
-
-    backends = {
-      ext-int = {
-        tunnel_interfaces = {
-          internal = {
-            identifier = 800
-            port       = 2000
-            protocol   = "VXLAN"
-            type       = "Internal"
-          }
-          external = {
-            identifier = 801
-            port       = 2001
-            protocol   = "VXLAN"
-            type       = "External"
-          }
-        }
-      }
+    frontend_ip = {
+      vnet_key   = "security"
+      subnet_key = "data"
     }
   }
 }

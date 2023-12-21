@@ -27,16 +27,13 @@ variable "zones" {
   This can be helpful in regions where Availability Zones are not available.
   EOF
   default     = ["1", "2", "3"]
+  nullable    = false
   type        = list(string)
-  validation {
-    condition     = var.zones != null ? length(var.zones) > 0 : true
-    error_message = "The `var.zones` can either be a non empty list of Availability Zones or explicit `null`."
-  }
 }
 
-variable "frontend_ips" {
+variable "frontend_ip" {
   description = <<-EOF
-  Map of frontend IP configurations of the Gateway Load Balancer.
+  Frontend IP configuration of the Gateway Load Balancer.
 
   Following settings are available:
   - `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
@@ -45,41 +42,36 @@ variable "frontend_ips" {
   - `private_ip_address_allocation` - (`string`, optional, defaults to `Dynamic`) the allocation method for the private IP address.
   - `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
   EOF
-  type = map(object({
+  nullable    = false
+  type = object({
     name                          = string
     subnet_id                     = string
     private_ip_address            = optional(string)
     private_ip_address_allocation = optional(string, "Dynamic")
     private_ip_address_version    = optional(string, "IPv4")
-  }))
-  validation { # name
-    condition = (length(flatten([for _, v in var.frontend_ips : v.name]))
-    == length(distinct(flatten([for _, v in var.frontend_ips : v.name]))))
-    error_message = "The `name` property has to be unique among all frontend definitions."
-  }
+  })
   validation { # private_ip_address
-    condition = alltrue([
-      for _, fip in var.frontend_ips :
-      can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", fip.private_ip_address))
-      if fip.private_ip_address != null
-    ])
+    condition = (var.frontend_ip.private_ip_address != null ?
+    can(regex("^(\\d{1,3}\\.){3}\\d{1,3}$", var.frontend_ip.private_ip_address)) : true)
     error_message = "The `private_ip_address` property should be in IPv4 format."
   }
+  validation { # private_ip_address
+    condition     = (var.frontend_ip.private_ip_address != null ? var.frontend_ip.private_ip_address_allocation == "Static" : true)
+    error_message = "If the `private_ip_address` property is defined, then `private_ip_address_allocation` has to be `Static`."
+  }
   validation { # private_ip_address_allocation
-    condition = (var.frontend_ips == null ?
-    true : alltrue([for k, v in var.frontend_ips : contains(["Dynamic", "Static"], v.private_ip_address_allocation)]))
+    condition     = contains(["Dynamic", "Static"], var.frontend_ip.private_ip_address_allocation)
     error_message = "The `private_ip_address_allocation` property can be one of \"Dynamic\", \"Static\"."
   }
   validation { # private_ip_address_version
-    condition = (var.frontend_ips == null ?
-    true : alltrue([for k, v in var.frontend_ips : contains(["IPv4", "IPv6"], v.private_ip_address_version)]))
+    condition     = contains(["IPv4", "IPv6"], var.frontend_ip.private_ip_address_version)
     error_message = "The `private_ip_address_version` property can be one of \"IPv4\", \"IPv6\"."
   }
 }
 
-variable "health_probes" {
+variable "health_probe" {
   description = <<-EOF
-  Map of health probes configuration for the Gateway Load Balancer backends.
+  Health probe configuration for the Gateway Load Balancer backends.
 
   Following settings are available:
   - `name`                - (`string`, optional) name of the health probe. Defaults to `name` variable value.
@@ -92,7 +84,11 @@ variable "health_probes" {
   - `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
   - `number_of_probes`    - (`number`, optional)
   EOF
-  type = map(object({
+  default = {
+    port = 80
+  }
+  nullable = false
+  type = object({
     name                = optional(string)
     port                = number
     protocol            = optional(string, "Tcp")
@@ -100,41 +96,31 @@ variable "health_probes" {
     probe_threshold     = optional(number)
     request_path        = optional(string)
     number_of_probes    = optional(number)
-  }))
+  })
   validation { # port
-    condition = (var.health_probes == null ?
-    true : alltrue([for k, v in var.health_probes : v.port != null if v.protocol == "Tcp"]))
+    condition     = var.health_probe.protocol == "Tcp" ? var.health_probe.port != null : true
     error_message = "The `port` property is required when protocol is set to \"Tcp\"."
   }
   validation { # port
-    condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
-      v.port >= 1 && v.port <= 65535
-      if v.port != null
-    ])
+    condition     = var.health_probe.port != null ? var.health_probe.port >= 1 && var.health_probe.port <= 65535 : true
     error_message = "The `port` property has to be a valid TCP port."
   }
   validation { # protocol
-    condition = (var.health_probes == null ?
-    true : alltrue([for k, v in var.health_probes : contains(["Tcp", "Http", "Https"], v.protocol)]))
+    condition     = contains(["Tcp", "Http", "Https"], var.health_probe.protocol)
     error_message = "The `protocol` property can be one of \"Tcp\", \"Http\", \"Https\"."
   }
   validation { # interval_in_seconds
-    condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
-      v.interval_in_seconds >= 5 && v.interval_in_seconds <= 3600
-      if v.interval_in_seconds != null
-    ])
+    condition = (var.health_probe.interval_in_seconds != null ?
+    var.health_probe.interval_in_seconds >= 5 && var.health_probe.interval_in_seconds <= 3600 : true)
     error_message = "The `interval_in_seconds` property has to be between 5 and 3600 seconds (1 hour)."
   }
   validation { # probe_threshold
-    condition = var.health_probes == null ? true : alltrue([for k, v in var.health_probes :
-      v.probe_threshold >= 1 && v.probe_threshold <= 100
-      if v.probe_threshold != null
-    ])
+    condition = (var.health_probe.probe_threshold != null ?
+    var.health_probe.probe_threshold >= 1 && var.health_probe.probe_threshold <= 100 : true)
     error_message = "The `probe_threshold` property has to be between 1 and 100."
   }
   validation { # request_path
-    condition = (var.health_probes == null ?
-    true : alltrue([for k, v in var.health_probes : v.request_path != null if v.protocol != "Tcp"]))
+    condition     = var.health_probe.protocol != "Tcp" ? var.health_probe.request_path != null : true
     error_message = "The `request_path` property is required when protocol is set to \"Http\" or \"Https\"."
   }
 }
@@ -181,6 +167,7 @@ variable "backends" {
       }
     }
   }
+  nullable = false
   type = map(object({
     name = optional(string)
     tunnel_interfaces = map(object({
@@ -204,29 +191,23 @@ variable "backends" {
   }
 }
 
-variable "lb_rules" {
+variable "lb_rule" {
   description = <<-EOF
-  Map of load balancing rules configuration.
+  Load balancing rule configuration.
 
   Available options:
   - `name`              - (`string`, optional) name for the rule.
   - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
                           to be used by the Gateway Load Balancer.
-  - `backend_key`       - (`string`, optional) key of the backend
-  - `health_probe_key`  - (`string`, optional, defaults to `default`) key of the health probe assigned to LB rule.
   EOF
-  default = {
-    default-rule = {}
-  }
-  type = map(object({
+  default     = {}
+  nullable    = false
+  type = object({
     name              = optional(string)
     load_distribution = optional(string, "Default")
-    backend_key       = optional(string)
-    health_probe_key  = optional(string, "default")
-  }))
+  })
   validation { # load_distribution
-    condition = (var.lb_rules == null ?
-    true : alltrue([for k, v in var.lb_rules : contains(["Default", "SourceIP", "SourceIPProtocol"], v.load_distribution)]))
+    condition     = contains(["Default", "SourceIP", "SourceIPProtocol"], var.lb_rule.load_distribution)
     error_message = "The `load_distribution` property can be one of \"Default\", \"SourceIP\", \"SourceIPProtocol\"."
   }
 }

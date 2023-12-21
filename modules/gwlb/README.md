@@ -14,8 +14,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Azure Load Balancer.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`frontend_ips`](#frontend_ips) | `map` | Map of frontend IP configurations of the Gateway Load Balancer.
-[`health_probes`](#health_probes) | `map` | Map of health probes configuration for the Gateway Load Balancer backends.
+[`frontend_ip`](#frontend_ip) | `object` | Frontend IP configuration of the Gateway Load Balancer.
 
 
 ## Module's Optional Inputs
@@ -24,8 +23,9 @@ Name | Type | Description
 --- | --- | ---
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
 [`zones`](#zones) | `list` | Controls zones for Gateway Load Balancer's Fronted IP configurations.
+[`health_probe`](#health_probe) | `object` | Health probe configuration for the Gateway Load Balancer backends.
 [`backends`](#backends) | `map` | Map with backend configurations for the Gateway Load Balancer.
-[`lb_rules`](#lb_rules) | `map` | Map of load balancing rules configuration.
+[`lb_rule`](#lb_rule) | `object` | Load balancing rule configuration.
 
 
 
@@ -90,9 +90,9 @@ Type: string
 
 
 
-#### frontend_ips
+#### frontend_ip
 
-Map of frontend IP configurations of the Gateway Load Balancer.
+Frontend IP configuration of the Gateway Load Balancer.
 
 Following settings are available:
 - `name`                          - (`string`, required) name of the frontend IP configuration. `var.name` by default.
@@ -105,50 +105,18 @@ Following settings are available:
 Type: 
 
 ```hcl
-map(object({
+object({
     name                          = string
     subnet_id                     = string
     private_ip_address            = optional(string)
     private_ip_address_allocation = optional(string, "Dynamic")
     private_ip_address_version    = optional(string, "IPv4")
-  }))
+  })
 ```
 
 
 <sup>[back to list](#modules-required-inputs)</sup>
 
-#### health_probes
-
-Map of health probes configuration for the Gateway Load Balancer backends.
-
-Following settings are available:
-- `name`                - (`string`, optional) name of the health probe. Defaults to `name` variable value.
-- `port`                - (`number`, required) port to run the probe against
-- `protocol`            - (`string`, optional, defaults to `Tcp`) protocol used by the health probe,
-                          can be one of "Tcp", "Http" or "Https".
-- `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoin.
-- `request_path`        - (`string`, optional) used only for non `Tcp` probes,
-                          the URI used to check the endpoint status when `protocol` is set to `Http(s)`
-- `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
-- `number_of_probes`    - (`number`, optional)
-
-
-Type: 
-
-```hcl
-map(object({
-    name                = optional(string)
-    port                = number
-    protocol            = optional(string, "Tcp")
-    interval_in_seconds = optional(number)
-    probe_threshold     = optional(number)
-    request_path        = optional(string)
-    number_of_probes    = optional(number)
-  }))
-```
-
-
-<sup>[back to list](#modules-required-inputs)</sup>
 
 
 
@@ -185,6 +153,40 @@ Default value: `[1 2 3]`
 <sup>[back to list](#modules-optional-inputs)</sup>
 
 
+#### health_probe
+
+Health probe configuration for the Gateway Load Balancer backends.
+
+Following settings are available:
+- `name`                - (`string`, optional) name of the health probe. Defaults to `name` variable value.
+- `port`                - (`number`, required) port to run the probe against
+- `protocol`            - (`string`, optional, defaults to `Tcp`) protocol used by the health probe,
+                          can be one of "Tcp", "Http" or "Https".
+- `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoin.
+- `request_path`        - (`string`, optional) used only for non `Tcp` probes,
+                          the URI used to check the endpoint status when `protocol` is set to `Http(s)`
+- `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
+- `number_of_probes`    - (`number`, optional)
+
+
+Type: 
+
+```hcl
+object({
+    name                = optional(string)
+    port                = number
+    protocol            = optional(string, "Tcp")
+    interval_in_seconds = optional(number)
+    probe_threshold     = optional(number)
+    request_path        = optional(string)
+    number_of_probes    = optional(number)
+  })
+```
+
+
+Default value: `map[port:80]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
 
 #### backends
 
@@ -230,31 +232,27 @@ Default value: `map[ext-int:map[tunnel_interfaces:map[external:map[identifier:80
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### lb_rules
+#### lb_rule
 
-Map of load balancing rules configuration.
+Load balancing rule configuration.
 
 Available options:
 - `name`              - (`string`, optional) name for the rule.
 - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
                         to be used by the Gateway Load Balancer.
-- `backend_key`       - (`string`, optional) key of the backend
-- `health_probe_key`  - (`string`, optional, defaults to `default`) key of the health probe assigned to LB rule.
 
 
 Type: 
 
 ```hcl
-map(object({
+object({
     name              = optional(string)
     load_distribution = optional(string, "Default")
-    backend_key       = optional(string)
-    health_probe_key  = optional(string, "default")
-  }))
+  })
 ```
 
 
-Default value: `map[default-rule:map[]]`
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
