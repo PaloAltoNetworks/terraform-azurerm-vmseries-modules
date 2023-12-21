@@ -90,16 +90,16 @@ content: |-
   {{ range .Module.Inputs }}
   {{ if .Required -}}
   #### {{ .Name }}
-  
+
   {{ .Description }}
-  
+
   Type: {{ if lt (len (split "\n" .Type.Raw)) 2 }}{{ .Type }}{{ else }}
 
   ```hcl
   {{ .Type }}
   ```
   {{ end }}
-  
+
   <sup>[back to list](#modules-required-inputs)</sup>
   {{ end }}
   {{- end }}

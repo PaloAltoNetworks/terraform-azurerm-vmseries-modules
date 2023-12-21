@@ -73,23 +73,16 @@ module "natgw" {
 
   for_each = var.natgws
 
-  create_natgw        = try(each.value.create_natgw, true)
-  name                = "${var.name_prefix}${each.value.name}"
-  resource_group_name = try(each.value.resource_group_name, local.resource_group.name)
+  create_natgw        = each.value.create_natgw
+  name                = each.value.create_natgw ? "${var.name_prefix}${each.value.name}" : each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
   location            = var.location
   zone                = try(each.value.zone, null)
-  idle_timeout        = try(each.value.idle_timeout, null)
+  idle_timeout        = each.value.idle_timeout
   subnet_ids          = { for v in each.value.subnet_keys : v => module.vnet[each.value.vnet_key].subnet_ids[v] }
 
-  create_pip                       = try(each.value.create_pip, true)
-  existing_pip_name                = try(each.value.existing_pip_name, null)
-  existing_pip_resource_group_name = try(each.value.existing_pip_resource_group_name, null)
-
-  create_pip_prefix                       = try(each.value.create_pip_prefix, false)
-  pip_prefix_length                       = try(each.value.create_pip_prefix, false) ? try(each.value.pip_prefix_length, null) : null
-  existing_pip_prefix_name                = try(each.value.existing_pip_prefix_name, null)
-  existing_pip_prefix_resource_group_name = try(each.value.existing_pip_prefix_resource_group_name, null)
-
+  public_ip        = try(merge(each.value.public_ip, { name = "${each.value.public_ip.create ? var.name_prefix : ""}${each.value.public_ip.name}" }), null)
+  public_ip_prefix = try(merge(each.value.public_ip_prefix, { name = "${each.value.public_ip_prefix.create ? var.name_prefix : ""}${each.value.public_ip_prefix.name}" }), null)
 
   tags       = var.tags
   depends_on = [module.vnet]
@@ -169,26 +162,29 @@ module "appgw" {
 
   for_each = var.appgws
 
-  name                = "${var.name_prefix}${each.value.name}"
+  name                = each.value.name
+  public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  managed_identities = try(each.value.managed_identities, null)
-  waf_enabled        = try(each.value.waf_enabled, false)
-  capacity           = try(each.value.capacity, null)
-  capacity_min       = try(each.value.capacity_min, null)
-  capacity_max       = try(each.value.capacity_max, null)
-  enable_http2       = try(each.value.enable_http2, null)
-  zones              = try(each.value.zones, null)
+  managed_identities = each.value.managed_identities
+  capacity           = each.value.capacity
+  waf                = each.value.waf
+  enable_http2       = each.value.enable_http2
+  zones              = each.value.zones
 
-  rules = each.value.rules
+  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
+  listeners                      = each.value.listeners
+  backends                       = each.value.backends
+  probes                         = each.value.probes
+  rewrites                       = each.value.rewrites
+  rules                          = each.value.rules
+  redirects                      = each.value.redirects
+  url_path_maps                  = each.value.url_path_maps
 
-  ssl_policy_type                 = try(each.value.ssl_policy_type, null)
-  ssl_policy_name                 = try(each.value.ssl_policy_name, null)
-  ssl_policy_min_protocol_version = try(each.value.ssl_policy_min_protocol_version, null)
-  ssl_policy_cipher_suites        = try(each.value.ssl_policy_cipher_suites, [])
-  ssl_profiles                    = try(each.value.ssl_profiles, {})
+  ssl_global   = each.value.ssl_global
+  ssl_profiles = each.value.ssl_profiles
 
   tags       = var.tags
   depends_on = [module.vnet]

@@ -54,4 +54,4 @@ terraform.tfvars.json
 *.tfplan
 # **/
 *bootstrap.xml
-
+examples/appgw/files/*
