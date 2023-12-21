@@ -56,7 +56,7 @@ variable "frontend_ip" {
     error_message = "The `private_ip_address` property should be in IPv4 format."
   }
   validation { # private_ip_address
-    condition     = (var.frontend_ip.private_ip_address != null ? var.frontend_ip.private_ip_address_allocation == "Static" : true)
+    condition     = var.frontend_ip.private_ip_address != null ? var.frontend_ip.private_ip_address_allocation == "Static" : true
     error_message = "If the `private_ip_address` property is defined, then `private_ip_address_allocation` has to be `Static`."
   }
   validation { # private_ip_address_allocation
