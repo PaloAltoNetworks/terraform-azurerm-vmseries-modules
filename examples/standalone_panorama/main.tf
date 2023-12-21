@@ -61,17 +61,16 @@ module "panorama" {
 
   for_each = var.panoramas
 
-  name                        = "${var.name_prefix}${each.value.name}"
-  resource_group_name         = local.resource_group.name
-  location                    = var.location
-  avzone                      = try(each.value.avzone, null)
-  avzones                     = try(each.value.avzones, ["1", "2", "3"])
-  enable_zones                = var.enable_zones
-  custom_image_id             = try(each.value.custom_image_id, null)
-  panorama_sku                = var.panorama_sku
-  panorama_size               = try(each.value.size, var.panorama_size)
-  panorama_version            = try(each.value.version, var.panorama_version)
-  boot_diagnostic_storage_uri = ""
+  name                = "${var.name_prefix}${each.value.name}"
+  resource_group_name = local.resource_group.name
+  location            = var.location
+  avzone              = try(each.value.avzone, null)
+  avzones             = try(each.value.avzones, ["1", "2", "3"])
+  enable_zones        = var.enable_zones
+  custom_image_id     = try(each.value.custom_image_id, null)
+  panorama_sku        = var.panorama_sku
+  panorama_size       = try(each.value.size, var.panorama_size)
+  panorama_version    = try(each.value.version, var.panorama_version)
 
   interfaces = [for v in each.value.interfaces : {
     name                     = "${var.name_prefix}${each.value.name}-${v.name}"

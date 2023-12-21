@@ -147,26 +147,29 @@ module "appgw" {
 
   for_each = var.appgws
 
-  name                = "${var.name_prefix}${each.value.name}"
+  name                = each.value.name
+  public_ip           = each.value.public_ip
   resource_group_name = local.resource_group.name
   location            = var.location
   subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  managed_identities = try(each.value.managed_identities, null)
-  waf_enabled        = try(each.value.waf_enabled, false)
-  capacity           = try(each.value.capacity, null)
-  capacity_min       = try(each.value.capacity_min, null)
-  capacity_max       = try(each.value.capacity_max, null)
-  enable_http2       = try(each.value.enable_http2, null)
-  zones              = try(each.value.zones, null)
+  managed_identities = each.value.managed_identities
+  capacity           = each.value.capacity
+  waf                = each.value.waf
+  enable_http2       = each.value.enable_http2
+  zones              = each.value.zones
 
-  rules = each.value.rules
+  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
+  listeners                      = each.value.listeners
+  backends                       = each.value.backends
+  probes                         = each.value.probes
+  rewrites                       = each.value.rewrites
+  rules                          = each.value.rules
+  redirects                      = each.value.redirects
+  url_path_maps                  = each.value.url_path_maps
 
-  ssl_policy_type                 = try(each.value.ssl_policy_type, null)
-  ssl_policy_name                 = try(each.value.ssl_policy_name, null)
-  ssl_policy_min_protocol_version = try(each.value.ssl_policy_min_protocol_version, null)
-  ssl_policy_cipher_suites        = try(each.value.ssl_policy_cipher_suites, [])
-  ssl_profiles                    = try(each.value.ssl_profiles, {})
+  ssl_global   = each.value.ssl_global
+  ssl_profiles = each.value.ssl_profiles
 
   tags       = var.tags
   depends_on = [module.vnet]

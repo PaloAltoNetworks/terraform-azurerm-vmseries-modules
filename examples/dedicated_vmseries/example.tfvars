@@ -106,6 +106,10 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
+      "appgw" = {
+        name             = "appgw-snet"
+        address_prefixes = ["10.0.0.48/28"]
+      }
     }
   }
 }
@@ -148,6 +152,53 @@ load_balancers = {
             protocol = "All"
           }
         }
+      }
+    }
+  }
+}
+
+
+
+# --- APPLICATION GATEWAYs --- #
+appgws = {
+  "public" = {
+    name = "appgw"
+    public_ip = {
+      name = "pip"
+    }
+    vnet_key   = "transit"
+    subnet_key = "appgw"
+    zones      = ["1", "2", "3"]
+    capacity = {
+      static = 2
+    }
+    listeners = {
+      minimum = {
+        name = "minimum-listener"
+        port = 80
+      }
+    }
+    rewrites = {
+      minimum = {
+        name = "minimum-set"
+        rules = {
+          "xff-strip-port" = {
+            name     = "minimum-xff-strip-port"
+            sequence = 100
+            request_headers = {
+              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
+            }
+          }
+        }
+      }
+    }
+    rules = {
+      minimum = {
+        name     = "minimum-rule"
+        priority = 1
+        backend  = "minimum"
+        listener = "minimum"
+        rewrite  = "minimum"
       }
     }
   }
