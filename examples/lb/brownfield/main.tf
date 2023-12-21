@@ -16,7 +16,7 @@ provider "azurerm" {
 }
 
 
-resource "azurerm_resource_group" "IPs" {
+resource "azurerm_resource_group" "ips" {
   name     = "fosix-lb-ips"
   location = "North Europe"
   # tags     = var.tags
@@ -29,10 +29,10 @@ resource "azurerm_public_ip" "this" {
   }
 
   name                = "fosix-${each.key}"
-  resource_group_name = azurerm_resource_group.IPs.name
+  resource_group_name = azurerm_resource_group.ips.name
   sku                 = "Standard"
   allocation_method   = "Static"
-  location            = azurerm_resource_group.IPs.location
+  location            = azurerm_resource_group.ips.location
   zones               = each.value
 
   # tags = var.tags
@@ -40,7 +40,7 @@ resource "azurerm_public_ip" "this" {
 
 resource "azurerm_network_security_group" "this" {
   name                = "fosix-existing-nsg"
-  resource_group_name = azurerm_resource_group.IPs.name
-  location            = azurerm_resource_group.IPs.location
+  resource_group_name = azurerm_resource_group.ips.name
+  location            = azurerm_resource_group.ips.location
 
 }
