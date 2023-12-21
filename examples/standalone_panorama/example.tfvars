@@ -26,7 +26,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["0.0.0.0/0"] # TODO: whitelist public IP addresses that will be used to manage the appliances
             source_port_range          = "*"
             destination_address_prefix = "10.1.0.0/24"
             destination_port_ranges    = ["22", "443"]
@@ -71,5 +71,11 @@ panoramas = {
         create_public_ip   = true
       },
     ]
+    /* logging_disks = {
+      "datadisk1" = {
+        name = "data_disk1"
+        lun  = "0"
+      }
+    } */
   }
 }
