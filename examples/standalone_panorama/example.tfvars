@@ -44,19 +44,31 @@ vnets = {
   }
 }
 
-
-panorama_version = "10.2.3"
+# --- PANORAMA PART --- #
 
 panoramas = {
   "pn-1" = {
-    name     = "panorama01"
+    name = "panorama01"
+    authentication = {
+      disable_password_authentication = false
+      #ssh_keys                       = ["~/.ssh/id_rsa.pub"]
+    }
+    image = {
+      version = "10.2.3"
+    }
+    virtual_machine = {
+      vnet_key  = "vnet"
+      size      = "Standard_D5_v2"
+      zone      = null
+      disk_name = "fancy-disk-name"
+    }
     vnet_key = "vnet"
     interfaces = [
       {
         name               = "management"
         subnet_key         = "panorama"
         private_ip_address = "10.1.0.10"
-        create_pip         = true
+        create_public_ip   = true
       },
     ]
   }

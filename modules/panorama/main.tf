@@ -120,7 +120,7 @@ resource "azurerm_managed_disk" "this" {
   storage_account_type = each.value.disk_type
   create_option        = "Empty"
   disk_size_gb         = each.value.size
-  zone                 = var.virtual_machine.zone != null && var.virtual_machine.zone != "" ? [var.virtual_machine.zone] : null
+  zone                 = var.virtual_machine.zone != null && var.virtual_machine.zone != "" ? var.virtual_machine.zone : null
   tags                 = var.tags
 }
 

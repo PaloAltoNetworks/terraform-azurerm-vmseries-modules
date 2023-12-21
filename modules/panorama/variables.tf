@@ -209,9 +209,10 @@ variable "interfaces" {
     public_ip_resource_group = optional(string)
   }))
   validation {
-    condition = (var.interfaces.create_public_ip == true && length(var.interfaces.public_ip_name) > 0
-      ) || (var.interfaces.create_public_ip == false && length(var.interfaces.public_ip_name) > 0
-    ) || (var.interfaces.create_public_ip == false && var.interfaces.public_ip_name == null)
+    condition = alltrue([
+      for v in var.interfaces : v.public_ip_name != null
+      if v.create_public_ip
+    ])
     error_message = "The `public_ip_name` property is required when `create_public_ip` is `true`."
   }
 }
@@ -250,6 +251,7 @@ variable "logging_disks" {
   
   EOF
   default     = {}
+  nullable    = false
   type = map(object({
     name      = string
     size      = optional(string, "2048")
@@ -257,11 +259,15 @@ variable "logging_disks" {
     disk_type = optional(string, "StandardSSD_LRS")
   }))
   validation {
-    condition     = contains(["2048", "4096", "6144", "8192", "10240", "12288", "14336", "16384", "18432", "20480", "22528", "24576"], var.logging_disks.size)
+    condition     = alltrue([for _, v in var.logging_disks : contains(["2048", "4096", "6144", "8192", "10240", "12288", "14336", "16384", "18432", "20480", "22528", "24576"], v.size)])
     error_message = "The `size` property value must be a multiple of `2048` but not higher than `24576` (24 TB)."
   }
   validation {
-    condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], var.logging_disks.disk_type)
+    condition     = alltrue([for _, v in var.logging_disks : (parseint(v.lun, 10) >= 0 && parseint(v.lun, 10) <= 63) if v.lun != null])
+    error_message = "The `lun` property value must be a number between `0` and `63`."
+  }
+  validation {
+    condition     = alltrue([for _, v in var.logging_disks : contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], v.disk_type)])
     error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`."
   }
 }
