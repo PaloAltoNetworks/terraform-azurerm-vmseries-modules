@@ -1,4 +1,4 @@
-package bootstrap
+package gwlb
 
 import (
 	"testing"
