@@ -381,8 +381,6 @@ List of other, optional properties:
 - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
 - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
                                     are used by this Virtual Machine Scale Set
-- `proximity_placement_group_id`  - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
-                                    in which the Virtual Machine Scale Set should be assigned to
 - `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
                                     limited to a Single Placement Group, which means the number of instances will be capped
                                     at 100 Virtual Machines
@@ -400,20 +398,19 @@ Type:
 
 ```hcl
 object({
-    size                         = optional(string, "Standard_D3_v2")
-    bootstrap_options            = optional(string)
-    zones                        = optional(list(string))
-    disk_type                    = optional(string, "StandardSSD_LRS")
-    accelerated_networking       = optional(bool, true)
-    encryption_at_host_enabled   = optional(bool)
-    overprovision                = optional(bool, true)
-    platform_fault_domain_count  = optional(number)
-    proximity_placement_group_id = optional(string)
-    single_placement_group       = optional(bool)
-    disk_encryption_set_id       = optional(string)
-    diagnostics_storage_uri      = optional(string)
-    identity_type                = optional(string, "SystemAssigned")
-    identity_ids                 = optional(list(string), [])
+    size                        = optional(string, "Standard_D3_v2")
+    bootstrap_options           = optional(string)
+    zones                       = optional(list(string))
+    disk_type                   = optional(string, "StandardSSD_LRS")
+    accelerated_networking      = optional(bool, true)
+    encryption_at_host_enabled  = optional(bool)
+    overprovision               = optional(bool, true)
+    platform_fault_domain_count = optional(number)
+    single_placement_group      = optional(bool)
+    disk_encryption_set_id      = optional(string)
+    diagnostics_storage_uri     = optional(string)
+    identity_type               = optional(string, "SystemAssigned")
+    identity_ids                = optional(list(string), [])
   })
 ```
 

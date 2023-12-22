@@ -135,8 +135,6 @@ variable "virtual_machine_scale_set" {
   - `overprovision`                 - (`bool`, optional, defaults to `true`) See the [provider documentation](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine_scale_set)
   - `platform_fault_domain_count`   - (`number`, optional, defaults to Azure defaults) specifies the number of fault domains that
                                       are used by this Virtual Machine Scale Set
-  - `proximity_placement_group_id`  - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
-                                      in which the Virtual Machine Scale Set should be assigned to
   - `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
                                       limited to a Single Placement Group, which means the number of instances will be capped
                                       at 100 Virtual Machines
@@ -152,20 +150,19 @@ variable "virtual_machine_scale_set" {
   default     = {}
   nullable    = false
   type = object({
-    size                         = optional(string, "Standard_D3_v2")
-    bootstrap_options            = optional(string)
-    zones                        = optional(list(string))
-    disk_type                    = optional(string, "StandardSSD_LRS")
-    accelerated_networking       = optional(bool, true)
-    encryption_at_host_enabled   = optional(bool)
-    overprovision                = optional(bool, true)
-    platform_fault_domain_count  = optional(number)
-    proximity_placement_group_id = optional(string)
-    single_placement_group       = optional(bool)
-    disk_encryption_set_id       = optional(string)
-    diagnostics_storage_uri      = optional(string)
-    identity_type                = optional(string, "SystemAssigned")
-    identity_ids                 = optional(list(string), [])
+    size                        = optional(string, "Standard_D3_v2")
+    bootstrap_options           = optional(string)
+    zones                       = optional(list(string))
+    disk_type                   = optional(string, "StandardSSD_LRS")
+    accelerated_networking      = optional(bool, true)
+    encryption_at_host_enabled  = optional(bool)
+    overprovision               = optional(bool, true)
+    platform_fault_domain_count = optional(number)
+    single_placement_group      = optional(bool)
+    disk_encryption_set_id      = optional(string)
+    diagnostics_storage_uri     = optional(string)
+    identity_type               = optional(string, "SystemAssigned")
+    identity_ids                = optional(list(string), [])
   })
   validation {
     condition     = contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS"], var.virtual_machine_scale_set.disk_type)
@@ -185,10 +182,6 @@ variable "virtual_machine_scale_set" {
   validation {
     condition     = var.virtual_machine_scale_set.identity_type == "SystemAssigned" ? length(var.virtual_machine_scale_set.identity_ids) == 0 : length(var.virtual_machine_scale_set.identity_ids) >= 0
     error_message = "The `identity_ids` property is required when `identity_type` is not \"SystemAssigned\"."
-  }
-  validation {
-    condition     = !(var.virtual_machine_scale_set.proximity_placement_group_id != null && length(coalesce(var.virtual_machine_scale_set.zones, [])) > 1)
-    error_message = "Proximity placement group can be used only when Scale Set is not zonal or uses just one Availability Zone."
   }
 }
 

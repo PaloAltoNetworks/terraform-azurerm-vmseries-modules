@@ -400,17 +400,16 @@ variable "scale_sets" {
       custom_id               = optional(string)
     })
     virtual_machine_scale_set = optional(object({
-      vnet_key                     = string
-      bootstrap_options            = optional(string)
-      size                         = optional(string)
-      zones                        = optional(list(string))
-      disk_type                    = optional(string)
-      accelerated_networking       = optional(bool)
-      encryption_at_host_enabled   = optional(bool)
-      overprovision                = optional(bool)
-      platform_fault_domain_count  = optional(number)
-      proximity_placement_group_id = optional(string)
-      disk_encryption_set_id       = optional(string)
+      vnet_key                    = string
+      bootstrap_options           = optional(string)
+      size                        = optional(string)
+      zones                       = optional(list(string))
+      disk_type                   = optional(string)
+      accelerated_networking      = optional(bool)
+      encryption_at_host_enabled  = optional(bool)
+      overprovision               = optional(bool)
+      platform_fault_domain_count = optional(number)
+      disk_encryption_set_id      = optional(string)
     }))
     autoscaling_configuration = optional(object({
       default_count           = optional(number)
