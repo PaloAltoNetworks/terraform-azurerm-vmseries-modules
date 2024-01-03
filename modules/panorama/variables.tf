@@ -95,32 +95,33 @@ variable "virtual_machine" {
   This map contains basic, as well as some optional Firewall parameters. Both types contain sane defaults.
   Nevertheless they should be at least reviewed to meet deployment requirements.
 
-  List of either required or important properties: 
+  List of either required or important properties:
 
   - `size`      - (`string`, optional, defaults to `Standard_D5_v2`) Azure VM size (type). Consult the *Panorama Deployment
                   Guide* as only a few selected sizes are supported.
   - `zone`      - (`number`, required) Availability Zone to place the VM in, `null` value means a non-zonal deployment.
-  - `disk_type` - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created, possible 
-                  values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected 
+  - `disk_type` - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created, possible
+                  values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                   `vm_size` values).
   - `disk_name` - (`string`, optional, defaults to VM name + `-disk` suffix) name od the OS disk.
 
   List of other, optional properties: 
 
-  - `avset_key`                    - (`string`, optional, default to `null) identifier of the Availability Set to use
+  - `avset_key`                    - (`string`, optional, default to `null`) identifier of the Availability Set to use.
   - `disk_encryption_set_id`       - (`string`, optional, defaults to `null`) the ID of the Disk Encryption Set which should be
-                                     used to encrypt this VM's disk
-  - `encryption_at_host_enabled`   - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
-                                     by enabling Encryption at Host
+                                     used to encrypt this VM's disk.
+  - `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
+  - `encryption_at_host_enabled`   - (`bool`, optional, defaults to `false`) should all the disks be encrypted by enabling
+                                     Encryption at Host.
   - `proximity_placement_group_id` - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
-                                     in which the Firewall should be assigned to
+                                     in which the Firewall should be assigned to.
   - `diagnostics_storage_uri`      - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
-                                     diagnostic files
+                                     diagnostic files.
   - `identity_type`                - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                      should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                      "SystemAssigned, UserAssigned".
-  - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
-                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned"
+  - `identity_ids`                 - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be
+                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned".
 
   EOF
   type = object({
@@ -129,6 +130,7 @@ variable "virtual_machine" {
     disk_type                  = optional(string, "StandardSSD_LRS")
     disk_name                  = string
     avset_id                   = optional(string)
+    allow_extension_operations = optional(bool, false)
     encryption_at_host_enabled = optional(bool, false)
     disk_encryption_set_id     = optional(string)
     diagnostics_storage_uri    = optional(string)
