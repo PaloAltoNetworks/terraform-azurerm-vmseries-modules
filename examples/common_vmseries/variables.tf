@@ -454,6 +454,7 @@ variable "vmseries" {
 
 ### Application Gateway
 variable "appgws" {
+  # REFACTOR: APPGW : fix all examples
   description = <<-EOF
   A map defining all Application Gateways in the current deployment.
 

@@ -16,22 +16,24 @@ locals {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  count               = var.public_ip.create ? 0 : 1
-  name                = var.public_ip.name
-  resource_group_name = coalesce(var.public_ip.resource_group, var.resource_group_name)
+  count = var.application_gateway.public_ip.create ? 0 : 1
+
+  name                = var.application_gateway.public_ip.name
+  resource_group_name = coalesce(var.application_gateway.public_ip.resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  count               = var.public_ip.create ? 1 : 0
-  name                = var.public_ip.name
+  count = var.application_gateway.public_ip.create ? 1 : 0
+
+  name                = var.application_gateway.public_ip.name
   resource_group_name = var.resource_group_name
   location            = var.location
 
   sku               = "Standard"
   allocation_method = "Static"
-  domain_name_label = var.domain_name_label
-  zones             = var.zones
+  domain_name_label = var.application_gateway.domain_name_label
+  zones             = var.application_gateway.zones
   tags              = var.tags
 }
 
@@ -40,66 +42,67 @@ resource "azurerm_application_gateway" "this" {
   name                = var.name
   resource_group_name = var.resource_group_name
   location            = var.location
-  zones               = var.zones
-  enable_http2        = var.enable_http2
+  zones               = var.application_gateway.zones
+  enable_http2        = var.application_gateway.enable_http2
   tags                = var.tags
 
   sku {
-    name     = var.waf != null ? "WAF_v2" : "Standard_v2"
-    tier     = var.waf != null ? "WAF_v2" : "Standard_v2"
-    capacity = var.capacity.static != null ? var.capacity.static : null
-  }
-
-  dynamic "autoscale_configuration" {
-    for_each = var.capacity.autoscale != null ? [1] : []
-
-    content {
-      min_capacity = var.capacity.autoscale.min
-      max_capacity = var.capacity.autoscale.max
-    }
+    name     = var.application_gateway.waf != null ? "WAF_v2" : "Standard_v2"
+    tier     = var.application_gateway.waf != null ? "WAF_v2" : "Standard_v2"
+    capacity = var.application_gateway.capacity.autoscale == null ? var.application_gateway.capacity.static : null
   }
 
   dynamic "waf_configuration" {
-    for_each = var.waf != null ? [1] : []
+    for_each = var.application_gateway.waf != null ? [1] : []
 
     content {
-      enabled          = var.waf != null
-      firewall_mode    = var.waf.prevention_mode ? "Prevention" : "Detection"
-      rule_set_type    = var.waf.rule_set_type
-      rule_set_version = var.waf.rule_set_version
+      enabled          = true
+      firewall_mode    = var.application_gateway.waf.prevention_mode ? "Prevention" : "Detection"
+      rule_set_type    = var.application_gateway.waf.rule_set_type
+      rule_set_version = var.application_gateway.waf.rule_set_version
+    }
+  }
+
+  dynamic "autoscale_configuration" {
+    for_each = var.application_gateway.capacity.autoscale != null ? [1] : []
+
+    content {
+      min_capacity = var.application_gateway.capacity.autoscale.min
+      max_capacity = var.application_gateway.capacity.autoscale.max
     }
   }
 
   dynamic "identity" {
-    for_each = var.managed_identities != null ? [1] : []
+    for_each = var.application_gateway.managed_identities != null ? [1] : []
 
     content {
       type         = "UserAssigned"
-      identity_ids = var.managed_identities
+      identity_ids = var.application_gateway.managed_identities
     }
   }
 
   gateway_ip_configuration {
     name      = "ip_config"
-    subnet_id = var.subnet_id
+    subnet_id = var.application_gateway.subnet_id
   }
 
   frontend_ip_configuration {
-    name                 = var.frontend_ip_configuration_name
-    public_ip_address_id = var.public_ip.create ? azurerm_public_ip.this[0].id : data.azurerm_public_ip.this[0].id
+    name                 = var.application_gateway.frontend_ip_configuration_name
+    public_ip_address_id = try(azurerm_public_ip.this[0].id, data.azurerm_public_ip.this[0].id)
   }
 
   # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
+  # REFACTOR: APPGW : check if we can add NICs as backends, not only IPs
   backend_address_pool {
-    name         = var.backend_pool.name
-    ip_addresses = var.backend_pool.vmseries_ips
+    name         = var.application_gateway.backend_pool.name
+    ip_addresses = var.application_gateway.backend_pool.vmseries_ips
   }
 
   ssl_policy {
-    policy_name          = var.ssl_global.ssl_policy_type == "Predefined" ? var.ssl_global.ssl_policy_name : null
-    policy_type          = var.ssl_global.ssl_policy_type
-    min_protocol_version = var.ssl_global.ssl_policy_min_protocol_version
-    cipher_suites        = var.ssl_global.ssl_policy_cipher_suites
+    policy_name          = var.application_gateway.global_ssl_policy.type == "Predefined" ? var.application_gateway.global_ssl_policy.name : null
+    policy_type          = var.application_gateway.global_ssl_policy.type
+    min_protocol_version = var.application_gateway.global_ssl_policy.min_protocol_version
+    cipher_suites        = var.application_gateway.global_ssl_policy.cipher_suites
   }
 
   # The following block is supported only in v2 Application Gateways.
@@ -109,8 +112,8 @@ resource "azurerm_application_gateway" "this" {
     content {
       name = ssl_profile.value.name
       ssl_policy {
-        policy_name          = var.ssl_global.ssl_policy_type == "Predefined" ? ssl_profile.value.ssl_policy_name : null
-        policy_type          = var.ssl_global.ssl_policy_type
+        policy_name          = var.application_gateway.global_ssl_policy.type == "Predefined" ? ssl_profile.value.ssl_policy_name : null
+        policy_type          = var.application_gateway.global_ssl_policy.type
         min_protocol_version = ssl_profile.value.ssl_policy_min_protocol_version
         cipher_suites        = ssl_profile.value.ssl_policy_cipher_suites
       }
@@ -171,9 +174,9 @@ resource "azurerm_application_gateway" "this" {
       host_name                           = backend_http_settings.value.hostname
       path                                = backend_http_settings.value.path
       request_timeout                     = backend_http_settings.value.timeout
-      probe_name = (backend_http_settings.value.probe != null && var.probes != null ?
-      var.probes[backend_http_settings.value.probe].name : null)
-      cookie_based_affinity          = backend_http_settings.value.cookie_based_affinity
+      probe_name = (backend_http_settings.value.probe_key != null && var.probes != null ?
+      var.probes[backend_http_settings.value.probe_key].name : null)
+      cookie_based_affinity          = backend_http_settings.value.use_cookie_based_affinity ? "Enabled" : "Disabled"
       affinity_cookie_name           = backend_http_settings.value.affinity_cookie_name
       trusted_root_certificate_names = [for k, v in backend_http_settings.value.root_certs : v.name]
     }
@@ -195,7 +198,7 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       name                           = http_listener.value.name
-      frontend_ip_configuration_name = var.frontend_ip_configuration_name
+      frontend_ip_configuration_name = var.application_gateway.frontend_ip_configuration_name
       frontend_port_name             = http_listener.value.port
       protocol                       = http_listener.value.protocol
       host_names                     = http_listener.value.host_names
@@ -220,8 +223,8 @@ resource "azurerm_application_gateway" "this" {
     content {
       name          = redirect_configuration.value.name
       redirect_type = redirect_configuration.value.type
-      target_listener_name = (redirect_configuration.value.target_listener != null ?
-      var.listeners[redirect_configuration.value.target_listener].name : null)
+      target_listener_name = (redirect_configuration.value.target_listener_key != null ?
+      var.listeners[redirect_configuration.value.target_listener_key].name : null)
       target_url           = redirect_configuration.value.target_url
       include_path         = redirect_configuration.value.include_path
       include_query_string = redirect_configuration.value.include_query_string
@@ -276,8 +279,8 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       name                               = url_path_map.value.name
-      default_backend_address_pool_name  = var.backend_pool.name
-      default_backend_http_settings_name = var.backends[url_path_map.value.backend].name
+      default_backend_address_pool_name  = var.application_gateway.backend_pool.name
+      default_backend_http_settings_name = var.backends[url_path_map.value.backend_key].name
 
       dynamic "path_rule" {
         for_each = url_path_map.value.path_rules
@@ -285,9 +288,9 @@ resource "azurerm_application_gateway" "this" {
         content {
           name                        = path_rule.key
           paths                       = path_rule.value.paths
-          backend_address_pool_name   = path_rule.value.backend != null ? var.backend_pool.name : null
-          backend_http_settings_name  = path_rule.value.backend != null ? var.backends[path_rule.value.backend].name : null
-          redirect_configuration_name = path_rule.value.redirect != null ? var.redirects[path_rule.value.redirect].name : null
+          backend_address_pool_name   = path_rule.value.backend_key != null ? var.application_gateway.backend_pool.name : null
+          backend_http_settings_name  = path_rule.value.backend_key != null ? var.backends[path_rule.value.backend_key].name : null
+          redirect_configuration_name = path_rule.value.redirect_key != null ? var.redirects[path_rule.value.redirect_key].name : null
         }
       }
     }
@@ -298,24 +301,24 @@ resource "azurerm_application_gateway" "this" {
 
     content {
       name      = request_routing_rule.value.name
-      rule_type = request_routing_rule.value.url_path_map != null ? "PathBasedRouting" : "Basic"
+      rule_type = request_routing_rule.value.url_path_map_key != null ? "PathBasedRouting" : "Basic"
       priority  = request_routing_rule.value.priority
 
-      http_listener_name = var.listeners[request_routing_rule.value.listener].name
+      http_listener_name = var.listeners[request_routing_rule.value.listener_key].name
       backend_address_pool_name = (
-        request_routing_rule.value.backend != null ? var.backend_pool.name : null
+        request_routing_rule.value.backend_key != null ? var.application_gateway.backend_pool.name : null
       )
       backend_http_settings_name = (
-        request_routing_rule.value.backend != null ? var.backends[request_routing_rule.value.backend].name : null
+        request_routing_rule.value.backend_key != null ? var.backends[request_routing_rule.value.backend_key].name : null
       )
       redirect_configuration_name = (
-        request_routing_rule.value.redirect != null ? var.redirects[request_routing_rule.value.redirect].name : null
+        request_routing_rule.value.redirect_key != null ? var.redirects[request_routing_rule.value.redirect_key].name : null
       )
       rewrite_rule_set_name = (
-        request_routing_rule.value.rewrite != null ? var.rewrites[request_routing_rule.value.rewrite].name : null
+        request_routing_rule.value.rewrite_key != null ? var.rewrites[request_routing_rule.value.rewrite_key].name : null
       )
       url_path_map_name = (
-        request_routing_rule.value.url_path_map != null ? var.url_path_maps[request_routing_rule.value.url_path_map].name : null
+        request_routing_rule.value.url_path_map_key != null ? var.url_path_maps[request_routing_rule.value.url_path_map_key].name : null
       )
     }
   }
@@ -324,12 +327,12 @@ resource "azurerm_application_gateway" "this" {
     precondition {
       condition = var.probes != null ? alltrue(flatten([
         for k, probe in var.probes : probe.host != null || alltrue(flatten([
-          for b, backend in var.backends : backend.probe == k ? backend.hostname != null || backend.hostname_from_backend : true
+          for b, backend in var.backends : backend.probe_key == k ? backend.hostname != null || backend.hostname_from_backend : true
         ]))
       ])) : true
       error_message = <<EOF
-Custom health probes needs to have defined host or backend settings needs to
-contain overriden host name or enabled option to pick host name from backend target.
+      Custom health probes needs to have defined host or backend settings needs to
+      contain overriden host name or enabled option to pick host name from backend target.
       EOF
     }
   }
