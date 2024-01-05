@@ -369,11 +369,12 @@ variable "vmseries" {
       avset_key                    = optional(string)
       accelerated_networking       = optional(bool)
       encryption_at_host_enabled   = optional(bool)
-      proximity_placement_group_id = optional(string)
-      disk_encryption_set_id       = optional(string)
-      diagnostics_storage_uri      = optional(string)
-      identity_type                = optional(string)
-      identity_ids                 = optional(list(string))
+      proximity_placement_group_id = optional(string) # REFACTOR : VMSERIES : remove the proximity placement group
+      # REFACTOR : VMSERIES : add extension_operations_enabled support
+      disk_encryption_set_id  = optional(string)
+      diagnostics_storage_uri = optional(string)
+      identity_type           = optional(string)
+      identity_ids            = optional(list(string))
     })
     interfaces = list(object({
       name                     = string
@@ -386,5 +387,7 @@ variable "vmseries" {
       add_to_appgw_backend     = optional(bool, false)
     }))
   }))
-  # TODO: add validation, either bootstrap options or bootstrap storage can be present, not both
+  # REFACTOR : VMSERIES : add validation, either bootstrap options or bootstrap storage can be present, not both
 }
+
+# REFACTOR : VMSERIES : make sure all common variables between vmss and vmseries are the same

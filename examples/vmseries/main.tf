@@ -206,7 +206,6 @@ resource "local_file" "bootstrap_xml" {
   ]
 }
 
-# TODO: add locals to create file_shares based on templated value + list of VMs
 locals {
   bootstrap_file_shares_flat = flatten([
     for k, v in var.vmseries : merge(v.virtual_machine.bootstrap_package, { vm_key = k })
