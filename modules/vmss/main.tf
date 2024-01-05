@@ -1,26 +1,4 @@
 locals {
-  operator = {
-    ">"  = "GreaterThan"
-    ">=" = "GreaterThanOrEqual"
-    "<"  = "LessThan"
-    "<=" = "LessThanOrEqual"
-    "==" = "Equals"
-    "!=" = "NotEquals"
-  }
-
-  panos_metrics = [
-    "DataPlaneCPUUtilizationPct",
-    "DataPlanePacketBufferUtilization",
-    "panGPGatewayUtilizationPct",
-    "panGPGWUtilizationActiveTunnels",
-    "panSessionActive",
-    "panSessionConnectionsPerSecond",
-    "panSessionSslProxyUtilization",
-    "panSessionThroughputKbps",
-    "panSessionThroughputPps",
-    "panSessionUtilization"
-  ]
-
   password = sensitive(var.authentication.password)
 }
 
@@ -160,6 +138,29 @@ module "ptd_time" {
   source   = "./dt_string_converter"
   for_each = local.profile_time_windows
   time     = each.value
+}
+
+locals {
+  panos_metrics = [
+    "DataPlaneCPUUtilizationPct",
+    "DataPlanePacketBufferUtilization",
+    "panGPGatewayUtilizationPct",
+    "panGPGWUtilizationActiveTunnels",
+    "panSessionActive",
+    "panSessionConnectionsPerSecond",
+    "panSessionSslProxyUtilization",
+    "panSessionThroughputKbps",
+    "panSessionThroughputPps",
+    "panSessionUtilization"
+  ]
+  operator = {
+    ">"  = "GreaterThan"
+    ">=" = "GreaterThanOrEqual"
+    "<"  = "LessThan"
+    "<=" = "LessThanOrEqual"
+    "==" = "Equals"
+    "!=" = "NotEquals"
+  }
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_autoscale_setting
