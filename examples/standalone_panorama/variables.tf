@@ -20,7 +20,8 @@ variable "name_prefix" {
   name_prefix = "test-"
   ```
   
-  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+  **Note!** \
+  This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
   EOF
   default     = ""
   type        = string
@@ -47,7 +48,6 @@ variable "enable_zones" {
 }
 
 
-
 ### VNET
 variable "vnets" {
   description = <<-EOF
@@ -72,7 +72,6 @@ variable "vnets" {
   - `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
                                 [VNET module documentation](../../modules/vnet/README.md#route_tables)
   EOF
-
   type = map(object({
     name                   = string
     resource_group_name    = optional(string)
@@ -128,8 +127,8 @@ variable "availability_sets" {
   - `update_domain_count` - specifies the number of update domains that are used, defaults to 5 (Azure defaults).
   - `fault_domain_count` - specifies the number of fault domains that are used, defaults to 3 (Azure defaults).
 
-  Please keep in mind that Azure defaults are not working for each region (especially the small ones, w/o any Availability Zones).
-  Please verify how many update and fault domain are supported in a region before deploying this resource.
+  Please keep in mind that Azure defaults are not working for each region (especially small ones, w/o any Availability Zones).
+  Please verify how many update and fault domains are supported in a region before deploying this resource.
   EOF
   default     = {}
   nullable    = false
@@ -142,9 +141,68 @@ variable "availability_sets" {
 
 variable "panoramas" {
   description = <<-EOF
-  Map of virtual machines to create to run Panorama virtual appliances.
+  A map defining Azure Virtual Machine based on Palo Alto Networks Panorama image.
   
-  Following properties are supported:
+  For details and defaults for available options please refer to the [`panorama`](../../modules/panorama/README.md) module.
+
+  The basic Panorama VM configuration properties are as follows:
+
+  - `name`            - (`string`, required) name of the VM, will be prefixed with the value of `var.name_prefix`.
+  - `authentication`  - (`map`, optional, defaults to example defaults) authentication settings for the deployed VM.
+
+      The `authentication` property is optional and holds the firewall admin access details. By default, standard username
+      `panadmin` will be set and a random password will be auto-generated for you (available in Terraform outputs).
+
+      **Note!** \
+      The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
+      to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+      `true`, then you have to specify `ssh_keys` property.
+
+      For all properties and their default values see [module's documentation](../../modules/panorama/README.md#authentication).
+
+  - `image`           - (`map`, required) properties defining a base image used by the deployed VM.
+
+      The `image` property is required but there are only 2 properties (mutually exclusive) that have to be set, either:
+
+      - `version`   - (`string`) describes the PAN-OS image version from Azure Marketplace.
+      - `custom_id` - (`string`) absolute ID of your own custom PAN-OS image.
+
+      For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#image).
+
+  - `virtual_machine` - (`map`, optional, defaults to module defaults) a map that groups most common VM configuration options.
+
+      Following properties are available:
+
+      - `vnet_key`  - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets used to
+                      deploy network interfaces for deployed VM.
+      - `size`      - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series Deployment
+                      Guide* as only a few selected sizes are supported.
+      - `zone`      - (`string`, optional, defaults to module defaults) the Availability Zone in which the VM will be created.
+      - `disk_type` - (`string`, optional, defaults to module defaults) type of a Managed Disk which should be created, possible
+                      values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size` values).
+      
+      For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#virtual_machine).
+
+  - `interfaces`      - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
+                        interface should be the management one. 
+                        
+      Following properties are available:
+
+      - `name`             - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
+      - `subnet_key`       - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
+                             `var.vnets`.
+      - `create_public_ip` - (`bool`, optional, defaults to module defaults) create a Public IP for an interface.
+
+      For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#interfaces).
+
+  - `logging_disks`   - (`map`, optional, defaults to `null`) configuration of additional data disks for Panorama logs. 
+  
+      Following properties are available:
+
+      - `name` - (`string`, required) the Managed Disk name.
+      - `lun`  - (`string`, required) the Logical Unit Number of the Data Disk, which needs to be unique within the VM.
+
+      For details on the other properties refer to [module's documentation](../../modules/panorama/README.md#logging_disks).
   EOF
   default     = {}
   nullable    = false
@@ -153,7 +211,7 @@ variable "panoramas" {
     authentication = object({
       username                        = optional(string, "panadmin")
       password                        = optional(string)
-      disable_password_authentication = optional(bool)
+      disable_password_authentication = optional(bool, false)
       ssh_keys                        = optional(list(string), [])
     })
     image = object({

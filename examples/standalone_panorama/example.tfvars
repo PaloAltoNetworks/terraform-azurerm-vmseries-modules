@@ -60,9 +60,8 @@ panoramas = {
       vnet_key  = "vnet"
       size      = "Standard_D5_v2"
       zone      = null
-      disk_name = "fancy-disk-name"
+      disk_name = "panorama-os-disk"
     }
-    vnet_key = "vnet"
     interfaces = [
       {
         name               = "management"
@@ -71,11 +70,11 @@ panoramas = {
         create_public_ip   = true
       },
     ]
-    /* logging_disks = {
+    logging_disks = {
       "datadisk1" = {
-        name = "data_disk1"
+        name = "data-disk1"
         lun  = "0"
       }
-    } */
+    }
   }
 }

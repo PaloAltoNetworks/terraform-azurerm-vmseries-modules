@@ -27,15 +27,15 @@ variable "authentication" {
 
   - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative Panorama username.
   - `password`                        - (`string`, optional, defaults to `null`) the initial administrative Panorama password.
-  - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
+  - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication.
   - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys.
 
-  > [!Important]
-  > The `password` property is required when `ssh_keys` is not specified.
+  **Important!** \
+  The `password` property is required when `ssh_keys` is not specified.
 
-  > [!Important]
-  > `ssh_keys` property is a list of strings, so each item should be the actual public key value.
-  > If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+  **Important!** \
+  `ssh_keys` property is a list of strings, so each item should be the actual public key value.
+  If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
 
   EOF
   type = object({
@@ -46,7 +46,7 @@ variable "authentication" {
   })
   validation {
     condition     = var.authentication.password != null || length(var.authentication.ssh_keys) > 0
-    error_message = "Either `var.authentication.password` or `var.authentication.ssh_key` must be set in order to have access to the device."
+    error_message = "Either `var.authentication.password`, `var.authentication.ssh_key` or both must be set in order to have access to the device."
   }
 }
 
@@ -69,8 +69,8 @@ variable "image" {
   - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PAN-OS image to be used
                                 for creating new Virtual Machines.
 
-  > [!Important]
-  > `custom_id` and `version` properties are mutually exclusive.
+  **Important!** \
+  The `custom_id` and `version` properties are mutually exclusive.
   
   EOF
   type = object({
@@ -101,8 +101,7 @@ variable "virtual_machine" {
                   Guide* as only a few selected sizes are supported.
   - `zone`      - (`number`, required) Availability Zone to place the VM in, `null` value means a non-zonal deployment.
   - `disk_type` - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created, possible
-                  values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
-                  `vm_size` values).
+                  values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size` values).
   - `disk_name` - (`string`, optional, defaults to VM name + `-disk` suffix) name od the OS disk.
 
   List of other, optional properties: 
@@ -113,8 +112,6 @@ variable "virtual_machine" {
   - `allow_extension_operations`   - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM.
   - `encryption_at_host_enabled`   - (`bool`, optional, defaults to `false`) should all the disks be encrypted by enabling
                                      Encryption at Host.
-  - `proximity_placement_group_id` - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
-                                     in which the Firewall should be assigned to.
   - `diagnostics_storage_uri`      - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
                                      diagnostic files.
   - `identity_type`                - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
@@ -155,8 +152,8 @@ variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
 
-  > [!Note]
-  > The ORDER in which you specify the interfaces DOES MATTER.
+  **Note!**
+  The ORDER in which you specify the interfaces DOES MATTER.
 
   Interfaces will be attached to VM in the order you define here, therefore:
 
@@ -222,7 +219,7 @@ variable "interfaces" {
 # Storage
 variable "logging_disks" {
   description = <<-EOF
-   A map of objects describing the additional disk configuration.
+   A map of objects describing the additional disks configuration.
    
   Following configuration options are available:
   
@@ -230,7 +227,7 @@ variable "logging_disks" {
   - `size`      - (`string`, optional, defaults to "2048") size of the disk in GB. The recommended size for additional disks
                   is at least 2TB (2048 GB).
   - `lun`       - (`string`, required) the Logical Unit Number of the Data Disk, which needs to be unique within the VM.
-  - `disk_type` - (`string`, optional, defaults to "StandardSSD_LRS") type of Managed Disk which should be created, possible 
+  - `disk_type` - (`string`, optional, defaults to "StandardSSD_LRS") type of Managed Disk which should be created, possible
                   values are `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`.
     
   Example:
@@ -261,15 +258,19 @@ variable "logging_disks" {
     disk_type = optional(string, "StandardSSD_LRS")
   }))
   validation {
-    condition     = alltrue([for _, v in var.logging_disks : contains(["2048", "4096", "6144", "8192", "10240", "12288", "14336", "16384", "18432", "20480", "22528", "24576"], v.size)])
+    condition     = alltrue([for _, v in var.logging_disks : contains(range(2048, 24577, 2048), parseint(v.size, 10))])
     error_message = "The `size` property value must be a multiple of `2048` but not higher than `24576` (24 TB)."
   }
   validation {
-    condition     = alltrue([for _, v in var.logging_disks : (parseint(v.lun, 10) >= 0 && parseint(v.lun, 10) <= 63) if v.lun != null])
+    condition = alltrue([
+      for _, v in var.logging_disks : (parseint(v.lun, 10) >= 0 && parseint(v.lun, 10) <= 63) if v.lun != null
+    ])
     error_message = "The `lun` property value must be a number between `0` and `63`."
   }
   validation {
-    condition     = alltrue([for _, v in var.logging_disks : contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], v.disk_type)])
+    condition = alltrue([
+      for _, v in var.logging_disks : contains(["Standard_LRS", "StandardSSD_LRS", "Premium_LRS", "UltraSSD_LRS"], v.disk_type)
+    ])
     error_message = "The `disk_type` property can be one of: `Standard_LRS`, `StandardSSD_LRS`, `Premium_LRS` or `UltraSSD_LRS`."
   }
 }
