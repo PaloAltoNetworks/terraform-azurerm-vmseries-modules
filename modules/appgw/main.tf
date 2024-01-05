@@ -18,7 +18,7 @@ locals {
 data "azurerm_public_ip" "this" {
   count               = var.public_ip.create ? 0 : 1
   name                = var.public_ip.name
-  resource_group_name = coalesce(var.public_ip.resource_group, var.resource_group_name)
+  resource_group_name = coalesce(var.public_ip.resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip

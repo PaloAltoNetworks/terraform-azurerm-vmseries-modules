@@ -806,7 +806,7 @@ Name | Type | Description
 [`name`](#name) | `string` | The name of the Application Gateway.
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
-[`public_ip`](#public_ip) | `object` | Public IP address.
+[`public_ip`](#public_ip) | `object` | A map defining a Public IP address resource that the Application Gateway will use to listen for incoming requests.
 [`subnet_id`](#subnet_id) | `string` | An ID of a subnet that will host the Application Gateway.
 [`ssl_profiles`](#ssl_profiles) | `map` | A map of SSL profiles.
 [`listeners`](#listeners) | `map` | A map of listeners for the Application Gateway.
@@ -848,7 +848,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.3, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.25
 
 
@@ -898,15 +898,23 @@ Type: string
 
 #### public_ip
 
-Public IP address.
+A map defining a Public IP address resource that the Application Gateway will use to listen for incoming requests.
+
+Following properties are available:
+
+- `name`                - (`string`, required) name of the created or source Public IP resource
+- `create`              - (`bool`, optional, defaults to `true`) controls if the public IP is created or sourced.
+- `resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group hosting the
+                          existing Public IP resource
+
 
 Type: 
 
 ```hcl
 object({
-    name           = string
-    resource_group = optional(string)
-    create         = optional(bool, true)
+    name                = string
+    create              = optional(bool, true)
+    resource_group_name = optional(string)
   })
 ```
 
@@ -1202,7 +1210,8 @@ Default value: `map[]`
 
 A list of zones the Application Gateway should be available in.
 
-NOTICE: this is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
+**Note!** \
+This is also enforced on the Public IP. The Public IP object brings in some limitations as it can only be non-zonal,
 pinned to a single zone or zone-redundant (so available in all zones in a region).
 Therefore make sure that if you specify more than one zone you specify all available in a region. You can use a subset,
 but the Public IP will be created in all zones anyway. This fact will cause terraform to recreate the IP resource during
