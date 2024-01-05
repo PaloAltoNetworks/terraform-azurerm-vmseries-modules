@@ -1,17 +1,17 @@
-output "username" {
-  description = "Initial administrative username to use for VM-Series."
-  value       = var.vmseries_username
+output "usernames" {
+  description = "Initial firewall administrative usernames for all deployed Scale Sets."
+  value       = { for k, v in module.vmss : k => v.username }
 }
 
-output "password" {
-  description = "Initial administrative password to use for VM-Series."
-  value       = local.vmseries_password
+output "passwords" {
+  description = "Initial firewall administrative passwords for all deployed Scale Sets."
+  value       = { for k, v in module.vmss : k => v.password }
   sensitive   = true
 }
 
 output "metrics_instrumentation_keys" {
   description = "The Instrumentation Key of the created instance(s) of Azure Application Insights."
-  value       = var.application_insights != null ? { for k, v in module.ai : k => v.metrics_instrumentation_key } : null
+  value       = try(module.ngfw_metrics[0].metrics_instrumentation_keys, null)
   sensitive   = true
 }
 

@@ -210,10 +210,13 @@ variable "load_balancers" {
     - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
                           in the `var.vnets` map that stores the NSG described by `nsg_key`
   - `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
-                                `in_rules` and `out_rules`; please refer to
-                                [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available
-                                properties; please note that in this example the `subnet_id` is not available directly, two other
-                                properties were introduced instead:
+                                `in_rules` and `out_rules`
+
+    Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
+
+    > [!NOTE] 
+    > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+
     - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
     - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
                       that stores the Subnet described by `subnet_key`
@@ -315,42 +318,38 @@ variable "availability_sets" {
   type        = any
 }
 
-variable "application_insights" {
+variable "ngfw_metrics" {
   description = <<-EOF
-  A map defining Azure Application Insights. There are three ways to use this variable:
+  A map controlling metrics-relates resources.
 
-  * when the value is set to `null` (default) no AI is created
-  * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-  * when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+  When set to explicit `null` (default) it will disable any metrics resources in this deployment.
 
-  Names for all AI instances are prefixed with `var.name_prefix`.
+  When defined it will either create or source a Log Analytics Workspace and create Application Insights instances (one per each
+  Scale Set). All instances will be automatically connected to the workspace.
+  The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
 
-  Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
+  All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
-  - `name` : (optional, string) a name of a single AI instance
-  - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
-  - `workspace_name` : (optional, string) defaults to AI name suffixed with `-wrkspc`, name of the Log Analytics Workspace created when AI is deployed in Workspace mode
-  - `workspace_sku` : (optional, string) defaults to PerGB2018, SKU used by WAL, see module documentation for details
-  - `metrics_retention_in_days` : (optional, number) defaults to current Azure default value, see module documentation for details
+  Following properties are available:
 
-  Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
-  ```
-  vmseries = {
-    'vm-1' = {
-      ....
-    }
-    'vm-2' = {
-      ....
-    }
-  }
-
-  application_insights = {
-    metrics_retention_in_days = 365
-  }
-  ```
+  - `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+  - `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
+                                  Analytics Workspace
+  - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
+                                  the Log Analytics Workspace
+  - `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
+  - `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
+                                  days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
+                                  the Application Insights instances.
   EOF
   default     = null
-  type        = map(string)
+  type = object({
+    name                      = string
+    create_workspace          = optional(bool, true)
+    resource_group_name       = optional(string)
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
 }
 
 variable "bootstrap_storage" {
@@ -364,7 +363,7 @@ variable "bootstrap_storage" {
   - `resource_group_name` : (defaults to `var.resource_group_name`) name of the Resource Group hosting the Storage Account (existing or newly created). The RG has to exist.
   - `storage_acl` : (defaults to `false`) enables network ACLs on the Storage Account. If this is enabled - `storage_allow_vnet_subnets` and `storage_allow_inbound_public_ips` options become available. The ACL defaults to default `Deny`.
   - `storage_allow_vnet_subnets` : (defaults to `[]`) whitelist containing the allowed vnet and associated subnets that are allowed to access the Storage Account. Note that the respective subnets require `enable_storage_service_endpoint` set to `true` to work properly.
-  - `storage_allow_inbound_public_ips` : (defaults to `[]`) whitelist containing the allowed public IP subnets that can access the Storage Account. Note that the code automatically tried to query https://ifconfig.me/ip to obtain the public IP address of the machine executing the code so that the bootstrap files are succuessfuly uploaded to the Storage Account.
+  - `storage_allow_inbound_public_ips` : (defaults to `[]`) whitelist containing the allowed public IP subnets that can access the Storage Account. Note that the code automatically tries to query https://ifconfig.me/ip to obtain the public IP address of the machine executing the code so that the bootstrap files can be successfully uploaded to the Storage Account.
 
   The properties below do not directly change anything in the Storage Account settings. They can be used to control common parts of the `DAY0` configuration (used only when full bootstrap is used). These properties can also be specified per firewall, but when specified here they tak higher precedence:
   - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
@@ -487,9 +486,9 @@ variable "appgws" {
   type = map(object({
     name = string
     public_ip = object({
-      name           = string
-      resource_group = optional(string)
-      create         = optional(bool, true)
+      name                = string
+      resource_group_name = optional(string)
+      create              = optional(bool, true)
     })
     vnet_key           = string
     subnet_key         = string

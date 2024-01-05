@@ -19,7 +19,7 @@ output "natgw_public_ips" {
 
 output "metrics_instrumentation_keys" {
   description = "The Instrumentation Key of the created instance(s) of Azure Application Insights."
-  value       = var.application_insights != null ? { for k, v in module.ai : k => v.metrics_instrumentation_key } : null
+  value       = try(module.ngfw_metrics[0].metrics_instrumentation_keys, null)
   sensitive   = true
 }
 

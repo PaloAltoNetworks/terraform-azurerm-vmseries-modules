@@ -208,9 +208,9 @@ Type:
 map(object({
     name = string
     public_ip = object({
-      name           = string
-      resource_group = optional(string)
-      create         = optional(bool, true)
+      name                = string
+      resource_group_name = optional(string)
+      create              = optional(bool, true)
     })
     vnet_key           = string
     subnet_key         = string

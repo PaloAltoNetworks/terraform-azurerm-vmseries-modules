@@ -30,6 +30,12 @@
 .vscode
 .idea
 
+
+# Ceritifcates
+*.pem
+*.crt
+*.pfx
+*.key
 # Palo auth codes
 authcodes
 # Crash log files

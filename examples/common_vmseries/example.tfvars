@@ -7,7 +7,6 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-
 # --- VNET PART --- #
 vnets = {
   "transit" = {
@@ -157,6 +156,9 @@ load_balancers = {
   }
 }
 
+ngfw_metrics = {
+  name = "metrics"
+}
 
 
 # --- VMSERIES PART --- #

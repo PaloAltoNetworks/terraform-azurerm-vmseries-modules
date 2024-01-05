@@ -40,12 +40,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "enable_zones" {
-  description = "If `true`, enable zone support for resources."
-  default     = true
-  type        = bool
-}
-
 
 
 ### VNET
@@ -272,153 +266,203 @@ variable "load_balancers" {
   }))
 }
 
-
-variable "application_insights" {
+variable "ngfw_metrics" {
   description = <<-EOF
-  A map defining Azure Application Insights. There are three ways to use this variable:
+  A map controlling metrics-relates resources.
 
-  * when the value is set to `null` (default) no AI is created
-  * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-  * when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+  When set to explicit `null` (default) it will disable any metrics resources in this deployment.
 
-  Names for all AI instances are prefixed with `var.name_prefix`.
+  When defined it will either create or source a Log Analytics Workspace and create Application Insights instances (one per each
+  Scale Set). All instances will be automatically connected to the workspace.
+  The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
 
-  Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
-
-  - `name` : (optional, string) a name of a single AI instance
-  - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
-  - `workspace_name` : (optional, string) defaults to AI name suffixed with `-wrkspc`, name of the Log Analytics Workspace created when AI is deployed in Workspace mode
-  - `workspace_sku` : (optional, string) defaults to PerGB2018, SKU used by WAL, see module documentation for details
-  - `metrics_retention_in_days` : (optional, number) defaults to current Azure default value, see module documentation for details
-
-  Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
-  ```
-  vmseries = {
-    'vm-1' = {
-      ....
-    }
-    'vm-2' = {
-      ....
-    }
-  }
-
-  application_insights = {
-    metrics_retention_in_days = 365
-  }
-  ```
-  EOF
-  default     = null
-  type        = map(string)
-}
-
-
-
-### GENERIC VMSERIES
-variable "vmseries_version" {
-  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per Scale Set, see `var.vmss` variable."
-  type        = string
-}
-
-variable "vmseries_vm_size" {
-  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per Scale Set, see `var.vmss` variable."
-  type        = string
-}
-
-variable "vmseries_sku" {
-  description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "byol"
-  type        = string
-}
-
-variable "vmseries_username" {
-  description = "Initial administrative username to use for all systems."
-  default     = "panadmin"
-  type        = string
-}
-
-variable "vmseries_password" {
-  description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
-  default     = null
-  type        = string
-}
-
-variable "vmss" {
-  description = <<-EOF
-  A map defining all Virtual Machine Scale Sets.
-
-  For detailed documentation on how to configure this resource, for available properties, especially for the defaults refer to [module documentation](../../modules/vmss/README.md)
+  All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
   Following properties are available:
-  - `name` : (string|required) name of the Virtual Machine Scale Set.
-  - `vm_size` : size of the VMSeries virtual machines created with this Scale Set, when specified overrides `var.vmseries_vm_size`.
-  - `version` : PanOS version, when specified overrides `var.vmseries_version`.
-  - `vnet_key` : (string|required) a key of a VNET defined in the `var.vnets` map.
-  - `bootstrap_options` : (string|`''`) bootstrap options passed to every VM instance upon creation.
-  - `zones` : (list(string)|`[]`) a list of Availability Zones to use for Zone redundancy
-  - `encryption_at_host_enabled` : (bool|`null` - Azure defaults) should all of the disks attached to this Virtual Machine be encrypted
-  - `overprovision` : (bool|`null` - module defaults) when provisioning new VM, multiple will be provisioned but the 1st one to run will be kept
-  - `platform_fault_domain_count` : (number|`null` - Azure defaults) number of fault domains to use
-  - `proximity_placement_group_id` : (string|`null`) ID of a proximity placement group the VMSS should be placed in
-  - `scale_in_policy` : (string|`null` - Azure defaults) policy of removing VMs when scaling in
-  - `scale_in_force_deletion` : (bool|`null` - module default) forces (`true`) deletion of VMs during scale in
-  - `single_placement_group` : (bool|`null` - Azure defaults) limit the Scale Set to one Placement Group
-  - `storage_account_type` : (string|`null` - module defaults) type of managed disk that will be used on all VMs
-  - `disk_encryption_set_id` : (string|`null`) the ID of the Disk Encryption Set which should be used to encrypt this Data Disk
-  - `accelerated_networking` : (bool|`null`- module defaults) enable Azure accelerated networking for all dataplane network interfaces
-  - `use_custom_image` : (bool|`false`) 
-  - `custom_image_id` : (string|reqquired when `use_custom_image` is `true`) absolute ID of your own Custom Image to be used for creating new VM-Series
-  - `application_insights_id` : (string|`null`) ID of Application Insights instance that should be used to provide metrics for autoscaling
-  - `interfaces` : (list(string)|`[]`) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
-    - `name` : (string|required) string that will form the NIC name
-    - `subnet_key` : (string|required) a key of a subnet as defined in `var.vnets`
-    - `create_pip` : (bool|`false`) flag to create Public IP for an interface, defaults to `false`
-    - `load_balancer_key` : (string|`null`) key of a Load Balancer defined in the `var.loadbalancers` variable
-    - `application_gateway_key` : (string|`null`) key of an Application Gateway defined in the `var.appgws`
-    - `pip_domain_name_label` : (string|`null`) prefix which should be used for the Domain Name Label for each VM instance
-  - `autoscale_config` : (map|`{}`) map containing basic autoscale configuration
-    - `count_default` : (number|`null` - module defaults) default number or instances when autoscalling is not available
-    - `count_minimum` : (number|`null` - module defaults) minimum number of instances to reach when scaling in
-    - `count_maximum` : (number|`null` - module defaults) maximum number of instances when scaling out
-    - `notification_emails` : (list(string)|`null` - module defaults) a list of e-mail addresses to notify about scaling events
-  - `autoscale_metrics` : (map|`{}`) metrics and thresholds used to trigger scaling events, see module documentation for details
-  - `scaleout_config` : (map|`{}`) scale out configuration, for details see module documentation
-    - `statistic` : (string|`null` - module defaults) aggregation method for statistics coming from different VMs
-    - `time_aggregation` : (string|`null` - module defaults) aggregation method applied to statistics in time window
-    - `window_minutes` : (string|`null` - module defaults) time windows used to analyze statistics
-    - `cooldown_minutes` : (string|`null` - module defaults) time to wait after a scaling event before analyzing the statistics again
-  - `scalein_config` : (map|`{}`) scale in configuration, same properties supported as for `scaleout_config`
 
-  Example, no auto scaling:
+  - `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+  - `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
+                                  Analytics Workspace
+  - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
+                                  the Log Analytics Workspace
+  - `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
+  - `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
+                                  days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
+                                  the Application Insights instances.
+  EOF
+  default     = null
+  type = object({
+    name                      = string
+    create_workspace          = optional(bool, true)
+    resource_group_name       = optional(string)
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
+}
 
-  ```
-  {
-  "vmss" = {
-    name              = "ngfw-vmss"
-    vnet_key          = "transit"
-    bootstrap_options = "type=dhcp-client"
+### VMSERIES
 
-    interfaces = [
-      {
-        name       = "management"
-        subnet_key = "management"
-      },
-      {
-        name       = "private"
-        subnet_key = "private"
-      },
-      {
-        name                    = "public"
-        subnet_key              = "public"
-        load_balancer_key       = "public"
-        application_gateway_key = "public"
-      }
-    ]
-  }
-  ```
+variable "scale_sets" {
+  description = <<-EOF
+  A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
+
+  For details and defaults for available options please refer to the [`vmss`](../../modules/vmss/README.md) module.
+
+  The basic Scale Set configuration properties are as follows:
+
+  - `name`                      - (`string`, required) name of the scale set, will be prefixed with the value of `var.name_prefix`
+  - `authentication`            - (`map`, required) authentication setting for VMs deployed in this scale set.
+
+      This map holds the firewall admin password. When this property is not set, the password will be autogenerated for you and
+      available in the Terraform outputs.
+
+      **Note!** \
+      The `disable_password_authentication` property is by default true. When using this value you have to specify at least one
+      SSH key. You can however set this property to `true`. Then you have 2 options, either:
+
+      - do not specify anything else - a random password will be generated for you
+      - specify at least one of `password` or `ssh_keys` properties.
+
+      For all properties and their default values see [module's documentation](../../modules/vmss/README.md#authentication).
+
+  - `image`                     - (`map`, required) properties defining a base image used to spawn VMs in this Scale Set.
+
+      The `image` property is required but there are only 2 properties (mutually exclusive) that have to be set up, either:
+
+      - `version`   - (`string`) describes the PanOS image version from Azure's Marketplace
+      - `custom_id` - (`string`) absolute ID of your own custom PanOS image
+
+      For details on the other properties refer to [module's documentation](../../modules/vmss/README.md#image).
+
+  - `virtual_machine_scale_set` - (`map`, optional, defaults to module defaults) a map that groups most common Scale Set
+                                  configuration options.
+
+      Below we present only the most important ones, for the rest please refer to
+      [module's documentation](../../modules/vmss/README.md#virtual_machine_scale_set):
+
+      - `vnet_key`              - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets
+                                  used to deploy network interfaces for VMs in this Scale Set
+      - `size`                  - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
+                                  Deployment Guide* as only a few selected sizes are supported
+      - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
+                                  this Scale Set will be created
+      - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
+                                  possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                                  `vm_size` values)
+      - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VM-Series instance
+
+  - `autoscaling_configuration` - (`map`, optional, defaults to `{}`) a map that groups common autoscaling configuration, but not
+                                  the scaling profiles (metrics thresholds, etc)
+
+      Below we present only the most important properties, for the rest please refer to
+      [module's documentation](../../modules/vmss/README.md#autoscaling_configuration).
+
+      - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in the
+                            scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the
+                            metrics to the thresholds
+
+  - `interfaces`              - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
+                                interface should be the management one. Following properties are available:
+    - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`)
+    - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
+                                  `var.vnets`
+    - `create_public_ip`        - (`bool`, optional, defaults to module defaults) create Public IP for an interface
+    - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the
+                                  `var.loadbalancers` variable, network interface that has this property defined will be
+                                  added to the Load Balancee's backend pool
+    - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the
+                                  `var.appgws`, network interface that has this property defined will be added to the Application
+                                  Gateways's backend pool
+    - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label
+                                  for each VM instance
+
+  - `autoscaling_profiles`    - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
+                                configuration please refer to
+                                [module's documentation](../../modules/vmss/README.md#autoscaling_profiles)
 
   EOF
   default     = {}
-  type        = any
+  nullable    = false
+  type = map(object({
+    name = string
+    authentication = object({
+      username                        = optional(string)
+      password                        = optional(string)
+      disable_password_authentication = optional(bool, true)
+      ssh_keys                        = optional(list(string), [])
+    })
+    image = object({
+      version                 = optional(string)
+      publisher               = optional(string)
+      offer                   = optional(string)
+      sku                     = optional(string)
+      enable_marketplace_plan = optional(bool)
+      custom_id               = optional(string)
+    })
+    virtual_machine_scale_set = optional(object({
+      vnet_key                    = string
+      bootstrap_options           = optional(string)
+      size                        = optional(string)
+      zones                       = optional(list(string))
+      disk_type                   = optional(string)
+      accelerated_networking      = optional(bool)
+      encryption_at_host_enabled  = optional(bool)
+      overprovision               = optional(bool)
+      platform_fault_domain_count = optional(number)
+      disk_encryption_set_id      = optional(string)
+      allow_extension_operations  = optional(bool)
+    }))
+    autoscaling_configuration = optional(object({
+      default_count           = optional(number)
+      scale_in_policy         = optional(string)
+      scale_in_force_deletion = optional(bool)
+      notification_emails     = optional(list(string), [])
+      webhooks_uris           = optional(map(string), {})
+    }), {})
+    interfaces = list(object({
+      name                    = string
+      subnet_key              = string
+      create_public_ip        = optional(bool)
+      load_balancer_key       = optional(string)
+      application_gateway_key = optional(string)
+      pip_domain_name_label   = optional(string)
+    }))
+    autoscaling_profiles = optional(list(object({
+      name          = string
+      minimum_count = optional(number)
+      default_count = number
+      maximum_count = optional(number)
+      recurrence = optional(object({
+        timezone   = optional(string)
+        days       = list(string)
+        start_time = string
+        end_time   = string
+      }))
+      scale_rules = optional(list(object({
+        name = string
+        scale_out_config = object({
+          threshold                  = number
+          operator                   = optional(string)
+          grain_window_minutes       = number
+          grain_aggregation_type     = optional(string)
+          aggregation_window_minutes = number
+          aggregation_window_type    = optional(string)
+          cooldown_window_minutes    = number
+          change_count_by            = optional(number)
+        })
+        scale_in_config = object({
+          threshold                  = number
+          operator                   = optional(string)
+          grain_window_minutes       = optional(number)
+          grain_aggregation_type     = optional(string)
+          aggregation_window_minutes = optional(number)
+          aggregation_window_type    = optional(string)
+          cooldown_window_minutes    = number
+          change_count_by            = optional(number)
+        })
+      })), [])
+    })), [])
+  }))
 }
 
 
@@ -456,12 +500,14 @@ variable "appgws" {
   - `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
   - `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name = string
     public_ip = object({
-      name           = string
-      resource_group = optional(string)
-      create         = optional(bool, true)
+      name                = string
+      resource_group_name = optional(string)
+      create              = optional(bool, true)
     })
     vnet_key           = string
     subnet_key         = string

@@ -210,7 +210,7 @@ appgws = {
 
 bootstrap_storage = {
   bootstrap = {
-    name             = "xmplbootstrapdedicated"
+    name             = "fosixbootstrap"
     public_snet_key  = "public"
     private_snet_key = "private"
     storage_acl      = true
@@ -223,6 +223,10 @@ bootstrap_storage = {
     }
     storage_allow_inbound_public_ips = ["1.2.3.4"]
   }
+}
+
+ngfw_metrics = {
+  name = "metrics"
 }
 
 vmseries_version = "10.2.3"
