@@ -391,6 +391,7 @@ List of other, optional properties:
                                     "SystemAssigned, UserAssigned".
 - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned"
+- `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM
 
 
 
@@ -411,6 +412,7 @@ object({
     diagnostics_storage_uri     = optional(string)
     identity_type               = optional(string, "SystemAssigned")
     identity_ids                = optional(list(string), [])
+    allow_extension_operations  = optional(bool, false)
   })
 ```
 

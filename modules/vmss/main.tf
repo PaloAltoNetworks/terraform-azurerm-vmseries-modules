@@ -9,12 +9,16 @@ locals {
   }
 
   panos_metrics = [
+    "DataPlaneCPUUtilizationPct",
     "DataPlanePacketBufferUtilization",
-    "panSessionThroughputPps",
-    "panSessionThroughputKbps",
+    "panGPGatewayUtilizationPct",
+    "panGPGWUtilizationActiveTunnels",
     "panSessionActive",
-    "panSessionUtilization",
-    "DataPlaneCPUUtilizationPct"
+    "panSessionConnectionsPerSecond",
+    "panSessionSslProxyUtilization",
+    "panSessionThroughputKbps",
+    "panSessionThroughputPps",
+    "panSessionUtilization"
   ]
 
   password = sensitive(var.authentication.password)
@@ -39,14 +43,15 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
-  encryption_at_host_enabled  = var.virtual_machine_scale_set.encryption_at_host_enabled
-  overprovision               = var.virtual_machine_scale_set.overprovision
-  platform_fault_domain_count = var.virtual_machine_scale_set.platform_fault_domain_count
-  single_placement_group      = var.virtual_machine_scale_set.single_placement_group
-  sku                         = var.virtual_machine_scale_set.size
-  zones                       = var.virtual_machine_scale_set.zones
-  zone_balance                = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2 # zone balance is available from at least 2 zones
-  provision_vm_agent          = false
+  encryption_at_host_enabled   = var.virtual_machine_scale_set.encryption_at_host_enabled
+  overprovision                = var.virtual_machine_scale_set.overprovision
+  extension_operations_enabled = var.virtual_machine_scale_set.allow_extension_operations
+  platform_fault_domain_count  = var.virtual_machine_scale_set.platform_fault_domain_count
+  single_placement_group       = var.virtual_machine_scale_set.single_placement_group
+  sku                          = var.virtual_machine_scale_set.size
+  zones                        = var.virtual_machine_scale_set.zones
+  zone_balance                 = length(coalesce(var.virtual_machine_scale_set.zones, [])) >= 2 # zone balance is available from at least 2 zones
+  provision_vm_agent           = false
 
   dynamic "plan" {
     for_each = var.image.enable_marketplace_plan ? [1] : []
@@ -105,7 +110,7 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
           iterator = pip
 
           content {
-            name              = "${nic.value.name}-public-ip"
+            name              = nic.value.name
             domain_name_label = nic.value.pip_domain_name_label
           }
         }
@@ -161,7 +166,7 @@ module "ptd_time" {
 resource "azurerm_monitor_autoscale_setting" "this" {
   count = length(var.autoscaling_profiles) > 0 ? 1 : 0
 
-  name                = "${var.name}-autoscale-settings"
+  name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
   target_resource_id  = azurerm_linux_virtual_machine_scale_set.this.id

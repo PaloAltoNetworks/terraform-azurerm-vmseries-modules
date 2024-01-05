@@ -410,6 +410,7 @@ variable "scale_sets" {
       overprovision               = optional(bool)
       platform_fault_domain_count = optional(number)
       disk_encryption_set_id      = optional(string)
+      allow_extension_operations  = optional(bool)
     }))
     autoscaling_configuration = optional(object({
       default_count           = optional(number)

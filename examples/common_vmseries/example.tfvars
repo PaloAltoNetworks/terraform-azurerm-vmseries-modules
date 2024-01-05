@@ -7,13 +7,6 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# [ ]: remove appgw from dedicated, dedicated autoscale, standalone, gwlb
-# [ ]: add defaults to appgw variable in examples
-# [ ]: cleanup defaults in the appgw variable in module + remove defaults where not required in examples variable
-# [ ]: cleanup appgw variable description
-# [ ]: proximity placement group
-
-
 # --- VNET PART --- #
 vnets = {
   "transit" = {
