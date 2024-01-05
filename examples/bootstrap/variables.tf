@@ -63,9 +63,14 @@ variable "bootstrap_storages" {
   EOF
   default     = {}
   type = map(object({
-    name                   = string
-    create_storage_account = optional(bool)
-    resource_group_name    = optional(string)
+    name = string
+    storage_account = optional(object({
+      create           = optional(bool)
+      replication_type = optional(string)
+      kind             = optional(string)
+      tier             = optional(string)
+    }), {})
+    resource_group_name = optional(string)
     storage_network_security = optional(object({
       min_tls_version    = optional(string)
       allowed_public_ips = optional(list(string))

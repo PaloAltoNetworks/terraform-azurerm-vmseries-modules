@@ -1,6 +1,3 @@
-locals {
-  password = sensitive(var.authentication.password)
-}
 resource "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
@@ -40,15 +37,20 @@ resource "azurerm_network_interface" "this" {
   }
 }
 
+locals {
+  password = sensitive(var.authentication.password)
+}
+
 resource "azurerm_linux_virtual_machine" "this" {
   name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
   tags                = var.tags
 
-  size                = var.virtual_machine.size
-  zone                = var.virtual_machine.zone
-  availability_set_id = var.virtual_machine.avset_id
+  size                       = var.virtual_machine.size
+  zone                       = var.virtual_machine.zone
+  availability_set_id        = var.virtual_machine.avset_id
+  encryption_at_host_enabled = var.virtual_machine.encryption_at_host_enabled
 
   network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
 

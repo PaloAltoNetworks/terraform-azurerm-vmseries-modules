@@ -299,9 +299,14 @@ variable "bootstrap_storages" {
   default     = {}
   nullable    = false
   type = map(object({
-    name                   = string
-    create_storage_account = optional(bool)
-    resource_group_name    = optional(string)
+    name = string
+    storage_account = optional(object({
+      create           = optional(bool)
+      replication_type = optional(string)
+      kind             = optional(string)
+      tier             = optional(string)
+    }), {})
+    resource_group_name = optional(string)
     file_shares_configuration = optional(object({
       create_file_shares            = optional(bool)
       disable_package_dirs_creation = optional(bool)
@@ -330,6 +335,20 @@ variable "vmseries" {
   Map of virtual machines to create to run VM-Series - inbound firewalls.
   
   Following properties are supported:
+
+  use this:
+  - `authentication`  - (`map`, optional) authentication settings for the deployed VM.
+
+      The `authentication` property is optional and holds the firewall admin access details. By default, standard username
+      `panadmin` will be set and a random password will be auto-generated for you.
+
+      **Note!** \
+      The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
+      to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+      `true`, then you have to specify `ssh_keys` property.
+
+      For all properties and their default values see [module's documentation](../../modules/panorama/README.md#authentication).
+
   EOF
   default     = {}
   nullable    = false
@@ -363,13 +382,12 @@ variable "vmseries" {
         ai_update_interval     = optional(number, 5)
         intranet_cidr          = optional(string)
       }))
-      zone                         = string
-      disk_type                    = optional(string)
-      disk_name                    = optional(string)
-      avset_key                    = optional(string)
-      accelerated_networking       = optional(bool)
-      encryption_at_host_enabled   = optional(bool)
-      proximity_placement_group_id = optional(string) # REFACTOR : VMSERIES : remove the proximity placement group
+      zone                       = string
+      disk_type                  = optional(string)
+      disk_name                  = optional(string)
+      avset_key                  = optional(string)
+      accelerated_networking     = optional(bool)
+      encryption_at_host_enabled = optional(bool)
       # REFACTOR : VMSERIES : add extension_operations_enabled support
       disk_encryption_set_id  = optional(string)
       diagnostics_storage_uri = optional(string)

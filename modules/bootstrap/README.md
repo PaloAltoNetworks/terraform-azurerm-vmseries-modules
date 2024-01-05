@@ -140,7 +140,7 @@ Name | Type | Description
 --- | --- | ---
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`tags`](#tags) | `map` | The map of tags to assign to all created resources.
-[`create_storage_account`](#create_storage_account) | `bool` | Controls creation of a Storage Account.
+[`storage_account`](#storage_account) | `object` | A map controlling basic Storage Account configuration.
 [`storage_network_security`](#storage_network_security) | `object` | A map defining network security settings for a new storage account.
 [`file_shares_configuration`](#file_shares_configuration) | `object` | A map defining common File Share setting.
 [`file_shares`](#file_shares) | `map` | Definition of File Shares.
@@ -153,7 +153,7 @@ Name |  Description
 --- | ---
 `storage_account_name` | The Azure Storage Account name. For either created or sourced
 `storage_account_primary_access_key` | The primary access key for the Azure Storage Account. For either created or sourced
-`file_share_url` | The File Shares' share URL used for bootstrap configuration.
+`file_share_urls` | The File Shares' share URL used for bootstrap configuration.
 
 ## Module's Nameplate
 
@@ -238,16 +238,37 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### create_storage_account
+#### storage_account
 
-Controls creation of a Storage Account.
+A map controlling basic Storage Account configuration.
+
+Following properties are available:
+
+- `create`           - (`bool`, optional, defaults to `true`) controls if the Storage Account is created or sourced.
+- `replication_type` - (`string`, optional, defaults to `LRS`) only for newly created Storage Accounts, defines the replication
+                       type used. Can be one of the following values: `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` or `RAGZRS`.
+- `kind`             - (`string`, optional, defaults to `StorageV2`) only for newly created Storage Accounts, defines the
+                       account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` or
+                       `StorageV2`.
+- `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the account
+                       tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
+                       `FileStorage` the `tier` can only be set to `Premium`.
   
-When set to `false` an existing Storage Account will be used to create bootstrap file shares.
 
 
-Type: bool
+Type: 
 
-Default value: `true`
+```hcl
+object({
+    create           = optional(bool, true)
+    replication_type = optional(string, "LRS")
+    kind             = optional(string, "StorageV2")
+    tier             = optional(string, "Standard")
+  })
+```
+
+
+Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

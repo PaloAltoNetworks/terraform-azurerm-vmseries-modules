@@ -225,8 +225,6 @@ List of other, optional properties:
                                     used to encrypt this VM's disk
 - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
                                     by enabling Encryption at Host
-- `proximity_placement_group_id`  - (`string`, optional, defaults to Azure defaults) the ID of the Proximity Placement Group
-                                    in which the Firewall should be assigned to
 - `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
                                     diagnostic files
 - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
@@ -241,19 +239,18 @@ Type:
 
 ```hcl
 object({
-    size                         = optional(string, "Standard_D3_v2")
-    bootstrap_options            = optional(string)
-    zone                         = string
-    disk_type                    = optional(string, "StandardSSD_LRS")
-    disk_name                    = string
-    avset_id                     = optional(string)
-    accelerated_networking       = optional(bool, true)
-    encryption_at_host_enabled   = optional(bool)
-    proximity_placement_group_id = optional(string)
-    disk_encryption_set_id       = optional(string)
-    diagnostics_storage_uri      = optional(string)
-    identity_type                = optional(string, "SystemAssigned")
-    identity_ids                 = optional(list(string), [])
+    size                       = optional(string, "Standard_D3_v2")
+    bootstrap_options          = optional(string)
+    zone                       = string
+    disk_type                  = optional(string, "StandardSSD_LRS")
+    disk_name                  = string
+    avset_id                   = optional(string)
+    accelerated_networking     = optional(bool, true)
+    encryption_at_host_enabled = optional(bool)
+    disk_encryption_set_id     = optional(string)
+    diagnostics_storage_uri    = optional(string)
+    identity_type              = optional(string, "SystemAssigned")
+    identity_ids               = optional(list(string), [])
   })
 ```
 
@@ -277,17 +274,14 @@ Following configuration options are available:
 - `name`                      - (`string`, required) the interface name
 - `subnet_id`                 - (`string`, required) ID of an existing subnet to create the interface in
 - `private_ip_address`        - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                                skipped Azure will assign one dynamically.
-                                
-    Keep in mind that a dynamic IP is guarantied not to change as long as the VM is running. Any stop/deallocate/restart
-    operation might cause the IP to change.
-
+                                skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not to
+                                change as long as the VM is running. Any stop/deallocate/restart operation might cause the IP to
+                                change.
 - `create_public_ip`          - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface
 - `public_ip_name`            - (`string`, optional, defaults to `null`) name of the public IP to associate with the interface.
-
-    When `create_public_ip` is set to `true` this will become a name of a newly created Public IP interface. Otherwise this is
-    a name of an existing interfaces that will be sourced and attached to the interface.
-
+                                When `create_public_ip` is set to `true` this will become a name of a newly created Public IP
+                                interface. Otherwise this is a name of an existing interfaces that will be sourced and attached
+                                to the interface.
 - `public_ip_resource_group`  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
                                 contains public IP that that will be associated with the interface. Used only when 
                                 `create_public_ip` is `false`.

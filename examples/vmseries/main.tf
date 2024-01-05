@@ -233,10 +233,10 @@ module "bootstrap" {
 
   for_each = var.bootstrap_storages
 
-  create_storage_account = each.value.create_storage_account
-  name                   = each.value.name
-  resource_group_name    = coalesce(each.value.resource_group_name, local.resource_group.name)
-  location               = var.location
+  storage_account     = each.value.storage_account
+  name                = each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
+  location            = var.location
 
   storage_network_security = merge(
     each.value.storage_network_security,

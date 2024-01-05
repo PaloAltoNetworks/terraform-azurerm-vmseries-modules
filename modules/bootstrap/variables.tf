@@ -29,15 +29,50 @@ variable "tags" {
   type        = map(string)
 }
 
-variable "create_storage_account" {
+variable "storage_account" {
   description = <<-EOF
-  Controls creation of a Storage Account.
+  A map controlling basic Storage Account configuration.
+
+  Following properties are available:
+
+  - `create`           - (`bool`, optional, defaults to `true`) controls if the Storage Account is created or sourced.
+  - `replication_type` - (`string`, optional, defaults to `LRS`) only for newly created Storage Accounts, defines the replication
+                         type used. Can be one of the following values: `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` or `RAGZRS`.
+  - `kind`             - (`string`, optional, defaults to `StorageV2`) only for newly created Storage Accounts, defines the
+                         account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` or
+                         `StorageV2`.
+  - `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the account
+                         tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
+                         `FileStorage` the `tier` can only be set to `Premium`.
   
-  When set to `false` an existing Storage Account will be used to create bootstrap file shares.
   EOF
-  default     = true
+  default     = {}
   nullable    = false
-  type        = bool
+  type = object({
+    create           = optional(bool, true)
+    replication_type = optional(string, "LRS")
+    kind             = optional(string, "StorageV2")
+    tier             = optional(string, "Standard")
+  })
+  validation { # replication_type
+    condition     = contains(["LRS", "GRS", "RAGRS", "ZRS", "GZRS", "RAGZRS"], var.storage_account.replication_type)
+    error_message = "The `replication_type` property can be one of: \"LRS\", \"GRS\", \"RAGRS\", \"ZRS\", \"GZRS\" or \"RAGZRS\"."
+  }
+  validation { # kind
+    condition     = contains(["BlobStorage", "BlockBlobStorage", "FileStorage", "Storage", "StorageV2"], var.storage_account.kind)
+    error_message = <<-EOF
+    The `kind` property can be one of: \"BlobStorage\", \"BlockBlobStorage\", \"FileStorage\", \"Storage\" 
+    or \"StorageV2\"."
+    EOF
+  }
+  validation { # tier
+    condition     = contains(["Standard", "Premium"], var.storage_account.tier)
+    error_message = "The `tier` property can be one of: \"Standard\" or \"Premium\"."
+  }
+  validation { # tier && kind
+    condition     = contains(["BlockBlobStorage", "FileStorage"], var.storage_account.kind) ? var.storage_account.tier == "Premium" : true
+    error_message = "If the `kind` property is set to either \"BlockBlobStorage\" or \"FileStorage\", the `tier` has to be set to \"Premium\"."
+  }
 }
 
 variable "storage_network_security" {
