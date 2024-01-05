@@ -19,6 +19,7 @@ variable "tags" {
   type        = map(string)
 }
 
+# REFACTOR: LB : think how to handle zones in the same way we do it for other modules - null does not mean zone-redundant
 variable "zones" {
   description = <<-EOF
   Controls zones for Load Balancer's Fronted IP configurations.
