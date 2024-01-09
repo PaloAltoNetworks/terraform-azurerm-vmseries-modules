@@ -243,14 +243,14 @@ variable "load_balancers" {
       base_priority           = optional(number)
     }))
     frontend_ips = optional(map(object({
-      name                     = string
-      public_ip_name           = optional(string)
-      create_public_ip         = optional(bool, false)
-      public_ip_resource_group = optional(string)
-      vnet_key                 = optional(string)
-      subnet_key               = optional(string)
-      private_ip_address       = optional(string)
-      gwlb_key                 = optional(string)
+      name                          = string
+      public_ip_name                = optional(string)
+      create_public_ip              = optional(bool, false)
+      public_ip_resource_group_name = optional(string)
+      vnet_key                      = optional(string)
+      subnet_key                    = optional(string)
+      private_ip_address            = optional(string)
+      gwlb_key                      = optional(string)
       in_rules = optional(map(object({
         name                = string
         protocol            = string
@@ -403,7 +403,7 @@ variable "vmseries" {
     - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`
     - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`
     - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface
-    - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
+    - `public_ip_resource_group_name ` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
     - `load_balancer_key` : (string) key of a Load Balancer defined in the `var.loadbalancers`  variable, defaults to `null`
     - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
 

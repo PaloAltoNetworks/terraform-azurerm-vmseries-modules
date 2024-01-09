@@ -13,14 +13,17 @@ variable "location" {
 variable "name_prefix" {
   description = <<-EOF
   A prefix that will be added to all created resources.
-  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+  There is no default delimiter applied between the prefix and the resource name.
+  Please include the delimiter in the actual prefix.
 
   Example:
   ```
   name_prefix = "test-"
   ```
   
-  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+  **Note!** \
+  This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name,
+  even if it is also prefixed with the same value as the one in this property.
   EOF
   default     = ""
   type        = string
@@ -28,7 +31,9 @@ variable "name_prefix" {
 
 variable "create_resource_group" {
   description = <<-EOF
-  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+  When set to `true` it will cause a Resource Group creation.
+  Name of the newly specified RG is controlled by `resource_group_name`.
+  
   When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
   EOF
   default     = true
@@ -243,14 +248,14 @@ variable "load_balancers" {
       base_priority           = optional(number)
     }))
     frontend_ips = optional(map(object({
-      name                     = string
-      public_ip_name           = optional(string)
-      create_public_ip         = optional(bool, false)
-      public_ip_resource_group = optional(string)
-      vnet_key                 = optional(string)
-      subnet_key               = optional(string)
-      private_ip_address       = optional(string)
-      gwlb_key                 = optional(string)
+      name                          = string
+      public_ip_name                = optional(string)
+      create_public_ip              = optional(bool, false)
+      public_ip_resource_group_name = optional(string)
+      vnet_key                      = optional(string)
+      subnet_key                    = optional(string)
+      private_ip_address            = optional(string)
+      gwlb_key                      = optional(string)
       in_rules = optional(map(object({
         name                = string
         protocol            = string
@@ -273,36 +278,6 @@ variable "load_balancers" {
 }
 
 
-
-### GENERIC VMSERIES
-variable "vmseries_version" {
-  description = "VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per firewall, see `var.vmseries` variable."
-  type        = string
-}
-
-variable "vmseries_vm_size" {
-  description = "Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per firewall, see `var.vmseries` variable."
-  type        = string
-}
-
-variable "vmseries_sku" {
-  description = "VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks`"
-  default     = "byol"
-  type        = string
-}
-
-variable "vmseries_username" {
-  description = "Initial administrative username to use for all systems."
-  default     = "panadmin"
-  type        = string
-}
-
-variable "vmseries_password" {
-  description = "Initial administrative password to use for all systems. Set to null for an auto-generated password."
-  default     = null
-  type        = string
-}
-
 variable "availability_sets" {
   description = <<-EOF
   A map defining availability sets. Can be used to provide infrastructure high availability when zones cannot be used.
@@ -312,11 +287,18 @@ variable "availability_sets" {
   - `update_domain_count` - specifies the number of update domains that are used, defaults to 5 (Azure defaults).
   - `fault_domain_count` - specifies the number of fault domains that are used, defaults to 3 (Azure defaults).
 
-  Please keep in mind that Azure defaults are not working for each region (especially the small ones, w/o any Availability Zones). Please verify how many update and fault domain are supported in a region before deploying this resource.
+  Please keep in mind that Azure defaults are not working for each region (especially the small ones, w/o any Availability Zones).
+  Please verify how many update and fault domain are supported in a region before deploying this resource.
   EOF
   default     = {}
-  type        = any
+  nullable    = false
+  type = map(object({
+    name                = string
+    update_domain_count = optional(number, 5)
+    fault_domain_count  = optional(number, 3)
+  }))
 }
+
 
 variable "ngfw_metrics" {
   description = <<-EOF
@@ -352,100 +334,127 @@ variable "ngfw_metrics" {
   })
 }
 
-variable "bootstrap_storage" {
+variable "bootstrap_storages" {
   description = <<-EOF
-  A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs. This variable defines only Storage Accounts, file shares are defined per each VM. See `vmseries` variable, `bootstrap_storage` property.
-
-  Following properties are supported (except for name, all are optional):
-
-  - `name` : name of the Storage Account. Please keep in mind that storage account name has to be globally unique. This name will not be prefixed with the value of `var.name_prefix`.
-  - `create_storage_account` : (defaults to `true`) create or source (when `false`) an existing Storage Account.
-  - `resource_group_name` : (defaults to `var.resource_group_name`) name of the Resource Group hosting the Storage Account (existing or newly created). The RG has to exist.
-  - `storage_acl` : (defaults to `false`) enables network ACLs on the Storage Account. If this is enabled - `storage_allow_vnet_subnets` and `storage_allow_inbound_public_ips` options become available. The ACL defaults to default `Deny`.
-  - `storage_allow_vnet_subnets` : (defaults to `[]`) whitelist containing the allowed vnet and associated subnets that are allowed to access the Storage Account. Note that the respective subnets require `enable_storage_service_endpoint` set to `true` to work properly.
-  - `storage_allow_inbound_public_ips` : (defaults to `[]`) whitelist containing the allowed public IP subnets that can access the Storage Account. Note that the code automatically tries to query https://ifconfig.me/ip to obtain the public IP address of the machine executing the code so that the bootstrap files can be successfully uploaded to the Storage Account.
-
-  The properties below do not directly change anything in the Storage Account settings. They can be used to control common parts of the `DAY0` configuration (used only when full bootstrap is used). These properties can also be specified per firewall, but when specified here they tak higher precedence:
-  - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
-  - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
-  - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.
-  - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).
-
+  A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
   EOF
   default     = {}
-  type        = any
+  nullable    = false
+  type = map(object({
+    name = string
+    storage_account = optional(object({
+      create           = optional(bool)
+      replication_type = optional(string)
+      kind             = optional(string)
+      tier             = optional(string)
+    }), {})
+    resource_group_name = optional(string)
+    file_shares_configuration = optional(object({
+      create_file_shares            = optional(bool)
+      disable_package_dirs_creation = optional(bool)
+      quota                         = optional(number)
+      access_tier                   = optional(string)
+      vnet_key                      = optional(string)
+    }), {})
+    storage_network_security = optional(object({
+      min_tls_version     = optional(string)
+      allowed_public_ips  = optional(list(string))
+      allowed_subnet_keys = optional(list(string), [])
+    }), {})
+    file_shares = optional(map(object({
+      name                   = string
+      bootstrap_package_path = optional(string)
+      bootstrap_files        = optional(map(string))
+      bootstrap_files_md5    = optional(map(string))
+      quota                  = optional(number)
+      access_tier            = optional(string)
+    })), {})
+  }))
 }
 
 variable "vmseries" {
   description = <<-EOF
-  Map of virtual machines to create to run VM-Series - inbound firewalls. Following properties are supported:
+  Map of virtual machines to create to run VM-Series - inbound firewalls.
+  
+  Following properties are supported:
 
-  - `name` : name of the VMSeries virtual machine.
-  - `vm_size` : size of the VMSeries virtual machine, when specified overrides `var.vmseries_vm_size`.
-  - `version` : PanOS version, when specified overrides `var.vmseries_version`.
-  - `vnet_key` : a key of a VNET defined in the `var.vnets` map. This value will be used during network interfaces creation.
-  - `add_to_appgw_backend` : bool, `false` by default, set this to `true` to add this backend to an Application Gateway.
-  - `avzone`: the Azure Availability Zone identifier ("1", "2", "3"). Default is "1".
-  - `availability_set_key` : a key of an Availability Set as declared in `availability_sets` property. Specify when HA is required but cannot go for zonal deployment.
+  use this:
+  - `authentication`  - (`map`, optional) authentication settings for the deployed VM.
 
-  - `bootstrap_options` : string, optional bootstrap options to pass to VM-Series instances, semicolon separated values. When defined this precedence over `bootstrap_storage`
-  - `bootstrap_storage` : a map containing definition of the bootstrap package content. When present triggers a creation of a File Share in an existing Storage Account, following properties supported:
-    - `name` : a name of a key in `var.bootstrap_storage` variable defining a Storage Account
-    - `static_files` : a map where key is a path to a file, value is the location of the file in the bootstrap package (file share). All files in this map are copied 1:1 to the bootstrap package
-    - `template_bootstrap_xml` : path to the `bootstrap.xml` template. When defined it will trigger creation of the `bootstrap.xml` file and the file will be uploaded to the storage account. This is a simple `day 0` configuration file that should set up only basic networking. Specifying this property forces additional properties that are required to properly template the file. They can be defined per each VM or globally for all VMs (in this case place them in the bootstrap storage definition). The properties are listed below.
-    - `public_snet_key` : required, name of the key in `var.vnets` map defining a public subnet, required to calculate the Azure router IP for the public subnet.
-    - `private_snet_key` : required, name of the key in `var.vnets` map defining a private subnet, required to calculate the Azure router IP for the private subnet.
-    - `intranet_cidr` : optional, CIDR of the private networks required to build a general static route to resources protected by this firewall, when skipped the 1st CIDR from `vnet_name` address space will be used.
-    - `ai_update_interval` : if Application Insights are used this property can override the default metrics update interval (in minutes).
+      The `authentication` property is optional and holds the firewall admin access details. By default, standard username
+      `panadmin` will be set and a random password will be auto-generated for you.
 
-  - `interfaces` : configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:
-    - `name`: string that will form the NIC name
-    - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`
-    - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`
-    - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface
-    - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
-    - `load_balancer_key` : (string) key of a Load Balancer defined in the `var.loadbalancers`  variable, defaults to `null`
-    - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
+      **Note!** \
+      The `disable_password_authentication` property is by default `false` in this example. When using this value, you don't have
+      to specify anything but you can still additionally pass SSH keys for authentication. You can however set this property to 
+      `true`, then you have to specify `ssh_keys` property.
 
-  Example:
-  ```
-  {
-    "fw01" = {
-      name = "firewall01"
-      bootstrap_storage = {
-        name                   = "storageaccountname"
-        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-        template_bootstrap_xml = "templates/bootstrap_common.tmpl"
-        public_snet_key        = "public"
-        private_snet_key       = "private"
-      }
-      avzone   = 1
-      vnet_key = "trust"
-      interfaces = [
-        {
-          name               = "mgmt"
-          subnet_key         = "mgmt"
-          create_pip         = true
-          private_ip_address = "10.0.0.1"
-        },
-        {
-          name                 = "trust"
-          subnet_key           = "private"
-          private_ip_address   = "10.0.1.1"
-          load_balancer_key    = "private_lb"
-        },
-        {
-          name                 = "untrust"
-          subnet_key           = "public"
-          private_ip_address   = "10.0.2.1"
-          load_balancer_key    = "public_lb"
-          public_ip_name       = "existing_public_ip"
-        }
-      ]
-    }
-  }
-  ```
+      For all properties and their default values see [module's documentation](../../modules/panorama/README.md#authentication).
+
   EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    name = string
+    authentication = optional(object({
+      username                        = optional(string, "panadmin")
+      password                        = optional(string)
+      disable_password_authentication = optional(bool, false)
+      ssh_keys                        = optional(list(string), [])
+    }), {})
+    image = object({
+      version                 = optional(string)
+      publisher               = optional(string)
+      offer                   = optional(string)
+      sku                     = optional(string)
+      enable_marketplace_plan = optional(bool)
+      custom_id               = optional(string)
+    })
+    virtual_machine = object({
+      vnet_key          = string
+      size              = optional(string)
+      bootstrap_options = optional(string)
+      bootstrap_package = optional(object({
+        bootstrap_storage_key  = string
+        static_files           = optional(map(string), {})
+        bootstrap_xml_template = optional(string)
+        bootstrap_package_path = optional(string)
+        private_snet_key       = string
+        public_snet_key        = string
+        ai_update_interval     = optional(number, 5)
+        intranet_cidr          = optional(string)
+      }))
+      zone                       = string
+      disk_type                  = optional(string)
+      disk_name                  = optional(string)
+      avset_key                  = optional(string)
+      accelerated_networking     = optional(bool)
+      encryption_at_host_enabled = optional(bool)
+      disk_encryption_set_id     = optional(string)
+      diagnostics_storage_uri    = optional(string)
+      identity_type              = optional(string)
+      identity_ids               = optional(list(string))
+      allow_extension_operations = optional(bool)
+    })
+    interfaces = list(object({
+      name                          = string
+      subnet_key                    = string
+      create_public_ip              = optional(bool, false)
+      public_ip_name                = optional(string)
+      public_ip_resource_group_name = optional(string)
+      private_ip_address            = optional(string)
+      load_balancer_key             = optional(string)
+      add_to_appgw_backend          = optional(bool, false)
+    }))
+  }))
+  validation {
+    condition = alltrue([
+      for _, v in var.vmseries :
+      v.virtual_machine.bootstrap_options != null && v.virtual_machine.bootstrap_package == null ||
+      v.virtual_machine.bootstrap_options == null && v.virtual_machine.bootstrap_package != null
+    ])
+    error_message = "Either `bootstrap_options` or `bootstrap_package` property can be set."
+  }
 }
 
 ### Application Gateway

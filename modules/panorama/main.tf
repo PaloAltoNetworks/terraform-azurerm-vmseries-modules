@@ -18,7 +18,7 @@ data "azurerm_public_ip" "this" {
   }
 
   name                = each.value.public_ip_name
-  resource_group_name = try(each.value.public_ip_resource_group, null) != null ? each.value.public_ip_resource_group : var.resource_group_name
+  resource_group_name = try(each.value.public_ip_resource_group, null) != null ? each.value.public_ip_resource_group_name : var.resource_group_name
 }
 
 # Build Panorama interface

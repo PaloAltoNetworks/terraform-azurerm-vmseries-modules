@@ -111,7 +111,7 @@ resource "azurerm_linux_virtual_machine" "this" {
 }
 
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
-  for_each = { for v in var.interfaces : v.name => v.lb_backend_pool_id if v.lb_backend_pool_id != null }
+  for_each = { for v in var.interfaces : v.name => v.lb_backend_pool_id if v.attach_to_lb_backend_pool }
 
   backend_address_pool_id = each.value
   ip_configuration_name   = azurerm_network_interface.this[each.key].ip_configuration[0].name

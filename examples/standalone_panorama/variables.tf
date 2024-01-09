@@ -167,7 +167,7 @@ variable "panoramas" {
     - `subnet_key` : (string) a key of a subnet as defined in `var.vnets`
     - `create_pip` : (boolean) flag to create Public IP for an interface, defaults to `false`
     - `public_ip_name` : (string) when `create_pip` is set to `false` a name of a Public IP resource that should be associated with this Network Interface
-    - `public_ip_resource_group` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
+    - `public_ip_resource_group_name ` : (string) when associating an existing Public IP resource, name of the Resource Group the IP is placed in, defaults to the `var.resource_group_name`
     - `private_ip_address` : (string) a static IP address that should be assigned to an interface, defaults to `null` (in that case DHCP is used)
 
   - `logging_disks` : a map containing configuration of additional disks that should be attached to a Panorama appliance. Following properties are available:

@@ -22,7 +22,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"]
+            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -105,10 +105,6 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
-      "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
-      }
     }
   }
 }
@@ -117,10 +113,12 @@ vnets = {
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name                              = "public-lb"
-    nsg_vnet_key                      = "transit"
-    nsg_key                           = "public"
-    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    name = "public-lb"
+    nsg_auto_rules_settings = {
+      nsg_vnet_key = "transit"
+      nsg_key      = "public"
+      source_ips   = ["0.0.0.0/0"]
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -160,105 +158,94 @@ ngfw_metrics = {
   name = "metrics"
 }
 
-
-# --- VMSERIES PART --- #
-vmseries_version = "10.2.3"
-vmseries_vm_size = "Standard_DS3_v2"
-vmseries = {
-  "fw-1" = {
-    name              = "firewall01"
-    bootstrap_options = "type=dhcp-client"
-    vnet_key          = "transit"
-    avzone            = 1
-    interfaces = [
-      {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
-      },
-      {
-        name              = "private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
-        name              = "public"
-        subnet_key        = "public"
-        load_balancer_key = "public"
-        create_pip        = true
-      }
-    ]
-    add_to_appgw_backend = true
-  }
-  "fw-2" = {
-    name              = "firewall02"
-    bootstrap_options = "type=dhcp-client"
-    vnet_key          = "transit"
-    avzone            = 2
-    interfaces = [
-      {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
-      },
-      {
-        name              = "private"
-        subnet_key        = "private"
-        load_balancer_key = "private"
-      },
-      {
-        name              = "public"
-        subnet_key        = "public"
-        load_balancer_key = "public"
-        create_pip        = true
-      }
-    ]
-    add_to_appgw_backend = true
+bootstrap_storages = {
+  "bootstrap" = {
+    name = "fosixsmplbtstrp"
+    file_shares_configuration = {
+      vnet_key = "transit"
+    }
+    storage_network_security = {
+      allowed_subnet_keys = ["management"]
+      allowed_public_ips  = ["134.238.135.14", "134.238.135.140"]
+    }
   }
 }
 
-
-# --- APPLICATION GATEWAYs --- #
-appgws = {
-  "public" = {
-    name = "appgw"
-    public_ip = {
-      name = "pip"
+# --- VMSERIES PART --- #
+vmseries = {
+  "fw-1" = {
+    name = "firewall01"
+    image = {
+      version = "10.2.3"
     }
-    vnet_key   = "transit"
-    subnet_key = "appgw"
-    zones      = ["1", "2", "3"]
-    capacity = {
-      static = 2
-    }
-    listeners = {
-      minimum = {
-        name = "minimum-listener"
-        port = 80
+    virtual_machine = {
+      vnet_key = "transit"
+      size     = "Standard_DS3_v2"
+      zone     = 1
+      bootstrap_package = {
+        bootstrap_storage_key  = "bootstrap"
+        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+        bootstrap_xml_template = "templates/bootstrap_common.tmpl"
+        bootstrap_package_path = "bootstrap_package"
+        private_snet_key       = "private"
+        public_snet_key        = "public"
       }
     }
-    rewrites = {
-      minimum = {
-        name = "minimum-set"
-        rules = {
-          "xff-strip-port" = {
-            name     = "minimum-xff-strip-port"
-            sequence = 100
-            request_headers = {
-              "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
-            }
-          }
-        }
+    interfaces = [
+      {
+        name             = "vm01-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
+      },
+      {
+        name              = "vm01-private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
+      },
+      {
+        name              = "vm01-public"
+        subnet_key        = "public"
+        create_public_ip  = true
+        load_balancer_key = "public"
       }
+    ]
+  }
+  "fw-2" = {
+    name = "firewall02"
+    image = {
+      version = "10.2.3"
     }
-    rules = {
-      minimum = {
-        name     = "minimum-rule"
-        priority = 1
-        backend  = "minimum"
-        listener = "minimum"
-        rewrite  = "minimum"
+    virtual_machine = {
+      vnet_key          = "transit"
+      size              = "Standard_DS3_v2"
+      zone              = 2
+      bootstrap_options = "type=dhcp-client"
+      # bootstrap_package = {
+      #   bootstrap_storage_key  = "bootstrap"
+      #   static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
+      #   bootstrap_xml_template = "templates/bootstrap_common.tmpl"
+      #   bootstrap_package_path = "bootstrap_package"
+      #   private_snet_key       = "private"
+      #   public_snet_key        = "public"
+      # }
+    }
+    interfaces = [
+      {
+        name             = "vm02-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
+      },
+      {
+        name              = "vm02-private"
+        subnet_key        = "private"
+        load_balancer_key = "private"
+      },
+      {
+        name              = "vm02-public"
+        subnet_key        = "public"
+        create_public_ip  = true
+        load_balancer_key = "public"
       }
-    }
+    ]
   }
 }

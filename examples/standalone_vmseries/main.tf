@@ -292,14 +292,14 @@ module "vmseries" {
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                     = "${var.name_prefix}${each.value.name}-${v.name}"
-    subnet_id                = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
-    create_public_ip         = try(v.create_pip, false)
-    public_ip_name           = try(v.public_ip_name, null)
-    public_ip_resource_group = try(v.public_ip_resource_group, null)
-    enable_backend_pool      = can(v.load_balancer_key) ? true : false
-    lb_backend_pool_id       = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
-    private_ip_address       = try(v.private_ip_address, null)
+    name                          = "${var.name_prefix}${each.value.name}-${v.name}"
+    subnet_id                     = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
+    create_public_ip              = try(v.create_pip, false)
+    public_ip_name                = try(v.public_ip_name, null)
+    public_ip_resource_group_name = try(v.public_ip_resource_group_name, null)
+    enable_backend_pool           = can(v.load_balancer_key) ? true : false
+    lb_backend_pool_id            = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
+    private_ip_address            = try(v.private_ip_address, null)
   }]
 
   tags = var.tags

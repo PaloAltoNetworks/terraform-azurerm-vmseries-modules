@@ -1,6 +1,8 @@
 # Generate a random password.
 resource "random_password" "this" {
-  count = var.vmseries_password == null ? 1 : 0
+  count = anytrue([
+    for _, v in var.vmseries : v.authentication.password == null
+  ]) ? 1 : 0
 
   length           = 16
   min_lower        = 16 - 4
@@ -11,14 +13,16 @@ resource "random_password" "this" {
 }
 
 locals {
-  vmseries_password = coalesce(var.vmseries_password, try(random_password.this[0].result, null))
-}
-
-# Obtain Public IP address of code deployment machine
-
-data "http" "this" {
-  count = length(var.bootstrap_storage) > 0 && anytrue([for v in values(var.bootstrap_storage) : try(v.storage_acl, false)]) ? 1 : 0
-  url   = "https://ifconfig.me/ip"
+  authentication = {
+    for k, v in var.vmseries : k =>
+    merge(
+      v.authentication,
+      {
+        ssh_keys = [for ssh_key in v.authentication.ssh_keys : file(ssh_key)]
+        password = coalesce(v.authentication.password, try(random_password.this[0].result, null))
+      }
+    )
+  }
 }
 
 # Create or source the Resource Group.
@@ -131,7 +135,6 @@ module "load_balancer" {
 
 
 
-
 # create the actual VMSeries VMs and resources
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"
@@ -155,39 +158,35 @@ module "ngfw_metrics" {
 }
 
 resource "local_file" "bootstrap_xml" {
-  for_each = { for k, v in var.vmseries : k => v if can(v.bootstrap_storage.template_bootstrap_xml) }
+  for_each = {
+    for k, v in var.vmseries :
+    k => v.virtual_machine
+    if try(v.virtual_machine.bootstrap_package.bootstrap_xml_template != null, false)
+  }
 
-  filename = "files/${each.value.name}-bootstrap.xml"
+  filename = "files/${each.key}-bootstrap.xml"
   content = templatefile(
-    each.value.bootstrap_storage.template_bootstrap_xml,
+    each.value.bootstrap_package.bootstrap_xml_template,
     {
       private_azure_router_ip = cidrhost(
-        try(
-          module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_storage.private_snet_key],
-          module.vnet[each.value.vnet_key].subnet_cidrs[var.bootstrap_storage[each.value.bootstrap_storage.name].private_snet_key]
-        ),
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.private_snet_key],
         1
       )
 
       public_azure_router_ip = cidrhost(
-        try(
-          module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_storage.public_snet_key],
-          module.vnet[each.value.vnet_key].subnet_cidrs[var.bootstrap_storage[each.value.bootstrap_storage.name].public_snet_key]
-        ),
+        module.vnet[each.value.vnet_key].subnet_cidrs[each.value.bootstrap_package.public_snet_key],
         1
       )
 
-      ai_instr_key = try(module.ngfw_metrics[0].metrics_instrumentation_keys[each.key], null)
-
-      ai_update_interval = try(
-        each.value.bootstrap_storage.ai_update_interval,
-        var.bootstrap_storage[each.value.bootstrap_storage.name].ai_update_interval,
-        5
+      ai_instr_key = try(
+        module.ngfw_metrics[0].metrics_instrumentation_keys[each.key],
+        null
       )
 
-      private_network_cidr = try(
-        each.value.bootstrap_storage.intranet_cidr,
-        var.bootstrap_storage[each.value.bootstrap_storage.name].intranet_cidr,
+      ai_update_interval = each.value.bootstrap_package.ai_update_interval
+
+      private_network_cidr = coalesce(
+        each.value.bootstrap_package.intranet_cidr,
         module.vnet[each.value.vnet_key].vnet_cidr[0]
       )
 
@@ -203,52 +202,53 @@ resource "local_file" "bootstrap_xml" {
   ]
 }
 
+locals {
+  bootstrap_file_shares_flat = flatten([
+    for k, v in var.vmseries :
+    merge(v.virtual_machine.bootstrap_package, { vm_key = k })
+    if v.virtual_machine.bootstrap_package != null
+  ])
+
+  bootstrap_file_shares = { for k, v in var.bootstrap_storages : k => {
+    for file_share in local.bootstrap_file_shares_flat : file_share.vm_key => {
+      name                   = file_share.vm_key
+      bootstrap_package_path = file_share.bootstrap_package_path
+      bootstrap_files = merge(
+        file_share.static_files,
+        file_share.bootstrap_xml_template == null ? {} : {
+          "files/${file_share.vm_key}-bootstrap.xml" = "config/bootstrap.xml"
+        }
+      )
+      bootstrap_files_md5 = file_share.bootstrap_xml_template == null ? {} : {
+        "files/${file_share.vm_key}-bootstrap.xml" = local_file.bootstrap_xml[file_share.vm_key].content_md5
+      }
+    } if file_share.bootstrap_storage_key == k }
+  }
+}
+
 module "bootstrap" {
   source = "../../modules/bootstrap"
 
-  for_each = var.bootstrap_storage
+  for_each = var.bootstrap_storages
 
-  create_storage_account           = try(each.value.create_storage, true)
-  name                             = each.value.name
-  resource_group_name              = try(each.value.resource_group_name, local.resource_group.name)
-  location                         = var.location
-  storage_acl                      = try(each.value.storage_acl, false)
-  storage_allow_vnet_subnet_ids    = try(flatten([for v in each.value.storage_allow_vnet_subnets : [module.vnet[v.vnet_key].subnet_ids[v.subnet_key]]]), [])
-  storage_allow_inbound_public_ips = concat(try(each.value.storage_allow_inbound_public_ips, []), try([data.http.this[0].response_body], []))
+  storage_account     = each.value.storage_account
+  name                = each.value.name
+  resource_group_name = coalesce(each.value.resource_group_name, local.resource_group.name)
+  location            = var.location
 
-  tags = var.tags
-}
-
-module "bootstrap_share" {
-  source = "../../modules/bootstrap"
-
-  for_each = { for k, v in var.vmseries : k => v if can(v.bootstrap_storage) }
-
-  create_storage_account = false
-  name                   = module.bootstrap[each.value.bootstrap_storage.name].storage_account.name
-  resource_group_name    = try(var.bootstrap_storage[each.value.bootstrap_storage].resource_group_name, local.resource_group.name)
-  location               = var.location
-  storage_share_name     = each.key
-  files = merge(
-    each.value.bootstrap_storage.static_files,
-    can(each.value.bootstrap_storage.template_bootstrap_xml) ? {
-      "files/${each.value.name}-bootstrap.xml" = "config/bootstrap.xml"
-    } : {}
+  storage_network_security = merge(
+    each.value.storage_network_security,
+    each.value.file_shares_configuration.vnet_key == null ? {} : {
+      allowed_subnet_ids = [
+        for v in each.value.storage_network_security.allowed_subnet_keys :
+        module.vnet[each.value.file_shares_configuration.vnet_key].subnet_ids[v]
+    ] }
   )
-
-  files_md5 = can(each.value.bootstrap_storage.template_bootstrap_xml) ? {
-    "files/${each.value.name}-bootstrap.xml" = local_file.bootstrap_xml[each.key].content_md5
-  } : {}
+  file_shares_configuration = each.value.file_shares_configuration
+  file_shares               = local.bootstrap_file_shares[each.key]
 
   tags = var.tags
-
-  depends_on = [
-    local_file.bootstrap_xml,
-    module.bootstrap
-  ]
 }
-
-
 
 resource "azurerm_availability_set" "this" {
   for_each = var.availability_sets
@@ -256,8 +256,8 @@ resource "azurerm_availability_set" "this" {
   name                         = "${var.name_prefix}${each.value.name}"
   resource_group_name          = local.resource_group.name
   location                     = var.location
-  platform_update_domain_count = try(each.value.update_domain_count, null)
-  platform_fault_domain_count  = try(each.value.fault_domain_count, null)
+  platform_update_domain_count = each.value.update_domain_count
+  platform_fault_domain_count  = each.value.fault_domain_count
 
   tags = var.tags
 }
@@ -267,47 +267,50 @@ module "vmseries" {
 
   for_each = var.vmseries
 
+  name                = "${var.name_prefix}${each.value.name}"
   location            = var.location
   resource_group_name = local.resource_group.name
 
-  name        = "${var.name_prefix}${each.value.name}"
-  username    = var.vmseries_username
-  password    = local.vmseries_password
-  img_version = try(each.value.version, var.vmseries_version)
-  img_sku     = var.vmseries_sku
-  vm_size     = try(each.value.vm_size, var.vmseries_vm_size)
-  avset_id    = try(azurerm_availability_set.this[each.value.availability_set_key].id, null)
-
-  enable_zones = var.enable_zones
-  avzone       = try(each.value.avzone, 1)
-  bootstrap_options = try(
-    each.value.bootstrap_options,
-    join(",", [
-      "storage-account=${module.bootstrap[each.value.bootstrap_storage.name].storage_account.name}",
-      "access-key=${module.bootstrap[each.value.bootstrap_storage.name].storage_account.primary_access_key}",
-      "file-share=${each.key}",
-      "share-directory=None"
-    ]),
-    ""
+  authentication = local.authentication[each.key]
+  image          = each.value.image
+  virtual_machine = merge(
+    each.value.virtual_machine,
+    {
+      disk_name = "${var.name_prefix}${coalesce(each.value.virtual_machine.disk_name, "${each.value.name}-osdisk")}"
+      avset_id  = try(azurerm_availability_set.this[each.value.virtual_machine.avset_key].id, null)
+      bootstrap_options = try(
+        coalesce(
+          each.value.virtual_machine.bootstrap_options,
+          join(",", [
+            "storage-account=${module.bootstrap[each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_name}",
+            "access-key=${module.bootstrap[each.value.virtual_machine.bootstrap_package.bootstrap_storage_key].storage_account_primary_access_key}",
+            "file-share=${each.key}",
+            "share-directory=None"
+          ]),
+        ),
+        null
+      )
+    }
   )
 
   interfaces = [for v in each.value.interfaces : {
-    name                     = "${var.name_prefix}${each.value.name}-${v.name}"
-    subnet_id                = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
-    create_public_ip         = try(v.create_pip, false)
-    public_ip_name           = try(v.public_ip_name, null)
-    public_ip_resource_group = try(v.public_ip_resource_group, null)
-    enable_backend_pool      = can(v.load_balancer_key) ? true : false
-    lb_backend_pool_id       = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
-    private_ip_address       = try(v.private_ip_address, null)
+    name                          = "${var.name_prefix}${v.name}"
+    subnet_id                     = module.vnet[each.value.virtual_machine.vnet_key].subnet_ids[v.subnet_key]
+    create_public_ip              = v.create_public_ip
+    public_ip_name                = v.create_public_ip ? "${var.name_prefix}${coalesce(v.public_ip_name, "${v.name}-pip")}" : v.public_ip_name
+    public_ip_resource_group_name = v.public_ip_resource_group_name
+    private_ip_address            = v.private_ip_address
+    attach_to_lb_backend_pool     = v.load_balancer_key != null
+    lb_backend_pool_id            = try(module.load_balancer[v.load_balancer_key].backend_pool_id, null)
+
   }]
 
   tags = var.tags
   depends_on = [
     module.vnet,
     azurerm_availability_set.this,
+    module.load_balancer,
     module.bootstrap,
-    module.bootstrap_share
   ]
 }
 

@@ -232,6 +232,7 @@ List of other, optional properties:
                                     "SystemAssigned, UserAssigned".
 - `identity_ids`                  - (`list`, optional, defaults to `[]`) a list of User Assigned Managed Identity IDs to be 
                                     assigned to this VM. Required only if `identity_type` is not "SystemAssigned"
+- `allow_extension_operations`    - (`bool`, optional, defaults to `false`) should Extension Operations be allowed on this VM
 
 
 
@@ -251,6 +252,7 @@ object({
     diagnostics_storage_uri    = optional(string)
     identity_type              = optional(string, "SystemAssigned")
     identity_ids               = optional(list(string), [])
+    allow_extension_operations = optional(bool, false)
   })
 ```
 
@@ -282,9 +284,11 @@ Following configuration options are available:
                                 When `create_public_ip` is set to `true` this will become a name of a newly created Public IP
                                 interface. Otherwise this is a name of an existing interfaces that will be sourced and attached
                                 to the interface.
-- `public_ip_resource_group`  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
+- `public_ip_resource_group_name`  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
                                 contains public IP that that will be associated with the interface. Used only when 
                                 `create_public_ip` is `false`.
+- `attach_to_lb_backend_pool` - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
+                                interface with a Load Balancer backend pool.
 - `lb_backend_pool_id`        - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
                                 interface with.
 
@@ -301,11 +305,12 @@ Example:
   },
   # public interface reusing an existing public IP resource
   {
-    name                = "fw-public"
-    subnet_id           = azurerm_subnet.my_pub_subnet.id
-    lb_backend_pool_id  = module.inbound_lb.backend_pool_id
-    create_public_ip    = false
-    public_ip_name      = "fw-public-pip"
+    name                      = "fw-public"
+    subnet_id                 = azurerm_subnet.my_pub_subnet.id
+    attach_to_lb_backend_pool = true
+    lb_backend_pool_id        = module.inbound_lb.backend_pool_id
+    create_public_ip          = false
+    public_ip_name            = "fw-public-pip"
   },
 ]
 ```
@@ -316,13 +321,14 @@ Type:
 
 ```hcl
 list(object({
-    name                     = string
-    subnet_id                = string
-    create_public_ip         = optional(bool, false)
-    public_ip_name           = optional(string)
-    public_ip_resource_group = optional(string)
-    private_ip_address       = optional(string)
-    lb_backend_pool_id       = optional(string)
+    name                          = string
+    subnet_id                     = string
+    create_public_ip              = optional(bool, false)
+    public_ip_name                = optional(string)
+    public_ip_resource_group_name = optional(string)
+    private_ip_address            = optional(string)
+    lb_backend_pool_id            = optional(string)
+    attach_to_lb_backend_pool     = optional(bool, false)
   }))
 ```
 

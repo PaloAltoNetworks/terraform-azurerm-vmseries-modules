@@ -222,15 +222,15 @@ module "vmseries" {
 
   interfaces = [for interface in each.value.interfaces :
     {
-      name                     = "${var.name_prefix}${each.value.name}-${interface.name}"
-      subnet_id                = module.vnet[var.vmseries_common.vnet_key].subnet_ids[interface.subnet_key]
-      create_public_ip         = try(interface.create_public_ip, false)
-      public_ip_name           = try(interface.public_ip_name, null)
-      public_ip_resource_group = try(interface.public_ip_resource_group, null)
-      private_ip_address       = try(interface.private_ip_address, null)
-      enable_backend_pool      = try(interface.enable_backend_pool, false)
-      lb_backend_pool_id       = try(interface.enable_backend_pool, false) ? module.gwlb[interface.gwlb_key].backend_pool_ids[interface.gwlb_backend_key] : null
-      tags                     = try(interface.tags, null)
+      name                          = "${var.name_prefix}${each.value.name}-${interface.name}"
+      subnet_id                     = module.vnet[var.vmseries_common.vnet_key].subnet_ids[interface.subnet_key]
+      create_public_ip              = try(interface.create_public_ip, false)
+      public_ip_name                = try(interface.public_ip_name, null)
+      public_ip_resource_group_name = try(interface.public_ip_resource_group_name, null)
+      private_ip_address            = try(interface.private_ip_address, null)
+      enable_backend_pool           = try(interface.enable_backend_pool, false)
+      lb_backend_pool_id            = try(interface.enable_backend_pool, false) ? module.gwlb[interface.gwlb_key].backend_pool_ids[interface.gwlb_backend_key] : null
+      tags                          = try(interface.tags, null)
     }
   ]
 

@@ -73,12 +73,12 @@ module "panorama" {
   panorama_version    = try(each.value.version, var.panorama_version)
 
   interfaces = [for v in each.value.interfaces : {
-    name                     = "${var.name_prefix}${each.value.name}-${v.name}"
-    subnet_id                = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
-    create_public_ip         = try(v.create_pip, false)
-    public_ip_name           = try(v.public_ip_name, null)
-    public_ip_resource_group = try(v.public_ip_resource_group, null)
-    private_ip_address       = try(v.private_ip_address, null)
+    name                          = "${var.name_prefix}${each.value.name}-${v.name}"
+    subnet_id                     = try(module.vnet[each.value.vnet_key].subnet_ids[v.subnet_key], null)
+    create_public_ip              = try(v.create_pip, false)
+    public_ip_name                = try(v.public_ip_name, null)
+    public_ip_resource_group_name = try(v.public_ip_resource_group_name, null)
+    private_ip_address            = try(v.private_ip_address, null)
   }]
 
   logging_disks = try(each.value.data_disks, {})
