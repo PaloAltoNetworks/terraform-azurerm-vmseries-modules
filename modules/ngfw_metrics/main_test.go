@@ -1,4 +1,4 @@
-package application_insights
+package ngfw_metrics
 
 import (
 	"testing"
