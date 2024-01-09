@@ -152,7 +152,7 @@ variable "interfaces" {
   description = <<-EOF
   List of the network interface specifications.
 
-  **Note!**
+  **Note!** \
   The ORDER in which you specify the interfaces DOES MATTER.
 
   Interfaces will be attached to VM in the order you define here, therefore:
