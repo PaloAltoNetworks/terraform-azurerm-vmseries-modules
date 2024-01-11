@@ -349,7 +349,7 @@ variable "scale_sets" {
       - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
                                   possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                                   `vm_size` values)
-      - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VM-Series instance
+      - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VMSeries instance
 
   - `autoscaling_configuration` - (`map`, optional, defaults to `{}`) a map that groups common autoscaling configuration, but not
                                   the scaling profiles (metrics thresholds, etc)
@@ -369,7 +369,7 @@ variable "scale_sets" {
     - `create_public_ip`        - (`bool`, optional, defaults to module defaults) create Public IP for an interface
     - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the
                                   `var.loadbalancers` variable, network interface that has this property defined will be
-                                  added to the Load Balancee's backend pool
+                                  added to the Load Balancer's backend pool
     - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the
                                   `var.appgws`, network interface that has this property defined will be added to the Application
                                   Gateways's backend pool

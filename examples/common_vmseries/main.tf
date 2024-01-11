@@ -238,10 +238,10 @@ module "bootstrap" {
 
   storage_network_security = merge(
     each.value.storage_network_security,
-    each.value.file_shares_configuration.vnet_key == null ? {} : {
+    each.value.storage_network_security.vnet_key == null ? {} : {
       allowed_subnet_ids = [
         for v in each.value.storage_network_security.allowed_subnet_keys :
-        module.vnet[each.value.file_shares_configuration.vnet_key].subnet_ids[v]
+        module.vnet[each.value.storage_network_security.vnet_key].subnet_ids[v]
     ] }
   )
   file_shares_configuration = each.value.file_shares_configuration
