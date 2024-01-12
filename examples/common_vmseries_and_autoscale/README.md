@@ -1,211 +1,959 @@
+<!-- BEGIN_TF_DOCS -->
 ---
-short_title: Common Firewall Option with Autoscaling
+short\_title: Common Firewall Option with Autoscaling
 type: refarch
-show_in_hub: true
+show\_in\_hub: true
 ---
 # Reference Architecture with Terraform: VM-Series in Azure, Centralized Architecture, Common NGFW Option with Autoscaling
 
-Palo Alto Networks produces several [validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures), which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
-The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with common VM-Series with autoscaling(Virtual Machine Scale Sets); for a discussion of other options, please see the design guide from [the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
+Palo Alto Networks produces several
+[validated reference architecture design and deployment documentation guides](https://www.paloaltonetworks.com/resources/reference-architectures),
+which describe well-architected and tested deployments. When deploying VM-Series in a public cloud, the reference architectures
+guide users toward the best security outcomes, whilst reducing rollout time and avoiding common integration efforts.
 
-Virtual Machine Scale Sets (VMSS) are used for autoscaling to run the Next Generation Firewalls, with custom data plane oriented metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane utilization). Since firewalls are added or removed automatically, they cannot be managed in a classic way. To ease licensing, management and updates a Panorama appliance is suggested. Deployment of a Panorama instance is not covered in this example, but a [dedicated one exists](../standalone_panorama/README.md).
+The Terraform code presented here will deploy Palo Alto Networks VM-Series firewalls in Azure based on a centralized design with
+common VM-Series with autoscaling(Virtual Machine Scale Sets); for a discussion of other options, please see the design guide from
+[the reference architecture guides](https://www.paloaltonetworks.com/resources/reference-architectures).
+
+Virtual Machine Scale Sets (VMSS) are used for autoscaling to run the Next Generation Firewalls, with custom data plane oriented
+metrics published by PanOS it is possible to adjust the number of firewall appliances to the current workload (data plane
+utilization). Since firewalls are added or removed automatically, they cannot be managed in a classic way. To ease licensing,
+management and updates a Panorama appliance is suggested. Deployment of a Panorama instance is not covered in this example,
+but a [dedicated one exists](../standalone\\_panorama/README.md).
 
 ## Reference Architecture Design
 
 ![simple](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6574404/a7c2452d-f926-49da-bf21-9d840282a0a2)
 
 This code implements:
-- a _centralized design_, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound, east-west, and enterprise traffic
-- the _common option_, which routes all traffic flows onto a single set of VM-Series
-- _auto scaling_ for the VM-Series, where a Virtual Machine Scale Set (VMSS) is used to provision VM-Series that will scale in and out dynamically, as workload demands fluctuate
+
+- a *centralized design*, a hub-and-spoke topology with a Transit VNet containing VM-Series to inspect all inbound, outbound,
+  east-west, and enterprise traffic
+- the *common option*, which routes all traffic flows onto a single set of VM-Series
+- *auto scaling- for the VM-Series, where a Virtual Machine Scale Set (VMSS) is used to provision VM-Series that will scale in and
+  out dynamically, as workload demands fluctuate
 
 ## Detailed Architecture and Design
 
 ### Centralized Design
 
-This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound, east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
+This design uses a Transit VNet. Application functions and resources are deployed across multiple VNets that are connected in a
+hub-and-spoke topology. The hub of the topology, or transit VNet, is the central point of connectivity for all inbound, outbound,
+east-west, and enterprise traffic. You deploy all VM-Series firewalls within the transit VNet.
 
 ### Common Option
 
-The common firewall option leverages a single set of VM-Series firewalls. The sole set of firewalls operates as a shared resource and may present scale limitations with all traffic flowing through a single set of firewalls due to the performance degradation that occurs when traffic crosses virtual routers. This option is suitable for smaller scale deployments because inbound and outbound traffic flows occur on the same set of firewalls. However, the technical integration complexity is high.
+The common firewall option leverages a single set of VM-Series firewalls. The sole set of firewalls operates as a shared resource
+and may present scale limitations with all traffic flowing through a single set of firewalls due to the performance degradation
+that occurs when traffic crosses virtual routers. This option is suitable for smaller scale deployments because inbound and
+outbound traffic flows occur on the same set of firewalls. However, the technical integration complexity is high.
 
 ![Common-VMSeries-with-autoscaling](https://github.com/PaloAltoNetworks/terraform-azurerm-vmseries-modules/assets/6500664/b10403f9-795a-4501-a189-3c21d44fc9e7)
 
 This reference architecture consists of:
 
-* a VNET containing:
-  * 4 subnets:
-    * 3 of them dedicated to the firewalls: management, private and public
-    * one dedicated to an Application Gateway
-  * Route Tables and Network Security Groups
-* 1 Virtual Machine Scale set:
-  * deployed across availability zones
-  * for inbound, outbound and east-west traffic
-  * with 3 network interfaces: management, public, private
-  * with public IP addresses assigned to:
-    * management interface
-    * public interface - due to use of a public Load Balancer this public IP is used mainly for outgoing traffic
-* 2 Load Balancers:
-  * public - with a public IP address assigned, in front of the public interfaces of the firewalls in VMSS, for incoming traffic
-  * private - in front of the private interfaces of the firewalls in VMSS, for outgoing and east-west traffic
-* an Application Insights, used to store the custom PanOS metrics sent from firewalls in scale set
-* an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
+- a VNET containing:
+  - 4 subnets:
+    - 3 of them dedicated to the firewalls: management, private and public
+    - one dedicated to an Application Gateway
+  - Route Tables and Network Security Groups
+- 1 Virtual Machine Scale set:
+  - deployed across availability zones
+  - for inbound, outbound and east-west traffic
+  - with 3 network interfaces: management, public, private
+  - with public IP addresses assigned to:
+    - management interface
+    - public interface - due to use of a public Load Balancer this public IP is used mainly for outgoing traffic
+- 2 Load Balancers:
+  - public - with a public IP address assigned, in front of the public interfaces of the firewalls in VMSS, for incoming traffic
+  - private - in front of the private interfaces of the firewalls in VMSS, for outgoing and east-west traffic
+- an Application Insights, used to store the custom PanOS metrics sent from firewalls in scale set
+- an Application Gateway, serving as a reverse proxy for incoming traffic, with a sample rule setting the XFF header properly
 
-_DISCLAIMER_ - Public IP addresses are assigned to management interfaces in this example in order to simplify the deployment. With a private Panorama connectivity in place and Panorama Software Firewall License plugin you can bootstrap the firewalls without public IPs assigned to the management interfaces. You should also enable [Automatically push content when software device registers to Panorama](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-new-features/panorama-features/automatic-content-push-for-vm-series-and-cn-series-firewalls) on the template stack and [schedule content updates using Panorama](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-upgrade/upgrade-panorama/deploy-updates-to-firewalls-log-collectors-and-wildfire-appliances-using-panorama/schedule-a-content-update-using-panorama). Alternatively content updates can be configured to be fetched via data plane interfaces with service routes.
+**Disclaimer!** \
+Public IP addresses are assigned to management interfaces in this example in order to simplify the deployment. With a private
+Panorama connectivity in place and Panorama Software Firewall License plugin you can bootstrap the firewalls without public IPs
+assigned to the management interfaces. You should also enable
+[Automatically push content when software device registers to Panorama](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-new-features/panorama-features/automatic-content-push-for-vm-series-and-cn-series-firewalls)
+on the template stack and
+[schedule content updates using Panorama](https://docs.paloaltonetworks.com/pan-os/10-2/pan-os-upgrade/upgrade-panorama/deploy-updates-to-firewalls-log-collectors-and-wildfire-appliances-using-panorama/schedule-a-content-update-using-panorama).
+Alternatively content updates can be configured to be fetched via data plane interfaces with service routes.
 
 ### Auto Scaling VM-Series
 
-Auto scaling: Public-cloud environments focus on scaling out a deployment instead of scaling up. This architectural difference stems primarily from the capability of public-cloud environments to dynamically increase or decrease the number of resources allocated to your environment. Using native Azure services like Virtual Machine Scale Sets (VMSS), Application Insights and VM-Series automation features, the guide implements VM-Series that will scale in and out dynamically, as your protected workload demands fluctuate. The VM-Series firewalls are deployed in a Virtual Machine Scale Set for inbound and outbound/east-west firewalls in common option, and are automatically registered to Azure Load Balancers.
+Auto scaling: Public-cloud environments focus on scaling out a deployment instead of scaling up. This architectural difference
+stems primarily from the capability of public-cloud environments to dynamically increase or decrease the number of resources
+allocated to your environment. Using native Azure services like Virtual Machine Scale Sets (VMSS), Application Insights and
+VM-Series automation features, the guide implements VM-Series that will scale in and out dynamically, as your protected workload
+demands fluctuate. The VM-Series firewalls are deployed in a Virtual Machine Scale Set for inbound and outbound/east-west
+firewalls in common option, and are automatically registered to Azure Load Balancers.
 
 ## Prerequisites
 
 A list of requirements might vary depending on the platform used to deploy the infrastructure but a minimum one includes:
 
-* (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
-* [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
-* if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
+- (in case of non cloud shell deployment) credentials and (optionally) tools required to authenticate against Azure Cloud, see
+  [AzureRM provider documentation for details](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure)
+- [supported](#requirements) version of [`Terraform`](<https://developer.hashicorp.com/terraform/downloads>)
+- if you have not run Palo Alto NGFW images in a subscription it might be necessary to accept the license first
+  ([see this note](../../modules/vmseries/README.md#accept-azure-marketplace-terms))
 
 A non-platform requirement would be a running Panorama instance. For full automation you might want to consider the following requirements:
 
-* a template and a template stack with `DAY0` configuration
-* a device group with security configuration (`DAY1` [iron skillet](https://github.com/PaloAltoNetworks/iron-skillet) for example) + any security and NAT rules of your choice
-* a [Panorama Software Firewall License](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/license-the-vm-series-firewall/use-panorama-based-software-firewall-license-management) plugin to automatically manage licenses on newly created devices
-* a [VM-Series](https://docs.paloaltonetworks.com/panorama/9-1/panorama-admin/panorama-plugins/plugins-types/install-the-vm-series-plugin-on-panorama) plugin to enable additional template options (custom metrics)
+- a template and a template stack with `DAY0` configuration
+- a device group with security configuration (`DAY1` [iron skillet](https://github.com/PaloAltoNetworks/iron-skillet) for example)
+  and any security and NAT rules of your choice
+- a [Panorama Software Firewall License](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/license-the-vm-series-firewall/use-panorama-based-software-firewall-license-management) plugin to automatically manage licenses on newly created devices
+- a [VM-Series](https://docs.paloaltonetworks.com/panorama/9-1/panorama-admin/panorama-plugins/plugins-types/install-the-vm-series-plugin-on-panorama)
+  plugin to enable additional template options (custom metrics)
 
-**NOTE:**
+**Note!**
 
-* after the deployment the firewalls remain not configured and not licensed.
-* this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is **only an example**. It's main purpose is to introduce the Terraform modules.
+- after the deployment the firewalls remain not configured and not licensed.
+- this example contains some **files** that **can contain sensitive data**. Keep in mind that **this code** is
+  **only an example**. It's main purpose is to introduce the Terraform modules.
 
 ## Usage
 
 ### Deployment Steps
 
-* checkout the code locally (if you haven't done so yet)
-* copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer look at the `TODO` markers). If you already have a configured Panorama (with at least minimum configuration described above) you might want to also adjust the `bootstrap_options` for the scale set ([common](./example.tfvars#L205) .
-* (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
-* initialize the Terraform module:
+- checkout the code locally (if you haven't done so yet)
+- copy the [`example.tfvars`](./example.tfvars) file, rename it to `terraform.tfvars` and adjust it to your needs (take a closer
+  look at the `TODO` markers). If you already have a configured Panorama (with at least minimum configuration described above) you
+  might want to also adjust the `bootstrap_options` for the scale set [`common`](./example.tfvars#L224).
+- (optional) authenticate to AzureRM, switch to the Subscription of your choice if necessary
+- initialize the Terraform module:
 
-      terraform init
+  ```bash
+  terraform init
+  ```
 
-* (optional) plan you infrastructure to see what will be actually deployed:
+- (optional) plan you infrastructure to see what will be actually deployed:
 
-      terraform plan
+  ```bash
+  terraform plan
+  ```
 
-* deploy the infrastructure (you will have to confirm it with typing in `yes`):
+- deploy the infrastructure (you will have to confirm it with typing in `yes`):
 
-      terraform apply
+  ```bash
+  terraform apply
+  ```
 
   The deployment takes couple of minutes. Observe the output. At the end you should see a summary similar to this:
 
-      Apply complete! Resources: 43 added, 0 changed, 0 destroyed.
+  ```console
+  Apply complete! Resources: 43 added, 0 changed, 0 destroyed.
 
-      Outputs:
+  Outputs:
 
-      lb_frontend_ips = {
-        "private" = {
-          "ha-ports" = "1.2.3.4"
-        }
-        "public" = {
-          "palo-lb-app1-pip" = "1.2.3.4"
-        }
-      }
-      metrics_instrumentation_keys = <sensitive>
-      password = <sensitive>
-      username = "panadmin"
+  lb_frontend_ips = {
+    "private" = {
+      "ha-ports" = "1.2.3.4"
+    }
+    "public" = {
+      "palo-lb-app1-pip" = "1.2.3.4"
+    }
+  }
+  metrics_instrumentation_keys = <sensitive>
+  password = <sensitive>
+  username = "panadmin"
+  ```
 
-* at this stage you have to wait couple of minutes for the firewalls to bootstrap.
+- at this stage you have to wait couple of minutes for the firewalls to bootstrap.
 
 ### Post deploy
 
-The most important post-deployment action is (for deployments with auto scaling and Panorama) to retrieve the Application Insights instrumentation keys. This can be done by looking up the AI resources in the Azure portal, or directly from Terraform outputs:
+The most important post-deployment action is (for deployments with auto scaling and Panorama) to retrieve the Application Insights
+instrumentation keys. This can be done by looking up the AI resources in the Azure portal, or directly from Terraform outputs:
 
-```sh
+```bash
 terraform output metrics_instrumentation_keys
 ```
 
-The retrieved keys should be put into appropriate templates in Panorama and pushed to the devices. From this moment on, custom metrics are being sent to Application Insights and retrieved by the Virtual Machine Scale Set to trigger scale-in and scale-out operations.
+The retrieved keys should be put into appropriate templates in Panorama and pushed to the devices. From this moment on, custom
+metrics are being sent to Application Insights and retrieved by the Virtual Machine Scale Set to trigger scale-in and scale-out
+operations.
 
-Although firewalls in a Scale Set are not meant to be managed directly, they are still configured with password authentication. To retrieve the initial credentials run:
+Although firewalls in a Scale Set are not meant to be managed directly, they are still configured with password authentication.
+To retrieve the initial credentials run:
 
-* for username:
+- for username:
 
-      terraform output username
+  ```bash
+  terraform output username
+  ```
 
-* for password:
+- for password:
 
-      terraform output password
+  ```bash
+  terraform output password
+  ```
 
 ### Cleanup
 
 To remove the deployed infrastructure run:
 
-```sh
+```bash
 terraform destroy
 ```
 
-## Reference
-<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-### Requirements
+## Module's Required Inputs
 
-| Name | Version |
-|------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.2, < 2.0 |
+Name | Type | Description
+--- | --- | ---
+[`location`](#location) | `string` | The Azure region to use.
+[`resource_group_name`](#resource_group_name) | `string` | Name of the Resource Group.
+[`vnets`](#vnets) | `map` | A map defining VNETs.
 
-### Providers
 
-| Name | Version |
-|------|---------|
-| <a name="provider_random"></a> [random](#provider\_random) | n/a |
-| <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) | n/a |
+## Module's Optional Inputs
 
-### Modules
+Name | Type | Description
+--- | --- | ---
+[`tags`](#tags) | `map` | Map of tags to assign to the created resources.
+[`name_prefix`](#name_prefix) | `string` | A prefix that will be added to all created resources.
+[`create_resource_group`](#create_resource_group) | `bool` | When set to `true` it will cause a Resource Group creation.
+[`natgws`](#natgws) | `map` | A map defining NAT Gateways.
+[`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
+[`ngfw_metrics`](#ngfw_metrics) | `object` | A map controlling metrics-relates resources.
+[`scale_sets`](#scale_sets) | `map` | A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
+[`appgws`](#appgws) | `map` | A map defining all Application Gateways in the current deployment.
 
-| Name | Source | Version |
-|------|--------|---------|
-| <a name="module_vnet"></a> [vnet](#module\_vnet) | ../../modules/vnet | n/a |
-| <a name="module_natgw"></a> [natgw](#module\_natgw) | ../../modules/natgw | n/a |
-| <a name="module_load_balancer"></a> [load\_balancer](#module\_load\_balancer) | ../../modules/loadbalancer | n/a |
-| <a name="module_ai"></a> [ai](#module\_ai) | ../../modules/application_insights | n/a |
-| <a name="module_appgw"></a> [appgw](#module\_appgw) | ../../modules/appgw | n/a |
-| <a name="module_vmss"></a> [vmss](#module\_vmss) | ../../modules/vmss | n/a |
 
-### Resources
 
-| Name | Type |
-|------|------|
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) | resource |
-| [random_password.this](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) | resource |
-| [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) | data source |
+## Module's Outputs
 
-### Inputs
+Name |  Description
+--- | ---
+`usernames` | Initial firewall administrative usernames for all deployed Scale Sets.
+`passwords` | Initial firewall administrative passwords for all deployed Scale Sets.
+`metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
+`lb_frontend_ips` | IP Addresses of the load balancers.
 
-| Name | Description | Type | Default | Required |
-|------|-------------|------|---------|:--------:|
-| <a name="input_tags"></a> [tags](#input\_tags) | Map of tags to assign to the created resources. | `map(string)` | `{}` | no |
-| <a name="input_location"></a> [location](#input\_location) | The Azure region to use. | `string` | n/a | yes |
-| <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | A prefix that will be added to all created resources.<br>There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.<br><br>Example:<pre>name_prefix = "test-"</pre>NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property. | `string` | `""` | no |
-| <a name="input_create_resource_group"></a> [create\_resource\_group](#input\_create\_resource\_group) | When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.<br>When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group. | `bool` | `true` | no |
-| <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name) | Name of the Resource Group. | `string` | n/a | yes |
-| <a name="input_enable_zones"></a> [enable\_zones](#input\_enable\_zones) | If `true`, enable zone support for resources. | `bool` | `true` | no |
-| <a name="input_vnets"></a> [vnets](#input\_vnets) | A map defining VNETs.<br><br>For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)<br><br>- `name` :  A name of a VNET.<br>- `create_virtual_network` : (default: `true`) when set to `true` will create a VNET, `false` will source an existing VNET, in both cases the name of the VNET is specified with `name`<br>- `address_space` : a list of CIDRs for VNET<br>- `resource_group_name` :  (default: current RG) a name of a Resource Group in which the VNET will reside<br><br>- `create_subnets` : (default: `true`) if true, create the Subnets inside the Virtual Network, otherwise use pre-existing subnets<br>- `subnets` : map of Subnets to create<br><br>- `network_security_groups` : map of Network Security Groups to create<br>- `route_tables` : map of Route Tables to create. | `any` | n/a | yes |
-| <a name="input_natgws"></a> [natgws](#input\_natgws) | A map defining Nat Gateways. <br><br>Please note that a NatGW is a zonal resource, this means it's always placed in a zone (even when you do not specify one explicitly). Please refer to Microsoft documentation for notes on NatGW's zonal resiliency. <br><br>Following properties are supported:<br><br>- `name` : a name of the newly created NatGW.<br>- `create_natgw` : (default: `true`) create or source (when `false`) an existing NatGW. Created or sourced: the NatGW will be assigned to a subnet created by the `vnet` module.<br>- `resource_group_name : name of a Resource Group hosting the NatGW (newly create or the existing one).<br>- `zone` : Availability Zone in which the NatGW will be placed, when skipped AzureRM will pick a zone.<br>- `idle\_timeout` : connection IDLE timeout in minutes, for newly created resources<br>- `vnet\_key` : a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this NatGW will be assigned to.<br>- `subnet\_keys` : a list of subnets (key values) the NatGW will be assigned to, defined in `var.vnets` for a VNET described by `vnet\_name`.<br>- `create\_pip` : (default: `true`) create a Public IP that will be attached to a NatGW<br>- `existing\_pip\_name` : when `create\_pip` is set to `false`, source and attach and existing Public IP to the NatGW<br>- `existing\_pip\_resource\_group\_name` : when `create\_pip` is set to `false`, name of the Resource Group hosting the existing Public IP<br>- `create\_pip\_prefix` : (default: `false`) create a Public IP Prefix that will be attached to the NatGW.<br>- `pip\_prefix\_length` : length of the newly created Public IP Prefix, can bet between 0 and 31 but this actually supported value depends on the Subscription.<br>- `existing\_pip\_prefix\_name` : when `create\_pip\_prefix` is set to `false`, source and attach and existing Public IP Prefix to the NatGW<br>- `existing\_pip\_prefix\_resource\_group\_name` : when `create\_pip\_prefix` is set to `false`, name of the Resource Group hosting the existing Public IP Prefix.<br><br>Example:<br>`<pre>natgws = {<br>  "natgw" = {<br>    name         = "public-natgw"<br>    vnet_key     = "transit-vnet"<br>    subnet_keys  = ["public"]<br>    zone         = 1<br>  }<br>}</pre> | `any` | `{}` | no |
-| <a name="input_load_balancers"></a> [load\_balancers](#input\_load\_balancers) | A map containing configuration for all (private and public) Load Balancer that will be created in this deployment.<br><br>Following properties are available (for details refer to module's documentation):<br><br>- `name`: name of the Load Balancer resource.<br>- `nsg_vnet_key`: (public LB) defaults to `null`, a key describing a vnet (as defined in `vnet` variable) that hold an NSG we will update with an ingress rule for each listener.<br>- `nsg_key`: (public LB) defaults to `null`, a key describing an NSG (as defined in `vnet` variable, under `nsg_vnet_key`) we will update with an ingress rule for each listener.<br>- `network_security_group_name`: (public LB) defaults to `null`, in case of a brownfield deployment (no possibility to depend on `vnet` variable), a name of a security group, an ingress rule will be created in that NSG for each listener. **NOTE** this is the FULL NAME of the NSG (including prefixes).<br>- `network_security_group_rg_name`: (public LB) defaults to `null`, in case of a brownfield deployment (no possibility to depend on `vnet` variable), a name of a resource group for the security group, to be used when the NSG is hosted in a different RG than the one described in `var.resource_group_name`.<br>- `network_security_allow_source_ips`: (public LB) a list of IP addresses that will used in the ingress rules.<br>- `avzones`: (both) for regional Load Balancers, a list of supported zones (this has different meaning for public and private LBs - please refer to module's documentation for details).<br>- `frontend_ips`: (both) a map configuring both a listener and a load balancing rule, key is the name that will be used as an application name inside LB config as well as to create a rule in NSG (for public LBs), value is an object with the following properties:<br>  - `create_public_ip`: (public LB) defaults to `false`, when set to `true` a Public IP will be created and associated with a listener<br>  - `public_ip_name`: (public LB) defaults to `null`, when `create_public_ip` is set to `false` this property is used to reference an existing Public IP object in Azure<br>  - `public_ip_resource_group`: (public LB) defaults to `null`, when using an existing Public IP created in a different Resource Group than the currently used use this property is to provide the name of that RG<br>  - `private_ip_address`: (private LB) defaults to `null`, specify a static IP address that will be used by a listener<br>  - `vnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a vnet's key (as defined in `vnet` variable). This will be the VNET hosting this Load Balancer<br>  - `subnet_key`: (private LB) defaults to `null`, when `private_ip_address` is set specifies a subnet's key (as defined in `vnet` variable) to which the LB will be attached, in case of VMSeries this should be a internal/trust subnet<br>  - `rules` - a map configuring the actual rules load balancing rules, a key is a rule name, a value is an object with the following properties:<br>    - `protocol`: protocol used by the rule, can be one the following: `TCP`, `UDP` or `All` when creating an HA PORTS rule<br>    - `port`: port used by the rule, for HA PORTS rule set this to `0`<br><br>Example of a public Load Balancer:<pre>"public_lb" = {<br>  name                              = "https_app_lb"<br>  network_security_group_name       = "untrust_nsg"<br>  network_security_allow_source_ips = ["1.2.3.4"]<br>  avzones                           = ["1", "2", "3"]<br>  frontend_ips = {<br>    "https_app_1" = {<br>      create_public_ip = true<br>      rules = {<br>        "balanceHttps" = {<br>          protocol = "Tcp"<br>          port     = 443<br>        }<br>      }<br>    }<br>  }<br>}</pre>Example of a private Load Balancer with HA PORTS rule:<pre>"private_lb" = {<br>  name = "ha_ports_internal_lb<br>  frontend_ips = {<br>    "ha-ports" = {<br>      vnet_key           = "trust_vnet"<br>      subnet_key         = "trust_snet"<br>      private_ip_address = "10.0.0.1"<br>      rules = {<br>        HA_PORTS = {<br>          port     = 0<br>          protocol = "All"<br>        }<br>      }<br>    }<br>  }<br>}</pre> | `map` | `{}` | no |
-| <a name="input_application_insights"></a> [application\_insights](#input\_application\_insights) | A map defining Azure Application Insights. There are three ways to use this variable:<br><br>* when the value is set to `null` (default) no AI is created<br>* when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key<br>* when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.<br><br>Names for all AI instances are prefixed with `var.name_prefix`.<br><br>Properties supported (for details on each property see [modules documentation](../../modules/application\_insights/README.md)):<br><br>- `name` : (optional, string) a name of a single AI instance<br>- `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)<br>- `workspace_name` : (optional, string) defaults to AI name suffixed with `-wrkspc`, name of the Log Analytics Workspace created when AI is deployed in Workspace mode<br>- `workspace_sku` : (optional, string) defaults to PerGB2018, SKU used by WAL, see module documentation for details<br>- `metrics_retention_in_days` : (optional, number) defaults to current Azure default value, see module documentation for details<br><br>Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:<pre>vmseries = {<br>  'vm-1' = {<br>    ....<br>  }<br>  'vm-2' = {<br>    ....<br>  }<br>}<br><br>application_insights = {<br>  metrics_retention_in_days = 365<br>}</pre> | `map(string)` | `null` | no |
-| <a name="input_vmseries_version"></a> [vmseries\_version](#input\_vmseries\_version) | VM-Series PAN-OS version - list available with `az vm image list -o table --all --publisher paloaltonetworks`. It's also possible to specify the Pan-OS version per Scale Set, see `var.vmss` variable. | `string` | n/a | yes |
-| <a name="input_vmseries_vm_size"></a> [vmseries\_vm\_size](#input\_vmseries\_vm\_size) | Azure VM size (type) to be created. Consult the *VM-Series Deployment Guide* as only a few selected sizes are supported. It's also possible to specify the the VM size per Scale Set, see `var.vmss` variable. | `string` | n/a | yes |
-| <a name="input_vmseries_sku"></a> [vmseries\_sku](#input\_vmseries\_sku) | VM-Series SKU - list available with `az vm image list -o table --all --publisher paloaltonetworks` | `string` | `"byol"` | no |
-| <a name="input_vmseries_username"></a> [vmseries\_username](#input\_vmseries\_username) | Initial administrative username to use for all systems. | `string` | `"panadmin"` | no |
-| <a name="input_vmseries_password"></a> [vmseries\_password](#input\_vmseries\_password) | Initial administrative password to use for all systems. Set to null for an auto-generated password. | `string` | `null` | no |
-| <a name="input_vmss"></a> [vmss](#input\_vmss) | A map defining all Virtual Machine Scale Sets.<br><br>For detailed documentation on how to configure this resource, for available properties, especially for the defaults refer to [module documentation](../../modules/vmss/README.md)<br><br>Following properties are available:<br>- `name` : (string\|required) name of the Virtual Machine Scale Set.<br>- `vm_size` : size of the VMSeries virtual machines created with this Scale Set, when specified overrides `var.vmseries_vm_size`.<br>- `version` : PanOS version, when specified overrides `var.vmseries_version`.<br>- `vnet_key` : (string\|required) a key of a VNET defined in the `var.vnets` map.<br>- `bootstrap_options` : (string\|`''`) bootstrap options passed to every VM instance upon creation.<br>- `zones` : (list(string)\|`[]`) a list of Availability Zones to use for Zone redundancy<br>- `encryption_at_host_enabled` : (bool\|`null` - Azure defaults) should all of the disks attached to this Virtual Machine be encrypted<br>- `overprovision` : (bool\|`null` - module defaults) when provisioning new VM, multiple will be provisioned but the 1st one to run will be kept<br>- `platform_fault_domain_count` : (number\|`null` - Azure defaults) number of fault domains to use<br>- `proximity_placement_group_id` : (string\|`null`) ID of a proximity placement group the VMSS should be placed in<br>- `scale_in_policy` : (string\|`null` - Azure defaults) policy of removing VMs when scaling in<br>- `scale_in_force_deletion` : (bool\|`null` - module default) forces (`true`) deletion of VMs during scale in<br>- `single_placement_group` : (bool\|`null` - Azure defaults) limit the Scale Set to one Placement Group<br>- `storage_account_type` : (string\|`null` - module defaults) type of managed disk that will be used on all VMs<br>- `disk_encryption_set_id` : (string\|`null`) the ID of the Disk Encryption Set which should be used to encrypt this Data Disk<br>- `accelerated_networking` : (bool\|`null`- module defaults) enable Azure accelerated networking for all dataplane network interfaces<br>- `use_custom_image` : (bool\|`false`) <br>- `custom_image_id` : (string\|reqquired when `use_custom_image` is `true`) absolute ID of your own Custom Image to be used for creating new VM-Series<br>- `application_insights_id` : (string\|`null`) ID of Application Insights instance that should be used to provide metrics for autoscaling<br>- `interfaces` : (list(string)\|`[]`) configuration of all NICs assigned to a VM. A list of maps, each map is a NIC definition. Notice that the order DOES matter. NICs are attached to VMs in Azure in the order they are defined in this list, therefore the management interface has to be defined first. Following properties are available:<br>  - `name` : (string\|required) string that will form the NIC name<br>  - `subnet_key` : (string\|required) a key of a subnet as defined in `var.vnets`<br>  - `create_pip` : (bool\|`false`) flag to create Public IP for an interface, defaults to `false`<br>  - `load_balancer_key` : (string\|`null`) key of a Load Balancer defined in the `var.loadbalancers` variable<br>  - `application_gateway_key` : (string\|`null`) key of an Application Gateway defined in the `var.appgws`<br>  - `pip_domain_name_label` : (string\|`null`) prefix which should be used for the Domain Name Label for each VM instance<br>- `autoscale_config` : (map\|`{}`) map containing basic autoscale configuration<br>  - `count_default` : (number\|`null` - module defaults) default number or instances when autoscalling is not available<br>  - `count_minimum` : (number\|`null` - module defaults) minimum number of instances to reach when scaling in<br>  - `count_maximum` : (number\|`null` - module defaults) maximum number of instances when scaling out<br>  - `notification_emails` : (list(string)\|`null` - module defaults) a list of e-mail addresses to notify about scaling events<br>- `autoscale_metrics` : (map\|`{}`) metrics and thresholds used to trigger scaling events, see module documentation for details<br>- `scaleout_config` : (map\|`{}`) scale out configuration, for details see module documentation<br>  - `statistic` : (string\|`null` - module defaults) aggregation method for statistics coming from different VMs<br>  - `time_aggregation` : (string\|`null` - module defaults) aggregation method applied to statistics in time window<br>  - `window_minutes` : (string\|`null` - module defaults) time windows used to analyze statistics<br>  - `cooldown_minutes` : (string\|`null` - module defaults) time to wait after a scaling event before analyzing the statistics again<br>- `scalein_config` : (map\|`{}`) scale in configuration, same properties supported as for `scaleout_config`<br><br>Example, no auto scaling:<pre>{<br>"vmss" = {<br>  name              = "ngfw-vmss"<br>  vnet_key          = "transit"<br>  bootstrap_options = "type=dhcp-client"<br><br>  interfaces = [<br>    {<br>      name       = "management"<br>      subnet_key = "management"<br>    },<br>    {<br>      name       = "private"<br>      subnet_key = "private"<br>    },<br>    {<br>      name                    = "public"<br>      subnet_key              = "public"<br>      load_balancer_key       = "public"<br>      application_gateway_key = "public"<br>    }<br>  ]<br>}</pre> | `any` | `{}` | no |
-| <a name="input_appgws"></a> [appgws](#input\_appgws) | A map defining all Application Gateways in the current deployment.<br><br>For detailed documentation on how to configure this resource, for available properties, especially for the defaults and the `rules` property refer to [module documentation](../../modules/appgw/README.md).<br><br>Following properties are supported:<br>- `name` : name of the Application Gateway.<br>- `vnet_key` : a key of a VNET defined in the `var.vnets` map.<br>- `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.<br>- `vnet_key` : a key of a VNET defined in the `var.vnets` map.<br>- `subnet_key` : a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.<br>- `zones` : for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.<br>- `capacity` : (optional) number of Application Gateway instances, not used when autoscalling is enabled (see `capacity_min`)<br>- `capacity_min` : (optional) when set enables autoscaling and becomes the minimum capacity<br>- `capacity_max` : (optional) maximum capacity for autoscaling<br>- `enable_http2` : enable HTTP2 support on the Application Gateway<br>- `waf_enabled` : (optional) enables WAF Application Gateway, defining WAF rules is not supported, defaults to `false`<br>- `vmseries_public_nic_name` : name of the public VMSeries interface as defined in `interfaces` property.<br>- `managed_identities` : (optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault<br>- `ssl_policy_type` : (optional) type of an SSL policy, defaults to `Predefined`<br>- `ssl_policy_name` : (optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`<br>- `ssl_policy_min_protocol_version` : (optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`<br>- `ssl_policy_cipher_suites` : (optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`<br>- `ssl_profiles` : (optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property | `map` | `{}` | no |
+## Module's Nameplate
 
-### Outputs
 
-| Name | Description |
-|------|-------------|
-| <a name="output_username"></a> [username](#output\_username) | Initial administrative username to use for VM-Series. |
-| <a name="output_password"></a> [password](#output\_password) | Initial administrative password to use for VM-Series. |
-| <a name="output_metrics_instrumentation_keys"></a> [metrics\_instrumentation\_keys](#output\_metrics\_instrumentation\_keys) | The Instrumentation Key of the created instance(s) of Azure Application Insights. |
-| <a name="output_lb_frontend_ips"></a> [lb\_frontend\_ips](#output\_lb\_frontend\_ips) | IP Addresses of the load balancers. |
-<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
+
+
+Providers used in this module:
+
+- `random`
+- `azurerm`
+
+
+Modules used in this module:
+Name | Version | Source | Description
+--- | --- | --- | ---
+`vnet` | - | ../../modules/vnet | Manage the network required for the topology.
+`natgw` | - | ../../modules/natgw | 
+`load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | 
+`appgw` | - | ../../modules/appgw | 
+`vmss` | - | ../../modules/vmss | 
+
+
+Resources used in this module:
+
+- `resource_group` (managed)
+- `password` (managed)
+- `resource_group` (data)
+
+## Inputs/Outpus details
+
+### Required Inputs
+
+
+
+#### location
+
+The Azure region to use.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+#### resource_group_name
+
+Name of the Resource Group.
+
+Type: string
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+#### vnets
+
+A map defining VNETs.
+  
+For detailed documentation on each property refer to [module documentation](../../modules/vnet/README.md)
+
+- `create_virtual_network`  - (`bool`, optional, defaults to `true`) when set to `true` will create a VNET, 
+                              `false` will source an existing VNET.
+- `name`                    - (`string`, required) a name of a VNET. In case `create_virtual_network = false` this should be
+                              a full resource name, including prefixes.
+- `address_space`           - (`list(string)`, required when `create_virtual_network = false`) a list of CIDRs for a newly
+                              created VNET
+- `resource_group_name`     - (`string`, optional, defaults to current RG) a name of an existing Resource Group in which
+                              the VNET will reside or is sourced from
+- `create_subnets`          - (`bool`, optional, defaults to `true`) if `true`, create Subnets inside the Virtual Network,
+                              otherwise use source existing subnets
+- `subnets`                 - (`map`, optional) map of Subnets to create or source, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#subnets)
+- `network_security_groups` - (`map`, optional) map of Network Security Groups to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#network_security_groups)
+- `route_tables`            - (`map`, optional) map of Route Tables to create, for details see
+                              [VNET module documentation](../../modules/vnet/README.md#route_tables)
+
+
+Type: 
+
+```hcl
+map(object({
+    name                   = string
+    resource_group_name    = optional(string)
+    create_virtual_network = optional(bool, true)
+    address_space          = optional(list(string))
+    network_security_groups = optional(map(object({
+      name                          = string
+      disable_bgp_route_propagation = optional(bool)
+      rules = optional(map(object({
+        name                         = string
+        priority                     = number
+        direction                    = string
+        access                       = string
+        protocol                     = string
+        source_port_range            = optional(string)
+        source_port_ranges           = optional(list(string))
+        destination_port_range       = optional(string)
+        destination_port_ranges      = optional(list(string))
+        source_address_prefix        = optional(string)
+        source_address_prefixes      = optional(list(string))
+        destination_address_prefix   = optional(string)
+        destination_address_prefixes = optional(list(string))
+      })), {})
+    })), {})
+    route_tables = optional(map(object({
+      name = string
+      routes = map(object({
+        name                = string
+        address_prefix      = string
+        next_hop_type       = string
+        next_hop_ip_address = optional(string)
+      }))
+    })), {})
+    create_subnets = optional(bool, true)
+    subnets = optional(map(object({
+      name                            = string
+      address_prefixes                = optional(list(string), [])
+      network_security_group_key      = optional(string)
+      route_table_key                 = optional(string)
+      enable_storage_service_endpoint = optional(bool, false)
+    })), {})
+  }))
+```
+
+
+<sup>[back to list](#modules-required-inputs)</sup>
+
+
+
+
+
+
+
+
+### Optional Inputs
+
+
+#### tags
+
+Map of tags to assign to the created resources.
+
+Type: map(string)
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+#### name_prefix
+
+A prefix that will be added to all created resources.
+There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+
+Example:
+```
+name_prefix = "test-"
+```
+  
+NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+
+
+Type: string
+
+Default value: ``
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### create_resource_group
+
+When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
+When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+
+
+Type: bool
+
+Default value: `true`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+
+#### natgws
+
+A map defining NAT Gateways. 
+
+Please note that a NAT Gateway is a zonal resource, this means it's always placed in a zone (even when you do not specify one
+explicitly). Please refer to Microsoft documentation for notes on NAT Gateway's zonal resiliency.
+For detailed documentation on each property refer to [module documentation](../../modules/natgw/README.md).
+  
+Following properties are supported:
+- `create_natgw`       - (`bool`, optional, defaults to `true`) create (`true`) or source an existing NAT Gateway (`false`),
+                         created or sourced: the NAT Gateway will be assigned to a subnet created by the `vnet` module.
+- `name`               - (`string`, required) a name of a NAT Gateway. In case `create_natgw = false` this should be a full
+                         resource name, including prefixes.
+- `resource_group_name - (`string`, optional) name of a Resource Group hosting the NAT Gateway (newly created or the existing
+                         one).
+- `zone`               - (`string`, optional) an Availability Zone in which the NAT Gateway will be placed, when skipped
+                         AzureRM will pick a zone.
+- `idle_timeout`       - (`number`, optional, defults to 4) connection IDLE timeout in minutes, for newly created resources.
+- `vnet_key`           - (`string`, required) a name (key value) of a VNET defined in `var.vnets` that hosts a subnet this
+                         NAT Gateway will be assigned to.
+- `subnet_keys`        - (`list(string)`, required) a list of subnets (key values) the NAT Gateway will be assigned to, defined
+                         in `var.vnets` for a VNET described by `vnet_name`.
+- `public_ip`          - (`object`, optional) an object defining a public IP resource attached to the NAT Gateway.
+- `public_ip_prefix`   - (`object`, optional) an object defining a public IP prefix resource attached to the NAT Gatway.
+
+Example:
+```
+natgws = {
+  "natgw" = {
+    name        = "natgw"
+    vnet_key    = "transit-vnet"
+    subnet_keys = ["management"]
+    public_ip = {
+      create = true
+      name   = "natgw-pip"
+    }
+  }
+}
+```
+
+
+Type: 
+
+```hcl
+map(object({
+    create_natgw        = optional(bool, true)
+    name                = string
+    resource_group_name = optional(string)
+    zone                = optional(string)
+    idle_timeout        = optional(number, 4)
+    vnet_key            = string
+    subnet_keys         = list(string)
+    public_ip = optional(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+    }))
+    public_ip_prefix = optional(object({
+      create              = bool
+      name                = string
+      resource_group_name = optional(string)
+      length              = optional(number)
+    }))
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### load_balancers
+
+A map containing configuration for all (private and public) Load Balancers.
+
+This is a brief description of available properties. For a detailed one please refer to
+[module documentation](../../modules/loadbalancer/README.md).
+
+Following properties are available:
+
+- `name`                    - (`string`, required) a name of the Load Balancer
+- `zones`                   - (`list`, optional, defaults to `["1", "2", "3"]`) list of zones the resource will be
+                              available in, please check the
+                              [module documentation](../../modules/loadbalancer/README.md#zones) for more details
+- `health_probes`           - (`map`, optional, defaults to `null`) a map defining health probes that will be used by
+                              load balancing rules;
+                              please check [module documentation](../../modules/loadbalancer/README.md#health_probes)
+                              for more specific use cases and available properties
+- `nsg_auto_rules_settings` - (`map`, optional, defaults to `null`) a map defining a location of an existing NSG rule
+                              that will be populated with `Allow` rules for each load balancing rule (`in_rules`); please check 
+                              [module documentation](../../modules/loadbalancer/README.md#nsg_auto_rules_settings)
+                              for available properties; please note that in this example two additional properties are
+                              available:
+  - `nsg_key`         - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to an NSG definition
+                        in the `var.vnets` map
+  - `nsg_vnet_key`    - (`string`, optional, mutually exclusive with `nsg_name`) a key pointing to a VNET definition
+                        in the `var.vnets` map that stores the NSG described by `nsg_key`
+- `frontend_ips`            - (`map`, optional, defaults to `{}`) a map containing frontend IP configuration with respective
+                              `in_rules` and `out_rules`
+
+  Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
+
+  > [!NOTE] 
+  > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+
+  - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
+  - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
+                    that stores the Subnet described by `subnet_key`
+
+
+Type: 
+
+```hcl
+map(object({
+    name  = string
+    zones = optional(list(string), ["1", "2", "3"])
+    health_probes = optional(map(object({
+      name                = string
+      protocol            = string
+      port                = optional(number)
+      probe_threshold     = optional(number)
+      interval_in_seconds = optional(number)
+      request_path        = optional(string)
+    })))
+    nsg_auto_rules_settings = optional(object({
+      nsg_name                = optional(string)
+      nsg_vnet_key            = optional(string)
+      nsg_key                 = optional(string)
+      nsg_resource_group_name = optional(string)
+      source_ips              = list(string)
+      base_priority           = optional(number)
+    }))
+    frontend_ips = optional(map(object({
+      name                     = string
+      public_ip_name           = optional(string)
+      create_public_ip         = optional(bool, false)
+      public_ip_resource_group = optional(string)
+      vnet_key                 = optional(string)
+      subnet_key               = optional(string)
+      private_ip_address       = optional(string)
+      gwlb_key                 = optional(string)
+      in_rules = optional(map(object({
+        name                = string
+        protocol            = string
+        port                = number
+        backend_port        = optional(number)
+        health_probe_key    = optional(string)
+        floating_ip         = optional(bool)
+        session_persistence = optional(string)
+        nsg_priority        = optional(number)
+      })), {})
+      out_rules = optional(map(object({
+        name                     = string
+        protocol                 = string
+        allocated_outbound_ports = optional(number)
+        enable_tcp_reset         = optional(bool)
+        idle_timeout_in_minutes  = optional(number)
+      })), {})
+    })), {})
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### ngfw_metrics
+
+A map controlling metrics-relates resources.
+
+When set to explicit `null` (default) it will disable any metrics resources in this deployment.
+
+When defined it will either create or source a Log Analytics Workspace and create Application Insights instances (one per each
+Scale Set). All instances will be automatically connected to the workspace.
+The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
+
+All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
+
+Following properties are available:
+
+- `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+- `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
+                                Analytics Workspace
+- `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
+                                the Log Analytics Workspace
+- `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
+- `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
+                                days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
+                                the Application Insights instances.
+
+
+Type: 
+
+```hcl
+object({
+    name                      = string
+    create_workspace          = optional(bool, true)
+    resource_group_name       = optional(string)
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
+```
+
+
+Default value: `&{}`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### scale_sets
+
+A map defining Azure Virtual Machine Scale Sets based on Palo Alto Networks Next Generation Firewall image.
+
+For details and defaults for available options please refer to the [`vmss`](../../modules/vmss/README.md) module.
+
+The basic Scale Set configuration properties are as follows:
+
+- `name`                      - (`string`, required) name of the scale set, will be prefixed with the value of `var.name_prefix`
+- `authentication`            - (`map`, required) authentication setting for VMs deployed in this scale set.
+
+    This map holds the firewall admin password. When this property is not set, the password will be autogenerated for you and
+    available in the Terraform outputs.
+
+    **Note!** \
+    The `disable_password_authentication` property is by default true. When using this value you have to specify at least one
+    SSH key. You can however set this property to `true`. Then you have 2 options, either:
+
+    - do not specify anything else - a random password will be generated for you
+    - specify at least one of `password` or `ssh_keys` properties.
+
+    For all properties and their default values see [module's documentation](../../modules/vmss/README.md#authentication).
+
+- `image`                     - (`map`, required) properties defining a base image used to spawn VMs in this Scale Set.
+
+    The `image` property is required but there are only 2 properties (mutually exclusive) that have to be set up, either:
+
+    - `version`   - (`string`) describes the PanOS image version from Azure's Marketplace
+    - `custom_id` - (`string`) absolute ID of your own custom PanOS image
+
+    For details on the other properties refer to [module's documentation](../../modules/vmss/README.md#image).
+
+- `virtual_machine_scale_set` - (`map`, optional, defaults to module defaults) a map that groups most common Scale Set
+                                configuration options.
+
+    Below we present only the most important ones, for the rest please refer to
+    [module's documentation](../../modules/vmss/README.md#virtual_machine_scale_set):
+
+    - `vnet_key`              - (`string`, required) a key of a VNET defined in `var.vnets`. This is the VNET that hosts subnets
+                                used to deploy network interfaces for VMs in this Scale Set
+    - `size`                  - (`string`, optional, defaults to module defaults) Azure VM size (type). Consult the *VM-Series
+                                Deployment Guide* as only a few selected sizes are supported
+    - `zones`                 - (`list`, optional, defaults to module defaults) a list of Availability Zones in which VMs from
+                                this Scale Set will be created
+    - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
+                                possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
+                                `vm_size` values)
+    - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VM-Series instance
+
+- `autoscaling_configuration` - (`map`, optional, defaults to `{}`) a map that groups common autoscaling configuration, but not
+                                the scaling profiles (metrics thresholds, etc)
+
+    Below we present only the most important properties, for the rest please refer to
+    [module's documentation](../../modules/vmss/README.md#autoscaling_configuration).
+
+    - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in the
+                          scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the
+                          metrics to the thresholds
+
+- `interfaces`              - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
+                              interface should be the management one. Following properties are available:
+  - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`)
+  - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
+                                `var.vnets`
+  - `create_public_ip`        - (`bool`, optional, defaults to module defaults) create Public IP for an interface
+  - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in the
+                                `var.loadbalancers` variable, network interface that has this property defined will be
+                                added to the Load Balancee's backend pool
+  - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in the
+                                `var.appgws`, network interface that has this property defined will be added to the Application
+                                Gateways's backend pool
+  - `pip_domain_name_label`   - (`string`, optional, defaults to `null`) prefix which should be used for the Domain Name Label
+                                for each VM instance
+
+- `autoscaling_profiles`    - (`list`, optional, defaults to `[]`) a list of autoscaling profiles, for details on available
+                              configuration please refer to
+                              [module's documentation](../../modules/vmss/README.md#autoscaling_profiles)
+
+
+
+Type: 
+
+```hcl
+map(object({
+    name = string
+    authentication = object({
+      username                        = optional(string)
+      password                        = optional(string)
+      disable_password_authentication = optional(bool, true)
+      ssh_keys                        = optional(list(string), [])
+    })
+    image = object({
+      version                 = optional(string)
+      publisher               = optional(string)
+      offer                   = optional(string)
+      sku                     = optional(string)
+      enable_marketplace_plan = optional(bool)
+      custom_id               = optional(string)
+    })
+    virtual_machine_scale_set = optional(object({
+      vnet_key                    = string
+      bootstrap_options           = optional(string)
+      size                        = optional(string)
+      zones                       = optional(list(string))
+      disk_type                   = optional(string)
+      accelerated_networking      = optional(bool)
+      encryption_at_host_enabled  = optional(bool)
+      overprovision               = optional(bool)
+      platform_fault_domain_count = optional(number)
+      disk_encryption_set_id      = optional(string)
+      allow_extension_operations  = optional(bool)
+    }))
+    autoscaling_configuration = optional(object({
+      default_count           = optional(number)
+      scale_in_policy         = optional(string)
+      scale_in_force_deletion = optional(bool)
+      notification_emails     = optional(list(string), [])
+      webhooks_uris           = optional(map(string), {})
+    }), {})
+    interfaces = list(object({
+      name                    = string
+      subnet_key              = string
+      create_public_ip        = optional(bool)
+      load_balancer_key       = optional(string)
+      application_gateway_key = optional(string)
+      pip_domain_name_label   = optional(string)
+    }))
+    autoscaling_profiles = optional(list(object({
+      name          = string
+      minimum_count = optional(number)
+      default_count = number
+      maximum_count = optional(number)
+      recurrence = optional(object({
+        timezone   = optional(string)
+        days       = list(string)
+        start_time = string
+        end_time   = string
+      }))
+      scale_rules = optional(list(object({
+        name = string
+        scale_out_config = object({
+          threshold                  = number
+          operator                   = optional(string)
+          grain_window_minutes       = number
+          grain_aggregation_type     = optional(string)
+          aggregation_window_minutes = number
+          aggregation_window_type    = optional(string)
+          cooldown_window_minutes    = number
+          change_count_by            = optional(number)
+        })
+        scale_in_config = object({
+          threshold                  = number
+          operator                   = optional(string)
+          grain_window_minutes       = optional(number)
+          grain_aggregation_type     = optional(string)
+          aggregation_window_minutes = optional(number)
+          aggregation_window_type    = optional(string)
+          cooldown_window_minutes    = number
+          change_count_by            = optional(number)
+        })
+      })), [])
+    })), [])
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+#### appgws
+
+A map defining all Application Gateways in the current deployment.
+
+For detailed documentation on how to configure this resource, for available properties, especially for the defaults, refer to [module documentation](../../modules/appgw/README.md).
+
+Following properties are supported:
+- `name`                              - (`string`, required) name of the Application Gateway.
+- `public_ip`                         - (`string`, required) public IP address.
+- `vnet_key`                          - (`string`, required) a key of a VNET defined in the `var.vnets` map.
+- `subnet_key`                        - (`string`, required) a key of a subnet as defined in `var.vnets`. This has to be a subnet dedicated to Application Gateways v2.
+- `managed_identities`                - (`list`, optional) a list of existing User-Assigned Managed Identities, which Application Gateway uses to retrieve certificates from Key Vault.
+- `capacity`                          - (`number`, object) capacity configuration for Application Gateway (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `waf`                               - (`object`, required) WAF basic configuration, defining WAF rules is not supported
+- `enable_http2`                      - (`bool`, optional) enable HTTP2 support on the Application Gateway
+- `zones`                             - (`list`, required) for zonal deployment this is a list of all zones in a region - this property is used by both: the Application Gateway and the Public IP created in front of the AppGW.
+- `frontend_ip_configuration_name`    - (`string`, optional) frontend IP configuration name
+- `vmseries_public_nic_name`          - (`string`, optional) VM-Series NIC name, for which IP address will be used in backend pool
+- `listeners`                         - (`map`, required) map of listeners (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `backend_pool`                      - (`object`, optional) backend pool (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `backends`                          - (`map`, optional) map of backends (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `probes`                            - (`map`, optional) map of probes (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `rewrites`                          - (`map`, optional) map of rewrites (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `rules`                             - (`map`, required) map of rules (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `redirects`                         - (`map`, optional) map of redirects (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `url_path_maps`                     - (`map`, optional) map of URL path maps (refer to [module documentation](../../modules/appgw/README.md) for details)
+- `ssl_policy_type`                   - (`string`, optional) type of an SSL policy, defaults to `Predefined`
+- `ssl_policy_name`                   - (`string`, optional) name of an SSL policy, for `ssl_policy_type` set to `Predefined`
+- `ssl_policy_min_protocol_version`   - (`string`, optional) minimum version of the TLS protocol for SSL Policy, for `ssl_policy_type` set to `Custom`
+- `ssl_policy_cipher_suites`          - (`list`, optional) a list of accepted cipher suites, for `ssl_policy_type` set to `Custom`
+- `ssl_profiles`                      - (`map`, optional) a map of SSL profiles that can be later on referenced in HTTPS listeners by providing a name of the profile in the `ssl_profile_name` property
+
+
+Type: 
+
+```hcl
+map(object({
+    name = string
+    public_ip = object({
+      name                = string
+      resource_group_name = optional(string)
+      create              = optional(bool, true)
+    })
+    vnet_key           = string
+    subnet_key         = string
+    managed_identities = optional(list(string))
+    capacity = object({
+      static = optional(number)
+      autoscale = optional(object({
+        min = optional(number)
+        max = optional(number)
+      }))
+    })
+    waf = optional(object({
+      prevention_mode  = bool
+      rule_set_type    = optional(string, "OWASP")
+      rule_set_version = optional(string)
+    }))
+    enable_http2                   = optional(bool)
+    zones                          = list(string)
+    frontend_ip_configuration_name = optional(string, "public_ipconfig")
+    vmseries_public_nic_name       = optional(string, "public")
+    listeners = map(object({
+      name                     = string
+      port                     = number
+      protocol                 = optional(string, "Http")
+      host_names               = optional(list(string))
+      ssl_profile_name         = optional(string)
+      ssl_certificate_path     = optional(string)
+      ssl_certificate_pass     = optional(string)
+      ssl_certificate_vault_id = optional(string)
+      custom_error_pages       = optional(map(string), {})
+    }))
+    backend_pool = optional(object({
+      name         = string
+      vmseries_ips = optional(list(string), [])
+    }))
+    backends = optional(map(object({
+      name                  = string
+      path                  = optional(string)
+      hostname_from_backend = optional(string)
+      hostname              = optional(string)
+      port                  = optional(number, 80)
+      protocol              = optional(string, "Http")
+      timeout               = optional(number, 60)
+      cookie_based_affinity = optional(string, "Enabled")
+      affinity_cookie_name  = optional(string)
+      probe                 = optional(string)
+      root_certs = optional(map(object({
+        name = string
+        path = string
+      })), {})
+    })))
+    probes = optional(map(object({
+      name       = string
+      path       = string
+      host       = optional(string)
+      port       = optional(number)
+      protocol   = optional(string, "Http")
+      interval   = optional(number, 5)
+      timeout    = optional(number, 30)
+      threshold  = optional(number, 2)
+      match_code = optional(list(number))
+      match_body = optional(string)
+    })), {})
+    rewrites = optional(map(object({
+      name = optional(string)
+      rules = optional(map(object({
+        name     = string
+        sequence = number
+        conditions = optional(map(object({
+          pattern     = string
+          ignore_case = optional(bool, false)
+          negate      = optional(bool, false)
+        })), {})
+        request_headers  = optional(map(string), {})
+        response_headers = optional(map(string), {})
+      })))
+    })), {})
+    rules = map(object({
+      name         = string
+      priority     = number
+      backend      = optional(string)
+      listener     = string
+      rewrite      = optional(string)
+      url_path_map = optional(string)
+      redirect     = optional(string)
+    }))
+    redirects = optional(map(object({
+      name                 = string
+      type                 = string
+      target_listener      = optional(string)
+      target_url           = optional(string)
+      include_path         = optional(bool, false)
+      include_query_string = optional(bool, false)
+    })), {})
+    url_path_maps = optional(map(object({
+      name    = string
+      backend = string
+      path_rules = optional(map(object({
+        paths    = list(string)
+        backend  = optional(string)
+        redirect = optional(string)
+      })))
+    })), {})
+    ssl_global = optional(object({
+      ssl_policy_type                 = string
+      ssl_policy_name                 = optional(string)
+      ssl_policy_min_protocol_version = optional(string)
+      ssl_policy_cipher_suites        = optional(list(string))
+    }))
+    ssl_profiles = optional(map(object({
+      name                            = string
+      ssl_policy_name                 = optional(string)
+      ssl_policy_min_protocol_version = optional(string)
+      ssl_policy_cipher_suites        = optional(list(string))
+    })), {})
+  }))
+```
+
+
+Default value: `map[]`
+
+<sup>[back to list](#modules-optional-inputs)</sup>
+
+
+<!-- END_TF_DOCS -->
