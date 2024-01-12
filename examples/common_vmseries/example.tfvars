@@ -154,23 +154,6 @@ load_balancers = {
   }
 }
 
-ngfw_metrics = {
-  name = "metrics"
-}
-
-bootstrap_storages = {
-  "bootstrap" = {
-    name = "fosixsmplbtstrp"
-    file_shares_configuration = {
-      vnet_key = "transit"
-    }
-    storage_network_security = {
-      allowed_subnet_keys = ["management"]
-      allowed_public_ips  = ["134.238.135.14", "134.238.135.140"]
-    }
-  }
-}
-
 # --- VMSERIES PART --- #
 vmseries = {
   "fw-1" = {
@@ -179,17 +162,10 @@ vmseries = {
       version = "10.2.3"
     }
     virtual_machine = {
-      vnet_key = "transit"
-      size     = "Standard_DS3_v2"
-      zone     = 1
-      bootstrap_package = {
-        bootstrap_storage_key  = "bootstrap"
-        static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-        bootstrap_xml_template = "templates/bootstrap_common.tmpl"
-        bootstrap_package_path = "bootstrap_package"
-        private_snet_key       = "private"
-        public_snet_key        = "public"
-      }
+      vnet_key          = "transit"
+      size              = "Standard_DS3_v2"
+      zone              = 1
+      bootstrap_options = "type=dhcp-client"
     }
     interfaces = [
       {
@@ -220,14 +196,6 @@ vmseries = {
       size              = "Standard_DS3_v2"
       zone              = 2
       bootstrap_options = "type=dhcp-client"
-      # bootstrap_package = {
-      #   bootstrap_storage_key  = "bootstrap"
-      #   static_files           = { "files/init-cfg.txt" = "config/init-cfg.txt" }
-      #   bootstrap_xml_template = "templates/bootstrap_common.tmpl"
-      #   bootstrap_package_path = "bootstrap_package"
-      #   private_snet_key       = "private"
-      #   public_snet_key        = "public"
-      # }
     }
     interfaces = [
       {

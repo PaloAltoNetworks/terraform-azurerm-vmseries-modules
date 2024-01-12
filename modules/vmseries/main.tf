@@ -1,3 +1,4 @@
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
@@ -10,6 +11,7 @@ resource "azurerm_public_ip" "this" {
   tags                = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
   for_each = { for v in var.interfaces : v.name => v if !v.create_public_ip && v.public_ip_name != null
   }
@@ -18,6 +20,7 @@ data "azurerm_public_ip" "this" {
   resource_group_name = coalesce(each.value.public_ip_resource_group, var.resource_group_name)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "this" {
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
@@ -41,6 +44,7 @@ locals {
   password = sensitive(var.authentication.password)
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
 resource "azurerm_linux_virtual_machine" "this" {
   name                = var.name
   location            = var.location
@@ -110,6 +114,7 @@ resource "azurerm_linux_virtual_machine" "this" {
   }
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface_backend_address_pool_association
 resource "azurerm_network_interface_backend_address_pool_association" "this" {
   for_each = { for v in var.interfaces : v.name => v.lb_backend_pool_id if v.attach_to_lb_backend_pool }
 

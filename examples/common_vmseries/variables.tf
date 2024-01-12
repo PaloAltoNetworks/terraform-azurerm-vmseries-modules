@@ -596,8 +596,8 @@ variable "vmseries" {
   validation {
     condition = alltrue([
       for _, v in var.vmseries :
-      v.virtual_machine.private_snet_key != null && v.virtual_machine.public_snet_key != null
-      if v.virtual_machine.bootstrap_xml_template != null
+      v.virtual_machine.bootstrap_package.bootstrap_xml_template != null ? v.virtual_machine.bootstrap_package.private_snet_key != null && v.virtual_machine.bootstrap_package.public_snet_key != null : true
+      if v.virtual_machine.bootstrap_package != null
     ])
     error_message = "The `private_snet_key` and `public_snet_key` are required when `bootstrap_xml_template` is set."
   }

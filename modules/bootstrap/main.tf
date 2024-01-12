@@ -11,21 +11,22 @@ resource "azurerm_storage_account" "this" {
   account_kind             = var.storage_account.kind
   tags                     = var.tags
 
-  dynamic "network_rules" {
-    for_each = length(var.storage_network_security.allowed_public_ips) > 0 || length(var.storage_network_security.allowed_subnet_ids) > 0 ? [1] : []
-    content {
-      default_action             = "Deny"
-      ip_rules                   = var.storage_network_security.allowed_public_ips
-      virtual_network_subnet_ids = var.storage_network_security.allowed_subnet_ids
-    }
-  }
-
   lifecycle {
     precondition {
       condition     = var.location != null
       error_message = "When creating a storage account the `location` variable cannot be null."
     }
   }
+}
+
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/storage_account_network_rules
+resource "azurerm_storage_account_network_rules" "this" {
+  count = var.storage_account.create ? 1 : 0
+
+  storage_account_id         = azurerm_storage_account.this[0].id
+  default_action             = length(var.storage_network_security.allowed_public_ips) > 0 || length(var.storage_network_security.allowed_subnet_ids) > 0 ? "Deny" : "Allow"
+  ip_rules                   = var.storage_network_security.allowed_public_ips
+  virtual_network_subnet_ids = var.storage_network_security.allowed_subnet_ids
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/storage_account
