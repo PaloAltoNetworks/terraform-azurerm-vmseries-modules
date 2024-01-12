@@ -318,42 +318,38 @@ variable "availability_sets" {
   type        = any
 }
 
-variable "application_insights" {
+variable "ngfw_metrics" {
   description = <<-EOF
-  A map defining Azure Application Insights. There are three ways to use this variable:
+  A map controlling metrics-relates resources.
 
-  * when the value is set to `null` (default) no AI is created
-  * when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-  * when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+  When set to explicit `null` (default) it will disable any metrics resources in this deployment.
 
-  Names for all AI instances are prefixed with `var.name_prefix`.
+  When defined it will either create or source a Log Analytics Workspace and create Application Insights instances (one per each
+  Scale Set). All instances will be automatically connected to the workspace.
+  The name of the Application Insights instance will be derived from the Scale Set name and suffixed with `-ai`.
 
-  Properties supported (for details on each property see [modules documentation](../../modules/application_insights/README.md)):
+  All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
-  - `name` : (optional, string) a name of a single AI instance
-  - `workspace_mode` : (optional, bool) defaults to `true`, use AI Workspace mode instead of the Classical (deprecated)
-  - `workspace_name` : (optional, string) defaults to AI name suffixed with `-wrkspc`, name of the Log Analytics Workspace created when AI is deployed in Workspace mode
-  - `workspace_sku` : (optional, string) defaults to PerGB2018, SKU used by WAL, see module documentation for details
-  - `metrics_retention_in_days` : (optional, number) defaults to current Azure default value, see module documentation for details
+  Following properties are available:
 
-  Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
-  ```
-  vmseries = {
-    'vm-1' = {
-      ....
-    }
-    'vm-2' = {
-      ....
-    }
-  }
-
-  application_insights = {
-    metrics_retention_in_days = 365
-  }
-  ```
+  - `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+  - `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
+                                  Analytics Workspace
+  - `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
+                                  the Log Analytics Workspace
+  - `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
+  - `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
+                                  days, possible values are between 30 and 730. For sourced Workspaces this applies only to 
+                                  the Application Insights instances.
   EOF
   default     = null
-  type        = map(string)
+  type = object({
+    name                      = string
+    create_workspace          = optional(bool, true)
+    resource_group_name       = optional(string)
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
 }
 
 variable "bootstrap_storage" {
@@ -496,6 +492,8 @@ variable "appgws" {
                         `redirect` or `url_path_map`, see [module's documentation](../../modules/appgw/README.md#rules)
                         for details
   EOF
+  default     = {}
+  nullable    = false
   type = map(object({
     name = string
     application_gateway = object({
