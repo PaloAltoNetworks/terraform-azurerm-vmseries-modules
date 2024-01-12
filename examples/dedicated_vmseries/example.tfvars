@@ -23,7 +23,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["1.2.3.4"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -210,7 +210,7 @@ appgws = {
 
 bootstrap_storage = {
   bootstrap = {
-    name             = "xmplbootstrapdedicated"
+    name             = "fosixbootstrap"
     public_snet_key  = "public"
     private_snet_key = "private"
     storage_acl      = true
@@ -221,8 +221,12 @@ bootstrap_storage = {
         subnet_key = "management"
       }
     }
-    storage_allow_inbound_public_ips = ["1.2.3.4"] # TODO: whitelist public IP addresses subnets (minimum /30 CIDR) that will be used to apply the terraform code from
+    storage_allow_inbound_public_ips = ["134.238.135.14", "134.238.135.140"]
   }
+}
+
+ngfw_metrics = {
+  name = "metrics"
 }
 
 vmseries_version = "10.2.3"

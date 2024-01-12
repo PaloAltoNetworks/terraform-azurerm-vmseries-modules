@@ -1,31 +1,29 @@
-# Create a public IP for management
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/public_ip
 resource "azurerm_public_ip" "this" {
-  for_each = { for v in var.interfaces : v.name => v if try(v.create_public_ip, false) }
+  for_each = { for v in var.interfaces : v.name => v if v.create_public_ip }
 
   location            = var.location
   resource_group_name = var.resource_group_name
-  name                = "${each.value.name}-pip"
+  name                = each.value.public_ip_name
   allocation_method   = "Static"
   sku                 = "Standard"
-  zones               = var.enable_zones ? var.avzones : null
-
-  tags = var.tags
+  zones               = var.virtual_machine.zone != null ? [var.virtual_machine.zone] : null
+  tags                = var.tags
 }
 
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/public_ip
 data "azurerm_public_ip" "this" {
-  for_each = { for v in var.interfaces : v.name => v
-    if(!try(v.create_public_ip, false) && try(v.public_ip_name, null) != null)
-  }
+  for_each = { for v in var.interfaces : v.name => v if !v.create_public_ip && v.public_ip_name != null }
 
   name                = each.value.public_ip_name
-  resource_group_name = try(each.value.public_ip_resource_group, null) != null ? each.value.public_ip_resource_group : var.resource_group_name
+  resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
 }
 
-# Build Panorama interface
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
 resource "azurerm_network_interface" "this" {
   for_each = { for k, v in var.interfaces : v.name => merge(v, { index = k }) }
 
-  name                          = "${each.value.name}-nic"
+  name                          = each.value.name
   location                      = var.location
   resource_group_name           = var.resource_group_name
   enable_accelerated_networking = false
@@ -35,95 +33,106 @@ resource "azurerm_network_interface" "this" {
   ip_configuration {
     name                          = "primary"
     subnet_id                     = each.value.subnet_id
-    private_ip_address_allocation = try(each.value.private_ip_address, null) != null ? "Static" : "Dynamic"
-    private_ip_address            = try(each.value.private_ip_address, null)
-    public_ip_address_id          = try(azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null)
+    private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
+    private_ip_address            = each.value.private_ip_address
+    public_ip_address_id = try(
+      azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null
+    )
   }
 }
 
-# Build the Panorama VM
-resource "azurerm_virtual_machine" "panorama" {
-  name                         = var.name
-  location                     = var.location
-  resource_group_name          = var.resource_group_name
-  primary_network_interface_id = azurerm_network_interface.this[var.interfaces[0].name].id
-  vm_size                      = var.panorama_size
-  network_interface_ids        = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
+locals {
+  password = sensitive(var.authentication.password)
+}
 
-  delete_os_disk_on_termination    = true
-  delete_data_disks_on_termination = true
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
+resource "azurerm_linux_virtual_machine" "this" {
+  name                = var.name
+  location            = var.location
+  resource_group_name = var.resource_group_name
+  tags                = var.tags
 
-  storage_image_reference {
-    id        = var.custom_image_id
-    publisher = var.custom_image_id == null ? var.panorama_publisher : null
-    offer     = var.custom_image_id == null ? var.panorama_offer : null
-    sku       = var.custom_image_id == null ? var.panorama_sku : null
-    version   = var.custom_image_id == null ? var.panorama_version : null
+  size                       = var.virtual_machine.size
+  zone                       = var.virtual_machine.zone
+  availability_set_id        = var.virtual_machine.avset_id
+  allow_extension_operations = var.virtual_machine.allow_extension_operations
+  encryption_at_host_enabled = var.virtual_machine.encryption_at_host_enabled
+
+  network_interface_ids = [for v in var.interfaces : azurerm_network_interface.this[v.name].id]
+
+  admin_username                  = var.authentication.username
+  admin_password                  = var.authentication.disable_password_authentication ? null : local.password
+  disable_password_authentication = var.authentication.disable_password_authentication
+
+  dynamic "admin_ssh_key" {
+    for_each = { for k, v in var.authentication.ssh_keys : k => v }
+    content {
+      username   = var.authentication.username
+      public_key = admin_ssh_key.value
+    }
   }
 
-  storage_os_disk {
-    name              = coalesce(var.os_disk_name, "${var.name}-disk")
-    caching           = "ReadWrite"
-    create_option     = "FromImage"
-    managed_disk_type = var.panorama_disk_type
+  os_disk {
+    name                   = var.virtual_machine.disk_name
+    storage_account_type   = var.virtual_machine.disk_type
+    caching                = "ReadWrite"
+    disk_encryption_set_id = var.virtual_machine.disk_encryption_set_id
   }
 
-  os_profile {
-    computer_name  = var.name
-    admin_username = var.username
-    admin_password = var.password
-  }
+  source_image_id = var.image.custom_id
 
-  boot_diagnostics {
-    enabled     = var.boot_diagnostic_storage_uri != null ? true : false
-    storage_uri = var.boot_diagnostic_storage_uri
-  }
-
-  os_profile_linux_config {
-    disable_password_authentication = var.password == null ? true : false
-    dynamic "ssh_keys" {
-      for_each = var.ssh_keys
-      content {
-        key_data = ssh_keys.value
-        path     = "/home/${var.username}/.ssh/authorized_keys"
-      }
+  dynamic "source_image_reference" {
+    for_each = var.image.custom_id == null ? [1] : []
+    content {
+      publisher = var.image.publisher
+      offer     = var.image.offer
+      sku       = var.image.sku
+      version   = var.image.version
     }
   }
 
   dynamic "plan" {
-    for_each = var.enable_plan ? ["one"] : []
+    for_each = var.image.enable_marketplace_plan ? [1] : []
 
     content {
-      name      = var.panorama_sku
-      publisher = var.panorama_publisher
-      product   = var.panorama_offer
+      name      = var.image.sku
+      publisher = var.image.publisher
+      product   = var.image.offer
     }
   }
-  zones = var.enable_zones && var.avzone != null && var.avzone != "" ? [var.avzone] : null
-  tags  = var.tags
+
+  # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
+  # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
+  boot_diagnostics {
+    storage_account_uri = var.virtual_machine.diagnostics_storage_uri
+  }
+
+  identity {
+    type         = var.virtual_machine.identity_type
+    identity_ids = var.virtual_machine.identity_ids
+  }
 }
 
-# Panorama managed disk
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/managed_disk
 resource "azurerm_managed_disk" "this" {
   for_each = var.logging_disks
 
-  name                 = "${var.name}-disk-${each.key}"
+  name                 = each.value.name
   location             = var.location
   resource_group_name  = var.resource_group_name
-  storage_account_type = try(each.value.disk_type, "Standard_LRS")
+  storage_account_type = each.value.disk_type
   create_option        = "Empty"
-  disk_size_gb         = try(each.value.size, "2048")
-  zone                 = var.enable_zones ? try(var.avzone, null) : null
-
-  tags = var.tags
+  disk_size_gb         = each.value.size
+  zone                 = var.virtual_machine.zone != null && var.virtual_machine.zone != "" ? var.virtual_machine.zone : null
+  tags                 = var.tags
 }
 
-# Attach logging disk to Panorama VM
+# https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_machine_data_disk_attachment
 resource "azurerm_virtual_machine_data_disk_attachment" "this" {
   for_each = azurerm_managed_disk.this
 
   managed_disk_id    = each.value.id
-  virtual_machine_id = azurerm_virtual_machine.panorama.id
+  virtual_machine_id = azurerm_linux_virtual_machine.this.id
   lun                = var.logging_disks[each.key].lun
   caching            = "ReadWrite"
 }

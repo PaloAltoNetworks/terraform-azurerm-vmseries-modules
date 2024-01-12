@@ -7,7 +7,6 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-
 # --- VNET PART --- #
 vnets = {
   "transit" = {
@@ -23,7 +22,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"] # TODO: whitelist public IP addresses that will be used to manage the appliances
+            source_address_prefixes    = ["0.0.0.0/0"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -128,10 +127,12 @@ vnets = {
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name                              = "public-lb"
-    nsg_vnet_key                      = "transit"
-    nsg_key                           = "public"
-    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    name = "public-lb"
+    nsg_auto_rules_settings = {
+      nsg_vnet_key = "transit"
+      nsg_key      = "public"
+      source_ips   = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -214,25 +215,33 @@ appgws = {
   }
 }
 
-
-
 # --- VMSERIES PART --- #
-application_insights = {}
+ngfw_metrics = {
+  name = "ngwf-log-analytics-wrksp"
+}
 
-vmseries_version = "10.2.3"
-vmseries_vm_size = "Standard_DS3_v2"
-vmss = {
-  "common" = {
-    name              = "common-vmss"
-    vnet_key          = "transit"
-    zones             = ["1", "2", "3"]
-    bootstrap_options = "type=dhcp-client"
-
+scale_sets = {
+  common = {
+    name = "common-vmss"
+    image = {
+      version = "10.2.4"
+    }
+    authentication = {
+      disable_password_authentication = false
+    }
+    virtual_machine_scale_set = {
+      vnet_key          = "transit"
+      bootstrap_options = "type=dhcp-client"
+      zones             = ["1", "2", "3"]
+    }
+    autoscaling_configuration = {
+      default_count = 1
+    }
     interfaces = [
       {
-        name       = "management"
-        subnet_key = "management"
-        create_pip = true # see disclaimer on README for details
+        name             = "management"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
         name              = "private"
@@ -244,30 +253,40 @@ vmss = {
         subnet_key              = "public"
         load_balancer_key       = "public"
         application_gateway_key = "public"
-        create_pip              = true
+        create_public_ip        = true
       }
     ]
-
-    autoscale_config = {
-      count_default = 2
-      count_minimum = 1
-      count_maximum = 3
-    }
-    autoscale_metrics = {
-      "DataPlaneCPUUtilizationPct" = {
-        scaleout_threshold = 80
-        scalein_threshold  = 20
-      }
-    }
-    scaleout_config = {
-      statistic        = "Average"
-      time_aggregation = "Average"
-      window_minutes   = 10
-      cooldown_minutes = 30
-    }
-    scalein_config = {
-      window_minutes   = 10
-      cooldown_minutes = 300
-    }
+    autoscaling_profiles = [
+      {
+        name          = "default_profile"
+        default_count = 0
+      },
+      {
+        name          = "weekday_profile"
+        default_count = 2
+        minimum_count = 1
+        maximum_count = 3
+        recurrence = {
+          days       = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+          start_time = "07:30"
+          end_time   = "17:00"
+        }
+        scale_rules = [
+          {
+            name = "DataPlaneCPUUtilizationPct"
+            scale_out_config = {
+              threshold                  = 70
+              grain_window_minutes       = 5
+              aggregation_window_minutes = 30
+              cooldown_window_minutes    = 60
+            }
+            scale_in_config = {
+              threshold               = 40
+              cooldown_window_minutes = 120
+            }
+          },
+        ]
+      },
+    ]
   }
 }

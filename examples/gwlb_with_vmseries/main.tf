@@ -74,23 +74,23 @@ module "gwlb" {
 }
 
 # VM-Series
-module "ai" {
-  source = "../../modules/application_insights"
+module "ngfw_metrics" {
+  source = "../../modules/ngfw_metrics"
 
-  for_each = toset(
-    var.application_insights != null ? flatten(
-      try([var.application_insights.name], [for _, v in var.vmseries : "${v.name}-ai"])
-    ) : []
-  )
+  count = var.ngfw_metrics != null ? 1 : 0
 
-  name                = "${var.name_prefix}${each.key}"
-  resource_group_name = local.resource_group.name
+  create_workspace = var.ngfw_metrics.create_workspace
+
+  name                = "${var.ngfw_metrics.create_workspace ? var.name_prefix : ""}${var.ngfw_metrics.name}"
+  resource_group_name = var.ngfw_metrics.create_workspace ? local.resource_group.name : coalesce(var.ngfw_metrics.resource_group_name, local.resource_group.name)
   location            = var.location
 
-  workspace_mode            = try(var.application_insights.workspace_mode, null)
-  workspace_name            = try(var.application_insights.workspace_name, "${var.name_prefix}${each.key}-wrkspc")
-  workspace_sku             = try(var.application_insights.workspace_sku, null)
-  metrics_retention_in_days = try(var.application_insights.metrics_retention_in_days, null)
+  log_analytics_workspace = {
+    sku                       = var.ngfw_metrics.sku
+    metrics_retention_in_days = var.ngfw_metrics.metrics_retention_in_days
+  }
+
+  application_insights = { for k, v in var.vmseries : k => { name = "${var.name_prefix}${v.name}-ai" } }
 
   tags = var.tags
 }
@@ -106,8 +106,7 @@ resource "local_file" "bootstrap_xml" {
         module.vnet[var.vmseries_common.vnet_key].subnet_cidrs[each.value.interfaces[1].subnet_key],
         1
       )
-
-      ai_instr_key = try(module.ai[try(var.application_insights.name, "${var.name_prefix}${each.value.name}-ai")].metrics_instrumentation_key, null)
+      ai_instr_key = try(module.ngfw_metrics[0].metrics_instrumentation_keys[each.key], null)
 
       ai_update_interval = try(
         each.value.ai_update_interval,
@@ -118,7 +117,7 @@ resource "local_file" "bootstrap_xml" {
   )
 
   depends_on = [
-    module.ai,
+    module.ngfw_metrics,
     module.vnet
   ]
 }
