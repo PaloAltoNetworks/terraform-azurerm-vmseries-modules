@@ -10,7 +10,7 @@ resource "azurerm_log_analytics_workspace" "this" {
 
   tags = var.tags
 }
-
+# REFACTOR: add comments with links to resources
 resource "azurerm_application_insights" "this" {
   name                = var.name
   location            = var.location
