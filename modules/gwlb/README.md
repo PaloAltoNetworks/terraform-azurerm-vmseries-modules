@@ -229,14 +229,15 @@ Health probe configuration for the Gateway Load Balancer backends.
 
 Following settings are available:
 - `name`                - (`string`, optional) name of the health probe. Defaults to `name` variable value.
-- `port`                - (`number`, required) port to run the probe against
+- `port`                - (`number`, required) port to run the probe against.
 - `protocol`            - (`string`, optional, defaults to `Tcp`) protocol used by the health probe,
                           can be one of "Tcp", "Http" or "Https".
-- `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoin.
+- `probe_threshold`     - (`number`, optional) number of consecutive probes that decide on forwarding traffic to an endpoint.
 - `request_path`        - (`string`, optional) used only for non `Tcp` probes,
-                          the URI used to check the endpoint status when `protocol` is set to `Http(s)`
+                          the URI used to check the endpoint status when `protocol` is set to `Http(s)`.
 - `interval_in_seconds` - (`number`, optional) interval in seconds between probes, with a minimal value of 5
-- `number_of_probes`    - (`number`, optional)
+- `number_of_probes`    - (`number`, optional) the number of failed probe attempts after which the backend endpoint
+                          is removed from rotation.
 
 
 Type: 
@@ -246,10 +247,10 @@ object({
     name                = optional(string)
     port                = number
     protocol            = optional(string, "Tcp")
-    interval_in_seconds = optional(number)
-    probe_threshold     = optional(number)
+    interval_in_seconds = optional(number, 15)
+    probe_threshold     = optional(number, 1)
     request_path        = optional(string)
-    number_of_probes    = optional(number)
+    number_of_probes    = optional(number, 2)
   })
 ```
 
@@ -263,7 +264,7 @@ Default value: `map[port:80]`
 Map with backend configurations for the Gateway Load Balancer. Azure GWLB rule can have up to two backends.
 
 Following settings are available:
-- `name`              - (`string`, optional) name of the backend.
+- `name`              - (`string`, required) name of the backend.
                         If not specified name is generated from `name` variable and backend key.
 - `tunnel_interfaces` - (`map`, required) map with tunnel interfaces.
 
@@ -287,7 +288,7 @@ Type:
 
 ```hcl
 map(object({
-    name = optional(string)
+    name = string
     tunnel_interfaces = map(object({
       identifier = number
       port       = number
@@ -298,7 +299,7 @@ map(object({
 ```
 
 
-Default value: `map[ext-int:map[tunnel_interfaces:map[external:map[identifier:801 port:2001 protocol:VXLAN type:External] internal:map[identifier:800 port:2000 protocol:VXLAN type:Internal]]]]`
+Default value: `map[ext-int:map[name:ext-int tunnel_interfaces:map[external:map[identifier:801 port:2001 protocol:VXLAN type:External] internal:map[identifier:800 port:2000 protocol:VXLAN type:Internal]]]]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

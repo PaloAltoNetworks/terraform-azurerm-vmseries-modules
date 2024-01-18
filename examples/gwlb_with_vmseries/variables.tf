@@ -130,10 +130,10 @@ variable "ngfw_metrics" {
 
   All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
-  > [!Note]
-  > We do not explicitly define Application Insights instances. Each Virtual Machine will receive one automatically
-  > as long as this object is not `null`.
-  > The name of the Application Insights instance will be derived from the VM's name and suffixed with `-ai`.
+  **Note!** \
+  We do not explicitly define Application Insights instances. Each Virtual Machine will receive one automatically
+  as long as this object is not `null`.
+  The name of the Application Insights instance will be derived from the VM's name and suffixed with `-ai`.
 
   Following properties are available:
 
@@ -264,15 +264,15 @@ variable "load_balancers" {
 
     Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-    > [!NOTE]
-    > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+    **Note!** \
+    In this example the `subnet_id` is not available directly, three other properties were introduced instead.
 
     - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
     - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
                       that stores the Subnet described by `subnet_key`
 
-    > [!NOTE]
-    > The `gwlb_fip_id` property is not available directly as well, it was replaced by `gwlb_key`.
+    **Note!** \
+    The `gwlb_fip_id` property is not available directly as well, it was replaced by `gwlb_key`.
 
     - `gwlb_key`    - (`string`, optional, defaults to `null`) a key pointing to a GWLB definition in the
                       `var.gateway_load_balancers`map.

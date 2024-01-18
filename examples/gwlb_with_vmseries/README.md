@@ -91,7 +91,7 @@ Name | Type | Description
 [`enable_zones`](#enable_zones) | `bool` | If `true`, enable zone support for resources.
 [`tags`](#tags) | `map` | Map of tags to assign to all of the created resources.
 [`gateway_load_balancers`](#gateway_load_balancers) | `any` | Map with Gateway Load Balancer definitions.
-[`application_insights`](#application_insights) | `map` | A map defining Azure Application Insights.
+[`ngfw_metrics`](#ngfw_metrics) | `object` | A map defining metrics related resources for Next Generation Firewall.
 [`bootstrap_storages`](#bootstrap_storages) | `any` | A map defining Azure Storage Accounts used to host file shares for bootstrapping NGFWs.
 [`availability_sets`](#availability_sets) | `any` | A map defining availability sets.
 [`load_balancers`](#load_balancers) | `map` | A map containing configuration for all (private and public) Load Balancers.
@@ -132,7 +132,7 @@ Name | Version | Source | Description
 --- | --- | --- | ---
 `vnet` | - | ../../modules/vnet | VNets
 `gwlb` | - | ../../modules/gwlb | Gateway Load Balancers
-`ai` | - | ../../modules/application_insights | VM-Series
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | VM-Series
 `bootstrap` | - | ../../modules/bootstrap | 
 `bootstrap_share` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
@@ -392,42 +392,41 @@ Default value: `map[]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
-#### application_insights
+#### ngfw_metrics
 
-A map defining Azure Application Insights. There are three ways to use this variable:
+A map defining metrics related resources for Next Generation Firewall.
 
-* when the value is set to `null` (default) no AI is created
-* when the value is a map containing `name` key (other keys are optional) a single AI instance will be created under the name that is the value of the `name` key
-* when the value is an empty map or a map w/o the `name` key, an AI instance per each VMSeries VM will be created. All instances will share the same configuration. All instances will have names corresponding to their VM name.
+All the settings available below are common to the Log Analytics Workspace and Application Insight instances.
 
-Names for all AI instances are prefixed with `var.name_prefix`.
+**Note!** \
+We do not explicitly define Application Insights instances. Each Virtual Machine will receive one automatically
+as long as this object is not `null`.
+The name of the Application Insights instance will be derived from the VM's name and suffixed with `-ai`.
 
-Properties supported (for details on each property see [module documentation](../modules/application_insights/README.md)):
+Following properties are available:
 
-- `name`                      - (optional|string) Name of a single AI instance
-- `workspace_mode`            - (optional|bool) Use AI Workspace mode instead of the Classical (deprecated), defaults to `true`.
-- `workspace_name`            - (optional|string) Name of the Log Analytics Workspace created when AI is deployed in Workspace mode, defaults to AI name suffixed with `-wrkspc`.
-- `workspace_sku`             - (optional|string) SKU used by WAL, see module documentation for details, defaults to PerGB2018.
-- `metrics_retention_in_days` - (optional|number) Defaults to current Azure default value, see module documentation for details.
+- `name`                      - (`string`, required) name of the (common) Log Analytics Workspace
+- `create_workspace`          - (`bool`, optional, defaults to `true`) controls whether we create or source an existing Log
+                                Analytics Workspace
+- `resource_group_name`       - (`string`, optional, defaults to `var.resource_group_name`) name of the Resource Group hosting
+                                the Log Analytics Workspace
+- `sku`                       - (`string`, optional, defaults to module defaults) the SKU of the Log Analytics Workspace.
+- `metrics_retention_in_days` - (`number`, optional, defaults to module defaults) workspace and insights data retention in
+                                days, possible values are between 30 and 730.
 
-Example of an AIs created per VM, in Workspace mode, with metrics retention set to 1 year:
+
+Type: 
+
+```hcl
+object({
+    name                      = string
+    create_workspace          = optional(bool, true)
+    resource_group_name       = optional(string)
+    sku                       = optional(string)
+    metrics_retention_in_days = optional(number)
+  })
 ```
-vmseries = {
-  'vm-1' = {
-    ....
-  }
-  'vm-2' = {
-    ....
-  }
-}
 
-application_insights = {
-  metrics_retention_in_days = 365
-}
-```
-
-
-Type: map(string)
 
 Default value: `&{}`
 
@@ -502,15 +501,15 @@ Following properties are available:
 
   Please refer to [module documentation](../../modules/loadbalancer/README.md#frontend_ips) for available properties.
 
-  > [!NOTE]
-  > In this example the `subnet_id` is not available directly, three other properties were introduced instead.
+  **Note!** \
+  In this example the `subnet_id` is not available directly, three other properties were introduced instead.
 
   - `subnet_key`  - (`string`, optional, defaults to `null`) a key pointing to a Subnet definition in the `var.vnets` map
   - `vnet_key`    - (`string`, optional, defaults to `null`) a key pointing to a VNET definition in the `var.vnets` map
                     that stores the Subnet described by `subnet_key`
 
-  > [!NOTE]
-  > The `gwlb_fip_id` property is not available directly as well, it was replaced by `gwlb_key`.
+  **Note!** \
+  The `gwlb_fip_id` property is not available directly as well, it was replaced by `gwlb_key`.
 
   - `gwlb_key`    - (`string`, optional, defaults to `null`) a key pointing to a GWLB definition in the
                     `var.gateway_load_balancers`map.
