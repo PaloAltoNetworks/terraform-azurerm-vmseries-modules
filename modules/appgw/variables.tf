@@ -384,7 +384,7 @@ variable "backend_pool" {
 
   Object contains attributes:
   - `name`         - (`string`, required) name of the backend pool.
-  - `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VMSeries' interfaces that will serve as backends
+  - `vmseries_ips` - (`list`, optional, defaults to `[]`) IP addresses of VM-Series' interfaces that will serve as backends
                      for the Application Gateway.
   EOF
   default = {

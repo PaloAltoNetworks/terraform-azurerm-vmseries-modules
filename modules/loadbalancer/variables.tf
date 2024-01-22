@@ -64,15 +64,15 @@ variable "frontend_ips" {
 
   Public Load Balancer:
 
-  - `name`                      - (`string`, required) name of a frontend IP configuration
-  - `public_ip_name`            - (`string`, required) name of a public IP resource
-  - `create_public_ip`          - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
-                                  created, otherwise an existing resource will be used;
-                                  in both cases the name of the resource is controled by `public_ip_name` property
-  - `public_ip_resource_group`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                  hosting an existing public IP resource
-  - `in_rules`                  - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-  - `out_rules`                 - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
+  - `name`                          - (`string`, required) name of a frontend IP configuration
+  - `public_ip_name`                - (`string`, required) name of a public IP resource
+  - `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
+                                      created, otherwise an existing resource will be used;
+                                      in both cases the name of the resource is controlled by `public_ip_name` property
+  - `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                      hosting an existing public IP resource
+  - `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
+  - `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
 
   Below are the properties for the `in_rules` map:
 
@@ -119,9 +119,9 @@ variable "frontend_ips" {
   # rules for a public Load Balancer, reusing an existing public IP and doing port translation
   frontend_ips = {
     pip_existing = {
-      create_public_ip         = false
-      public_ip_name           = "my_ip"
-      public_ip_resource_group = "my_rg_name"
+      create_public_ip              = false
+      public_ip_name                = "my_ip"
+      public_ip_resource_group_name = "my_rg_name"
       in_rules = {
         HTTP = {
           port         = 80
@@ -170,13 +170,13 @@ variable "frontend_ips" {
   ```
   EOF
   type = map(object({
-    name                     = string
-    public_ip_name           = optional(string)
-    create_public_ip         = optional(bool, false)
-    public_ip_resource_group = optional(string)
-    subnet_id                = optional(string)
-    private_ip_address       = optional(string)
-    gwlb_fip_id              = optional(string)
+    name                          = string
+    public_ip_name                = optional(string)
+    create_public_ip              = optional(bool, false)
+    public_ip_resource_group_name = optional(string)
+    subnet_id                     = optional(string)
+    private_ip_address            = optional(string)
+    gwlb_fip_id                   = optional(string)
     in_rules = optional(map(object({
       name                = string
       protocol            = string
