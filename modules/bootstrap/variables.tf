@@ -1,14 +1,10 @@
-variable "create_storage_account" {
-  description = "If `true`, create a Storage Account."
-  default     = true
-  type        = bool
-}
-
 variable "name" {
   description = <<-EOF
-  Name of the Storage Account, either a new or an existing one (depending on the value of `create_storage_account`).
+  Name of the Storage Account.
+  Either a new or an existing one (depending on the value of `storage_account.create`).
 
-  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+  The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include
+  only numbers and lowercase letters.
   EOF
   type        = string
   validation {
@@ -18,139 +14,211 @@ variable "name" {
 }
 
 variable "resource_group_name" {
-  description = "Name of the Resource Group to use."
+  description = "The name of the Resource Group to use."
   type        = string
 }
 
 variable "location" {
-  description = "Region to deploy bootstrap resources. Ignored when `create_storage_account` is set to `false`."
+  description = "The name of the Azure region to deploy the resources in."
   default     = null
-  type        = string
-}
-
-variable "min_tls_version" {
-  description = "The minimum supported TLS version for the storage account."
-  default     = "TLS1_2"
-  type        = string
-}
-
-variable "files" {
-  description = <<-EOF
-  Map of all files to copy to bucket. The keys are local paths, the values are remote paths.
-  Always use slash `/` as directory separator (unix-like), not the backslash `\`.
-  Example: 
-  ```
-  files = {
-    "dir/my.txt" = "config/init-cfg.txt"
-  }
-  ```
-  EOF
-  default     = {}
-  type        = map(string)
-}
-
-variable "bootstrap_files_dir" {
-  description = "Bootstrap file directory. If the variable has a value of `null` (default) - then it will not upload any other files other than the ones specified in the `files` variable. More information can be found at https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package."
-  default     = null
-  type        = string
-}
-
-
-variable "files_md5" {
-  description = <<-EOF
-  Optional map of MD5 hashes of file contents.
-  Normally the map could be empty, because all the files that exist before the `terraform apply` will have their hashes auto-calculated.
-  This input is necessary only for the selected files which are created/modified within the same Terraform run as this module.
-  The keys of the map should be identical with selected keys of the `files` input, while the values should be MD5 hashes of the contents of that file.
-
-  Example:
-  ```
-  files_md5 = {
-      "dir/my.txt" = "6f7ce3191b50a58cc13e751a8f7ae3fd"
-  }
-  ```
-  EOF
-  default     = {}
-  type        = map(string)
-}
-
-variable "storage_share_name" {
-  description = <<-EOF
-  Name of a storage File Share to be created that will hold `files` used for bootstrapping.
-  For rules defining a valid name see [Microsoft documentation](https://docs.microsoft.com/en-us/rest/api/storageservices/Naming-and-Referencing-Shares--Directories--Files--and-Metadata#share-names).
-  EOF
-  default     = null
-  type        = string
-  nullable    = true
-}
-
-variable "storage_share_quota" {
-  description = "Maximum size of a File Share."
-  default     = 50
-  type        = number
-}
-
-variable "storage_share_access_tier" {
-  description = "Access tier for the File Share."
-  default     = "Cool"
   type        = string
 }
 
 variable "tags" {
-  description = "A map of tags to be associated with the resources created."
+  description = "The map of tags to assign to all created resources."
   default     = {}
   type        = map(string)
 }
 
-variable "retention_policy_days" {
-  description = "Log retention policy in days"
-  type        = number
-  default     = 7
-  validation {
-    condition     = var.retention_policy_days > 0 && var.retention_policy_days < 365
-    error_message = "Enter a value between 1 and 365."
+variable "storage_account" {
+  description = <<-EOF
+  A map controlling basic Storage Account configuration.
+
+  Following properties are available:
+
+  - `create`           - (`bool`, optional, defaults to `true`) controls if the Storage Account is created or sourced.
+  - `replication_type` - (`string`, optional, defaults to `LRS`) only for newly created Storage Accounts, defines the replication
+                         type used. Can be one of the following values: `LRS`, `GRS`, `RAGRS`, `ZRS`, `GZRS` or `RAGZRS`.
+  - `kind`             - (`string`, optional, defaults to `StorageV2`) only for newly created Storage Accounts, defines the
+                         account type. Can be one of the following: `BlobStorage`, `BlockBlobStorage`, `FileStorage`, `Storage` or
+                         `StorageV2`.
+  - `tier`             - (`string`, optional, defaults to `Standard`) only for newly created Storage Accounts, defines the account
+                         tier. Can be either `Standard` or `Premium`. Note, that for `kind` set to `BlockBlobStorage` or
+                         `FileStorage` the `tier` can only be set to `Premium`.
+  
+  EOF
+  default     = {}
+  nullable    = false
+  type = object({
+    create           = optional(bool, true)
+    replication_type = optional(string, "LRS")
+    kind             = optional(string, "StorageV2")
+    tier             = optional(string, "Standard")
+  })
+  validation { # replication_type
+    condition     = contains(["LRS", "GRS", "RAGRS", "ZRS", "GZRS", "RAGZRS"], var.storage_account.replication_type)
+    error_message = "The `replication_type` property can be one of: \"LRS\", \"GRS\", \"RAGRS\", \"ZRS\", \"GZRS\" or \"RAGZRS\"."
+  }
+  validation { # kind
+    condition     = contains(["BlobStorage", "BlockBlobStorage", "FileStorage", "Storage", "StorageV2"], var.storage_account.kind)
+    error_message = <<-EOF
+    The `kind` property can be one of: \"BlobStorage\", \"BlockBlobStorage\", \"FileStorage\", \"Storage\" 
+    or \"StorageV2\"."
+    EOF
+  }
+  validation { # tier
+    condition     = contains(["Standard", "Premium"], var.storage_account.tier)
+    error_message = "The `tier` property can be one of: \"Standard\" or \"Premium\"."
+  }
+  validation { # tier && kind
+    condition     = contains(["BlockBlobStorage", "FileStorage"], var.storage_account.kind) ? var.storage_account.tier == "Premium" : true
+    error_message = "If the `kind` property is set to either \"BlockBlobStorage\" or \"FileStorage\", the `tier` has to be set to \"Premium\"."
   }
 }
 
-variable "blob_delete_retention_policy_days" {
-  description = "Specifies the number of days that the blob should be retained"
-  type        = number
-  default     = 7
+variable "storage_network_security" {
+  description = <<-EOF
+  A map defining network security settings for a new storage account.
+
+  When not set or set to `null` it will disable any network security setting.
+
+  When you decide define this setting, at least one of `allowed_public_ips` or `allowed_subnet_ids` has to be defined.
+  Otherwise you will cut anyone off the storage account. This will have implications on this Terraform code as it operates on
+  File Shares. Files Shares API comes under this networks restrictions.
+
+  Following properties are available:
+
+  - `min_tls_version`     - (`string`, optional, defaults to `TLS1_2`) minimum supported TLS version
+  - `allowed_public_ips`  - (`list`, optional, defaults to `[]`) list of IP CIDR ranges that are allowed to access the Storage
+                            Account. Only public IPs are allowed, RFC1918 address space is not permitted.
+  - `allowed_subnet_ids`  - (`list`, optional, defaults to `[]`) list of the allowed VNet subnet ids. Note that this option
+                            requires network service endpoint enabled for Microsoft Storage for the specified subnets.
+                            If you are using [vnet module](../vnet/README.md), set `storage_private_access` to true for the
+                            specific subnet.
+
+  EOF
+  default     = {}
+  nullable    = false
+  type = object({
+    min_tls_version    = optional(string, "TLS1_2")
+    allowed_public_ips = optional(list(string), [])
+    allowed_subnet_ids = optional(list(string), [])
+  })
   validation {
-    condition     = var.blob_delete_retention_policy_days > 0 && var.blob_delete_retention_policy_days < 365
-    error_message = "Enter a value between 1 and 365."
+    condition     = contains(["TLS1_0", "TLS1_1", "TLS1_2"], var.storage_network_security.min_tls_version)
+    error_message = "The `min_tls_version` property can be one of: \"TLS1_0\", \"TLS1_1\", \"TLS1_2\"."
   }
 }
 
-variable "storage_allow_inbound_public_ips" {
+variable "file_shares_configuration" {
   description = <<-EOF
-    List of IP CIDR ranges (like `["23.23.23.23"]`) that are allowed to access the Storage Account.
-    Only public IPs are allowed - RFC1918 address space is not permitted.
+  A map defining common File Share setting.
+
+  Any of this can be overridden in a particular File Share definition. See [`file_shares`](#file_shares) variable for details.
+
+  Following options are available:
+  
+  - `create_file_shares`            - (`bool`, optional, defaults to `true`) controls if the File Shares specified in the
+                                      `file_shares` variable are created or sourced, if the latter, the storage account also 
+                                      has to be sourced.
+  - `disable_package_dirs_creation` - (`bool`, optional, defaults to `false`) for sourced File Shares, controls if the bootstrap
+                                      package folder structure is created
+  - `quota`                         - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between
+                                      1 and 5120 (5TB)
+  - `access_tier`                   - (`string`, optional, defaults to `Cool`) access tier for a File Share, can be one of: 
+                                      "Cool", "Hot", "Premium", "TransactionOptimized". 
   EOF
-  type        = list(string)
-  default     = []
+  default     = {}
+  nullable    = false
+  type = object({
+    create_file_shares            = optional(bool, true)
+    disable_package_dirs_creation = optional(bool, false)
+    quota                         = optional(number, 10)
+    access_tier                   = optional(string, "Cool")
+  })
+  validation {
+    condition     = var.file_shares_configuration.quota >= 1 && var.file_shares_configuration.quota <= 5120
+    error_message = "The `quota` property can take values between 1 and 5120."
+  }
+  validation {
+    condition     = contains(["Cool", "Hot", "Premium", "TransactionOptimized"], var.file_shares_configuration.access_tier)
+    error_message = "The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\"."
+  }
+  validation {
+    condition     = var.file_shares_configuration.create_file_shares ? !var.file_shares_configuration.disable_package_dirs_creation : true
+    error_message = "The `disable_package_dirs_creation` cannot be set to true for newly created File Shares."
+  }
 }
 
-variable "storage_allow_vnet_subnet_ids" {
+variable "file_shares" {
   description = <<-EOF
-  List of the allowed VNet subnet ids.
-  Note that this option requires network service endpoint enabled for Microsoft Storage for the specified subnets.
-  If you are using [vnet module](../vnet/README.md) - set `storage_private_access` to true for the specific subnet.
-  Example:
-  ```
-  [
-    module.vnet.subnet_ids["subnet-mgmt"],
-    module.vnet.subnet_ids["subnet-pub"],
-    module.vnet.subnet_ids["subnet-priv"]
-  ]
-  ```
-  EOF
-  type        = list(string)
-  default     = []
-}
+  Definition of File Shares.
 
-variable "storage_acl" {
-  description = "If `true`, storage account network rules will be activated with `Deny` as the default action. In such case, at least one of `storage_allow_inbound_public_ips` or `storage_allow_vnet_subnet_ids` must be a non-empty list."
-  default     = true
-  type        = bool
+  This is a map of objects where each object is a File Share definition. There are situations where every firewall can use the
+  same bootstrap package. But there are also situations where each firewall (or a group of firewalls) need a separate one.
+
+  This configuration parameter can help you to create multiple File Shares, per your needs, w/o multiplying Storage Accounts
+  at the same time.
+
+  Following properties are available per each File Share definition:
+
+  - `name`                    - (`string`, required) name of the File Share
+  - `bootstrap_package_path`  - (`string`, optional, defaults to `null`) a path to a folder containing a full bootstrap package.
+                                For details on the bootstrap package structure see [documentation](https://docs.paloaltonetworks.com/vm-series/9-1/vm-series-deployment/bootstrap-the-vm-series-firewall/bootstrap-package)
+  - `bootstrap_files`         - (`map`, optional, defaults to `{}`) a map of files that will be copied to the File Share and build
+                                the bootstrap package. 
+                                
+      Keys are local paths, values - remote. Only Unix like directory separator (`/`) is supported. If `bootstrap_package_path`
+      is also specified, these files will overwrite any file uploaded from that path.
+
+  - `bootstrap_files_md5`     - (`map`, optional, defaults to `{}`) a map of MD5 hashes for files specified in `bootstrap_files`.
+
+      For static files (present and/or not modified before Terraform plan kicks in) this map can be empty. The MD5 hashes are
+      calculated automatically. It's only required for files modified/created by Terraform. You can use `md5` or `filemd5`
+      Terraform functions to calculate MD5 hashes dynamically.
+
+      Keys in this map are local paths, variables - MD5 hashes. For files for which you would like to provide MD5 hashes, 
+      keys in this map should match keys in `bootstrap_files` property.
+
+
+  Additionally you can override the default `quota` and `access_tier` properties per File Share (same restrictions apply):
+
+  - `quota`       - (`number`, optional, defaults to `var.file_shares_configuration.quota`) maximum size of a File Share in GB,
+                    a value between 1 and 5120 (5TB)
+  - `access_tier` - (`string`, optional, defaults to `var.file_shares_configuration.access_tier`) access tier for a File Share,
+                    can be one of: "Cool", "Hot", "Premium", "TransactionOptimized". 
+
+  EOF
+  default     = {}
+  nullable    = false
+  type = map(object({
+    name                   = string
+    bootstrap_package_path = optional(string)
+    bootstrap_files        = optional(map(string), {})
+    bootstrap_files_md5    = optional(map(string), {})
+    quota                  = optional(number)
+    access_tier            = optional(string)
+  }))
+  validation {
+    condition = alltrue([
+      for _, v in var.file_shares :
+      alltrue([
+        can(regex("^[a-z0-9](-?[a-z0-9])+$", v.name)),
+        can(regex("^([a-z0-9-]){3,63}$", v.name))
+      ])
+    ])
+    error_message = "A File Share name must be between 3 and 63 characters, all lowercase numbers, letters or a dash, it must follow a valid URL schema."
+  }
+  validation {
+    condition     = alltrue([for _, v in var.file_shares : v.quota >= 1 && v.quota <= 5120 if v.quota != null])
+    error_message = "The `quota` property can take values between 1 and 5120."
+  }
+  validation {
+    condition = alltrue([
+      for _, v in var.file_shares :
+      contains(["Cool", "Hot", "Premium", "TransactionOptimized"], v.access_tier)
+      if v.access_tier != null
+    ])
+    error_message = "The `access_tier` property can take one of the following values: \"Cool\", \"Hot\", \"Premium\", \"TransactionOptimized\"."
+  }
 }

@@ -4,8 +4,8 @@
 A terraform module for deploying a Scale Set based on Next Generation Firewalls in Azure.
 
 **NOTE!** \
-Due to [lack of proper method of running health probes](#about-rolling-upgrades-and-auto-healing) against Pan-OS based VMs running in a
-Scale Set, the `upgrade_mode` property is hardcoded to `Manual`.
+Due to [lack of proper method of running health probes](#about-rolling-upgrades-and-auto-healing) against Pan-OS based VMs running
+in a Scale Set, the `upgrade_mode` property is hardcoded to `Manual`.
 
 For this mode to actually work the `roll_instances_when_required` provider feature has to be also configured and set to `false`.
 Unfortunately this cannot be set in the `vmss` module, it has to be specified in the **root** module.
@@ -31,7 +31,7 @@ a Load Balancer.
 This provides some obstacles when deploying such setup with Next Generation Firewall based Scale Set: most importantly the health
 probe would target the management interface which could lead to false-positives. A management service can respond to TCP/Http
 probes, while the data plane remains unconfigured. An easy solution would to bo configure an interface swap, unfortunately this
-is not available in the Azure VMSeries image yet.
+is not available in the Azure VM-Series image yet.
 
 ## Custom Metrics and Autoscaling
 
@@ -45,7 +45,7 @@ This however requires some additional steps:
   - `metrics_instrumentation_keys` - a map of instrumentation keys for the deployed Application Insights instances
 - configure this module with the ID of the desired Application Insights instance, use the
   [`var.autoscaling_configuration.application_insights_id`](#autoscaling\_configuration) property
-- depending on the bootstrap method you use, configure the PanOS VMSeries plugins with the metrics instrumentation key
+- depending on the bootstrap method you use, configure the PAN-OS VM-Series plugins with the metrics instrumentation key
   belonging to the Application Insights instance of your choice.
 
 The metrics gathered within a single Azure Application Insights instance provided by the module, cannot be split to obtain
@@ -191,8 +191,8 @@ A map defining authentication settings (including username and password).
 
 Following properties are available:
 
-- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VMseries username
-- `password`                        - (`string`, optional, defaults to `null`) the initial administrative VMSeries password
+- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VM-Series username
+- `password`                        - (`string`, optional, defaults to `null`) the initial administrative VM-Series password
 - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
 - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys
 
@@ -225,18 +225,18 @@ Basic Azure VM configuration.
 
 Following properties are available:
 
-- `version`                 - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
+- `version`                 - (`string`, optional, defaults to `null`) VM-Series PAN-OS version; list available with 
                               `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
 - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for an image
                               which should be deployed
 - `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
                               published image
-- `sku`                     - (`string`, optional, defaults to `byol`) VMSeries SKU, list available with
+- `sku`                     - (`string`, optional, defaults to `byol`) VM-Series SKU, list available with
                               `az vm image list -o table --all --publisher paloaltonetworks`
 - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                               on Azure Market Place
-- `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
-                              creating new Virtual Machines
+- `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PAN-OS image to be used
+                              for creating new Virtual Machines
 
 **Important!** \
 `custom_id` and `version` properties are mutually exclusive.

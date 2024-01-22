@@ -25,8 +25,8 @@ variable "authentication" {
 
   Following properties are available:
 
-  - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VMseries username
-  - `password`                        - (`string`, optional, defaults to `null`) the initial administrative VMSeries password
+  - `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VM-Series username
+  - `password`                        - (`string`, optional, defaults to `null`) the initial administrative VM-Series password
   - `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
   - `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys
 
@@ -64,18 +64,18 @@ variable "image" {
 
   Following properties are available:
 
-  - `version`                 - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
+  - `version`                 - (`string`, optional, defaults to `null`) VM-Series PAN-OS version; list available with 
                                 `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
   - `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for an image
                                 which should be deployed
   - `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
                                 published image
-  - `sku`                     - (`string`, optional, defaults to `byol`) VMSeries SKU, list available with
+  - `sku`                     - (`string`, optional, defaults to `byol`) VM-Series SKU, list available with
                                 `az vm image list -o table --all --publisher paloaltonetworks`
   - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                                 on Azure Market Place
-  - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
-                                creating new Virtual Machines
+  - `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PAN-OS image to be used
+                                for creating new Virtual Machines
 
   **Important!** \
   `custom_id` and `version` properties are mutually exclusive.

@@ -24,7 +24,7 @@ vnets = {
             direction                  = "Inbound"
             access                     = "Allow"
             protocol                   = "Tcp"
-            source_address_prefixes    = ["1.2.3.4"]
+            source_address_prefixes    = ["134.238.135.14", "134.238.135.140"]
             source_port_range          = "*"
             destination_address_prefix = "10.0.0.0/28"
             destination_port_ranges    = ["22", "443"]
@@ -107,10 +107,6 @@ vnets = {
         network_security_group_key = "public"
         route_table_key            = "public"
       }
-      "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
-      }
     }
   }
 }
@@ -119,10 +115,12 @@ vnets = {
 # --- LOAD BALANCING PART --- #
 load_balancers = {
   "public" = {
-    name                              = "public-lb"
-    nsg_vnet_key                      = "transit"
-    nsg_key                           = "public"
-    network_security_allow_source_ips = ["0.0.0.0/0"] # Put your own public IP address here  <-- TODO to be adjusted by the customer
+    name = "public-lb"
+    nsg_auto_rules_settings = {
+      nsg_vnet_key = "transit"
+      nsg_key      = "public"
+      source_ips   = ["0.0.0.0/0"]
+    }
     frontend_ips = {
       "app1" = {
         name             = "app1"
@@ -158,34 +156,34 @@ load_balancers = {
   }
 }
 
-ngfw_metrics = {
-  name = "metrics"
-}
-
-
 # --- VMSERIES PART --- #
-vmseries_version = "10.2.3"
-vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
   "fw-1" = {
-    name              = "firewall01"
-    bootstrap_options = "type=dhcp-client"
-    vnet_key          = "transit"
-    avzone            = 1
+    name = "firewall01"
+    image = {
+      version = "10.2.3"
+    }
+    virtual_machine = {
+      vnet_key          = "transit"
+      size              = "Standard_DS3_v2"
+      zone              = 1
+      bootstrap_options = "type=dhcp-client"
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
+        name             = "vm01-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
-        name              = "private"
+        name              = "vm01-private"
         subnet_key        = "private"
         load_balancer_key = "private"
       },
       {
-        name              = "public"
+        name              = "vm01-public"
         subnet_key        = "public"
+        create_public_ip  = true
         load_balancer_key = "public"
         appgw_key         = "public"
         create_pip        = true
@@ -193,24 +191,31 @@ vmseries = {
     ]
   }
   "fw-2" = {
-    name              = "firewall02"
-    bootstrap_options = "type=dhcp-client"
-    vnet_key          = "transit"
-    avzone            = 2
+    name = "firewall02"
+    image = {
+      version = "10.2.3"
+    }
+    virtual_machine = {
+      vnet_key          = "transit"
+      size              = "Standard_DS3_v2"
+      zone              = 2
+      bootstrap_options = "type=dhcp-client"
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
+        name             = "vm02-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
       },
       {
-        name              = "private"
+        name              = "vm02-private"
         subnet_key        = "private"
         load_balancer_key = "private"
       },
       {
-        name              = "public"
+        name              = "vm02-public"
         subnet_key        = "public"
+        create_public_ip  = true
         load_balancer_key = "public"
         appgw_key         = "public"
         create_pip        = true

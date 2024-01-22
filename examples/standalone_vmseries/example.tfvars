@@ -6,8 +6,6 @@ tags = {
   "CreatedBy"   = "Palo Alto Networks"
   "CreatedWith" = "Terraform"
 }
-enable_zones = false
-
 
 # --- VNET PART --- #
 vnets = {
@@ -44,19 +42,23 @@ vnets = {
 
 
 # --- VMSERIES PART --- #
-vmseries_version = "10.2.3"
-vmseries_vm_size = "Standard_DS3_v2"
 vmseries = {
   "fw-1" = {
-    name              = "firewall01"
-    bootstrap_options = "type=dhcp-client"
-    vnet_key          = "transit"
+    name = "firewall01"
+    image = {
+      version = "10.2.3"
+    }
+    virtual_machine = {
+      bootstrap_options = "type=dhcp-client"
+      vnet_key          = "transit"
+      zone              = null
+    }
     interfaces = [
       {
-        name       = "mgmt"
-        subnet_key = "management"
-        create_pip = true
-      },
+        name             = "vm-mgmt"
+        subnet_key       = "management"
+        create_public_ip = true
+      }
     ]
   }
 }
