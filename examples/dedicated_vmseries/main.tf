@@ -135,7 +135,7 @@ module "load_balancer" {
 
 
 
-# create the actual VMSeries VMs and resources
+# create the actual VM-Series VMs and resources
 module "ngfw_metrics" {
   source = "../../modules/ngfw_metrics"
 

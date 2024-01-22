@@ -455,7 +455,7 @@ variable "vmseries" {
                       public IP addresses will be created.
       - `disk_type` - (`string`, optional, defaults to module defaults) type of a Managed Disk which should be created, possible
                       values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size` values).
-      - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PanOS
+      - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
                               when launched for the 1st time, for details see module documentation.
       - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the
                               bootstrap package.

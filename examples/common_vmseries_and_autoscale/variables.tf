@@ -13,14 +13,16 @@ variable "location" {
 variable "name_prefix" {
   description = <<-EOF
   A prefix that will be added to all created resources.
-  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual prefix.
+  There is no default delimiter applied between the prefix and the resource name. Please include the delimiter in the actual
+  prefix.
 
   Example:
   ```
   name_prefix = "test-"
   ```
   
-  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even if it is also prefixed with the same value as the one in this property.
+  NOTICE. This prefix is not applied to existing resources. If you plan to reuse i.e. a VNET please specify it's full name, even
+  if it is also prefixed with the same value as the one in this property.
   EOF
   default     = ""
   type        = string
@@ -28,8 +30,9 @@ variable "name_prefix" {
 
 variable "create_resource_group" {
   description = <<-EOF
-  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by `resource_group_name`.
-  When set to `false` the `resource_group_name` parameter is used to specify a name of an existing Resource Group.
+  When set to `true` it will cause a Resource Group creation. Name of the newly specified RG is controlled by
+  `resource_group_name`. When set to `false` the `resource_group_name` parameter is used to specify a name of an existing
+  Resource Group.
   EOF
   default     = true
   type        = bool
@@ -329,8 +332,8 @@ variable "scale_sets" {
 
       The `image` property is required but there are only 2 properties (mutually exclusive) that have to be set up, either:
 
-      - `version`   - (`string`) describes the PanOS image version from Azure's Marketplace
-      - `custom_id` - (`string`) absolute ID of your own custom PanOS image
+      - `version`   - (`string`) describes the PAN-OS image version from Azure's Marketplace
+      - `custom_id` - (`string`) absolute ID of your own custom PAN-OS image
 
       For details on the other properties refer to [module's documentation](../../modules/vmss/README.md#image).
 
@@ -349,7 +352,8 @@ variable "scale_sets" {
       - `disk_type`             - (`string`, optional, defaults to module defaults) type of Managed Disk which should be created,
                                   possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                                   `vm_size` values)
-      - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VMSeries instance
+      - `bootstrap_options`     - (`string`, optional, defaults to module defaults) bootstrap options to pass to VM-Series
+                                  instance
 
   - `autoscaling_configuration` - (`map`, optional, defaults to `{}`) a map that groups common autoscaling configuration, but not
                                   the scaling profiles (metrics thresholds, etc)
@@ -357,9 +361,9 @@ variable "scale_sets" {
       Below we present only the most important properties, for the rest please refer to
       [module's documentation](../../modules/vmss/README.md#autoscaling_configuration).
 
-      - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in the
-                            scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare the
-                            metrics to the thresholds
+      - `default_count`   - (`number`, optional, defaults module defaults) minimum number of instances that should be present in
+                            the scale set when the autoscaling engine cannot read the metrics or is otherwise unable to compare
+                            the metrics to the thresholds
 
   - `interfaces`              - (`list`, required) configuration of all network interfaces, order does matter - the 1<sup>st</sup>
                                 interface should be the management one. Following properties are available:

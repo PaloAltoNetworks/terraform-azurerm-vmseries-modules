@@ -29,7 +29,7 @@ output "lb_frontend_ips" {
 }
 
 output "vmseries_mgmt_ips" {
-  description = "IP addresses for the VMSeries management interface."
+  description = "IP addresses for the VM-Series management interface."
   value       = { for k, v in module.vmseries : k => v.mgmt_ip_address }
 }
 

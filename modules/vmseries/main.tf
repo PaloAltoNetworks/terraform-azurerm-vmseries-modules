@@ -17,7 +17,7 @@ data "azurerm_public_ip" "this" {
   }
 
   name                = each.value.public_ip_name
-  resource_group_name = coalesce(each.value.public_ip_resource_group, var.resource_group_name)
+  resource_group_name = coalesce(each.value.public_ip_resource_group_name, var.resource_group_name)
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/network_interface
@@ -36,7 +36,11 @@ resource "azurerm_network_interface" "this" {
     subnet_id                     = each.value.subnet_id
     private_ip_address_allocation = each.value.private_ip_address != null ? "Static" : "Dynamic"
     private_ip_address            = each.value.private_ip_address
-    public_ip_address_id          = try(azurerm_public_ip.this[each.value.name].id, data.azurerm_public_ip.this[each.value.name].id, null)
+    public_ip_address_id = try(
+      azurerm_public_ip.this[each.value.name].id,
+      data.azurerm_public_ip.this[each.value.name].id,
+      null
+    )
   }
 }
 
@@ -101,9 +105,6 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   custom_data = var.virtual_machine.bootstrap_options == null ? null : base64encode(var.virtual_machine.bootstrap_options)
 
-
-  # After converting to azurerm_linux_virtual_machine, an empty block boot_diagnostics {} will use managed storage. Want.
-  # 2.36 in required_providers per https://github.com/terraform-providers/terraform-provider-azurerm/pull/8917
   boot_diagnostics {
     storage_account_uri = var.virtual_machine.diagnostics_storage_uri
   }

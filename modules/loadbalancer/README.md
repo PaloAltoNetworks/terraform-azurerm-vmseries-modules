@@ -192,15 +192,15 @@ Private Load Balancer:
 
 Public Load Balancer:
 
-- `name`                      - (`string`, required) name of a frontend IP configuration
-- `public_ip_name`            - (`string`, required) name of a public IP resource
-- `create_public_ip`          - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
-                                created, otherwise an existing resource will be used;
-                                in both cases the name of the resource is controled by `public_ip_name` property
-- `public_ip_resource_group_name`  - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
-                                hosting an existing public IP resource
-- `in_rules`                  - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
-- `out_rules`                 - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
+- `name`                          - (`string`, required) name of a frontend IP configuration
+- `public_ip_name`                - (`string`, required) name of a public IP resource
+- `create_public_ip`              - (`bool`, optional, defaults to `false`) when set to `true` a new public IP will be
+                                    created, otherwise an existing resource will be used;
+                                    in both cases the name of the resource is controlled by `public_ip_name` property
+- `public_ip_resource_group_name` - (`string`, optional, defaults to the Load Balancer's RG) name of a Resource Group
+                                    hosting an existing public IP resource
+- `in_rules`                      - (`map`, optional, defaults to `{}`) a map defining inbound rules, see details below
+- `out_rules`                     - (`map`, optional, defaults to `{}`) a map defining outbound rules, see details below
 
 Below are the properties for the `in_rules` map:
 

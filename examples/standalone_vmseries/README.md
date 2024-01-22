@@ -147,7 +147,7 @@ Name |  Description
 `natgw_public_ips` | Nat Gateways Public IP resources.
 `metrics_instrumentation_keys` | The Instrumentation Key of the created instance(s) of Azure Application Insights.
 `lb_frontend_ips` | IP Addresses of the load balancers.
-`vmseries_mgmt_ips` | IP addresses for the VMSeries management interface.
+`vmseries_mgmt_ips` | IP addresses for the VM-Series management interface.
 `bootstrap_storage_urls` | 
 
 ## Module's Nameplate
@@ -171,7 +171,7 @@ Name | Version | Source | Description
 `vnet` | - | ../../modules/vnet | Manage the network required for the topology.
 `natgw` | - | ../../modules/natgw | 
 `load_balancer` | - | ../../modules/loadbalancer | create load balancers, both internal and external
-`ngfw_metrics` | - | ../../modules/ngfw_metrics | create the actual VMSeries VMs and resources
+`ngfw_metrics` | - | ../../modules/ngfw_metrics | create the actual VM-Series VMs and resources
 `bootstrap` | - | ../../modules/bootstrap | 
 `vmseries` | - | ../../modules/vmseries | 
 `appgw` | - | ../../modules/appgw | 
@@ -720,7 +720,7 @@ The most basic properties are as follows:
                     public IP addresses will be created.
     - `disk_type` - (`string`, optional, defaults to module defaults) type of a Managed Disk which should be created, possible
                     values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected `size` values).
-    - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PanOS
+    - `bootstrap_options` - (`string`, optional, mutually exclusive with `bootstrap_package`) bootstrap options passed to PAN-OS
                             when launched for the 1st time, for details see module documentation.
     - `bootstrap_package` - (`map`, optional, mutually exclusive with `bootstrap_options`) a map defining content of the
                             bootstrap package.

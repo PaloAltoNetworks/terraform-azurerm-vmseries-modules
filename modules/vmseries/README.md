@@ -40,7 +40,7 @@ Name | Type | Description
 [`resource_group_name`](#resource_group_name) | `string` | The name of the Resource Group to use.
 [`location`](#location) | `string` | The name of the Azure region to deploy the resources in.
 [`authentication`](#authentication) | `object` | A map defining authentication settings (including username and password).
-[`image`](#image) | `object` | Basic Azure VM configuration.
+[`image`](#image) | `object` | Basic Azure VM image configuration.
 [`virtual_machine`](#virtual_machine) | `object` | Firewall parameters configuration.
 [`interfaces`](#interfaces) | `list` | List of the network interface specifications.
 
@@ -121,17 +121,18 @@ A map defining authentication settings (including username and password).
 
 Following properties are available:
 
-- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VMseries username
-- `password`                        - (`string`, optional, defaults to `null`) the initial administrative VMSeries password
-- `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication
-- `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys
+- `username`                        - (`string`, optional, defaults to `panadmin`) the initial administrative VM-Series
+                                      username.
+- `password`                        - (`string`, optional, defaults to `null`) the initial administrative VM-Series password.
+- `disable_password_authentication` - (`bool`, optional, defaults to `true`) disables password-based authentication.
+- `ssh_keys`                        - (`list`, optional, defaults to `[]`) a list of initial administrative SSH public keys.
 
-> [!Important]
-> The `password` property is required when `ssh_keys` is not specified.
+**Important!** \
+The `password` property is required when `ssh_keys` is not specified.
 
-> [!Important]
-> `ssh_keys` property is a list of strings, so each item should be the actual public key value.
-> If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
+**Important!** \
+`ssh_keys` property is a list of strings, so each item should be the actual public key value.
+If you would like to load them from files use the `file` function, for example: `[ file("/path/to/public/keys/key_1.pub") ]`.
 
 
 
@@ -151,25 +152,26 @@ object({
 
 #### image
 
-Basic Azure VM configuration.
+Basic Azure VM image configuration.
 
 Following properties are available:
 
-- `version`             - (`string`, optional, defaults to `null`) VMSeries PAN-OS version; list available with 
-                          `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
-- `publisher`           - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
-                          which should be deployed
-- `offer`               - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
-                          published image
-- `sku`                 - (`string`, optional, defaults to `byol`) VMSeries SKU; list available with
-                          `az vm image list -o table --all --publisher paloaltonetworks`
+- `version`                 - (`string`, optional, defaults to `null`) VM-Series PAN-OS version; list available with 
+                              `az vm image list -o table --publisher paloaltonetworks --offer vmseries-flex --all`
+- `publisher`               - (`string`, optional, defaults to `paloaltonetworks`) the Azure Publisher identifier for a image
+                              which should be deployed
+- `offer`                   - (`string`, optional, defaults to `vmseries-flex`) the Azure Offer identifier corresponding to a
+                              published image
+- `sku`                     - (`string`, optional, defaults to `byol`) VM-Series SKU; list available with
+                              `az vm image list -o table --all --publisher paloaltonetworks`
 - `enable_marketplace_plan` - (`bool`, optional, defaults to `true`) when set to `true` accepts the license for an offer/plan
                               on Azure Market Place
-- `custom_id`         - (`string`, optional, defaults to `null`) absolute ID of your own custom PanOS image to be used for
-                              creating new Virtual Machines
+- `custom_id`               - (`string`, optional, defaults to `null`) absolute ID of your own custom PAN-OS image to be used
+                              for creating new Virtual Machines
 
-> [!Important]
-> `custom_id` and `version` properties are mutually exclusive.
+**Important!** \
+`custom_id` and `version` properties are mutually exclusive.
+
 
 
 Type: 
@@ -199,8 +201,7 @@ List of either required or important properties:
 
 - `size`              - (`string`, optional, defaults to `Standard_D3_v2`) Azure VM size (type). Consult the *VM-Series
                         Deployment Guide* as only a few selected sizes are supported
-- `zone`              - (`number`, ??????????) Availability Zone to place the VM in, `null` value means a non-zonal deployment
-                        this Firewall will be created, explicit `null` means non-zonal deployment
+- `zone`              - (`string`, required) Availability Zone to place the VM in, `null` value means a non-zonal deployment.
 - `disk_type`         - (`string`, optional, defaults to `StandardSSD_LRS`) type of Managed Disk which should be created,
                         possible values are `Standard_LRS`, `StandardSSD_LRS` or `Premium_LRS` (works only for selected
                         `vm_size` values)
@@ -217,7 +218,7 @@ List of either required or important properties:
 
 List of other, optional properties: 
 
-- `avset_key`                      - (`string`, optional, default to `null) identifier of the Availability Set to use
+- `avset_key`                     - (`string`, optional, default to `null`) identifier of the Availability Set to use
 - `accelerated_networking`        - (`bool`, optional, defaults to `true`) when set to `true`  enables Azure accelerated
                                     networking (SR-IOV) for all dataplane network interfaces, this does not affect the
                                     management interface (always disabled)
@@ -263,8 +264,8 @@ object({
 
 List of the network interface specifications.
 
-> [!Note]
-> The ORDER in which you specify the interfaces DOES MATTER.
+**Note!** \
+The ORDER in which you specify the interfaces DOES MATTER.
 
 Interfaces will be attached to VM in the order you define here, therefore:
 
@@ -273,24 +274,24 @@ Interfaces will be attached to VM in the order you define here, therefore:
   
 Following configuration options are available:
 
-- `name`                      - (`string`, required) the interface name
-- `subnet_id`                 - (`string`, required) ID of an existing subnet to create the interface in
-- `private_ip_address`        - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
-                                skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not to
-                                change as long as the VM is running. Any stop/deallocate/restart operation might cause the IP to
-                                change.
-- `create_public_ip`          - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface
-- `public_ip_name`            - (`string`, optional, defaults to `null`) name of the public IP to associate with the interface.
-                                When `create_public_ip` is set to `true` this will become a name of a newly created Public IP
-                                interface. Otherwise this is a name of an existing interfaces that will be sourced and attached
-                                to the interface.
-- `public_ip_resource_group_name`  - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
-                                contains public IP that that will be associated with the interface. Used only when 
-                                `create_public_ip` is `false`.
-- `attach_to_lb_backend_pool` - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
-                                interface with a Load Balancer backend pool.
-- `lb_backend_pool_id`        - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
-                                interface with.
+- `name`                          - (`string`, required) the interface name
+- `subnet_id`                     - (`string`, required) ID of an existing subnet to create the interface in
+- `private_ip_address`            - (`string`, optional, defaults to `null`) static private IP to assign to the interface. When
+                                    skipped Azure will assign one dynamically. Keep in mind that a dynamic IP is guarantied not
+                                    to change as long as the VM is running. Any stop/deallocate/restart operation might cause
+                                    the IP to change.
+- `create_public_ip`              - (`bool`, optional, defaults to `false`) if `true`, creates a public IP for the interface
+- `public_ip_name`                - (`string`, optional, defaults to `null`) name of the public IP to associate with the
+                                    interface. When `create_public_ip` is set to `true` this will become a name of a newly
+                                    created Public IP interface. Otherwise this is a name of an existing interfaces that will
+                                    be sourced and attached to the interface.
+- `public_ip_resource_group_name` - (`string`, optional, defaults to `var.resource_group_name`) name of a Resource Group that
+                                    contains public IP that that will be associated with the interface. Used only when 
+                                    `create_public_ip` is `false`.
+- `attach_to_lb_backend_pool`     - (`bool`, optional, defaults to `false`) set to `true` if you would like to associate this
+                                    interface with a Load Balancer backend pool.
+- `lb_backend_pool_id`            - (`string`, optional, defaults to `null`) ID of an existing backend pool to associate the
+                                    interface with.
 
 Example:
 

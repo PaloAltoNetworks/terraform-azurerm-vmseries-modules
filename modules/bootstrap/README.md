@@ -99,7 +99,9 @@ structure already present.
 module "existing_storage" {
   source = "../../modules/bootstrap"
 
-  create_storage_account = false
+  storage_account = {
+    create = false
+  }  
   name                   = "sampleexistingstorage"
   resource_group_name    = "rg-name"
 
@@ -174,6 +176,7 @@ Providers used in this module:
 Resources used in this module:
 
 - `storage_account` (managed)
+- `storage_account_network_rules` (managed)
 - `storage_share` (managed)
 - `storage_share_directory` (managed)
 - `storage_share_file` (managed)
@@ -188,9 +191,10 @@ Resources used in this module:
 #### name
 
 Name of the Storage Account.
-Either a new or an existing one (depending on the value of `create_storage_account`).
+Either a new or an existing one (depending on the value of `storage_account.create`).
 
-The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include only numbers and lowercase letters.
+The name you choose must be unique across Azure. The name also must be between 3 and 24 characters in length, and may include
+only numbers and lowercase letters.
 
 
 Type: string
@@ -320,7 +324,7 @@ Following options are available:
 - `create_file_shares`            - (`bool`, optional, defaults to `true`) controls if the File Shares specified in the
                                     `file_shares` variable are created or sourced, if the latter, the storage account also 
                                     has to be sourced.
-- `disable_package_dirs_creation` - (`bool`, optional, defaults to `true`) for sourced File Shares, controls if the bootstrap
+- `disable_package_dirs_creation` - (`bool`, optional, defaults to `false`) for sourced File Shares, controls if the bootstrap
                                     package folder structure is created
 - `quota`                         - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between
                                     1 and 5120 (5TB)
@@ -349,7 +353,7 @@ Default value: `map[]`
 Definition of File Shares.
 
 This is a map of objects where each object is a File Share definition. There are situations where every firewall can use the
-same bootstrap package. But you there are situation where each firewall (or a group of firewalls) need a separate one.
+same bootstrap package. But there are also situations where each firewall (or a group of firewalls) need a separate one.
 
 This configuration parameter can help you to create multiple File Shares, per your needs, w/o multiplying Storage Accounts
 at the same time.
@@ -377,10 +381,10 @@ Following properties are available per each File Share definition:
 
 Additionally you can override the default `quota` and `access_tier` properties per File Share (same restrictions apply):
 
-- `quota`       - (`number`, optional, defaults to `10`) maximum size of a File Share in GB, a value between 1 and
-                  5120 (5TB)
-- `access_tier` - (`string`, optional, defaults to `Cool`) access tier for a File Share, can be one of: "Cool", "Hot",
-                  "Premium", "TransactionOptimized". 
+- `quota`       - (`number`, optional, defaults to `var.file_shares_configuration.quota`) maximum size of a File Share in GB,
+                  a value between 1 and 5120 (5TB)
+- `access_tier` - (`string`, optional, defaults to `var.file_shares_configuration.access_tier`) access tier for a File Share,
+                  can be one of: "Cool", "Hot", "Premium", "TransactionOptimized". 
 
 
 
