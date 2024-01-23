@@ -40,6 +40,7 @@ variable "frontend_ip" {
   - `subnet_id`                     - (`string`, required) id of a subnet to associate with the configuration.
   - `private_ip_address`            - (`string`, optional) private IP address to assign.
   - `private_ip_address_version`    - (`string`, optional, defaults to `IPv4`) the IP version for the private IP address.
+                                      Can be one of "IPv4", "IPv6".
   EOF
   nullable    = false
   type = object({
@@ -190,7 +191,7 @@ variable "lb_rule" {
   Available options:
   - `name`              - (`string`, optional) name for the rule.
   - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
-                          to be used by the Gateway Load Balancer.
+                          to be used by the Gateway Load Balancer. Can be one of "Default", "SourceIP", "SourceIPProtocol".
   EOF
   default = {
     name = "lb_rule"
