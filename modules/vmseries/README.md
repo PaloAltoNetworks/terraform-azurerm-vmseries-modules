@@ -250,7 +250,7 @@ object({
     accelerated_networking     = optional(bool, true)
     encryption_at_host_enabled = optional(bool)
     disk_encryption_set_id     = optional(string)
-    diagnostics_storage_uri    = optional(string)
+    diagnostics_storage_uri    = optional(string) # REFACTOR: VM/VMSS : add option to disable boot diagnostics + defaults
     identity_type              = optional(string, "SystemAssigned")
     identity_ids               = optional(list(string), [])
     allow_extension_operations = optional(bool, false)

@@ -7,8 +7,6 @@ tags = {
   "CreatedWith" = "Terraform"
 }
 
-# REFACTOR: APPGW : remove appgw from dedicated, dedicated autoscale, standalone, gwlb
-
 # --- VNET PART --- #
 vnets = {
   "transit" = {
@@ -49,6 +47,11 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
+          "appgw_blackhole" = {
+            name           = "appgw-blackhole-udr"
+            address_prefix = "10.0.0.48/28"
+            next_hop_type  = "None"
+          }
         }
       }
       "private" = {
@@ -68,6 +71,11 @@ vnets = {
           "public_blackhole" = {
             name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
+            next_hop_type  = "None"
+          }
+          "appgw_blackhole" = {
+            name           = "appgw-blackhole-udr"
+            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -106,6 +114,10 @@ vnets = {
         address_prefixes           = ["10.0.0.32/28"]
         network_security_group_key = "public"
         route_table_key            = "public"
+      }
+      "appgw" = {
+        name             = "appgw-snet"
+        address_prefixes = ["10.0.0.48/28"]
       }
     }
   }
@@ -181,12 +193,11 @@ vmseries = {
         load_balancer_key = "private"
       },
       {
-        name              = "vm01-public"
-        subnet_key        = "public"
-        create_public_ip  = true
-        load_balancer_key = "public"
-        appgw_key         = "public"
-        create_pip        = true
+        name                    = "vm01-public"
+        subnet_key              = "public"
+        create_public_ip        = true
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
       }
     ]
   }
@@ -213,12 +224,11 @@ vmseries = {
         load_balancer_key = "private"
       },
       {
-        name              = "vm02-public"
-        subnet_key        = "public"
-        create_public_ip  = true
-        load_balancer_key = "public"
-        appgw_key         = "public"
-        create_pip        = true
+        name                    = "vm02-public"
+        subnet_key              = "public"
+        create_public_ip        = true
+        load_balancer_key       = "public"
+        application_gateway_key = "public"
       }
     ]
   }
@@ -233,7 +243,7 @@ appgws = {
       vnet_key   = "transit"
       subnet_key = "appgw"
       public_ip = {
-        name = "appgw-ip"
+        name = "appgw-pip"
       }
     }
     listeners = {

@@ -3,6 +3,7 @@ variable "name" {
   type        = string
 }
 
+# REFACTOR: template variables description
 variable "resource_group_name" {
   description = "The name of the Resource Group to use."
   type        = string

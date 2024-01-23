@@ -62,8 +62,6 @@ module "appgw" {
   resource_group_name = local.resource_group.name
   location            = var.location
 
-  # REFACTOR: make sure that appgw auto pip name is not only `pip`
-
   application_gateway = merge(
     each.value.application_gateway,
     {

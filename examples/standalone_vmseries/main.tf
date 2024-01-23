@@ -314,43 +314,55 @@ module "vmseries" {
   ]
 }
 
+locals {
+  nics_with_appgw_key = flatten([
+    for k, v in var.vmseries : [
+      for nic in v.interfaces : {
+        vm_key    = k
+        nic_name  = nic.name
+        appgw_key = nic.application_gateway_key
+      } if nic.application_gateway_key != null
+  ]])
+
+  ips_4_nics_with_appgw_key = {
+    for v in local.nics_with_appgw_key :
+    v.appgw_key => module.vmseries[v.vm_key].interfaces["${var.name_prefix}${v.nic_name}"].private_ip_address...
+  }
+}
+
 module "appgw" {
   source = "../../modules/appgw"
 
   for_each = var.appgws
 
-  name                = each.value.name
-  public_ip           = each.value.public_ip
+  name                = "${var.name_prefix}${each.value.name}"
   resource_group_name = local.resource_group.name
   location            = var.location
-  subnet_id           = module.vnet[each.value.vnet_key].subnet_ids[each.value.subnet_key]
 
-  managed_identities = each.value.managed_identities
-  capacity           = each.value.capacity
-  waf                = each.value.waf
-  enable_http2       = each.value.enable_http2
-  zones              = each.value.zones
+  application_gateway = merge(
+    each.value.application_gateway,
+    {
+      subnet_id = module.vnet[each.value.application_gateway.vnet_key].subnet_ids[each.value.application_gateway.subnet_key]
+      public_ip = merge(
+        each.value.application_gateway.public_ip,
+        { name = "${each.value.application_gateway.public_ip.create ? var.name_prefix : ""}${each.value.application_gateway.public_ip.name}" }
+      )
+      backend_pool = merge(
+        each.value.application_gateway.backend_pool,
+        { vmseries_ips = local.ips_4_nics_with_appgw_key[each.key] }
+      )
+    }
+  )
 
-  frontend_ip_configuration_name = each.value.frontend_ip_configuration_name
-  listeners                      = each.value.listeners
-  backend_pool = {
-    name = "vmseries"
-    vmseries_ips = [
-      for k, v in var.vmseries : module.vmseries[k].interfaces[
-        "${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}" # TODO: fix this so that we do not need to use vmseries_public_nic_name
-      ].private_ip_address if try(v.add_to_appgw_backend, false)
-    ]
-  }
+  listeners     = each.value.listeners
   backends      = each.value.backends
   probes        = each.value.probes
   rewrites      = each.value.rewrites
   rules         = each.value.rules
   redirects     = each.value.redirects
   url_path_maps = each.value.url_path_maps
-
-  ssl_global   = each.value.ssl_global
-  ssl_profiles = each.value.ssl_profiles
+  ssl_profiles  = each.value.ssl_profiles
 
   tags       = var.tags
-  depends_on = [module.vnet]
+  depends_on = [module.vnet, module.vmseries]
 }

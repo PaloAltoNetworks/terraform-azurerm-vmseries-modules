@@ -47,11 +47,6 @@ vnets = {
             address_prefix = "10.0.0.32/28"
             next_hop_type  = "None"
           }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
-            next_hop_type  = "None"
-          }
         }
       }
       "private" = {
@@ -71,11 +66,6 @@ vnets = {
           "public_blackhole" = {
             name           = "public-blackhole-udr"
             address_prefix = "10.0.0.32/28"
-            next_hop_type  = "None"
-          }
-          "appgw_blackhole" = {
-            name           = "appgw-blackhole-udr"
-            address_prefix = "10.0.0.48/28"
             next_hop_type  = "None"
           }
         }
@@ -114,10 +104,6 @@ vnets = {
         address_prefixes           = ["10.0.0.32/28"]
         network_security_group_key = "public"
         route_table_key            = "public"
-      }
-      "appgw" = {
-        name             = "appgw-snet"
-        address_prefixes = ["10.0.0.48/28"]
       }
     }
   }

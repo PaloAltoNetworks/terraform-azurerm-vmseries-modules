@@ -45,12 +45,6 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "enable_zones" {
-  description = "If `true`, enable zone support for resources."
-  default     = true
-  type        = bool
-}
-
 
 
 ### VNET
@@ -519,15 +513,16 @@ variable "vmseries" {
 
       The most important ones are listed below:
 
-      - `name`                 - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
-      - `subnet_key`           - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
-                                 `var.vnets`. Key identifying the VNET is defined in `virtual_machine.vnet_key` property.
-      - `create_public_ip`     - (`bool`, optional, defaults to `false`) create a Public IP for an interface.
-      - `load_balancer_key`    - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
-                                 variable, network interface that has this property defined will be added to the Load Balancer's
-                                 backend pool
-      - `add_to_appgw_backend` - (`bool`, optional, defaults to `false`) when set an interface's private IP address will be added
-                                 to the Application Gateway's backend pool.
+      - `name`                    - (`string`, required) name of the network interface (will be prefixed with `var.name_prefix`).
+      - `subnet_key`              - (`string`, required) a key of a subnet to which the interface will be assigned as defined in
+                                    `var.vnets`. Key identifying the VNET is defined in `virtual_machine.vnet_key` property.
+      - `create_public_ip`        - (`bool`, optional, defaults to `false`) create a Public IP for an interface.
+      - `load_balancer_key`       - (`string`, optional, defaults to `null`) key of a Load Balancer defined in `var.loadbalancers`
+                                    variable, network interface that has this property defined will be added to the Load
+                                    Balancer's backend pool.
+      - `application_gateway_key` - (`string`, optional, defaults to `null`) key of an Application Gateway defined in `var.appgws`
+                                    variable, network interface that has this property defined will be added to the Application
+                                    Gateway's backend pool.
 
   EOF
   default     = {}
@@ -582,7 +577,7 @@ variable "vmseries" {
       public_ip_resource_group_name = optional(string)
       private_ip_address            = optional(string)
       load_balancer_key             = optional(string)
-      add_to_appgw_backend          = optional(bool, false)
+      application_gateway_key       = optional(string)
     }))
   }))
   validation {

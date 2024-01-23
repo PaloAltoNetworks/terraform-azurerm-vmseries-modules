@@ -314,6 +314,22 @@ module "vmseries" {
   ]
 }
 
+locals {
+  nics_with_appgw_key = flatten([
+    for k, v in var.vmseries : [
+      for nic in v.interfaces : {
+        vm_key    = k
+        nic_name  = nic.name
+        appgw_key = nic.application_gateway_key
+      } if nic.application_gateway_key != null
+  ]])
+
+  ips_4_nics_with_appgw_key = {
+    for v in local.nics_with_appgw_key :
+    v.appgw_key => module.vmseries[v.vm_key].interfaces["${var.name_prefix}${v.nic_name}"].private_ip_address...
+  }
+}
+
 module "appgw" {
   source = "../../modules/appgw"
 
@@ -329,25 +345,14 @@ module "appgw" {
       subnet_id = module.vnet[each.value.application_gateway.vnet_key].subnet_ids[each.value.application_gateway.subnet_key]
       public_ip = merge(
         each.value.application_gateway.public_ip,
-        {
-          name = "${each.value.application_gateway.public_ip.create ? var.name_prefix : ""}${each.value.application_gateway.public_ip.name}"
-        }
+        { name = "${each.value.application_gateway.public_ip.create ? var.name_prefix : ""}${each.value.application_gateway.public_ip.name}" }
       )
       backend_pool = merge(
         each.value.application_gateway.backend_pool,
-        {
-          vmseries_ips = flatten([
-            for k, fw in var.vmseries : [
-              for nic in fw.interfaces :
-              module.vmseries[k].interfaces["${var.name_prefix}${v.name}-${each.value.vmseries_public_nic_name}"].private_ip_address
-              if try(nic.appgw_key == each.key, false)
-            ]
-          ])
-        }
+        { vmseries_ips = local.ips_4_nics_with_appgw_key[each.key] }
       )
     }
   )
-
 
   listeners     = each.value.listeners
   backends      = each.value.backends

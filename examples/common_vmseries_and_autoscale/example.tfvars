@@ -172,29 +172,34 @@ load_balancers = {
 
 # --- APPLICATION GATEWAYs --- #
 appgws = {
-  "public" = {
+  public = {
     name = "appgw"
-    public_ip = {
-      name = "pip"
-    }
-    vnet_key   = "transit"
-    subnet_key = "appgw"
-    zones      = ["1", "2", "3"]
-    capacity = {
-      static = 2
+    application_gateway = {
+      vnet_key   = "transit"
+      subnet_key = "appgw"
+      public_ip = {
+        name = "appgw-pip"
+      }
     }
     listeners = {
-      minimum = {
-        name = "minimum-listener"
+      "http" = {
+        name = "http"
         port = 80
       }
     }
+    backends = {
+      http = {
+        name     = "http"
+        port     = 80
+        protocol = "Http"
+      }
+    }
     rewrites = {
-      minimum = {
-        name = "minimum-set"
+      xff = {
+        name = "XFF-set"
         rules = {
           "xff-strip-port" = {
-            name     = "minimum-xff-strip-port"
+            name     = "xff-strip-port"
             sequence = 100
             request_headers = {
               "X-Forwarded-For" = "{var_add_x_forwarded_for_proxy}"
@@ -204,12 +209,12 @@ appgws = {
       }
     }
     rules = {
-      minimum = {
-        name     = "minimum-rule"
-        priority = 1
-        backend  = "minimum"
-        listener = "minimum"
-        rewrite  = "minimum"
+      "http" = {
+        name         = "http"
+        listener_key = "http"
+        backend_key  = "http"
+        rewrite_key  = "xff"
+        priority     = 1
       }
     }
   }
