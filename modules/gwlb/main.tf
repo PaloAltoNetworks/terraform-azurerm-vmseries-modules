@@ -36,15 +36,14 @@ resource "azurerm_lb_backend_address_pool" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_probe
 resource "azurerm_lb_probe" "this" {
-  name            = coalesce(var.health_probe.name, var.name)
+  name            = var.health_probe.name
   loadbalancer_id = azurerm_lb.this.id
 
   port                = var.health_probe.port
   protocol            = var.health_probe.protocol
   probe_threshold     = var.health_probe.probe_threshold
-  request_path        = var.health_probe.request_path
+  request_path        = var.health_probe.protocol != "Tcp" ? var.health_probe.request_path : null
   interval_in_seconds = var.health_probe.interval_in_seconds
-  number_of_probes    = var.health_probe.number_of_probes
 }
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule
