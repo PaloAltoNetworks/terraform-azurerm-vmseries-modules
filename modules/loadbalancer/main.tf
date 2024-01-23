@@ -30,6 +30,7 @@ locals {
   out_rules = { for v in local.out_flat_rules : "${v.fipkey}-${v.rulekey}" => v }
 }
 
+# REFACTOR: add links to resources
 resource "azurerm_public_ip" "this" {
   for_each = { for k, v in var.frontend_ips : k => v if v.create_public_ip }
 

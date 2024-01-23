@@ -105,8 +105,11 @@ resource "azurerm_linux_virtual_machine" "this" {
 
   custom_data = var.virtual_machine.bootstrap_options == null ? null : base64encode(var.virtual_machine.bootstrap_options)
 
-  boot_diagnostics {
-    storage_account_uri = var.virtual_machine.diagnostics_storage_uri
+  dynamic "boot_diagnostics" {
+    for_each = var.virtual_machine.enable_boot_diagnostics ? [1] : []
+    content {
+      storage_account_uri = var.virtual_machine.boot_diagnostics_storage_uri
+    }
   }
 
   identity {

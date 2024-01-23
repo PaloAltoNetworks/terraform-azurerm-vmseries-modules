@@ -226,8 +226,9 @@ List of other, optional properties:
                                     used to encrypt this VM's disk
 - `encryption_at_host_enabled`    - (`bool`, optional, defaults to Azure defaults) should all of disks be encrypted
                                     by enabling Encryption at Host
-- `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
-                                    diagnostic files
+- `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM
+- `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold
+                                    diagnostic files, when skipped a managed Storage Account will be used (preferred).
 - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                     "SystemAssigned, UserAssigned".
@@ -241,19 +242,20 @@ Type:
 
 ```hcl
 object({
-    size                       = optional(string, "Standard_D3_v2")
-    bootstrap_options          = optional(string)
-    zone                       = string
-    disk_type                  = optional(string, "StandardSSD_LRS")
-    disk_name                  = string
-    avset_id                   = optional(string)
-    accelerated_networking     = optional(bool, true)
-    encryption_at_host_enabled = optional(bool)
-    disk_encryption_set_id     = optional(string)
-    diagnostics_storage_uri    = optional(string) # REFACTOR: VM/VMSS : add option to disable boot diagnostics + defaults
-    identity_type              = optional(string, "SystemAssigned")
-    identity_ids               = optional(list(string), [])
-    allow_extension_operations = optional(bool, false)
+    size                         = optional(string, "Standard_D3_v2")
+    bootstrap_options            = optional(string)
+    zone                         = string
+    disk_type                    = optional(string, "StandardSSD_LRS")
+    disk_name                    = string
+    avset_id                     = optional(string)
+    accelerated_networking       = optional(bool, true)
+    encryption_at_host_enabled   = optional(bool)
+    disk_encryption_set_id       = optional(string)
+    enable_boot_diagnostics      = optional(bool, false)
+    boot_diagnostics_storage_uri = optional(string)
+    identity_type                = optional(string, "SystemAssigned")
+    identity_ids                 = optional(list(string), [])
+    allow_extension_operations   = optional(bool, false)
   })
 ```
 

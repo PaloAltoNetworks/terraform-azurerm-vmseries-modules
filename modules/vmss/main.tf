@@ -96,7 +96,12 @@ resource "azurerm_linux_virtual_machine_scale_set" "this" {
     }
   }
 
-  boot_diagnostics { storage_account_uri = var.virtual_machine_scale_set.diagnostics_storage_uri }
+  dynamic "boot_diagnostics" {
+    for_each = var.virtual_machine_scale_set.enable_boot_diagnostics ? [1] : []
+    content {
+      storage_account_uri = var.virtual_machine_scale_set.boot_diagnostics_storage_uri
+    }
+  }
 
   identity {
     type         = var.virtual_machine_scale_set.identity_type

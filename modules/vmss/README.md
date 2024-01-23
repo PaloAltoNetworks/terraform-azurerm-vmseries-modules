@@ -384,8 +384,9 @@ List of other, optional properties:
 - `single_placement_group`        - (`bool`, defaults to Azure defaults) when `true` this Virtual Machine Scale Set will be
                                     limited to a Single Placement Group, which means the number of instances will be capped
                                     at 100 Virtual Machines
-- `diagnostics_storage_uri`       - (`string`, optional, defaults to `null`) storage account's blob endpoint to hold
-                                    diagnostic files
+- `enable_boot_diagnostics`       - (`bool`, optional, defaults to `false`) enables boot diagnostics for a VM
+- `boot_diagnostics_storage_uri`  - (`string`, optional, defaults to `null`) Storage Account's Blob endpoint to hold
+                                    diagnostic files, when skipped a managed Storage Account will be used (preferred).
 - `identity_type`                 - (`string`, optional, defaults to `SystemAssigned`) type of Managed Service Identity that
                                     should be configured on this VM. Can be one of "SystemAssigned", "UserAssigned" or
                                     "SystemAssigned, UserAssigned".
@@ -399,20 +400,21 @@ Type:
 
 ```hcl
 object({
-    size                        = optional(string, "Standard_D3_v2")
-    bootstrap_options           = optional(string)
-    zones                       = optional(list(string))
-    disk_type                   = optional(string, "StandardSSD_LRS")
-    accelerated_networking      = optional(bool, true)
-    encryption_at_host_enabled  = optional(bool)
-    overprovision               = optional(bool, true)
-    platform_fault_domain_count = optional(number)
-    single_placement_group      = optional(bool)
-    disk_encryption_set_id      = optional(string)
-    diagnostics_storage_uri     = optional(string)
-    identity_type               = optional(string, "SystemAssigned")
-    identity_ids                = optional(list(string), [])
-    allow_extension_operations  = optional(bool, false)
+    size                         = optional(string, "Standard_D3_v2")
+    bootstrap_options            = optional(string)
+    zones                        = optional(list(string))
+    disk_type                    = optional(string, "StandardSSD_LRS")
+    accelerated_networking       = optional(bool, true)
+    encryption_at_host_enabled   = optional(bool)
+    overprovision                = optional(bool, true)
+    platform_fault_domain_count  = optional(number)
+    single_placement_group       = optional(bool)
+    disk_encryption_set_id       = optional(string)
+    enable_boot_diagnostics      = optional(bool, false)
+    boot_diagnostics_storage_uri = optional(string)
+    identity_type                = optional(string, "SystemAssigned")
+    identity_ids                 = optional(list(string), [])
+    allow_extension_operations   = optional(bool, false)
   })
 ```
 
