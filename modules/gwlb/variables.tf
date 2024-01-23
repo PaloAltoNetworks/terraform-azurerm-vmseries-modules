@@ -76,13 +76,14 @@ variable "health_probe" {
                             is removed from rotation.
   EOF
   default = {
-    port = 80
+    port     = 80
+    protocol = "Tcp"
   }
   nullable = false
   type = object({
     name                = optional(string)
     port                = number
-    protocol            = optional(string, "Tcp")
+    protocol            = optional(string)
     interval_in_seconds = optional(number, 15)
     probe_threshold     = optional(number, 1)
     request_path        = optional(string)

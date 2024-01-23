@@ -248,7 +248,7 @@ Type:
 object({
     name                = optional(string)
     port                = number
-    protocol            = optional(string, "Tcp")
+    protocol            = optional(string)
     interval_in_seconds = optional(number, 15)
     probe_threshold     = optional(number, 1)
     request_path        = optional(string)
@@ -257,7 +257,7 @@ object({
 ```
 
 
-Default value: `map[port:80]`
+Default value: `map[port:80 protocol:Tcp]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
