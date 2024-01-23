@@ -89,7 +89,7 @@ resource "azurerm_application_gateway" "this" {
     public_ip_address_id = var.public_ip.create ? azurerm_public_ip.this[0].id : data.azurerm_public_ip.this[0].id
   }
 
-  # There is only a single backend - the VMSeries private IPs assigned to untrusted NICs
+  # There is only a single backend - the VM-Series private IPs assigned to untrusted NICs
   backend_address_pool {
     name         = var.backend_pool.name
     ip_addresses = var.backend_pool.vmseries_ips

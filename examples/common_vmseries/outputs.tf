@@ -1,11 +1,11 @@
-output "username" {
+output "usernames" {
   description = "Initial administrative username to use for VM-Series."
-  value       = var.vmseries_username
+  value       = { for k, v in local.authentication : k => v.username }
 }
 
-output "password" {
+output "passwords" {
   description = "Initial administrative password to use for VM-Series."
-  value       = local.vmseries_password
+  value       = { for k, v in local.authentication : k => v.password }
   sensitive   = true
 }
 
@@ -29,11 +29,11 @@ output "lb_frontend_ips" {
 }
 
 output "vmseries_mgmt_ips" {
-  description = "IP addresses for the VMSeries management interface."
+  description = "IP addresses for the VM-Series management interface."
   value       = { for k, v in module.vmseries : k => v.mgmt_ip_address }
 }
 
 output "bootstrap_storage_urls" {
-  value     = length(var.bootstrap_storage) > 0 ? { for k, v in module.bootstrap_share : k => v.storage_share.url } : null
+  value     = length(var.bootstrap_storages) > 0 ? { for k, v in module.bootstrap : k => v.file_share_urls } : null
   sensitive = true
 }

@@ -299,14 +299,14 @@ variable "load_balancers" {
       base_priority           = optional(number)
     }))
     frontend_ips = optional(map(object({
-      name                     = string
-      public_ip_name           = optional(string)
-      create_public_ip         = optional(bool, false)
-      public_ip_resource_group = optional(string)
-      vnet_key                 = optional(string)
-      subnet_key               = optional(string)
-      private_ip_address       = optional(string)
-      gwlb_key                 = optional(string)
+      name                          = string
+      public_ip_name                = optional(string)
+      create_public_ip              = optional(bool, false)
+      public_ip_resource_group_name = optional(string)
+      vnet_key                      = optional(string)
+      subnet_key                    = optional(string)
+      private_ip_address            = optional(string)
+      gwlb_key                      = optional(string)
       in_rules = optional(map(object({
         name                = string
         protocol            = string

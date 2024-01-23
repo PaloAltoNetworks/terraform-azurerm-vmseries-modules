@@ -3,7 +3,7 @@
 
 A Terraform module deploying Azure Application Insights (Log Analytics Workspace mode).
 
-The main purpose of this module is to deploy Application Insights that can be used to monitor internal PanOS metrics.
+The main purpose of this module is to deploy Application Insights that can be used to monitor internal PAN-OS metrics.
 It will work with both a standalone Next Generation Firewall and ones deployed inside a Virtual Machine Scale Set.
 In both situations the instrumentation key for the Application Insights has to be provided in the firewall's configuration.
 For more information please refer to [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/enable-azure-application-insights-on-the-vm-series-firewall).
@@ -87,7 +87,7 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.3, < 2.0
+- `terraform`, version: >= 1.5, < 2.0
 - `azurerm`, version: ~> 3.80
 
 
