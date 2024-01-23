@@ -115,13 +115,13 @@ Name |  Description
 
 Requirements needed by this module:
 
-- `terraform`, version: >= 1.3, < 2.0
-- `azurerm`, version: ~> 3.25
+- `terraform`, version: >= 1.5, < 2.0
+- `azurerm`, version: ~> 3.80
 
 
 Providers used in this module:
 
-- `azurerm`, version: ~> 3.25
+- `azurerm`, version: ~> 3.80
 
 
 
