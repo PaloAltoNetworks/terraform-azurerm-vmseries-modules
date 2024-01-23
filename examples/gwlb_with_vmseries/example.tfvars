@@ -146,7 +146,7 @@ vmseries = {
         subnet_key          = "data"
         enable_backend_pool = true
         gwlb_key            = "gwlb"
-        gwlb_backend_key    = "ext-int"
+        gwlb_backend_key    = "backend"
       }
     ]
   }
@@ -169,7 +169,7 @@ vmseries = {
         subnet_key          = "data"
         enable_backend_pool = true
         gwlb_key            = "gwlb"
-        gwlb_backend_key    = "ext-int"
+        gwlb_backend_key    = "backend"
       }
     ]
   }

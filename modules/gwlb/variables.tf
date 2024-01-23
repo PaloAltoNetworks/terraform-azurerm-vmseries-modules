@@ -139,8 +139,8 @@ variable "backends" {
   Additionally, for VM-Series tunnel interface protocol is always VXLAN.
   EOF
   default = {
-    ext-int = {
-      name = "ext-int"
+    backend = {
+      name = "backend"
       tunnel_interfaces = {
         internal = {
           identifier = 800
