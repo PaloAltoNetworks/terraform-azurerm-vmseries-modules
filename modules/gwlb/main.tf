@@ -20,7 +20,7 @@ resource "azurerm_lb" "this" {
 resource "azurerm_lb_backend_address_pool" "this" {
   for_each = var.backends
 
-  name            = coalesce(each.value.name, "${var.name}-${each.key}")
+  name            = each.value.name
   loadbalancer_id = azurerm_lb.this.id
 
   dynamic "tunnel_interface" {
