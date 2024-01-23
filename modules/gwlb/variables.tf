@@ -180,6 +180,10 @@ variable "backends" {
     [for p, r in v.tunnel_interfaces : contains(["Internal", "External"], r.type)]])))
     error_message = "The `type` property can be one of \"Internal\", \"External\"."
   }
+  validation { # backends
+    condition = (var.backends == null ? true : length(var.backends) <= 2)
+    error_message = "Maximum allowed number of `backends` is 2."
+  }
 }
 
 variable "lb_rule" {
