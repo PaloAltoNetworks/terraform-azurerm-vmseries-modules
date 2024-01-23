@@ -190,10 +190,12 @@ variable "lb_rule" {
   - `load_distribution` - (`string`, optional, defaults to `Default`) specifies the load balancing distribution type
                           to be used by the Gateway Load Balancer.
   EOF
-  default     = {}
-  nullable    = false
+  default = {
+    name = "lb_rule"
+  }
+  nullable = false
   type = object({
-    name              = optional(string)
+    name              = string
     load_distribution = optional(string, "Default")
   })
   validation { # load_distribution

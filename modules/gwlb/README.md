@@ -265,14 +265,12 @@ Map with backend configurations for the Gateway Load Balancer. Azure GWLB rule c
 
 Following settings are available:
 - `name`              - (`string`, required) name of the backend.
-                        If not specified name is generated from `name` variable and backend key.
 - `tunnel_interfaces` - (`map`, required) map with tunnel interfaces.
+  - `identifier`        - (`number`, required) interface identifier.
+  - `port`              - (`number`, required) interface port.
+  - `type`              - (`string`, required) either "External" or "Internal".
 
-Each tunnel interface specification consists of following settings:
-- `identifier` - (`number`, required) interface identifier.
-- `port`       - (`number`, required) interface port.
-- `type`       - (`string`, required) either "External" or "Internal".
-
+**Note!** \
 If one backend is specified, it has to have both external and internal tunnel interfaces specified.
 For two backends, each has to have exactly one.
 
@@ -299,7 +297,7 @@ map(object({
 ```
 
 
-Default value: `map[ext-int:map[name:ext-int tunnel_interfaces:map[external:map[identifier:801 port:2001 protocol:VXLAN type:External] internal:map[identifier:800 port:2000 protocol:VXLAN type:Internal]]]]`
+Default value: `map[backend:map[name:backend tunnel_interfaces:map[external:map[identifier:801 port:2001 protocol:VXLAN type:External] internal:map[identifier:800 port:2000 protocol:VXLAN type:Internal]]]]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 
@@ -317,13 +315,13 @@ Type:
 
 ```hcl
 object({
-    name              = optional(string)
+    name              = string
     load_distribution = optional(string, "Default")
   })
 ```
 
 
-Default value: `map[]`
+Default value: `map[name:lb_rule]`
 
 <sup>[back to list](#modules-optional-inputs)</sup>
 

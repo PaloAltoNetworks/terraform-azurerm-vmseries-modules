@@ -49,7 +49,7 @@ resource "azurerm_lb_probe" "this" {
 
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/lb_rule
 resource "azurerm_lb_rule" "this" {
-  name            = coalesce(var.lb_rule.name, azurerm_lb.this.frontend_ip_configuration[0].name)
+  name            = var.lb_rule.name
   loadbalancer_id = azurerm_lb.this.id
   probe_id        = azurerm_lb_probe.this.id
 

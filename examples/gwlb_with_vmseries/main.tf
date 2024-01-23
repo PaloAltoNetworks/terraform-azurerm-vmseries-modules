@@ -60,7 +60,9 @@ module "gwlb" {
 
   backends     = try(each.value.backends, null)
   health_probe = try(each.value.health_probe, null)
-  lb_rule      = try(each.value.lb_rule, null)
+  lb_rule = try(each.value.lb_rule, {
+    name = try(each.value.frontend_ip.name, "${var.name_prefix}${each.value.name}")
+  })
 
   zones = var.enable_zones ? try(each.value.zones, null) : null
   frontend_ip = {
