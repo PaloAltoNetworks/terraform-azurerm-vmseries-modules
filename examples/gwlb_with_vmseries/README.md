@@ -1,7 +1,9 @@
 <!-- BEGIN_TF_DOCS -->
 # VM-Series Azure Gateway Load Balancer example
 
-The exmaple allows to deploy VM-Series firewalls for inbound and outbound traffic inspection utilizing Azure Gateway Load Balancer in service chain model as described in the following [document](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/deploy-the-vm-series-firewall-with-the-azure-gwlb).
+The exmaple allows to deploy VM-Series firewalls for inbound and outbound traffic inspection utilizing
+Azure Gateway Load Balancer in service chain model as described in the following
+[document](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/set-up-the-vm-series-firewall-on-azure/deploy-the-vm-series-firewall-with-the-azure-gwlb).
 
 ## Usage
 
@@ -9,19 +11,27 @@ The exmaple allows to deploy VM-Series firewalls for inbound and outbound traffi
 
 * Checkout the code locally.
 * Copy `example.tfvars` to `terraform.tfvars` and adjust it to your needs.
-* Copy `files/init-cfg.txt.sample` to `files/init-cfg.txt` and fill it in with required bootstrap parameters (see this [documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components) for details).
+* Copy `files/init-cfg.txt.sample` to `files/init-cfg.txt` and fill it in with required bootstrap parameters (see this
+[documentation](https://docs.paloaltonetworks.com/vm-series/10-2/vm-series-deployment/bootstrap-the-vm-series-firewall/create-the-init-cfgtxt-file/init-cfgtxt-file-components)
+for details).
 * (optional) Authenticate to AzureRM, switch to the Subscription of your choice if necessary.
 * Initialize the Terraform module:
 
-      terraform init
+```bash
+terraform init
+```
 
 * (optional) Plan you infrastructure to see what will be actually deployed:
 
-      terraform plan
+```bash
+terraform plan
+```
 
 * Deploy the infrastructure:
 
-      terraform apply
+```bash
+terraform apply
+```
 
 * At this stage you have to wait a few minutes for the firewalls to bootstrap.
 
@@ -31,15 +41,19 @@ Firewalls in this example are configured with password authentication. To retrie
 
 * for username:
 
-      terraform output username
+```bash
+terraform output username
+```
 
 * for password:
 
-      terraform output password
+```bash
+terraform output password
+```
 
 The management public IP addresses are available in the `vmseries_mgmt_ips` output:
 
-```sh
+```bash
 terraform output vmseries_mgmt_ips
 ```
 
@@ -48,17 +62,19 @@ You can now login to the devices using either:
 * CLI - ssh client is required
 * Web UI (https) - any modern web browser, note that initially the traffic is encrypted with a self-signed certificate.
 
-With default example configuration, the devices already contain `DAY0` configuration, so all network interfaces should be configured and Azure Gateway Load Balancer should already report that the devices are healthy.
+With default example configuration, the devices already contain `DAY0` configuration, so all network interfaces should be
+configured and Azure Gateway Load Balancer should already report that the devices are healthy.
 
 You can now proceed with licensing the devices and configuring your first rules.
 
-Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for `DAY1` configuration (security hardening).
+Please also refer to [this repository](https://github.com/PaloAltoNetworks/iron-skillet) for
+`DAY1` configuration (security hardening).
 
 ### Cleanup
 
 To remove the deployed infrastructure run:
 
-```sh
+```bash
 terraform destroy
 ```
 
